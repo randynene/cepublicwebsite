@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-20T03:48:50.569Z",
+  "generatedAt": "2026-04-20T06:10:02.981Z",
   "supabaseStatus": "connected (table check: Could not find the table 'public._dummy_ping' in the schema cache)",
   "site": {
     "id": "673326831abed6267051fa11",
