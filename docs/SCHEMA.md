@@ -1,6 +1,6 @@
 # SCHEMA.md — Mygratr Database Schema
 
-Version: 0.1
+Version: 0.2
 Last updated: April 2026
 
 ## Tables
@@ -191,3 +191,4 @@ Purpose: Post-launch monitoring state.
 | Version | Date | Changes |
 |---|---|---|
 | 0.1 | April 2026 | Initial schema — 10 tables created |
+| 0.2 | April 2026 | MYGRATR-AUDIT-1: No schema changes (no DDL, no new tables, no new columns, no new constraints). First write to `audit_manifests` table: row `708d9d52-7721-4c8d-bc78-a6e31ffb3225` inserted for CE migration with `total_pages=602`, `total_collections=33`, `total_cms_items=451`, `total_forms=3`, plus JSONB payloads (page_inventory, collection_inventory, form_inventory, custom_code_inventory, raw_sitemap_urls). Also: `migrations` row for CE migration updated — `current_phase` and `status` moved from `foundation`/`pending` to `audit_complete`/`audit_complete`, with `metadata` payload of phase counts. |

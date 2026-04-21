@@ -2,3 +2,5 @@
 node_modules/
 docs/credentials
 dist/
+audit-output/
+.audit/

@@ -6,7 +6,10 @@
     "doc": "docs"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "audit:run": "tsx scripts/audit/run-audit.ts",
+    "audit:chunk2": "tsx scripts/audit/run-audit-chunk2.ts",
+    "audit:chunk3": "tsx scripts/audit/run-audit-chunk3.ts"
   },
   "keywords": [],
   "author": "",
@@ -14,10 +17,14 @@
   "description": "",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.90.0",
+    "@mendable/firecrawl-js": "^4.18.4",
     "@sanity/client": "^7.21.0",
     "@supabase/supabase-js": "^2.103.3",
+    "cheerio": "^1.2.0",
+    "csv-parse": "^6.2.1",
     "dotenv": "^17.4.2",
     "node-fetch": "^2.7.0",
+    "p-limit": "^7.3.0",
     "pg": "^8.20.0",
     "pixelmatch": "^7.1.0",
     "playwright": "^1.59.1",
