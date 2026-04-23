@@ -14,13 +14,14 @@ Parent brand: Saxon.io. Owner: Jake Hall (non-developer, directs Claude Code).
 
 ## Current Phase
 
-**MYGRATR-AUDIT-1 — Site Audit Agent** — COMPLETE
+**MYGRATR-SCHEMA-0 — Schema Design Lock** — COMPLETE
 **Next: MYGRATR-SCHEMA-1** — Sanity Schema Design
 
 | Phase | Name | Status |
 |---|---|---|
 | MYGRATR-0 | Foundation | ✅ Complete |
 | MYGRATR-AUDIT-1 | Site Audit Agent | ✅ Complete |
+| MYGRATR-SCHEMA-0 | Schema Design Lock | ✅ Complete |
 | **MYGRATR-SCHEMA-1** | **Sanity Schema Design** | 🔜 **Next** |
 | MYGRATR-SCAFFOLD-1 | Next.js Scaffold | Planned |
 | MYGRATR-CONTENT-1 | Content Migration | Planned |
@@ -53,6 +54,17 @@ Parent brand: Saxon.io. Owner: Jake Hall (non-developer, directs Claude Code).
   Calendly)
 - `audit_manifests` row `708d9d52-7721-4c8d-bc78-a6e31ffb3225` in Supabase
 - `migrations.current_phase = audit_complete` for CE migration
+
+**Schema design state (as of SCHEMA-0 complete):**
+- `docs/MYGRATR_SCHEMA_DESIGN_DECISIONS.md` LOCKED at v1.2 — 21 Sanity
+  document types, ~30 singletons, 3 hardcoded routes, 6 globals, 32
+  locked decisions. Authoritative input to SCHEMA-1.
+- `docs/CE_SITE_TRUTH.md` — structured source-of-truth (3,615 lines).
+- Two red-team audits of the design doc (v1.0 → v1.1 → v1.2) — all
+  HIGH and missing-coverage findings resolved; no structural blockers.
+- Redirects verification closed: 336 of 653 Webflow redirects collapse
+  to one regex; 317 preserved individually. See
+  `docs/investigations-2026-04-23/redirects-verification.md`.
 
 ## Tech Stack
 
@@ -212,4 +224,4 @@ Only after ALL of the above are complete do you start planning the next phase.
 | 8 | AUDIT-1 | HubSpot access token lacks `automation` scope — workflow cross-reference returned nothing. Verify scope before CONTENT-1 if per-form workflow routing matters. | MYGRATR-CONTENT-1 |
 | 9 | AUDIT-1 | 4 canonical URLs remain `UNKNOWN` (Cloudflare challenge script, sitemap.xml, hash URL, `/uk/embedding`). Step 1 content-type filter should drop the first three. | MYGRATR-SCHEMA-1 |
 
-*Last updated: April 2026 — MYGRATR-AUDIT-1 complete. MYGRATR-SCHEMA-1 next.*
+*Last updated: April 2026 — MYGRATR-SCHEMA-0 complete. MYGRATR-SCHEMA-1 next.*

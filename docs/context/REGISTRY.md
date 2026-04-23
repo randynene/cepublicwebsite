@@ -3,6 +3,19 @@
 > Growing reference lists. Overflow from CLAUDE.md.
 > Update after each phase as new routes, templates, and components are added.
 
+## Phase Design-Doc Artefacts
+
+| Artefact | Phase | Purpose |
+|---|---|---|
+| `docs/CE_RAW_EXTRACT.md` | SCHEMA-0 | Verbatim audit output — reference only |
+| `docs/CE_SITE_TRUTH.md` | SCHEMA-0 | Structured source-of-truth (3,615 lines) |
+| `docs/MYGRATR_SCHEMA_DESIGN_DECISIONS.md` | SCHEMA-0 | LOCKED v1.2 — input to SCHEMA-1 |
+| `docs/SCHEMA_DECISIONS_AUDIT_REPORT.md` | SCHEMA-0 | v1.0 red-team audit |
+| `docs/SCHEMA_DECISIONS_AUDIT_REPORT_V2.md` | SCHEMA-0 | v1.1 re-audit |
+| `docs/investigations-2026-04-23/` | SCHEMA-0 | Static pages, customer-story videos, Glassdoor rendering, redirects verification |
+| `docs/SKILLS/post-phase-update/SKILL.md` | SCHEMA-0 | Reusable skill definition |
+| `docs/SKILLS/red-team-audit/SKILL.md` | SCHEMA-0 | Reusable skill definition |
+
 ## Database Tables
 
 | Table | Purpose | Phase Built |

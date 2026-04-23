@@ -36,6 +36,24 @@
   - `src/lib/audit-types.ts` — exports all audit-domain types
 - **Phase:** MYGRATR-AUDIT-1
 
+## Schema Design Doc (locked input to SCHEMA-1)
+- **Description:** Authoritative Sanity schema design decisions for the CE
+  migration. Defines 21 document types, ~30 singletons, 3 hardcoded routes,
+  6 global schemas, redirect preservation strategy, and 32 locked decisions.
+  Consumed verbatim by MYGRATR-SCHEMA-1 to produce Sanity schema files.
+- **Page:** None (documentation)
+- **API Routes:** None
+- **Lib Modules:** None
+- **Artefacts:**
+  - `docs/CE_RAW_EXTRACT.md` — verbatim audit output (reference only)
+  - `docs/CE_SITE_TRUTH.md` — structured source-of-truth derived from the extract
+  - `docs/MYGRATR_SCHEMA_DESIGN_DECISIONS.md` — locked design doc (v1.2)
+  - `docs/SCHEMA_DECISIONS_AUDIT_REPORT.md` — v1.0 red-team audit
+  - `docs/SCHEMA_DECISIONS_AUDIT_REPORT_V2.md` — v1.1 re-audit
+  - `docs/investigations-2026-04-23/` — three investigations + redirects verification
+- **DB Tables:** None (SCHEMA-1 will write to `schema_designs`)
+- **Phase:** MYGRATR-SCHEMA-0
+
 ## Site Audit Agent
 - **Description:** Produces the authoritative migration manifest for a source
   site — reconciles URLs from four sources, extracts content per page,

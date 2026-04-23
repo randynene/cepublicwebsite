@@ -4,7 +4,7 @@
 > Updated after each phase to prevent architectural drift.
 > Patterns documented here reflect reality — never speculative.
 
-**Status:** MYGRATR-AUDIT-1 Complete
+**Status:** MYGRATR-SCHEMA-0 Complete
 
 ---
 
@@ -939,3 +939,4 @@ full page HTML. It must never be committed.
 |-------|--------|-------------------------|
 | MYGRATR-0 | Complete | Repo structure, Supabase schema (10 tables, RLS on all), TypeScript strict mode, CE org + migration seeded, context files at root, Webflow inventory + Firecrawl sitemap scripts, audit artefacts in audit-output/ |
 | MYGRATR-AUDIT-1 | Complete | Resumable orchestrator chunks, skip-if-exists for expensive steps, tier-1/tier-2 LLM degradation (rules always run; Claude optional), inline rules classifier for cross-step deps, phase timeout + circuit breaker for API batch steps, PII-safe audit outputs |
+| MYGRATR-SCHEMA-0 | Complete | No new code patterns — doc-only phase. Locked schema design doc (`docs/MYGRATR_SCHEMA_DESIGN_DECISIONS.md`) produced through a CE_RAW_EXTRACT → CE_SITE_TRUTH → DESIGN_DECISIONS → red-team audit → fixes → re-audit → lock workflow. |
