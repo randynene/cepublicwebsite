@@ -1,0 +1,25 @@
+SUMMARY — glassdoor mentions per page
+hits | url
+---
+183  | https://cloudemployee.io/for-developers
+183  | https://cloudemployee.io/reviews
+ 16  | https://cloudemployee.io/compare/toptal-vs-cloud-employee-freelance-marketplace-vs-dedicated-staff-augmentation
+ 12  | https://cloudemployee.io/staff-augmentation/cloud-employee-vs-in-house-total-cost-ownership
+ 12  | https://cloudemployee.io/staff-augmentation/what-is-staff-augmentation
+ 10  | https://cloudemployee.io/scaling-teams/cloud-employee-pricing-team-size-scenarios
+  8  | https://cloudemployee.io/compare/dedicated-teams-vs-toptal
+  8  | https://cloudemployee.io/scaling-teams/scaling-latam-developers-1-to-10-strategy
+  8  | https://cloudemployee.io/staff-augmentation/best-staff-augmentation-companies-in-latin-america-2026-a-ranked-comparison
+  4  | https://cloudemployee.io/compare/toptal-vs-upwork
+  4  | https://cloudemployee.io/hiring-tips/developer-vetting-in-latam-live-pair-programming-coding-tests-and-quality-signals-that-matter
+  4  | https://cloudemployee.io/
+  4  | https://cloudemployee.io/staff-augmentation/best-staff-augmentation-companies-2026
+  4  | https://cloudemployee.io/staff-augmentation/cloud-employee-pricing-checklist-before-hire
+  4  | https://cloudemployee.io/staff-augmentation/using-latam-staff-augmentation-to-scale-early-stage-saas
+  4  | https://cloudemployee.io/work-with-shawnee
+  2  | https://cloudemployee.io/compare/switching-from-arc-dev-to-a-dedicated-development-team
+---
+TOTAL pages: 17
+TOTAL hits: 470
+Pages where every mention is a glassdoor.com URL: 2
+Pages with prose mentions (not just links): 15

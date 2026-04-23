@@ -1,0 +1,230 @@
+[
+  {
+    "slug": "sqr",
+    "name": "SQR",
+    "videoTestimonial": {
+      "url": "https://player.vimeo.com/video/1110779695?h=031795f3d1&amp;title=0&amp;byline=0&amp;portrait=0&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479",
+      "metadata": {
+        "html": "<iframe class=\"embedly-embed\" src=\"//cdn.embedly.com/widgets/media.html?src=https%3A%2F%2Fplayer.vimeo.com%2Fvideo%2F1110779695%3Fh%3D031795f3d1%26app_id%3D122963&dntp=1&display_name=Vimeo&url=https%3A%2F%2Fplayer.vimeo.com%2Fvideo%2F1110779695%3Fh%3D031795f3d1&image=https%3A%2F%2Fi.vimeocdn.com%2Fvideo%2F2048623774-e1ff1cdfab7f34d2fd43a875a2231c5d2ae4ce6779e83afed894c80f6c0929ea-d_1280%3Fregion%3Dus&type=text%2Fhtml&schema=vimeo\" width=\"1920\" height=\"1080\" scrolling=\"no\" title=\"Vimeo embed\" frameborder=\"0\" allow=\"autoplay; fullscreen; encrypted-media; picture-in-picture;\" allowfullscreen=\"true\"></iframe>",
+        "type": "video",
+        "title": "How SQR Scaled Their Development Team and Boosted Retention",
+        "width": 1920,
+        "height": 1080,
+        "aspectRatio": 0,
+        "author_name": "Cloud Employee",
+        "description": "Rebecca from SQR shares her experience working with Cloud Employee - from scaling their development team to the communication, culture, and collaboration that make the partnership thrive.",
+        "provider_name": "Vimeo",
+        "thumbnail_url": "https://i.vimeocdn.com/video/2048623774-e1ff1cdfab7f34d2fd43a875a2231c5d2ae4ce6779e83afed894c80f6c0929ea-d_1280?region=us"
+      }
+    },
+    "videoUrl2": null,
+    "isArchived": false,
+    "isDraft": false
+  },
+  {
+    "slug": "event-connections",
+    "name": "Event Connections",
+    "videoTestimonial": null,
+    "videoUrl2": null,
+    "isArchived": false,
+    "isDraft": false
+  },
+  {
+    "slug": "travel-tech-client",
+    "name": "Travel Tech Client",
+    "videoTestimonial": {
+      "url": "https://player.vimeo.com/video/1094749643?autoplay=1&muted=1&loop=1",
+      "metadata": {
+        "html": "<iframe class=\"embedly-embed\" src=\"//cdn.embedly.com/widgets/media.html?src=https%3A%2F%2Fplayer.vimeo.com%2Fvideo%2F1094749643%3Fapp_id%3D122963&dntp=1&display_name=Vimeo&url=https%3A%2F%2Fplayer.vimeo.com%2Fvideo%2F1094749643%3Fautoplay%3D1%26muted%3D1%26loop%3D1&image=https%3A%2F%2Fi.vimeocdn.com%2Fvideo%2F2062924360-65e473f9db6c0b5c9c692a4c985fbc7ca922503b55f69afcadbb1891c2079c9a-d_1280%3Fregion%3Dus&autoplay=1&type=text%2Fhtml&schema=vimeo\" width=\"1920\" height=\"1080\" scrolling=\"no\" title=\"Vimeo embed\" frameborder=\"0\" allow=\"autoplay; fullscreen; encrypted-media; picture-in-picture;\" allowfullscreen=\"true\"></iframe>",
+        "type": "video",
+        "title": "How we scaled a tech team of 35 developers for a travel tech company - Heather, Client Services Manager",
+        "width": 1920,
+        "height": 1080,
+        "aspectRatio": 0,
+        "author_name": "Cloud Employee",
+        "description": "This client success story shows how Cloud Employee scaled quickly with zero trade-offs on quality.",
+        "provider_name": "Vimeo",
+        "thumbnail_url": "https://i.vimeocdn.com/video/2062924360-65e473f9db6c0b5c9c692a4c985fbc7ca922503b55f69afcadbb1891c2079c9a-d_1280?region=us"
+      }
+    },
+    "videoUrl2": null,
+    "isArchived": false,
+    "isDraft": false
+  },
+  {
+    "slug": "mercato",
+    "name": "Mercato",
+    "videoTestimonial": {
+      "url": "https://player.vimeo.com/video/1092738250?autoplay=1&muted=1&loop=1",
+      "metadata": {
+        "html": "<iframe class=\"embedly-embed\" src=\"//cdn.embedly.com/widgets/media.html?src=https%3A%2F%2Fplayer.vimeo.com%2Fvideo%2F1092738250%3Fapp_id%3D122963&dntp=1&display_name=Vimeo&url=https%3A%2F%2Fplayer.vimeo.com%2Fvideo%2F1092738250%3Fautoplay%3D1%26muted%3D1%26loop%3D1&image=https%3A%2F%2Fi.vimeocdn.com%2Fvideo%2F2041838693-43a360e9d18c193732960740c4f0d91c987b8d083c8448e6487b93cd040b3030-d_960%3Fregion%3Dus&autoplay=1&type=text%2Fhtml&schema=vimeo\" width=\"1080\" height=\"1080\" scrolling=\"no\" title=\"Vimeo embed\" frameborder=\"0\" allow=\"autoplay; fullscreen; encrypted-media; picture-in-picture;\" allowfullscreen=\"true\"></iframe>",
+        "type": "video",
+        "title": "How Mercato extended their talent options by hiring globally",
+        "width": 1080,
+        "height": 1080,
+        "aspectRatio": 0,
+        "author_name": "Cloud Employee",
+        "description": "UK-based company Mercato shares why they chose Cloud Employee to build their offshore development team and scale their product with confidence.",
+        "provider_name": "Vimeo",
+        "thumbnail_url": "https://i.vimeocdn.com/video/2041838693-43a360e9d18c193732960740c4f0d91c987b8d083c8448e6487b93cd040b3030-d_960?region=us"
+      }
+    },
+    "videoUrl2": null,
+    "isArchived": false,
+    "isDraft": false
+  },
+  {
+    "slug": "cleanlink",
+    "name": "CleanLink",
+    "videoTestimonial": {
+      "url": "https://player.vimeo.com/video/1092736875?autoplay=1&muted=1&loop=1",
+      "metadata": {
+        "html": "<iframe class=\"embedly-embed\" src=\"//cdn.embedly.com/widgets/media.html?src=https%3A%2F%2Fplayer.vimeo.com%2Fvideo%2F1092736875%3Fautoplay%3D1%26app_id%3D122963&dntp=1&display_name=Vimeo&url=https%3A%2F%2Fplayer.vimeo.com%2Fvideo%2F1092736875%3Fautoplay%3D1%26muted%3D1%26loop%3D1&image=https%3A%2F%2Fi.vimeocdn.com%2Fvideo%2F2041838296-81f76cf3153b7642f5ea8b07caa4eb315fb9cab2f34f06b7cd3ac890e515630f-d_1280%3Fregion%3Dus&autoplay=1&type=text%2Fhtml&schema=vimeo\" width=\"1920\" height=\"1080\" scrolling=\"no\" title=\"Vimeo embed\" frameborder=\"0\" allow=\"autoplay; fullscreen; encrypted-media; picture-in-picture;\" allowfullscreen=\"true\"></iframe>",
+        "type": "video",
+        "title": "Building a Remote Dev Team with Confidence: Cleanlink's Cloud Employee Experience",
+        "width": 1920,
+        "height": 1080,
+        "aspectRatio": 0,
+        "author_name": "Cloud Employee",
+        "description": "James Stringer, MD of Cleanlink, shares how Cloud Employee has helped him confidently expand his engineering team offshore for over 5 years.",
+        "provider_name": "Vimeo",
+        "thumbnail_url": "https://i.vimeocdn.com/video/2041838296-81f76cf3153b7642f5ea8b07caa4eb315fb9cab2f34f06b7cd3ac890e515630f-d_1280?region=us"
+      }
+    },
+    "videoUrl2": null,
+    "isArchived": false,
+    "isDraft": false
+  },
+  {
+    "slug": "salmon-software",
+    "name": "Salmon Software",
+    "videoTestimonial": {
+      "url": "https://player.vimeo.com/video/1145433775?autoplay=1&muted=1&loop=1",
+      "metadata": {
+        "html": "<iframe class=\"embedly-embed\" src=\"//cdn.embedly.com/widgets/media.html?src=https%3A%2F%2Fplayer.vimeo.com%2Fvideo%2F1145433775%3Fapp_id%3D122963&dntp=1&display_name=Vimeo&url=https%3A%2F%2Fplayer.vimeo.com%2Fvideo%2F1145433775%3Fautoplay%3D1%26muted%3D1%26loop%3D1&image=https%3A%2F%2Fi.vimeocdn.com%2Fvideo%2F2094402241-4a0e2a3ff719db196f080ccd086babe0e80da7371ebb41c5c8062b7d8975599e-d_1280%3Fregion%3Dus&autoplay=1&type=text%2Fhtml&schema=vimeo\" width=\"1920\" height=\"1080\" scrolling=\"no\" title=\"Vimeo embed\" frameborder=\"0\" allow=\"autoplay; fullscreen; encrypted-media; picture-in-picture;\" allowfullscreen=\"true\"></iframe>",
+        "type": "video",
+        "title": "Why This UK Fintech Prefers Global Developers to Local",
+        "width": 1920,
+        "height": 1080,
+        "aspectRatio": 0,
+        "author_name": "Cloud Employee",
+        "description": "Salmon Software BA, Glenn explains why working with Cloud Employee helped them scale faster, align time zones effortlessly, and build a fully integrated remote team that feels just as connected as his local employees. If you're exploring global hiring, offshore development, or building a remote tech team, this story highlights how remote talent can outperform local hiring in speed, quality, and flexibility.",
+        "provider_name": "Vimeo",
+        "thumbnail_url": "https://i.vimeocdn.com/video/2094402241-4a0e2a3ff719db196f080ccd086babe0e80da7371ebb41c5c8062b7d8975599e-d_1280?region=us"
+      }
+    },
+    "videoUrl2": "https://www.youtube.com/embed/?v=VcTsMI6M-sA",
+    "isArchived": false,
+    "isDraft": false
+  },
+  {
+    "slug": "waya",
+    "name": "Waya",
+    "videoTestimonial": null,
+    "videoUrl2": null,
+    "isArchived": false,
+    "isDraft": false
+  },
+  {
+    "slug": "virgin",
+    "name": "Virgin Experience Days",
+    "videoTestimonial": null,
+    "videoUrl2": null,
+    "isArchived": false,
+    "isDraft": false
+  },
+  {
+    "slug": "travelx",
+    "name": "Travelx",
+    "videoTestimonial": null,
+    "videoUrl2": null,
+    "isArchived": false,
+    "isDraft": false
+  },
+  {
+    "slug": "fulfillment",
+    "name": "Fulfillment ",
+    "videoTestimonial": null,
+    "videoUrl2": null,
+    "isArchived": false,
+    "isDraft": false
+  },
+  {
+    "slug": "builder",
+    "name": "builder",
+    "videoTestimonial": null,
+    "videoUrl2": null,
+    "isArchived": true,
+    "isDraft": true
+  },
+  {
+    "slug": "hotelplan",
+    "name": "Hotelplan",
+    "videoTestimonial": null,
+    "videoUrl2": null,
+    "isArchived": false,
+    "isDraft": false
+  },
+  {
+    "slug": "jetaboard",
+    "name": "Jetaboard",
+    "videoTestimonial": null,
+    "videoUrl2": null,
+    "isArchived": false,
+    "isDraft": false
+  },
+  {
+    "slug": "tidal",
+    "name": "Tidal",
+    "videoTestimonial": null,
+    "videoUrl2": null,
+    "isArchived": false,
+    "isDraft": false
+  },
+  {
+    "slug": "scorpion",
+    "name": "Scorpion",
+    "videoTestimonial": null,
+    "videoUrl2": null,
+    "isArchived": false,
+    "isDraft": false
+  },
+  {
+    "slug": "g",
+    "name": "G",
+    "videoTestimonial": null,
+    "videoUrl2": null,
+    "isArchived": false,
+    "isDraft": false
+  },
+  {
+    "slug": "willo",
+    "name": "Willo®",
+    "videoTestimonial": {
+      "url": "https://player.vimeo.com/video/1092726413?autoplay=1&muted=1&loop=1",
+      "metadata": {
+        "html": "<iframe class=\"embedly-embed\" src=\"//cdn.embedly.com/widgets/media.html?src=https%3A%2F%2Fplayer.vimeo.com%2Fvideo%2F1092726413%3Fapp_id%3D122963&dntp=1&display_name=Vimeo&url=https%3A%2F%2Fplayer.vimeo.com%2Fvideo%2F1092726413%3Fautoplay%3D1%26muted%3D1%26loop%3D1&image=https%3A%2F%2Fi.vimeocdn.com%2Fvideo%2F2041838139-b777f62120385c3eae07f102add8a72b93c626f16033525e45455e47c5af068a-d_1280%3Fregion%3Dus&autoplay=1&type=text%2Fhtml&schema=vimeo\" width=\"1920\" height=\"1080\" scrolling=\"no\" title=\"Vimeo embed\" frameborder=\"0\" allow=\"autoplay; fullscreen; encrypted-media; picture-in-picture;\" allowfullscreen=\"true\"></iframe>",
+        "type": "video",
+        "title": "How Willo Scaled Their Dev Team Globally - Without Ever Flying Overseas",
+        "width": 1920,
+        "height": 1080,
+        "aspectRatio": 0,
+        "author_name": "Cloud Employee",
+        "description": "Cloud Employee has been working with Willo for just over 3 years now. Hamish & Euan share their experience of working with us and their teams, as well as our recruitment process. It's a joy to work with Willo.",
+        "provider_name": "Vimeo",
+        "thumbnail_url": "https://i.vimeocdn.com/video/2041838139-b777f62120385c3eae07f102add8a72b93c626f16033525e45455e47c5af068a-d_1280?region=us"
+      }
+    },
+    "videoUrl2": "https://www.youtube.com/embed/?v=bqZ90UopRjg",
+    "isArchived": false,
+    "isDraft": false
+  },
+  {
+    "slug": "engage",
+    "name": "EngageRM",
+    "videoTestimonial": null,
+    "videoUrl2": null,
+    "isArchived": false,
+    "isDraft": false
+  }
+]

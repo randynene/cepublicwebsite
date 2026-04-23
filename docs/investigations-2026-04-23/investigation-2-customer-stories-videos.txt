@@ -1,0 +1,23 @@
+◇ injected env (15) from .env // tip: ⌘ suppress logs { quiet: true }
+TOTAL items: 18
+Items with video-testimonial-if-available: 6
+Items with video-url-2: 2
+---
+sqr | video-testimonial: [object Object] | video-url-2: —
+event-connections | video-testimonial: — | video-url-2: —
+travel-tech-client | video-testimonial: [object Object] | video-url-2: —
+mercato | video-testimonial: [object Object] | video-url-2: —
+cleanlink | video-testimonial: [object Object] | video-url-2: —
+salmon-software | video-testimonial: [object Object] | video-url-2: https://www.youtube.com/embed/?v=VcTsMI6M-sA
+waya | video-testimonial: — | video-url-2: —
+virgin | video-testimonial: — | video-url-2: —
+travelx | video-testimonial: — | video-url-2: —
+fulfillment | video-testimonial: — | video-url-2: —
+builder | video-testimonial: — | video-url-2: —
+hotelplan | video-testimonial: — | video-url-2: —
+jetaboard | video-testimonial: — | video-url-2: —
+tidal | video-testimonial: — | video-url-2: —
+scorpion | video-testimonial: — | video-url-2: —
+g | video-testimonial: — | video-url-2: —
+willo | video-testimonial: [object Object] | video-url-2: https://www.youtube.com/embed/?v=bqZ90UopRjg
+engage | video-testimonial: — | video-url-2: —

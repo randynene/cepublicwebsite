@@ -1,0 +1,17 @@
+audit-output/pages/compare__toptal-vs-cloud-employee-freelance-marketplace-vs-dedicated-staff-augme/content.json
+audit-output/pages/compare__dedicated-teams-vs-toptal/content.json
+audit-output/pages/compare__switching-from-arc-dev-to-a-dedicated-development-team/content.json
+audit-output/pages/compare__toptal-vs-upwork/content.json
+audit-output/pages/for-developers/content.json
+audit-output/pages/hiring-tips__developer-vetting-in-latam-live-pair-programming-coding-tests-and-q/content.json
+audit-output/pages/reviews/content.json
+audit-output/pages/scaling-teams__scaling-latam-developers-1-to-10-strategy/content.json
+audit-output/pages/home/content.json
+audit-output/pages/scaling-teams__cloud-employee-pricing-team-size-scenarios/content.json
+audit-output/pages/staff-augmentation__cloud-employee-vs-in-house-total-cost-ownership/content.json
+audit-output/pages/staff-augmentation__best-staff-augmentation-companies-2026/content.json
+audit-output/pages/staff-augmentation__best-staff-augmentation-companies-in-latin-america-2026-a-ra/content.json
+audit-output/pages/staff-augmentation__what-is-staff-augmentation/content.json
+audit-output/pages/staff-augmentation__cloud-employee-pricing-checklist-before-hire/content.json
+audit-output/pages/staff-augmentation__using-latam-staff-augmentation-to-scale-early-stage-saas/content.json
+audit-output/pages/work-with-shawnee/content.json

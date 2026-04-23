@@ -1,0 +1,20 @@
+slug | video-testimonial-if-available (url) | video-url-2
+---
+sqr | https://player.vimeo.com/video/1110779695?h=031795f3d1&amp;title=0&amp;byline=0&amp;portrait=0&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479 | —
+event-connections | — | —
+travel-tech-client | https://player.vimeo.com/video/1094749643?autoplay=1&muted=1&loop=1 | —
+mercato | https://player.vimeo.com/video/1092738250?autoplay=1&muted=1&loop=1 | —
+cleanlink | https://player.vimeo.com/video/1092736875?autoplay=1&muted=1&loop=1 | —
+salmon-software | https://player.vimeo.com/video/1145433775?autoplay=1&muted=1&loop=1 | https://www.youtube.com/embed/?v=VcTsMI6M-sA
+waya | — | —
+virgin | — | —
+travelx | — | —
+fulfillment | — | —
+builder | — | —
+hotelplan | — | —
+jetaboard | — | —
+tidal | — | —
+scorpion | — | —
+g | — | —
+willo | https://player.vimeo.com/video/1092726413?autoplay=1&muted=1&loop=1 | https://www.youtube.com/embed/?v=bqZ90UopRjg
+engage | — | —
