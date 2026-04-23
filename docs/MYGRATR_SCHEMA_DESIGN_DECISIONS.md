@@ -3,10 +3,11 @@
 Lock document for all Sanity schema design decisions for the Cloud Employee migration. Every decision here is grounded in `docs/CE_SITE_TRUTH.md` and the investigation outputs in `docs/investigations-2026-04-23/`. This document is the authoritative input to the MYGRATR-SCHEMA-1 session brief.
 
 **Status:** LOCKED (2026-04-23). Changes require explicit revision and version bump.
-**Version:** v1.1
+**Version:** v1.2
 **Revision history:**
 - v1.0 (2026-04-23): Initial lock.
 - v1.1 (2026-04-23): Surgical corrections from `docs/SCHEMA_DECISIONS_AUDIT_REPORT.md`. Fixes: B1 (doc type count), B2 (taxonomy count), B3 (fold field count), B4 (video URL field types), B5 (soft-404 handling), D1 (Legal pages mapping — new §7.14), D2 (Webflow name rule — new §7.13), D3 (hiddenCode field added to tool schema), D4 (653 Webflow redirects — §8 expanded with verification strategy). No structural changes.
+- v1.2 (2026-04-23): Surgical corrections from `docs/SCHEMA_DECISIONS_AUDIT_REPORT_V2.md`. Fixes: NEW-1 (residual "40 flat fields" at §3.4 line 148 corrected to "34 flat fold-related fields"), D4 caveat (§8 updated to reference completed `redirects-verification.md` with locked 318-rule preservation strategy instead of deferring verification to CONTENT-1). No structural changes.
 **Next phase:** MYGRATR-SCHEMA-1 (write Sanity schemas per the specifications below)
 
 ---
@@ -145,7 +146,7 @@ techLogo: image (optional)
 listItemOnly: boolean (default false)
 thumbnail: image (optional)
 
-# FOLDS as typed array (replaces 40 flat fields)
+# FOLDS as typed array (replaces 34 flat fold-related fields)
 folds: array[fold] (required)
 
 # SEO — NEW FIELDS (fix for CMS gap)
@@ -1000,13 +1001,16 @@ If CE adds more legal pages post-launch (terms of service, cookie policy), they 
 
 **653 Webflow redirects — preservation strategy:**
 
-Jake confirmed `/live-job-role/*` URLs are no longer receiving traffic and PH routing is handled by Geotargetly at the browser level. However, before collapsing or removing these redirects, a verification pass MUST run in CONTENT-1:
+Verification completed in `docs/investigations-2026-04-23/redirects-verification.md`. Findings:
+- 336 rows target `/live-job-role/*` URLs (PH careers, no longer trafficked per Jake)
+- 317 rows are heterogeneous non-job-role redirects (must preserve individually)
 
-- If ALL 653 rows target `talent.cloudemployee.io/live-job-role/*`: replace with a single catch-all regex `/live-job-role/(.*)` → `https://talent.cloudemployee.io/live-job-role/$1` (301).
-- If some rows target other destinations (non-PH content redirects): preserve those individually, catch-all the PH ones.
-- If verification is skipped: preserve all 653 as-is in next.config.js (safe default).
+**Locked preservation approach:**
+- The 336 `/live-job-role/*` redirects collapse to a single catch-all regex in `next.config.js`: `/live-job-role/(.*)` → `https://talent.cloudemployee.io/live-job-role/$1` (301).
+- The 317 heterogeneous redirects are preserved individually in `next.config.js`.
+- Result: 318 explicit rules in next.config.js (1 catch-all + 317 individual), down from 653.
 
-CONTENT-1 brief must include the verification script and produce a `webflow-redirects-verification.md` report. No redirect is removed without evidence.
+CONTENT-1 brief consumes the existing `redirects-verification.md` directly — no re-verification required.
 
 **Additional cleanup rules (all locales):**
 - `/download-thank-you/*` pages → robots noindex (gated lead-gen pages)
@@ -1187,4 +1191,4 @@ No architecture decisions are made in SCHEMA-1. Every decision is already in thi
 
 ---
 
-*End of MYGRATR_SCHEMA_DESIGN_DECISIONS.md v1.1*
+*End of MYGRATR_SCHEMA_DESIGN_DECISIONS.md v1.2*
