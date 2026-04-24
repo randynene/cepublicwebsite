@@ -13,6 +13,8 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 
 import { env } from '@/lib/env'
+import Footer from '@/components/layout/footer'
+import Nav from '@/components/layout/nav'
 import {
   GeoTargetlyScript,
   GlobalScripts,
@@ -56,7 +58,9 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col">
         <GtmNoScript />
+        <Nav />
         {children}
+        <Footer />
         <GlobalScripts />
       </body>
     </html>
