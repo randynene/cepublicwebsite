@@ -14,8 +14,7 @@ Parent brand: Saxon.io. Owner: Jake Hall (non-developer, directs Claude Code).
 
 ## Current Phase
 
-**MYGRATR-SCHEMA-1 — Sanity Schema Design** — COMPLETE
-**Next: MYGRATR-SCAFFOLD-1** — Next.js Scaffold
+**MYGRATR-SCAFFOLD-1 — Next.js Scaffold** — IN PROGRESS
 
 | Phase | Name | Status |
 |---|---|---|
@@ -23,7 +22,7 @@ Parent brand: Saxon.io. Owner: Jake Hall (non-developer, directs Claude Code).
 | MYGRATR-AUDIT-1 | Site Audit Agent | ✅ Complete |
 | MYGRATR-SCHEMA-0 | Schema Design Lock | ✅ Complete |
 | MYGRATR-SCHEMA-1 | Sanity Schema Design | ✅ Complete |
-| **MYGRATR-SCAFFOLD-1** | **Next.js Scaffold** | 🔜 **Next** |
+| **MYGRATR-SCAFFOLD-1** | **Next.js Scaffold** | 🔄 **In Progress** |
 | MYGRATR-CONTENT-1 | Content Migration | Planned |
 | MYGRATR-TEMPLATE-* | Template Build | Planned |
 | MYGRATR-QA-1 | Visual + Structural QA | Planned |
@@ -246,7 +245,7 @@ Only after ALL of the above are complete do you start planning the next phase.
 | 7 | AUDIT-1 | Step 3e `semi_global` count (745+) is inflated because the global-script 80%-of-pages threshold misses scripts that appear on most but not all templates. Consider lowering to 60% or moving more patterns into the explicit `SCRIPT_PATTERNS` list. | MYGRATR-CONTENT-1 |
 | 8 | AUDIT-1 | HubSpot access token lacks `automation` scope — workflow cross-reference returned nothing. Verify scope before CONTENT-1 if per-form workflow routing matters. | MYGRATR-CONTENT-1 |
 | 9 | AUDIT-1 | 4 canonical URLs remain `UNKNOWN` (Cloudflare challenge script, sitemap.xml, hash URL, `/uk/embedding`). Step 1 content-type filter should drop the first three. | MYGRATR-CONTENT-1 |
-| 10 | SCHEMA-1 | `src/lib/types.ts` `MigrationStatus` enum is out of sync with `src/lib/pipeline/state-machine.ts` (shortform `'audit'` vs full `'audit_complete'`). Dead code today (zero imports) but a trap for future contributors. Delete the enum or align its values to the state-machine type. | MYGRATR-SCAFFOLD-1 |
-| 11 | SCHEMA-1 | `src/types.ts` and `src/lib/audit-types.ts` both define `TemplateType`, with conflicting values (lowercase strings vs UPPERCASE enum). Standardise on one before SCAFFOLD-1 builds templates. | MYGRATR-SCAFFOLD-1 |
+| 10 | SCHEMA-1 | Legacy `MigrationStatus` enum in `src/lib/types.ts` uses shortform values — conflicts with canonical string-literal union in `src/lib/pipeline/state-machine.ts`. Needs consolidation. | MYGRATR-CONTENT-1 |
+| 11 | SCHEMA-1 | `TemplateType` conflict between string-literal and enum representations across `src/lib/types.ts` and `src/lib/audit-types.ts`. | MYGRATR-CONTENT-1 |
 
-*Last updated: April 2026 — MYGRATR-SCHEMA-1 complete. MYGRATR-SCAFFOLD-1 next.*
+*Last updated: April 2026 — MYGRATR-SCAFFOLD-1 in progress.*
