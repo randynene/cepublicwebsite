@@ -1,2 +1,3 @@
-// Global Zod types — populated in SCHEMA-1 Step 7.
-export {}
+export * from './site-settings'
+export * from './navigation'
+export * from './footer'
