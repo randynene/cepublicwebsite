@@ -8,6 +8,11 @@ import teamMember from './team-member'
 import review from './review'
 import video from './video'
 import download from './download'
+import bookACall from './book-a-call'
+import event from './event'
+import tool from './tool'
+import compareBlog from './compare-blog'
+import blogPost from './blog-post'
 
 export const documentTypes = [
   tag,
@@ -20,4 +25,9 @@ export const documentTypes = [
   review,
   video,
   download,
+  bookACall,
+  event,
+  tool,
+  compareBlog,
+  blogPost,
 ]
