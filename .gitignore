@@ -4,3 +4,6 @@ docs/credentials
 dist/
 audit-output/
 .audit/
+CREDENTIALS.md
+site/.next/
+site/node_modules/
