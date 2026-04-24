@@ -9,7 +9,11 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "audit:run": "tsx scripts/audit/run-audit.ts",
     "audit:chunk2": "tsx scripts/audit/run-audit-chunk2.ts",
-    "audit:chunk3": "tsx scripts/audit/run-audit-chunk3.ts"
+    "audit:chunk3": "tsx scripts/audit/run-audit-chunk3.ts",
+    "schema:start": "tsx scripts/schema/start-schema-phase.ts",
+    "schema:seed-singletons": "tsx scripts/schema/seed-singletons.ts",
+    "schema:smoke-test": "tsx scripts/schema/smoke-test-seed.ts",
+    "schema:record": "tsx scripts/schema/record-schema-designs.ts"
   },
   "keywords": [],
   "author": "",
