@@ -1,0 +1,24 @@
+{
+  "name": "mygratr-studio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sanity Studio for Mygratr (Cloud Employee migration)",
+  "scripts": {
+    "dev": "sanity dev",
+    "start": "sanity start",
+    "build": "sanity build",
+    "deploy": "sanity deploy",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@sanity/vision": "^5.22.0",
+    "react": "^19.2.2",
+    "react-dom": "^19.2.2",
+    "sanity": "^5.22.0",
+    "styled-components": "^6.1.15"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "typescript": "^6.0.3"
+  }
+}
