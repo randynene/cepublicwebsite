@@ -14,16 +14,16 @@ Parent brand: Saxon.io. Owner: Jake Hall (non-developer, directs Claude Code).
 
 ## Current Phase
 
-**MYGRATR-SCHEMA-0 — Schema Design Lock** — COMPLETE
-**Next: MYGRATR-SCHEMA-1** — Sanity Schema Design
+**MYGRATR-SCHEMA-1 — Sanity Schema Design** — COMPLETE
+**Next: MYGRATR-SCAFFOLD-1** — Next.js Scaffold
 
 | Phase | Name | Status |
 |---|---|---|
 | MYGRATR-0 | Foundation | ✅ Complete |
 | MYGRATR-AUDIT-1 | Site Audit Agent | ✅ Complete |
 | MYGRATR-SCHEMA-0 | Schema Design Lock | ✅ Complete |
-| **MYGRATR-SCHEMA-1** | **Sanity Schema Design** | 🔜 **Next** |
-| MYGRATR-SCAFFOLD-1 | Next.js Scaffold | Planned |
+| MYGRATR-SCHEMA-1 | Sanity Schema Design | ✅ Complete |
+| **MYGRATR-SCAFFOLD-1** | **Next.js Scaffold** | 🔜 **Next** |
 | MYGRATR-CONTENT-1 | Content Migration | Planned |
 | MYGRATR-TEMPLATE-* | Template Build | Planned |
 | MYGRATR-QA-1 | Visual + Structural QA | Planned |
@@ -65,6 +65,29 @@ Parent brand: Saxon.io. Owner: Jake Hall (non-developer, directs Claude Code).
 - Redirects verification closed: 336 of 653 Webflow redirects collapse
   to one regex; 317 preserved individually. See
   `docs/investigations-2026-04-23/redirects-verification.md`.
+
+**Schema build state (as of SCHEMA-1 complete):**
+- Sanity Studio v5 scaffolded at `studio/` (project `lzbhll1u`, dataset
+  `production`). 71 schema types registered and Studio build passes.
+- 21 CMS document types under `studio/schemas/documents/`, 31 singletons
+  under `studio/schemas/singletons/`, 3 globals under
+  `studio/schemas/globals/`, 16 shared/polymorphic objects under
+  `studio/schemas/objects/` (incl. 12 section variants).
+- Matching Zod types under `src/types/sanity/` — 55 files.
+- `docs/WEBFLOW_TO_SANITY_FIELD_MAP.md` — field-level mapping for every
+  Webflow collection; consumed by CONTENT-1.
+- Supabase `schema_designs`: 21 rows, all `version=1` / `status='approved'`
+  (slugs: blogs-consolidated, compare-blogs, technology-pages, services,
+  customer-stories, team-members, reviews, videos, downloads,
+  downloads-access-pages, tools-quizzes, book-a-call-pages,
+  events-webinars, glassdoor-reviews, client-benefits-company-values,
+  staff-benefits, tags-consolidated, hubs, industry-placeholder,
+  persona-placeholder, location-placeholder).
+- `migrations.status = schema_complete` / `current_phase = schema_complete`
+  for CE migration. `metadata.schema_phase` records the counts.
+- Sanity production dataset: 34 stub singleton/global docs seeded
+  (createIfNotExists, idempotent) + 5 `smoke-test-*` integration-test
+  docs created.
 
 ## Tech Stack
 
@@ -222,6 +245,8 @@ Only after ALL of the above are complete do you start planning the next phase.
 | 6 | AUDIT-1 | Playwright `networkidle` times out on Vimeo-embedded video pages (2 captures failed across runs). Switch to `domcontentloaded` for VIDEO template. | MYGRATR-QA-1 |
 | 7 | AUDIT-1 | Step 3e `semi_global` count (745+) is inflated because the global-script 80%-of-pages threshold misses scripts that appear on most but not all templates. Consider lowering to 60% or moving more patterns into the explicit `SCRIPT_PATTERNS` list. | MYGRATR-CONTENT-1 |
 | 8 | AUDIT-1 | HubSpot access token lacks `automation` scope — workflow cross-reference returned nothing. Verify scope before CONTENT-1 if per-form workflow routing matters. | MYGRATR-CONTENT-1 |
-| 9 | AUDIT-1 | 4 canonical URLs remain `UNKNOWN` (Cloudflare challenge script, sitemap.xml, hash URL, `/uk/embedding`). Step 1 content-type filter should drop the first three. | MYGRATR-SCHEMA-1 |
+| 9 | AUDIT-1 | 4 canonical URLs remain `UNKNOWN` (Cloudflare challenge script, sitemap.xml, hash URL, `/uk/embedding`). Step 1 content-type filter should drop the first three. | MYGRATR-CONTENT-1 |
+| 10 | SCHEMA-1 | `src/lib/types.ts` `MigrationStatus` enum is out of sync with `src/lib/pipeline/state-machine.ts` (shortform `'audit'` vs full `'audit_complete'`). Dead code today (zero imports) but a trap for future contributors. Delete the enum or align its values to the state-machine type. | MYGRATR-SCAFFOLD-1 |
+| 11 | SCHEMA-1 | `src/types.ts` and `src/lib/audit-types.ts` both define `TemplateType`, with conflicting values (lowercase strings vs UPPERCASE enum). Standardise on one before SCAFFOLD-1 builds templates. | MYGRATR-SCAFFOLD-1 |
 
-*Last updated: April 2026 — MYGRATR-SCHEMA-0 complete. MYGRATR-SCHEMA-1 next.*
+*Last updated: April 2026 — MYGRATR-SCHEMA-1 complete. MYGRATR-SCAFFOLD-1 next.*

@@ -4,7 +4,7 @@
 > Updated after each phase to prevent architectural drift.
 > Patterns documented here reflect reality — never speculative.
 
-**Status:** MYGRATR-SCHEMA-0 Complete
+**Status:** MYGRATR-SCHEMA-1 Complete
 
 ---
 
@@ -933,6 +933,173 @@ full page HTML. It must never be committed.
 
 ---
 
+## Sanity Schema Conventions (MYGRATR-SCHEMA-1)
+
+Sanity v3 API (still current on the `sanity@^5` package). Every schema
+file default-exports a `defineType({...})` result; aggregators collect
+those default exports into typed arrays.
+
+```typescript
+// studio/schemas/documents/tag.ts
+import { defineField, defineType } from 'sanity'
+import { slugField } from '../_shared'
+
+export default defineType({
+  name: 'tag',
+  title: 'Tag',
+  type: 'document',
+  fields: [
+    defineField({ name: 'name', type: 'string', validation: (R) => R.required().max(100) }),
+    slugField('name'),
+    defineField({ name: 'category', type: 'string', options: { list: [...] }, validation: (R) => R.required() }),
+  ],
+  preview: { select: { title: 'name', subtitle: 'category' } },
+})
+```
+
+**Rules:**
+
+- One schema per file; filename is kebab-case of the type name
+  (`blog-post.ts` → `name: 'blogPost'`).
+- Default export only — the registry (`studio/schemas/{kind}/index.ts`)
+  imports defaults and collects them into an exported `typeArray`.
+- Use `defineArrayMember` for polymorphic arrays (sections, folds, tags).
+- Field-level `validation` via `(Rule) => Rule.required().max(n)`. For
+  required `portableText`, use the explicit `defineField` form (the
+  functional shorthand trips TS inference with the nullable return).
+- Enum options use `options.list: [{title, value}, ...]` — `value` is
+  the stored string.
+- Reference fields with a type filter use
+  `options: { filter: 'category == "blogs"' }`. Filters are GROQ strings.
+- Slug sources: `options.source: '<fieldName>'` for simple cases, or a
+  function `(doc) => string` for derived sources (bookACall uses
+  firstName+lastName).
+- Factory functions for repeated schema shapes: `_landing-page-factory.ts`
+  (industry/persona/location share one shape), `singletons/_factories.ts`
+  (blog hub, collection hub, static page, calculator page — 31 files
+  through 4 factories).
+- Shared field builders in `studio/schemas/_shared.ts`:
+  `localeField()`, `sourceTrackingFields()`, `metaFields({og})`,
+  `slugField(source)`, `imageField(name, title, {required})`. Callers
+  spread the return into their field arrays.
+
+---
+
+## Singleton Enforcement — Sanity v5 (MYGRATR-SCHEMA-1)
+
+Singleton document types are plain `document` schemas. Enforcement is in
+`sanity.config.ts`, not the schema files. Do **not** use
+`__experimental_actions` — that was a Sanity v2 pattern.
+
+```typescript
+// studio/sanity.config.ts
+import { SINGLETON_TYPES } from './schemas/structure'
+
+export default defineConfig({
+  // ...
+  schema: {
+    types: schemaTypes,
+    // Hide singletons from the "new document" menu:
+    templates: (templates) =>
+      templates.filter(({ schemaType }) => !SINGLETON_TYPES.includes(schemaType)),
+  },
+  document: {
+    // Disable duplicate + delete for singleton docs:
+    actions: (input, context) =>
+      SINGLETON_TYPES.includes(context.schemaType)
+        ? input.filter(({ action }) => action !== 'duplicate' && action !== 'delete')
+        : input,
+  },
+})
+```
+
+Studio `structure.ts` surfaces each singleton as a direct single-document
+nav item rather than a list view:
+
+```typescript
+const singletonItem = (typeName: string) =>
+  S.listItem()
+    .title(humanise(typeName))
+    .id(typeName)
+    .child(S.document().schemaType(typeName).documentId(typeName))
+```
+
+Group singletons into topical sections (Static Pages, Blog Hubs, etc.)
+so a 34-item nav stays scannable.
+
+---
+
+## Zod Mirror Pattern (MYGRATR-SCHEMA-1)
+
+Every Sanity schema has a matching Zod schema in `src/types/sanity/`.
+Same file layout: `documents/`, `singletons/`, `globals/`. Each file
+exports both a Zod schema and its inferred TypeScript type:
+
+```typescript
+export const TagSchema = SanityBaseDocumentSchema.extend({
+  _type: z.literal('tag'),
+  name: z.string(),
+  slug: SanitySlugSchema,
+  category: z.enum([...]),
+  singularName: z.string().optional(),
+})
+export type Tag = z.infer<typeof TagSchema>
+```
+
+**Primitives** — `src/types/sanity/shared.ts`:
+- `SanityImageSchema` (asset._ref + optional alt/hotspot/crop)
+- `SanitySlugSchema` (current + optional _type)
+- `SanityRefSchema` (_ref + _type literal 'reference')
+- `PortableTextSchema = z.array(z.unknown())` — brief §3.2 rule;
+  tightens in TEMPLATE-* when renderers exist
+- `SanityBaseDocumentSchema` (_id, _type, _createdAt, _updatedAt, _rev)
+
+**Composition** — `.merge()` shared field groups (`MetaFieldsSchema`,
+`SourceTrackingFieldsSchema`) onto the extended base.
+
+**Polymorphic arrays** — `SectionSchema = z.discriminatedUnion('_type',
+[RichTextSectionSchema, ...])` for the 12 section variants.
+
+Fields are required by default in Zod; only use `.optional()` when the
+design doc marks the field optional. Never use `.required()` on
+individual types — that's not the Zod API.
+
+---
+
+## Schema Design Record Pattern (MYGRATR-SCHEMA-1)
+
+`schema_designs` rows store a **curated JSON summary** of each Sanity
+document type, not a full serialisation of `defineType()`. Rationale:
+`fields[].validation` is a callback function that's not JSON-safe, and
+the `sanity` package is installed in `studio/` only, so serialising from
+a root `scripts/` script would require an ESM/CJS bridge.
+
+```typescript
+sanity_schema: {
+  typeName: 'technology',
+  title: 'Technology',
+  schemaFile: 'studio/schemas/documents/technology.ts',
+  sourceCollections: ['technology-pages'],
+  sourceItemCount: 101,
+  fieldCount: 15,
+  requiredFields: ['technologyName', 'slug', 'folds', 'metaTitle', 'metaDescription', ...],
+  referenceFields: [{ field: 'associatedTechnologies[]', to: 'technology' }],
+  notes: ['Typed folds[] replaces 34 flat fields', 'metaTitle/metaDescription backfill required'],
+}
+```
+
+The full schema lives in code under `studio/schemas/`. The Supabase row
+is a provenance record: captures which Webflow collection(s) contributed,
+which fields are required, which refs to which types, and the design
+notes that matter for version-over-version diffing. Version bumps create
+a new row per CONVENTIONS.md "Sanity Schema Versioning" (§2).
+
+Every row is inserted with `.eq('org_id', ORG_ID)` on write and a fixed
+`status='approved'` for the lock. `specialist_reviewed=false` until an
+explicit second-pass review records a new `version`.
+
+---
+
 ## Section 4: Phase History
 
 | Phase | Status | Key Patterns Established |
@@ -940,3 +1107,4 @@ full page HTML. It must never be committed.
 | MYGRATR-0 | Complete | Repo structure, Supabase schema (10 tables, RLS on all), TypeScript strict mode, CE org + migration seeded, context files at root, Webflow inventory + Firecrawl sitemap scripts, audit artefacts in audit-output/ |
 | MYGRATR-AUDIT-1 | Complete | Resumable orchestrator chunks, skip-if-exists for expensive steps, tier-1/tier-2 LLM degradation (rules always run; Claude optional), inline rules classifier for cross-step deps, phase timeout + circuit breaker for API batch steps, PII-safe audit outputs |
 | MYGRATR-SCHEMA-0 | Complete | No new code patterns — doc-only phase. Locked schema design doc (`docs/MYGRATR_SCHEMA_DESIGN_DECISIONS.md`) produced through a CE_RAW_EXTRACT → CE_SITE_TRUTH → DESIGN_DECISIONS → red-team audit → fixes → re-audit → lock workflow. |
+| MYGRATR-SCHEMA-1 | Complete | Sanity v3 schema conventions (`defineType` / factory-function reuse / aggregator indexes), Sanity v5 singleton enforcement via `schema.templates` + `document.actions` filters (no `__experimental_actions`), Zod mirror pattern (every Sanity schema has a Zod twin; PortableText as `z.unknown()` until TEMPLATE-*), curated `schema_designs.sanity_schema` JSONB summaries rather than full defineType serialisation, env.ts / supabase.ts / state-machine.ts concrete implementations against the previously-abstract CONVENTIONS.md patterns. |

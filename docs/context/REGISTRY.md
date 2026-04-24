@@ -15,6 +15,7 @@
 | `docs/investigations-2026-04-23/` | SCHEMA-0 | Static pages, customer-story videos, Glassdoor rendering, redirects verification |
 | `docs/SKILLS/post-phase-update/SKILL.md` | SCHEMA-0 | Reusable skill definition |
 | `docs/SKILLS/red-team-audit/SKILL.md` | SCHEMA-0 | Reusable skill definition |
+| `docs/WEBFLOW_TO_SANITY_FIELD_MAP.md` | SCHEMA-1 | Field-level migration map consumed by CONTENT-1 |
 
 ## Database Tables
 
@@ -86,6 +87,52 @@
 | Legal pages | 1 | LOW | STATIC |
 | Insights | 1 | LOW | STATIC |
 
+## Sanity Document Types (21 — CMS content)
+
+| Type | Webflow source | Route prefix | File |
+|---|---|---|---|
+| blogPost | 7 blog collections (consolidated, D1) | /[category-slug]/[slug] | studio/schemas/documents/blog-post.ts |
+| compareBlog | Compare Blogs | /compare/[slug] | studio/schemas/documents/compare-blog.ts |
+| technology | Technology Pages | /technology/[slug] | studio/schemas/documents/technology.ts |
+| service | Services | /services/[slug] | studio/schemas/documents/service.ts |
+| customerStory | Customers / Customer Stories | /customer-story/[slug] | studio/schemas/documents/customer-story.ts |
+| teamMember | Team Members | /team/[slug] | studio/schemas/documents/team-member.ts |
+| review | Reviews | /reviews/[slug] | studio/schemas/documents/review.ts |
+| video | Videos | /videos/[slug] | studio/schemas/documents/video.ts |
+| download | Downloads | /download/[slug] | studio/schemas/documents/download.ts |
+| downloadAccess | > Downloads Access Pages | /download-thank-you/[slug] (noindex) | studio/schemas/documents/download-access.ts |
+| tool | Tools & Quizzes | /tools/[slug] | studio/schemas/documents/tool.ts |
+| bookACall | Book A Call Pages | /book-a-call/[slug] | studio/schemas/documents/book-a-call.ts |
+| event | Events & Webinars | /events/[slug] | studio/schemas/documents/event.ts |
+| glassdoorReview | -- Glassdoor reviews | (reference-only, consumed by /for-developers + /reviews) | studio/schemas/documents/glassdoor-review.ts |
+| benefitValue | -- Client Benefits & Company Values | (reference-only) | studio/schemas/documents/benefit-value.ts |
+| staffBenefit | -- Staff Benefits | (reference-only, consumed by /for-developers) | studio/schemas/documents/staff-benefit.ts |
+| tag | 6 tag collections (consolidated, D2) | (taxonomy) | studio/schemas/documents/tag.ts |
+| blogCategory | -- Hubs | (taxonomy) | studio/schemas/documents/blog-category.ts |
+| industry | NEW placeholder (AI-search) | /industry/[slug] | studio/schemas/documents/industry.ts |
+| persona | NEW placeholder (AI-search) | /persona/[slug] | studio/schemas/documents/persona.ts |
+| location | NEW placeholder (AI-search) | /location/[slug] | studio/schemas/documents/location.ts |
+
+## Sanity Singletons (31 — Tier 2 + Tier 3)
+
+Grouped in `studio/schemas/structure.ts` into six Studio nav sections.
+
+**Blog hubs (7):** blogHub (/blog), staffAugmentationHub, nearshoringOffshoringHub, scalingTeamsHub, hiringTipsHub, managingEngineersHub, aiInSoftwareDevelopmentHub.
+
+**Resource hubs (4):** videosHub (/videos), toolsHub (/tools), downloadsHub (/downloads), eventsHub (/events).
+
+**Collection indexes (5):** servicesHub (/services), technologyHub (/technology), customerStoriesHub (/customer-stories + /our-work alias), reviewsHub (/reviews), compareHub (/compare + /alternatives alias). `teamHub` dropped — `/team` is a 301 to `/about-us`.
+
+**Static content (13):** homePage (/), aboutUsPage (/about-us), howItWorksPage (/how-it-works), contactPage (/contact), forDevelopersPage (/for-developers), retentionPage (/retention), sourcingPage (/sourcing), embeddingPage (/embedding), scaleThisWeekPage (/scale-this-week), workWithShawneePage (/work-with-shawnee), startHiringPage (/start-hiring/contact-info), notFoundPage (/404), privacyPolicyPage (/legals/privacy-policy — migrated from Webflow Legal pages collection).
+
+**Calculator pages (2):** hiringCostCalculatorPage (/hiring-cost-calculator), priceComparisonCalculatorPage (/price-comparison-calculator). Logic hardcoded in Next.js; singletons hold marketing copy only.
+
+## Sanity Globals (3)
+
+- siteSettings — defaults for meta/OG, Organization JSON-LD, Clara chat, announcement bar, HubSpot portal ID (22809822)
+- navigation — primary links, CTA button, locale dropdown
+- footer — newsletter form ID, columns, legal links
+
 ## API Routes
 
 None yet. Updated as MYGRATR-SCAFFOLD-1 and later sessions build them.
@@ -115,13 +162,20 @@ None yet. Updated as MYGRATR-SCAFFOLD-1 and later sessions build them.
 | scripts/audit/run-audit.ts | Orchestrator for Steps 00–3e | via npm run audit:run | AUDIT-1 |
 | scripts/audit/run-audit-chunk2.ts | Orchestrator for Steps 4–9 | via npm run audit:chunk2 | AUDIT-1 |
 | scripts/audit/run-audit-chunk3.ts | LLM refresh for 4, 7, 3e, 8, 9 | via npm run audit:chunk3 | AUDIT-1 |
+| scripts/schema/start-schema-phase.ts | Transitions CE migration audit_complete → schema_running | `migrations` row update | SCHEMA-1 |
+| scripts/schema/seed-singletons.ts | createIfNotExists for 34 singleton/global stubs | 34 docs in Sanity prod dataset | SCHEMA-1 |
+| scripts/schema/smoke-test-seed.ts | 5-doc integration test (blogCategory, tag, teamMember, technology 3-fold, blogPost) | 5 `smoke-test-*` docs in Sanity | SCHEMA-1 |
+| scripts/schema/record-schema-designs.ts | Inserts 21 schema_designs rows + advances to schema_complete | `schema_designs` rows + `migrations.status` update | SCHEMA-1 |
 
 ## Lib Files
 
 | File | Exports | Purpose | Phase |
 |---|---|---|---|
-| src/lib/types.ts | MigrationStatus, PhaseStatus, CmsAdapter interface, Zod schemas | Shared domain types + validation | MYGRATR-0 |
+| src/lib/types.ts | MigrationStatus (legacy — see Tech Debt #10), PhaseStatus, CmsAdapter interface, Zod schemas | Shared domain types + validation | MYGRATR-0 |
 | src/lib/audit-types.ts | UrlStatus, TemplateType, ClassificationMethod, InteractionType, CanonicalUrl, ScreenshotRecord, PageContent, ThirdPartyScript, ScriptInventory, HubSpotForm, TemplateClassification, CollectionRecord, AuditAnomaly | Audit pipeline types | AUDIT-1 |
+| src/lib/env.ts | env (parsed Zod schema), ensureWebflow/Firecrawl/Anthropic/Hubspot/Ahrefs/Sanity/SupabaseDb runtime guards | Validated env loader — single source of env access | SCHEMA-1 |
+| src/lib/supabase.ts | createServerClient() | Supabase admin client (service role; bypasses RLS) | SCHEMA-1 |
+| src/lib/pipeline/state-machine.ts | MigrationStatus (canonical string-literal union), assertValidTransition(), validNextStatuses() | Migration pipeline state machine | SCHEMA-1 |
 
 ## npm Scripts
 
@@ -130,6 +184,10 @@ None yet. Updated as MYGRATR-SCAFFOLD-1 and later sessions build them.
 | `npm run audit:run` | Steps 00 → 3e (URL reconciliation through template custom code) |
 | `npm run audit:chunk2` | Steps 4 → 9 (interactions, scripts, forms, classifier, manifest, DB write) |
 | `npm run audit:chunk3` | LLM refresh for Steps 4, 7, 3e, 8, 9 (requires ANTHROPIC_API_KEY) |
+| `npm run schema:start` | Step 0: transition CE migration to schema_running |
+| `npm run schema:seed-singletons` | Step 4a: seed 34 singleton/global stubs (needs `-- --confirm-production`) |
+| `npm run schema:smoke-test` | Step 9B: 5-doc integration test (needs `-- --confirm-production`) |
+| `npm run schema:record` | Step 10: insert 21 schema_designs rows + advance to schema_complete |
 
 ## Audit Output Files (populated by AUDIT-1)
 

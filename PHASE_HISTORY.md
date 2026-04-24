@@ -1,5 +1,225 @@
 # PHASE_HISTORY.md
 
+## MYGRATR-SCHEMA-1 — Sanity Schema Design (April 2026)
+
+### What Was Built
+
+**Pre-requisite infrastructure (Step 0a — not in original brief scope; the
+brief referenced these as existing but they were not yet in the repo):**
+
+- `tsconfig.json` — added `paths: { "@/*": ["./src/*"] }` (no baseUrl;
+  TypeScript 5+ supports paths without it, and TS6 deprecated baseUrl)
+- `src/lib/env.ts` — Zod-validated env loader with runtime guards
+  (`ensureSanity`, `ensureWebflow`, etc.) for optional service keys
+- `src/lib/supabase.ts` — `createServerClient()` for admin/migrations
+- `src/lib/pipeline/state-machine.ts` — canonical `MigrationStatus`
+  string-literal union + VALID_TRANSITIONS map + `assertValidTransition()`.
+  The legacy `MigrationStatus` enum in `src/lib/types.ts` predates the
+  running/complete/failed split and uses shortform values; state-machine.ts
+  defines its own type locally (flagged in Known Tech Debt).
+- `studio/` — Sanity v5 Studio scaffold: package.json, sanity.cli.ts,
+  sanity.config.ts, tsconfig.json, .gitignore. `sanity` + `@sanity/vision`
+  + `react` + `styled-components` installed. Structure tool enabled;
+  singletons filtered out of "new document" menu + duplicate/delete
+  disabled via document actions filter.
+
+**Shared object schemas (Step 2):**
+
+- `studio/schemas/objects/portable-text.ts` — named array type; styles
+  (normal, h2, h3, h4, blockquote), bullet/numbered lists, 5 decorators,
+  link annotation with href + blank-target, inline image with hotspot
+- `studio/schemas/objects/faq-item.ts` — `{question, answer:portableText}`
+- `studio/schemas/objects/quote-block.ts` —
+  `{paragraph, personImage, personName, personTitle}` for customerStory
+- `studio/schemas/objects/fold.ts` — typed fold per §3.4 with FOLD_TYPES
+  enum [headerIntro, featureBullets, itemList, paragraphSection, headerOnly]
+- `studio/schemas/objects/section.ts` — 12 polymorphic variants per §4.4
+  (richTextSection, twoColumnSection, ctaSection, imageSection,
+  videoSection, testimonialSection, benefitsGrid, staffBenefitsGrid,
+  glassdoorGrid, customerStoriesGrid, faqSection, hubspotFormSection)
+- `studio/schemas/_shared.ts` — `localeField()`, `sourceTrackingFields()`,
+  `metaFields({og})`, `slugField()`, `imageField()` reusable field builders
+
+**21 CMS document types (Step 3):**
+
+Simple leaf types: tag, blogCategory, glassdoorReview, benefitValue,
+staffBenefit, downloadAccess, teamMember, review.
+
+Reference-heavy types: video (→ tag), download (→ tag), bookACall (custom
+slug from firstName+lastName), event (→ tag, teamMember), tool (→ tag),
+compareBlog (→ tag, teamMember), blogPost (→ blogCategory, tag, teamMember).
+
+Complex types: customerStory (problem/solution/impact with quoteBlock),
+technology (typed folds replacing 34 flat fields), service (folds +
+associatedTechnologies ref array), industry/persona/location (three
+AI-search landing-page types sharing a factory in
+`_landing-page-factory.ts`).
+
+**31 singletons (Step 4):**
+
+Four factory functions in `studio/schemas/singletons/_factories.ts` keep
+shape consistent across all 31 files:
+
+- `defineBlogHub` — §4.1 — blogHub + 6 category hubs (7 files)
+- `defineCollectionHub` — §4.2/§4.3 — 4 resource hubs + 5 collection-index
+  hubs (9 files; teamHub dropped per brief §6 deferred note since /team
+  is a 301 to /about-us)
+- `defineStaticPage` — §4.4 — 13 static content singletons with the
+  12-variant sections array + locale
+- `defineCalculatorPage` — §5 — 2 Tier-3 calculator pages (marketing
+  copy wrappers; logic hardcoded in Next.js)
+
+**3 globals (Step 5):** siteSettings, navigation, footer per §6.1–§6.3.
+
+**Studio structure config (Step 6):**
+
+`studio/schemas/structure.ts` groups the 34 singleton/global docs into
+six nav sections: Static Pages, Blog Hubs, Resource Hubs, Collection
+Indexes, Calculator Pages, Site Globals. Each surfaces as a direct
+single-document nav item (not a list view). Regular CMS document types
+appear below a divider using `S.documentTypeListItems()` filtered to
+exclude singletons. `sanity.config.ts` also filters singletons from the
+"new document" templates menu and strips duplicate/delete from their
+document actions.
+
+**Zod types mirroring every schema (Step 7):**
+
+- `src/types/sanity/shared.ts` — primitives (SanityImage, SanitySlug,
+  SanityRef), PortableTextSchema (z.unknown-backed array per brief §3.2),
+  enums (Locale, Source, FoldType), shared embedded objects
+  (FoldSchema, FaqItemSchema, QuoteBlockSchema), discriminated-union
+  SectionSchema across 12 variants, MetaFieldsSchema /
+  MetaFieldsNoOgSchema / SourceTrackingFieldsSchema factories,
+  SanityBaseDocumentSchema (system fields)
+- `src/types/sanity/documents/` — 21 files + `_landing-page-factory.ts`
+- `src/types/sanity/singletons/` — 31 files + `_factories.ts`
+  (blogHubSchema, collectionHubSchema, staticPageSchema,
+  calculatorPageSchema)
+- `src/types/sanity/globals/` — 3 files
+- All types `export *`-ed through `src/types/sanity/index.ts`
+
+**Migration-map doc (Step 8):**
+
+`docs/WEBFLOW_TO_SANITY_FIELD_MAP.md` (500 lines, v1.0): 20 sections
+covering all 33 Webflow collections (7 blogs consolidate under §1, 6 tags
+under §17, 17 single-mapping types across §2–§19, 3 dropped under §20).
+Each section has a field mapping table + DROPPED FIELDS + NEW FIELDS
+callouts. MIGRATION BLOCKS table at the bottom lists pre-launch blockers:
+meta backfills (157 items across technology/service/teamMember/review/
+bookACall), required author refs (127 blog+compare items),
+`/customer-story/virgin` placeholder text, and the 4 UNKNOWN canonical
+URLs (tech-debt #9).
+
+**Four scripts under `scripts/schema/`:**
+
+- `start-schema-phase.ts` — assertValidTransition audit_complete →
+  schema_running, update migrations row
+- `seed-singletons.ts` — createIfNotExists for 34 singleton/global docs
+  with per-type minimal shapes; requires --confirm-production; 34 docs
+  seeded in production dataset (logged created vs already-exists)
+- `smoke-test-seed.ts` — self-contained integration test; createOrReplace
+  with deterministic _ids; seeds dummy blogCategory/tag/teamMember,
+  then technology with 3 typed folds, then a blogPost referencing all
+  three. All 5 docs accepted by the Sanity API.
+- `record-schema-designs.ts` — 21 schema_designs inserts with curated
+  sanity_schema JSONB summaries (typeName, schemaFile, sourceCollections,
+  sourceItemCount, fieldCount, requiredFields, referenceFields, notes),
+  then assertValidTransition schema_running → schema_complete and
+  metadata.schema_phase = {document_types:21, singletons:31, globals:3,
+  objects:16, completed_at}
+
+### Data State After This Phase
+
+- Supabase `migrations` (CE): `status = schema_complete`,
+  `current_phase = schema_complete`,
+  `metadata.schema_phase = {document_types:21, singletons:31, globals:3, objects:16, completed_at:"2026-04-24T11:08:54.363Z"}`
+- Supabase `schema_designs`: 21 rows for CE migration, all at
+  `version=1`, `status='approved'`, `specialist_reviewed=false`.
+  Slugs: blogs-consolidated, compare-blogs, technology-pages, services,
+  customer-stories, team-members, reviews, videos, downloads,
+  downloads-access-pages, tools-quizzes, book-a-call-pages,
+  events-webinars, glassdoor-reviews, client-benefits-company-values,
+  staff-benefits, tags-consolidated, hubs, industry-placeholder,
+  persona-placeholder, location-placeholder.
+- Sanity production dataset (project `lzbhll1u`): 34 singleton/global
+  stub docs + 5 smoke-test docs with `smoke-test-*` prefix. Stub docs
+  have placeholder titles and trivial fields; required content
+  (metaTitle, metaDescription, required images) intentionally omitted
+  so Studio flags them as TODOs for content migration.
+- Filesystem: studio/ (Sanity project), studio/schemas/ (71 schema
+  types), src/types/sanity/ (55 Zod files), scripts/schema/ (4 scripts),
+  docs/WEBFLOW_TO_SANITY_FIELD_MAP.md.
+
+### Key Decisions / Interpretations
+
+The brief and the design doc both referenced infrastructure
+(`src/lib/env.ts`, `src/lib/supabase.ts`, `src/lib/pipeline/state-machine.ts`)
+that did not exist in the repo. Jake authorised creating it inside this
+session rather than splitting into a separate INFRA brief — patterns were
+fully documented in CONVENTIONS.md §69-101 / §142-184 / §402-435, so no
+architecture decisions were taken. The SCHEMA lane (brief §7) was
+extended to include `src/lib/*` prereqs.
+
+Brief step order (Step 4 → 4a → 5) reordered to Step 4 → 5 → 4a, because
+Step 4a seeds all 34 singleton/global docs and needed the global schemas
+registered first. Idempotent `createIfNotExists` means the reorder is
+safe either way.
+
+TeamHub singleton dropped (brief §6 deferred note — `/team` is a 301 to
+`/about-us`, so 5 collection-index singletons instead of 6). Total 31
+singletons matches the brief's Step 6 SINGLETON_TYPES list.
+
+Sanity Studio v5 (latest `sanity` package) used; the brief's "Sanity v3"
+reference means the v3 Studio API (`defineType` / `defineField` /
+`defineArrayMember`), which is still current in v5. No
+`__experimental_actions` — singleton enforcement via the `document.actions`
+filter in sanity.config.ts + the grouped structure in structure.ts.
+
+`sanity_schema` JSONB column stores a curated summary, not a full
+`defineType` serialisation. The `fields[].validation` callbacks aren't
+JSON-safe, and the `sanity` package is only installed in `studio/` (not
+root), so serialising from root scripts would require ESM/CJS bridging.
+The summary (typeName, fieldCount, requiredFields, referenceFields,
+notes) captures the design decisions that matter for provenance and
+diffing; the full schema lives in code.
+
+### Patterns Established (see CONVENTIONS.md)
+
+- Sanity v3 schema conventions (`defineType` / `defineField` /
+  `defineArrayMember`; default-export per file; registry aggregated in
+  `studio/schemas/index.ts`)
+- Factory functions for repeated schema shapes (singleton factories,
+  landing-page factory; same pattern on the Zod side)
+- Zod mirror pattern: every Sanity schema has a matching Zod schema
+  with inferred type alias; PortableText is z.unknown() pending
+  TEMPLATE-* when renderers are built
+- Curated `sanity_schema` JSONB summaries (not full serialisation)
+- Studio structure config pattern: group singletons into topical nav
+  lists; hide them from new-doc menu; strip duplicate/delete actions
+
+### Surprises
+
+- Sanity v3's `templates` filter in `schema.templates: (templates) =>
+  templates.filter(...)` is the v5-current way to hide types from the
+  new-doc menu. The brief mentioned `structureTool` is "no longer" the
+  place for this filter, but didn't spell out the `templates` or
+  `document.actions` filters — the canonical v5 approach landed on
+  checking the installed Sanity package and using whichever API is live.
+- TypeScript 6 deprecated `baseUrl` at the tsconfig level. Adding
+  `paths: { "@/*": ["./src/*"] }` without baseUrl works cleanly (TS 5+).
+- The existing `MigrationStatus` enum in `src/lib/types.ts` uses shortform
+  values (`'audit'`, `'schema'`) that don't match the actual Supabase
+  data (`'audit_complete'`, `'schema_running'`). Not used anywhere in
+  working code, but it's dead-code tech debt flagged for future cleanup.
+
+### Known Tech Debt Added
+
+Logged in CLAUDE.md — see the Known Tech Debt table. In short:
+- `src/lib/types.ts` MigrationStatus enum is out of sync with
+  `state-machine.ts`'s canonical string-literal type and with the
+  Supabase `migrations.status` column. Delete the enum or align values.
+  Dead code today (no import sites) but a trap for future contributors.
+
 ## MYGRATR-SCHEMA-0 — Schema Design Lock (April 2026)
 
 ### What Was Built

@@ -1,5 +1,37 @@
 # CHANGELOG.md
 
+## MYGRATR-SCHEMA-1 — Sanity Schema Design (April 2026)
+Translated the locked design doc into working code. Sanity Studio v5
+scaffolded at `studio/` against project `lzbhll1u` / dataset `production`.
+71 schema types registered: 16 shared objects (portableText, faqItem,
+quoteBlock, fold, and 12 polymorphic section variants), 21 CMS document
+types (tag, blogCategory, glassdoorReview, benefitValue, staffBenefit,
+downloadAccess, teamMember, review, video, download, bookACall, event,
+tool, compareBlog, blogPost, customerStory, technology, service,
+industry, persona, location), 31 singletons (7 blog hubs, 4 resource
+hubs, 5 collection indexes, 13 static content pages, 2 calculator
+pages), and 3 globals (siteSettings, navigation, footer). Studio build
+passes (`npx sanity build` — ~20s). Zod types mirror every schema under
+`src/types/sanity/` (discriminated-union for 12 section variants;
+z.unknown for Portable Text per brief §3.2). Pre-requisite infra added
+inside this session: `src/lib/env.ts` with Zod validation + runtime
+guards, `src/lib/supabase.ts` createServerClient, and
+`src/lib/pipeline/state-machine.ts` with assertValidTransition plus
+canonical `MigrationStatus` string-literal type. Studio structure config
+groups the 34 singleton/global docs into 6 nav sections and filters
+them out of the "new document" menu. Four scripts under
+`scripts/schema/`: start-schema-phase, seed-singletons (seeded 34 stubs
+via createIfNotExists), smoke-test-seed (5 test docs incl. 3-fold
+technology + reference chains — all accepted by Sanity API), and
+record-schema-designs (inserted 21 rows into `schema_designs`, all with
+`status='approved'` and org_id filter, then advanced
+`migrations.status` to `schema_complete` via assertValidTransition).
+`docs/WEBFLOW_TO_SANITY_FIELD_MAP.md` (500 lines) provides field-level
+mapping for every Webflow collection → Sanity document, with DROPPED
+FIELDS, NEW FIELDS, and MIGRATION BLOCKS sections for CONTENT-1. Every
+design decision consumed from v1.2 of the design doc without
+modification. No architecture decisions taken in this phase.
+
 ## MYGRATR-SCHEMA-0 — Schema Design Lock (April 2026)
 Doc-only preparation phase that produced the authoritative input to
 MYGRATR-SCHEMA-1. No code, no migrations, no routes. Four artefacts

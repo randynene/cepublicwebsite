@@ -54,6 +54,56 @@
 - **DB Tables:** None (SCHEMA-1 will write to `schema_designs`)
 - **Phase:** MYGRATR-SCHEMA-0
 
+## Sanity Schema Design (input to CONTENT-1 and the Studio)
+- **Description:** 71 Sanity schema types covering every CE migration target
+  — 21 CMS document types, 31 singletons (hubs + static pages +
+  calculators), 3 globals, and 16 shared/polymorphic object types.
+  Translates the locked design doc into working code. Studio v5 scaffold
+  under `studio/` connects to Sanity project `lzbhll1u` / dataset
+  `production`. Zod mirrors live under `src/types/sanity/` for use by
+  the Next.js app. Four scripts under `scripts/schema/` drive the phase
+  transitions and seed operations.
+- **Page:** Sanity Studio (local via `npx sanity dev` in `studio/`)
+- **API Routes:** None (SCAFFOLD-1 builds the Next.js app)
+- **Lib Modules:**
+  - `src/lib/env.ts` — Zod-validated env loader + runtime guards
+  - `src/lib/supabase.ts` — `createServerClient()`
+  - `src/lib/pipeline/state-machine.ts` — `assertValidTransition()`
+  - `src/types/sanity/shared.ts` — Zod primitives, Fold, Section
+    discriminated union, FaqItem, QuoteBlock, meta field groups
+  - `src/types/sanity/documents/*.ts` — 21 Zod schemas + factory
+  - `src/types/sanity/singletons/*.ts` — 31 Zod schemas + factories
+  - `src/types/sanity/globals/*.ts` — 3 Zod schemas
+- **Studio Schemas:**
+  - `studio/schemas/objects/*.ts` — portable-text, faq-item, quote-block,
+    fold, section (12 variants)
+  - `studio/schemas/documents/*.ts` — 21 CMS types + landing-page factory
+  - `studio/schemas/singletons/*.ts` — 31 singletons + 4 factories
+  - `studio/schemas/globals/*.ts` — siteSettings, navigation, footer
+  - `studio/schemas/_shared.ts` — shared field builders
+  - `studio/schemas/structure.ts` — grouped singleton navigation
+  - `studio/sanity.config.ts` — singleton templates + actions filters
+- **Scripts:**
+  - `scripts/schema/start-schema-phase.ts` — audit_complete →
+    schema_running transition
+  - `scripts/schema/seed-singletons.ts` — createIfNotExists for 34 stub
+    singleton/global docs in production
+  - `scripts/schema/smoke-test-seed.ts` — 5-doc integration test
+    (blogCategory, tag, teamMember, technology with 3 folds, blogPost)
+  - `scripts/schema/record-schema-designs.ts` — inserts 21
+    `schema_designs` rows + transitions to schema_complete
+- **DB Tables:** `schema_designs` (write — 21 rows, all `status='approved'`),
+  `migrations` (status update to `schema_complete` with
+  metadata.schema_phase block)
+- **External systems:** Sanity project `lzbhll1u` (dataset: production) —
+  34 seeded stub docs + 5 smoke-test docs
+- **Docs:**
+  - `docs/WEBFLOW_TO_SANITY_FIELD_MAP.md` — field-level mapping for every
+    Webflow collection; consumed by CONTENT-1
+- **npm scripts:** `npm run schema:start`, `schema:seed-singletons`,
+  `schema:smoke-test`, `schema:record`
+- **Phase:** MYGRATR-SCHEMA-1
+
 ## Site Audit Agent
 - **Description:** Produces the authoritative migration manifest for a source
   site — reconciles URLs from four sources, extracts content per page,
