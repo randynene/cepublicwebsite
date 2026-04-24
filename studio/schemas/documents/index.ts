@@ -13,6 +13,12 @@ import event from './event'
 import tool from './tool'
 import compareBlog from './compare-blog'
 import blogPost from './blog-post'
+import customerStory from './customer-story'
+import technology from './technology'
+import service from './service'
+import industry from './industry'
+import persona from './persona'
+import location from './location'
 
 export const documentTypes = [
   tag,
@@ -30,4 +36,10 @@ export const documentTypes = [
   tool,
   compareBlog,
   blogPost,
+  customerStory,
+  technology,
+  service,
+  industry,
+  persona,
+  location,
 ]
