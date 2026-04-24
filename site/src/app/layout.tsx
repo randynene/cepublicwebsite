@@ -11,10 +11,13 @@
 
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import { draftMode } from 'next/headers'
+import { VisualEditing } from 'next-sanity/visual-editing'
 
 import { env } from '@/lib/env'
 import Footer from '@/components/layout/footer'
 import Nav from '@/components/layout/nav'
+import { SanityLive } from '@/lib/sanity/live'
 import {
   GeoTargetlyScript,
   GlobalScripts,
@@ -47,9 +50,11 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const isDraftMode = (await draftMode()).isEnabled
+
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <head>
@@ -61,6 +66,8 @@ export default function RootLayout({
         <Nav />
         {children}
         <Footer />
+        <SanityLive />
+        {isDraftMode && <VisualEditing />}
         <GlobalScripts />
       </body>
     </html>
