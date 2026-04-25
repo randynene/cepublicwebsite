@@ -133,9 +133,33 @@ Grouped in `studio/schemas/structure.ts` into six Studio nav sections.
 - navigation — primary links, CTA button, locale dropdown
 - footer — newsletter form ID, columns, legal links
 
+## Site Components (`site/src/components/`)
+
+| Component | Type | File | Purpose | Phase |
+|---|---|---|---|---|
+| LocaleProvider | client | locale-provider.tsx | Provides `Locale` via React context; useLocale() hook | SCAFFOLD-1 |
+| GeoTargetlyScript | server | third-party-scripts.tsx | beforeInteractive GeoTargetly redirect | SCAFFOLD-1 |
+| GtmHeadScript / GtmNoScript | server | third-party-scripts.tsx | GTM head + body iframe | SCAFFOLD-1 |
+| GlobalScripts | server | third-party-scripts.tsx | LinkedIn, Hotjar, Clara, FB Pixel, HubSpot, GSAP, Swiper, Finsweet, Calendly | SCAFFOLD-1 |
+| Nav | server stub | layout/nav.tsx | TEMPLATE-NAV will source from Sanity navigation global | SCAFFOLD-1 |
+| Footer | server stub | layout/footer.tsx | TEMPLATE-FOOTER will source from Sanity footer global | SCAFFOLD-1 |
+
+## Site Routes (`site/src/app/`)
+
+| Route | File | Type | Purpose | Phase |
+|---|---|---|---|---|
+| `/` | page.tsx | static | homePage placeholder; TEMPLATE-HOME fills folds | SCAFFOLD-1 |
+| `/uk` | uk/page.tsx | static | UK locale home placeholder | SCAFFOLD-1 |
+| `/uk/[...slug]` | uk/[...slug]/page.tsx | dynamic | catch-all 404 placeholder until TEMPLATE-* defines explicit routes | SCAFFOLD-1 |
+| `/sitemap.xml` | sitemap.ts | file convention | homepage + UK homepage stub (CONTENT-1 expands) | SCAFFOLD-1 |
+| `/robots.txt` | robots.ts | file convention | Disallow: /download-thank-you/ | SCAFFOLD-1 |
+
 ## API Routes
 
-None yet. Updated as MYGRATR-SCAFFOLD-1 and later sessions build them.
+| Route | Method | File | Purpose | Phase |
+|---|---|---|---|---|
+| `/api/draft-mode/enable` | GET | site/src/app/api/draft-mode/enable/route.ts | Validate Sanity preview-url-secret + same-origin check + draftMode().enable() | SCAFFOLD-1 |
+| `/api/draft-mode/disable` | GET | site/src/app/api/draft-mode/disable/route.ts | draftMode().disable() | SCAFFOLD-1 |
 
 ## Scripts
 
@@ -166,6 +190,9 @@ None yet. Updated as MYGRATR-SCAFFOLD-1 and later sessions build them.
 | scripts/schema/seed-singletons.ts | createIfNotExists for 34 singleton/global stubs | 34 docs in Sanity prod dataset | SCHEMA-1 |
 | scripts/schema/smoke-test-seed.ts | 5-doc integration test (blogCategory, tag, teamMember, technology 3-fold, blogPost) | 5 `smoke-test-*` docs in Sanity | SCHEMA-1 |
 | scripts/schema/record-schema-designs.ts | Inserts 21 schema_designs rows + advances to schema_complete | `schema_designs` rows + `migrations.status` update | SCHEMA-1 |
+| scripts/scaffold/extract-redirects.ts | Reads gitignored audit-output and writes 3 tracked redirect TS files into site/ | site/src/lib/redirects/{generated,regex,webflow}-redirects.ts | SCAFFOLD-1 |
+| scripts/scaffold/start-scaffold-phase.ts | Transitions CE migration schema_complete → scaffold_running | `migrations` row update | SCAFFOLD-1 |
+| scripts/scaffold/complete-scaffold-phase.ts | Transitions scaffold_running → scaffold_complete + records preview URL in metadata | `migrations` row update | SCAFFOLD-1 |
 
 ## Lib Files
 
@@ -176,6 +203,14 @@ None yet. Updated as MYGRATR-SCAFFOLD-1 and later sessions build them.
 | src/lib/env.ts | env (parsed Zod schema), ensureWebflow/Firecrawl/Anthropic/Hubspot/Ahrefs/Sanity/SupabaseDb runtime guards | Validated env loader — single source of env access | SCHEMA-1 |
 | src/lib/supabase.ts | createServerClient() | Supabase admin client (service role; bypasses RLS) | SCHEMA-1 |
 | src/lib/pipeline/state-machine.ts | MigrationStatus (canonical string-literal union), assertValidTransition(), validNextStatuses() | Migration pipeline state machine | SCHEMA-1 |
+| site/src/lib/env.ts | env (Zod-validated), site-scoped env loader with NEXT_PUBLIC_VERCEL_URL fallback | Validated env access for the Next.js app | SCAFFOLD-1 |
+| site/src/lib/locale.ts | LOCALES, Locale, getLocaleFromPath, buildLocalePath, generateCanonical, generateHreflang | Locale routing + canonical/hreflang single source of truth | SCAFFOLD-1 |
+| site/src/lib/sanity/client.ts | sanityClient (published + CDN), previewClient (drafts, authenticated) | Sanity clients for the Next.js app | SCAFFOLD-1 |
+| site/src/lib/sanity/queries.ts | getSiteSettings | GROQ query stubs (CONTENT-1 expands) | SCAFFOLD-1 |
+| site/src/lib/sanity/live.ts | sanityFetch, SanityLive | defineLive factory for live revalidation | SCAFFOLD-1 |
+| site/src/lib/redirects/generated-redirects.ts | crawlRedirects | Auto-generated from ce-canonical-urls.json | SCAFFOLD-1 |
+| site/src/lib/redirects/regex-redirects.ts | regexRedirects | Auto-generated from ce-regex-redirects.json | SCAFFOLD-1 |
+| site/src/lib/redirects/webflow-redirects.ts | webflowRedirects | Auto-generated from webflow-redirects.csv | SCAFFOLD-1 |
 
 ## npm Scripts
 
@@ -188,6 +223,9 @@ None yet. Updated as MYGRATR-SCAFFOLD-1 and later sessions build them.
 | `npm run schema:seed-singletons` | Step 4a: seed 34 singleton/global stubs (needs `-- --confirm-production`) |
 | `npm run schema:smoke-test` | Step 9B: 5-doc integration test (needs `-- --confirm-production`) |
 | `npm run schema:record` | Step 10: insert 21 schema_designs rows + advance to schema_complete |
+| `npm run redirects:extract` | Regenerate site/src/lib/redirects/* from audit-output (run after audit refresh) |
+| `npm run scaffold:start` | Transition CE migration to scaffold_running (needs `-- --confirm`) |
+| `npm run scaffold:complete` | Transition CE migration to scaffold_complete (needs `-- --confirm --preview-url=...`) |
 
 ## Audit Output Files (populated by AUDIT-1)
 

@@ -1,9 +1,13 @@
 import { defineConfig } from 'sanity'
 import { structureTool } from 'sanity/structure'
 import { visionTool } from '@sanity/vision'
+import { presentationTool } from 'sanity/presentation'
 
 import { schemaTypes } from './schemas'
 import { deskStructure, SINGLETON_TYPES } from './schemas/structure'
+
+const previewUrl =
+  process.env.SANITY_STUDIO_PREVIEW_URL ?? 'http://localhost:3000'
 
 const projectId = process.env.SANITY_PROJECT_ID || 'lzbhll1u'
 const dataset = process.env.SANITY_DATASET || 'production'
@@ -17,6 +21,13 @@ export default defineConfig({
   plugins: [
     structureTool({ structure: deskStructure }),
     visionTool(),
+    presentationTool({
+      previewUrl: {
+        origin: previewUrl,
+        previewMode: { enable: '/api/draft-mode/enable' },
+        draftMode: { enable: '/api/draft-mode/enable' },
+      },
+    }),
   ],
 
   schema: {

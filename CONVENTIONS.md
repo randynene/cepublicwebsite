@@ -4,7 +4,7 @@
 > Updated after each phase to prevent architectural drift.
 > Patterns documented here reflect reality — never speculative.
 
-**Status:** MYGRATR-SCHEMA-1 Complete
+**Status:** MYGRATR-SCAFFOLD-1 Complete
 
 ---
 
@@ -1100,6 +1100,165 @@ explicit second-pass review records a new `version`.
 
 ---
 
+## Generated-Site Layout (MYGRATR-SCAFFOLD-1)
+
+The customer-facing Next.js app lives at `site/` in the same monorepo as
+`studio/` (Sanity Studio) and `src/` (orchestrator lib). Vercel deploys
+from the repo root with Root Directory overridden to `site/`. The site has
+its own `package.json`, `tsconfig.json`, `.gitignore`, and `.env.local`.
+
+**Strict separation across the three packages:**
+
+- `src/` is orchestrator-only: never imported by `site/` (the type folder
+  `src/types/sanity/` is duplicated under `site/src/types/sanity/` until
+  CONTENT-1 extracts a shared package).
+- `studio/` is Sanity Studio only.
+- `site/` is the public Next.js site.
+
+**Path aliases:** `@/*` resolves to `site/src/*` inside `site/` and to
+`src/*` at the repo root. Always use `@/...` imports inside `site/`; never
+use `../../src/...` to reach into the orchestrator (Vercel builds with
+Root Directory `site/` won't see anything outside).
+
+---
+
+## Locale Routing for the Generated Site (MYGRATR-SCAFFOLD-1)
+
+CE has US (default) + UK (`/uk/` prefix). This is **a URL prefix
+convention, not Next.js i18n** — the `i18n` config in `next.config.ts` is
+not used.
+
+Helpers live in `site/src/lib/locale.ts`:
+
+```typescript
+export const LOCALES = ['en-US', 'en-GB'] as const
+export type Locale = (typeof LOCALES)[number]
+
+getLocaleFromPath(path)        // 'en-GB' if /uk or /uk/..., else 'en-US'
+buildLocalePath(path, locale)  // re-prefix or de-prefix as needed
+generateCanonical(path, locale)
+generateHreflang(usPath)       // { 'en-US', 'en-GB', 'x-default' }
+```
+
+**Contract:** every TEMPLATE-* `generateMetadata()` calls
+`generateCanonical` and `generateHreflang`. Always pass the canonical US
+path (no `/uk` prefix). Both helpers normalise defensively, but callers
+should pass the US path for clarity.
+
+**`/uk` prefix guard rule:** strip `/uk` only when the path is `=== '/uk'`
+or `startsWith('/uk/')`. Never use a bare `startsWith('/uk')` — that
+corrupts paths like `/ukraine/...`.
+
+UK pages live under `site/src/app/uk/`:
+- `layout.tsx` wraps in `<LocaleProvider locale="en-GB">`.
+- Static UK pages are explicit route files.
+- `[...slug]/page.tsx` is a scaffold placeholder that 404s; TEMPLATE-*
+  defines explicit dynamic segments per design doc §10.
+
+---
+
+## Third-Party Scripts in the Generated Site (MYGRATR-SCAFFOLD-1)
+
+All global third-party scripts live in
+`site/src/components/third-party-scripts.tsx` and are loaded via
+`next/script`. The component is split into:
+
+- `<GeoTargetlyScript />` — `strategy="beforeInteractive"`, must run
+  before render to redirect at the edge.
+- `<GtmHeadScript />` + `<GtmNoScript />` — GTM head + body noscript pair,
+  `afterInteractive`. **GA4 fires through GTM**; never load it directly.
+- `<GlobalScripts />` — LinkedIn Insight, Clara, Hotjar, Facebook Pixel,
+  HubSpot, GSAP, Swiper, Finsweet, Calendly. Calendly uses `lazyOnload`
+  globally for now; everything else `afterInteractive`.
+
+**ID provenance rule:** every script identifier is a top-of-file constant
+sourced verbatim from `audit-output/ce-scripts.json`. Each `<Script>`
+renders only when its identifier is truthy. Unconfirmed IDs return `null`
+— never fabricate or guess. Adding a new global script requires confirming
+the identifier in audit output first.
+
+---
+
+## Redirect Pipeline for the Generated Site (MYGRATR-SCAFFOLD-1)
+
+`audit-output/` is gitignored and absent on Vercel's build server.
+`next.config.ts` must therefore never import from `audit-output/`
+directly.
+
+**Pattern:** the one-shot script `scripts/scaffold/extract-redirects.ts`
+(`npm run redirects:extract`) reads gitignored audit artefacts and writes
+tracked TS files inside `site/src/lib/redirects/`. `next.config.ts`
+imports only from those tracked files.
+
+Three generated files:
+
+- `generated-redirects.ts` — crawl-discovered 301/302 from
+  `ce-canonical-urls.json`. Drop rows with null `redirectTarget` (no
+  destination = no redirect possible).
+- `regex-redirects.ts` — Webflow regex rules from
+  `ce-regex-redirects.json`. Webflow `(.*)` → Next.js `:slug*`; Webflow
+  `%1` → `:slug*`. **Path-to-regexp can't repeat a parameter without a
+  prefix-and-suffix separator** — for Webflow `/foo(.*)` (no slash before
+  the capture), emit two rules: exact `/foo` and wildcard `/foo/:slug*`.
+- `webflow-redirects.ts` — heterogeneous CSV rows from
+  `webflow-redirects.csv`. Strip query strings; drop `/live-job-role/*`
+  rows (covered by the locked catch-all regex); dedupe against locked
+  rules and against rows already emitted by `regex-redirects.ts`.
+
+`next.config.ts` composes them in `[crawl, regex, webflow, lockedRules]`
+order. Locked rules come from design doc §8 and are inlined in
+`next.config.ts` — they never live in the generated files.
+
+**Next.js `permanent: true` emits HTTP 308, not 301.** This is by design
+(308 preserves request method) and is functionally equivalent for SEO.
+
+---
+
+## Sanity Client Pattern in the Generated Site (MYGRATR-SCAFFOLD-1)
+
+Two clients, one factory:
+
+- `sanityClient` (`site/src/lib/sanity/client.ts`) — published perspective,
+  `useCdn: process.env.NODE_ENV === 'production'`, stega gated on
+  `VERCEL_ENV === 'preview' && NODE_ENV !== 'production'`. Both
+  conditions are required to prevent stega metadata leaking into
+  production on misconfigured deployments.
+- `previewClient` — `previewDrafts` perspective, no CDN, authenticated
+  with `SANITY_API_READ_TOKEN`, stega always on. Used for draft-mode
+  secret validation and preview rendering.
+- `SanityLive` (`site/src/lib/sanity/live.ts`) — produced by
+  `defineLive({ client: sanityClient })` from `next-sanity/live`. The
+  factory also returns `sanityFetch` for live-revalidating queries. There
+  is no direct `SanityLive` export from `next-sanity` root in v12+.
+
+`'server-only'` is imported at the top of every Sanity-client file to
+prevent accidental client-bundle inclusion.
+
+---
+
+## Draft Mode + Visual Editing (MYGRATR-SCAFFOLD-1)
+
+Draft mode is a two-route pair plus a layout flag:
+
+- `site/src/app/api/draft-mode/enable/route.ts` validates the secret with
+  `validatePreviewUrl(previewClient, request.url)`, then **same-origin
+  checks `redirectTo`** against `env.NEXT_PUBLIC_SITE_URL` before calling
+  `(await draftMode()).enable()`. Never trust `redirectTo` from the
+  Sanity payload — the same-origin check is the F10 hardening.
+- `site/src/app/api/draft-mode/disable/route.ts` disables the cookie. F15
+  (POST-only + origin check) is deferred to TEMPLATE-* / pre-launch.
+- Root layout renders `<VisualEditing />` (from
+  `next-sanity/visual-editing`) only when `(await draftMode()).isEnabled`.
+  `<SanityLive />` always renders so that live-revalidating fetches keep
+  flowing on the published site too.
+
+Studio side: `presentationTool` from `sanity/presentation` (the bundled
+path, not the deprecated standalone `@sanity/presentation` package) is
+added to `studio/sanity.config.ts` plugins, with `previewMode.enable` and
+`draftMode.enable` both pointing at `/api/draft-mode/enable`.
+
+---
+
 ## Section 4: Phase History
 
 | Phase | Status | Key Patterns Established |
@@ -1108,3 +1267,4 @@ explicit second-pass review records a new `version`.
 | MYGRATR-AUDIT-1 | Complete | Resumable orchestrator chunks, skip-if-exists for expensive steps, tier-1/tier-2 LLM degradation (rules always run; Claude optional), inline rules classifier for cross-step deps, phase timeout + circuit breaker for API batch steps, PII-safe audit outputs |
 | MYGRATR-SCHEMA-0 | Complete | No new code patterns — doc-only phase. Locked schema design doc (`docs/MYGRATR_SCHEMA_DESIGN_DECISIONS.md`) produced through a CE_RAW_EXTRACT → CE_SITE_TRUTH → DESIGN_DECISIONS → red-team audit → fixes → re-audit → lock workflow. |
 | MYGRATR-SCHEMA-1 | Complete | Sanity v3 schema conventions (`defineType` / factory-function reuse / aggregator indexes), Sanity v5 singleton enforcement via `schema.templates` + `document.actions` filters (no `__experimental_actions`), Zod mirror pattern (every Sanity schema has a Zod twin; PortableText as `z.unknown()` until TEMPLATE-*), curated `schema_designs.sanity_schema` JSONB summaries rather than full defineType serialisation, env.ts / supabase.ts / state-machine.ts concrete implementations against the previously-abstract CONVENTIONS.md patterns. |
+| MYGRATR-SCAFFOLD-1 | Complete | Generated-site monorepo layout (`site/` + `studio/` + `src/`), locale routing via URL prefix (not Next i18n), generateCanonical / generateHreflang single-source helpers, third-party script identifier provenance from audit output, redirect extraction script writes tracked TS into `site/` (Vercel never reads `audit-output/`), defineLive factory for Sanity Live, draft-mode enable route with same-origin redirectTo check, presentationTool from `sanity/presentation` (bundled path, not the deprecated standalone package). |

@@ -14,8 +14,8 @@ Parent brand: Saxon.io. Owner: Jake Hall (non-developer, directs Claude Code).
 
 ## Current Phase
 
-**MYGRATR-SCHEMA-1 — Sanity Schema Design** — COMPLETE
-**Next: MYGRATR-SCAFFOLD-1** — Next.js Scaffold
+**MYGRATR-SCAFFOLD-1 — Next.js Scaffold** — COMPLETE
+**Next: MYGRATR-CONTENT-1** — Content Migration
 
 | Phase | Name | Status |
 |---|---|---|
@@ -23,8 +23,8 @@ Parent brand: Saxon.io. Owner: Jake Hall (non-developer, directs Claude Code).
 | MYGRATR-AUDIT-1 | Site Audit Agent | ✅ Complete |
 | MYGRATR-SCHEMA-0 | Schema Design Lock | ✅ Complete |
 | MYGRATR-SCHEMA-1 | Sanity Schema Design | ✅ Complete |
-| **MYGRATR-SCAFFOLD-1** | **Next.js Scaffold** | 🔜 **Next** |
-| MYGRATR-CONTENT-1 | Content Migration | Planned |
+| MYGRATR-SCAFFOLD-1 | Next.js Scaffold | ✅ Complete |
+| **MYGRATR-CONTENT-1** | **Content Migration** | 🔜 **Next** |
 | MYGRATR-TEMPLATE-* | Template Build | Planned |
 | MYGRATR-QA-1 | Visual + Structural QA | Planned |
 | MYGRATR-LAUNCH | Cutover + Redirects | Planned |
@@ -83,11 +83,28 @@ Parent brand: Saxon.io. Owner: Jake Hall (non-developer, directs Claude Code).
   events-webinars, glassdoor-reviews, client-benefits-company-values,
   staff-benefits, tags-consolidated, hubs, industry-placeholder,
   persona-placeholder, location-placeholder).
-- `migrations.status = schema_complete` / `current_phase = schema_complete`
-  for CE migration. `metadata.schema_phase` records the counts.
 - Sanity production dataset: 34 stub singleton/global docs seeded
   (createIfNotExists, idempotent) + 5 `smoke-test-*` integration-test
   docs created.
+
+**Scaffold state (as of SCAFFOLD-1 complete):**
+- Next.js 16.2.4 app at `site/` (App Router, TS strict, Tailwind v4).
+  Vercel root directory override: `site/`. Vercel preview deploy:
+  `https://mygratr-c3utcgloa-cloud-employee.vercel.app` (deployment
+  protection on; smoke-tested via `vercel curl`).
+- Sanity wired: `sanityClient` + `previewClient` + `defineLive`-based
+  `SanityLive`; Presentation Tool added to `studio/sanity.config.ts`
+  with `previewMode/draftMode → /api/draft-mode/enable`.
+- Routing: locale helpers in `site/src/lib/locale.ts`; UK locale mirror
+  at `site/src/app/uk/`. Canonical / hreflang / metadata defaults set
+  in root layout (Inter font, OG fallback, robots.txt + sitemap stubs).
+- Redirects: `npm run redirects:extract` writes 12 crawl + 12 regex +
+  316 webflow rules into tracked TS files; `next.config.ts` composes
+  them with the 4 locked rules from design doc §8 (308 permanent).
+- `migrations.status = scaffold_complete` /
+  `current_phase = scaffold_complete` for CE migration.
+  `metadata.scaffold_phase` records `completed_at` and
+  `vercel_preview_url`.
 
 ## Tech Stack
 
@@ -132,6 +149,11 @@ Parent brand: Saxon.io. Owner: Jake Hall (non-developer, directs Claude Code).
 | SANITY_DATASET | In .env — for SCHEMA-1 |
 | SANITY_API_TOKEN | In .env — for SCHEMA-1 |
 | SUPABASE_DB_URL | In .env — Postgres direct URL (migrations) |
+| NEXT_PUBLIC_SANITY_PROJECT_ID | In `site/.env.local` — Sanity project ID for the Next.js app (`lzbhll1u`) |
+| NEXT_PUBLIC_SANITY_DATASET | In `site/.env.local` — Sanity dataset (`production`) |
+| NEXT_PUBLIC_SITE_URL | In `site/.env.local` — public site URL for canonical/hreflang generation |
+| NEXT_PUBLIC_SANITY_STUDIO_URL | In `site/.env.local` — Studio URL for stega click-to-edit links |
+| SANITY_API_READ_TOKEN | In `site/.env.local` — read token used by `previewClient` for draft-mode validation |
 
 ## Repo Structure
 
@@ -150,10 +172,15 @@ Parent brand: Saxon.io. Owner: Jake Hall (non-developer, directs Claude Code).
 | /audit-output/ | Audit artefacts (gitignored — contains PII) |
 | /scripts/ | One-off run scripts (Webflow, Firecrawl bootstrap) |
 | /scripts/audit/ | Full audit pipeline (14 steps + 3 orchestrators) |
+| /scripts/scaffold/ | Scaffold scripts: extract-redirects + start/complete phase |
+| /scripts/schema/ | Schema seed + record + phase-transition scripts |
 | /src/orchestrator/ | Job runner and phase orchestration |
 | /src/lib/adapters/webflow/ | WebflowAdapter (AUDIT-1 uses REST directly pending adapter) |
 | /src/lib/types.ts | Domain types + Zod schemas |
 | /src/lib/audit-types.ts | Audit pipeline enums and interfaces |
+| /studio/ | Sanity Studio v5 (project lzbhll1u, dataset production) |
+| /site/ | Customer-facing Next.js 16 app (Vercel root directory) |
+| /site/src/lib/redirects/ | Auto-generated tracked redirect tables (do not hand-edit) |
 
 ## Architecture Rules — Non-Negotiable
 
@@ -246,7 +273,7 @@ Only after ALL of the above are complete do you start planning the next phase.
 | 7 | AUDIT-1 | Step 3e `semi_global` count (745+) is inflated because the global-script 80%-of-pages threshold misses scripts that appear on most but not all templates. Consider lowering to 60% or moving more patterns into the explicit `SCRIPT_PATTERNS` list. | MYGRATR-CONTENT-1 |
 | 8 | AUDIT-1 | HubSpot access token lacks `automation` scope — workflow cross-reference returned nothing. Verify scope before CONTENT-1 if per-form workflow routing matters. | MYGRATR-CONTENT-1 |
 | 9 | AUDIT-1 | 4 canonical URLs remain `UNKNOWN` (Cloudflare challenge script, sitemap.xml, hash URL, `/uk/embedding`). Step 1 content-type filter should drop the first three. | MYGRATR-CONTENT-1 |
-| 10 | SCHEMA-1 | `src/lib/types.ts` `MigrationStatus` enum is out of sync with `src/lib/pipeline/state-machine.ts` (shortform `'audit'` vs full `'audit_complete'`). Dead code today (zero imports) but a trap for future contributors. Delete the enum or align its values to the state-machine type. | MYGRATR-SCAFFOLD-1 |
-| 11 | SCHEMA-1 | `src/types.ts` and `src/lib/audit-types.ts` both define `TemplateType`, with conflicting values (lowercase strings vs UPPERCASE enum). Standardise on one before SCAFFOLD-1 builds templates. | MYGRATR-SCAFFOLD-1 |
+| 10 | SCHEMA-1 | Legacy `MigrationStatus` enum in `src/lib/types.ts` uses shortform values — conflicts with canonical string-literal union in `src/lib/pipeline/state-machine.ts`. Needs consolidation. | MYGRATR-CONTENT-1 |
+| 11 | SCHEMA-1 | `TemplateType` conflict between string-literal and enum representations across `src/lib/types.ts` and `src/lib/audit-types.ts`. | MYGRATR-CONTENT-1 |
 
-*Last updated: April 2026 — MYGRATR-SCHEMA-1 complete. MYGRATR-SCAFFOLD-1 next.*
+*Last updated: April 2026 — MYGRATR-SCAFFOLD-1 complete. MYGRATR-CONTENT-1 next.*
