@@ -65,3 +65,56 @@ auto-generated, the file should be edited manually after a CONTENT-1
 review pass. As of SCAFFOLD-1 it is auto-generated and re-running
 `npm run redirects:extract` would overwrite local edits. A header comment
 on the generated file warns of this.
+
+---
+
+## 2026-04-25 — Step 8c gate: Vercel deploy + scaffold:complete
+
+**Where I am:** Step 8c (Vercel preview deploy) and Step 8d
+(scaffold_complete transition). Both require user-driven actions —
+auto mode does not permit pushing to remote or modifying shared
+deployment settings without explicit confirmation.
+
+**Current state of the branch (`feat/scaffold-1`, local only):**
+
+- 9 commits, all green locally.
+- `npm run build` passes in `site/` with zero TS / ESLint errors.
+- `migrations.status = scaffold_running` already set via
+  `npm run scaffold:start -- --confirm`.
+
+**Local smoke test results (against `npm run start` on
+http://localhost:3000):**
+
+| Check | Result |
+|---|---|
+| `/` returns 200 | ✓ |
+| `/uk` returns 200 (308 redirect to `/uk/` for the trailing slash) | ✓ |
+| `/uk/` returns 200 | ✓ |
+| `/team` → `/about-us` (308) | ✓ |
+| `/our-work` → `/customer-stories` (308) | ✓ |
+| `/live-job-role/some-test-slug` → `talent.cloudemployee.io` (308) | ✓ |
+| `/after-care` → `/how-it-works` (308) — sample webflow row | ✓ |
+| `/sitemap.xml` returns 200 with valid XML containing homepage | ✓ |
+| `/robots.txt` returns 200 with `Disallow: /download-thank-you/` | ✓ |
+| GTM `GTM-WL45TCTW` present in page source | ✓ |
+| GeoTargetly inline tag present in page source | ✓ |
+
+Note: Next.js's `permanent: true` emits HTTP 308 (preserves request
+method) rather than 301. The brief's "(301)" wording is functionally
+equivalent for SEO; this is the documented Next.js behaviour.
+
+**What's left for Jake to drive:**
+
+1. Confirm Vercel project root directory is set to `site`. If the
+   Vercel project doesn't exist yet, create it and point Root Directory
+   to `site` before pushing.
+2. Confirm I have permission to push `feat/scaffold-1`, OR push it
+   yourself with `git push -u origin feat/scaffold-1`.
+3. Once the Vercel preview deploy is live, give me the preview URL.
+4. I'll then re-run the smoke tests against the preview URL and run
+   `npm run scaffold:complete -- --confirm --preview-url=<url>` to
+   transition to `scaffold_complete`, then proceed to Step 9 (merge +
+   post-phase docs).
+
+The branch is locally complete and ready to ship — the only outstanding
+items are the deploy + verification on the preview URL.
