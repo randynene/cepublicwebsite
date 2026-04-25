@@ -105,16 +105,23 @@ equivalent for SEO; this is the documented Next.js behaviour.
 
 **What's left for Jake to drive:**
 
-1. Confirm Vercel project root directory is set to `site`. If the
-   Vercel project doesn't exist yet, create it and point Root Directory
-   to `site` before pushing.
-2. Confirm I have permission to push `feat/scaffold-1`, OR push it
-   yourself with `git push -u origin feat/scaffold-1`.
-3. Once the Vercel preview deploy is live, give me the preview URL.
-4. I'll then re-run the smoke tests against the preview URL and run
-   `npm run scaffold:complete -- --confirm --preview-url=<url>` to
-   transition to `scaffold_complete`, then proceed to Step 9 (merge +
-   post-phase docs).
+The repo currently has **no git remote** and **no Vercel project**
+linked (`git remote` returns empty; no `vercel.json` exists).
+SCAFFOLD-1 cannot complete without:
 
-The branch is locally complete and ready to ship — the only outstanding
-items are the deploy + verification on the preview URL.
+1. Add a git remote: `git remote add origin <github-or-gitlab-url>`
+   (or push to whichever host the migration project lives on).
+2. Create the Vercel project, point Root Directory → `site`, set the
+   required env vars (NEXT_PUBLIC_SANITY_PROJECT_ID,
+   NEXT_PUBLIC_SANITY_DATASET, NEXT_PUBLIC_SITE_URL,
+   NEXT_PUBLIC_SANITY_STUDIO_URL, SANITY_API_READ_TOKEN).
+3. Push: `git push -u origin feat/scaffold-1`. Vercel auto-deploys.
+4. Verify the preview URL passes the brief Step 8c smoke checklist.
+5. Run
+   `npm run scaffold:complete -- --confirm --preview-url=<url>`.
+6. Merge `feat/scaffold-1` → `main` and run the post-phase context
+   updates (Step 9b).
+
+The branch is locally complete; the gate is purely
+infra/account-bootstrap that the executor can't do unilaterally in
+auto mode (it touches shared/production state).
