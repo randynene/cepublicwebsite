@@ -1,5 +1,269 @@
 # PHASE_HISTORY.md
 
+## MYGRATR-SCAFFOLD-1 — Next.js Scaffold (April 2026)
+
+### What Was Built
+
+**Step 0a — pre-flight context update (`CLAUDE.md`):**
+
+- Phase status table: SCHEMA-1 → ✅ Complete; SCAFFOLD-1 → 🔄 In Progress.
+- Tech debt rows 10/11 (legacy `MigrationStatus` enum, `TemplateType` clash)
+  reassigned `Fix In: MYGRATR-CONTENT-1` per brief — those clean-ups are
+  out of the SCAFFOLD lane.
+
+**Step 1 — Next.js app scaffold:**
+
+- `npx create-next-app@latest site/` produced Next.js 16.2.4 (App Router,
+  TypeScript strict, Tailwind v4, ESLint, src-dir, `@/*` alias). Brief
+  permits 15+; 16 is the current latest.
+- Sanity dependencies installed in `site/`: `next-sanity@12`,
+  `@sanity/client`, `@sanity/image-url`, `@sanity/presentation`,
+  `@sanity/visual-editing`, plus `clsx` and `tailwind-merge`.
+- Root `.gitignore` extended: `site/.next/`, `site/node_modules/` ignored;
+  `.audit/` restored (had been removed by an earlier edit).
+- Site `.gitignore` modified: `!.env.local.example` exception so the
+  template stays tracked while `.env.local` itself remains ignored.
+
+**Step 2 — Sanity client + env:**
+
+- `site/.env.local.example` (committed) and `site/.env.local` (ignored)
+  with `NEXT_PUBLIC_SANITY_PROJECT_ID=lzbhll1u`,
+  `NEXT_PUBLIC_SANITY_DATASET=production`,
+  `NEXT_PUBLIC_SITE_URL=https://staging.jakevibes.dev`,
+  `NEXT_PUBLIC_SANITY_STUDIO_URL=http://localhost:3333`,
+  `SANITY_API_READ_TOKEN`.
+- `site/src/lib/env.ts` — Zod-validated env loader scoped to the Next.js
+  app. `NEXT_PUBLIC_SITE_URL` falls back to
+  `https://${NEXT_PUBLIC_VERCEL_URL}` then `http://localhost:3000` so
+  preview builds never crash.
+- `site/src/lib/sanity/client.ts` — `sanityClient` (perspective
+  `published`, `useCdn` only in production, stega gated by
+  `VERCEL_ENV === 'preview' && NODE_ENV !== 'production'`) +
+  `previewClient` (`previewDrafts`, no CDN, authenticated, stega on).
+  `'server-only'` import at the top of the file prevents accidental
+  client-bundle inclusion.
+- `site/src/lib/sanity/queries.ts` — single `getSiteSettings` smoke-test
+  query stub; CONTENT-1 / TEMPLATE-* expand.
+
+**Step 3 — locale routing:**
+
+- `site/src/lib/locale.ts` — `LOCALES` (en-US, en-GB), `DEFAULT_LOCALE`,
+  `getLocaleFromPath`, `buildLocalePath`, `generateCanonical`,
+  `generateHreflang`. Both generators normalise defensively (strip a
+  leading `/uk/` if a UK path is passed). The `/uk` prefix guard
+  explicitly checks `=== '/uk'` and `startsWith('/uk/')` so paths like
+  `/ukraine/...` aren't mangled. A header comment block locks the
+  contract for TEMPLATE-* phases — every `generateMetadata()` calls
+  both helpers.
+- `site/src/components/locale-provider.tsx` — client `LocaleContext`
+  with `useLocale()` hook.
+- UK route stubs: `site/src/app/uk/layout.tsx` wraps in `LocaleProvider
+  locale="en-GB"`; `site/src/app/uk/page.tsx` mirrors `/`;
+  `site/src/app/uk/[...slug]/page.tsx` calls `notFound()` (Next 16 async
+  params) until TEMPLATE-* defines explicit dynamic segments.
+
+**Step 4 — root layout, scripts, fonts, metadata, robots, sitemap:**
+
+- `site/src/components/third-party-scripts.tsx` — three exports:
+  `GeoTargetlyScript` (beforeInteractive, GeoTargetly inline redirect),
+  `GtmHeadScript` + `GtmNoScript` (afterInteractive head + body iframe),
+  and `GlobalScripts` for the rest. Each component renders its
+  `<Script>` only when the corresponding identifier is confirmed in
+  `audit-output/ce-scripts.json`. IDs sourced verbatim:
+  GTM-WL45TCTW, LinkedIn 4901289, Hotjar 4985481, Clara workspace
+  09aa62df-5af6-4cec-b565-c335e907327d, Facebook Pixel 160820827844254,
+  HubSpot 22809822. GA4 (G-2Q22ZM5PLY) is fired through GTM and not
+  loaded as a separate tag. GSAP/Swiper/Finsweet load
+  afterInteractive; Calendly is `lazyOnload` globally for now (TEMPLATE-BAC
+  may scope to /book-a-call/* later). Vector Tag, Ahrefs Analytics, and
+  Cloudflare Insights are deliberately omitted — they appear in the
+  audit but lack confirmed CE-tied identifiers; CONTENT-1 confirms.
+- `site/src/app/layout.tsx` — async server component, `<html lang="en">`
+  (UK pages override via `LocaleProvider` + per-page metadata), Inter
+  font (300/400/500/600/700) loaded via `next/font/google` —
+  confirmed in audit-output/pages/home/content.json customHeadCode
+  (`WebFont.load: Inter:300,400,500,600,700`). `metadataBase` from
+  `env.NEXT_PUBLIC_SITE_URL`, `title.template` "%s | Cloud Employee",
+  `openGraph.images` defaults to `/og-default.png`. The OG override
+  pattern for TEMPLATE-* phases is documented as a top-of-file comment.
+  Body order: GTM noscript → Nav → children → Footer → SanityLive →
+  conditional VisualEditing (draftMode().isEnabled) → GlobalScripts.
+- `site/public/og-default.png` — 1×1 transparent PNG written via Node
+  base64 decode. Seb replaces with the real 1200×630 brand asset
+  pre-launch.
+- `site/src/app/robots.ts` — `Disallow: /download-thank-you/` (design
+  doc §10), sitemap link to `/sitemap.xml`.
+- `site/src/app/sitemap.ts` — homepage + UK homepage stub. CONTENT-1
+  expands across all 21 CMS types + singletons.
+
+**Step 5 — nav and footer stubs:**
+
+- `site/src/components/layout/nav.tsx` and `footer.tsx` — both server
+  components. Each calls `getSiteSettings()` and null-guards before
+  reading any properties (Sanity returns `null` if the singleton hasn't
+  been created yet). Tech Debt #5 noted in `nav.tsx`: AUDIT-1's selector
+  merged Technology dropdown into Services in
+  `ce-global-components.json`; TEMPLATE-NAV will source the canonical
+  link tree from the Sanity `navigation` global.
+
+**Step 6 — redirects:**
+
+- `scripts/scaffold/extract-redirects.ts` (`npm run redirects:extract`)
+  reads three gitignored audit artefacts and writes three tracked TS
+  files inside `site/src/lib/redirects/`:
+  - `generated-redirects.ts` — 12 entries from
+    `audit-output/ce-canonical-urls.json` (filter status=301/302, drop
+    null `redirectTarget`, dedupe against locked rules).
+  - `regex-redirects.ts` — 12 entries from
+    `audit-output/ce-regex-redirects.json`. Webflow `(.*)` becomes
+    Next.js `:slug*`; Webflow `%1` becomes `:slug*`. Webflow rules
+    where the capture has no slash separator (`/foo(.*)`) are split
+    into two rules — exact match + `/foo/:slug*` — because
+    path-to-regexp can't repeat a parameter without a separator.
+  - `webflow-redirects.ts` — 316 entries from
+    `audit-output/webflow-redirects.csv` (drop 336 `/live-job-role/*`
+    rows handled by the locked catch-all regex; drop the `/team` row
+    that overlaps with the locked rule; strip query strings; dedupe
+    against `regex-redirects.ts` entries that also live in the CSV).
+- `site/next.config.ts` composes `[crawlRedirects, regexRedirects,
+  webflowRedirects, lockedRules]` in that order. Locked rules from
+  design doc §8: `/live-job-role/:path*` → talent.cloudemployee.io
+  (308), `/team` → /about-us, `/our-work` → /customer-stories,
+  `/alternatives` → /compare. Pinned `turbopack.root` to `__dirname`
+  to silence the multi-lockfile warning. The `/archive/old-home` 410
+  Gone behaviour is parked with a TODO for TEMPLATE-STATIC.
+- Brief deviation: brief Step 6d says `webflow-redirects.ts` is
+  "hand-authored from the verified markdown source" but the markdown
+  only contains summary statistics + 5 examples — the 317 actual rows
+  live in the gitignored CSV. The same Step 6c extraction-script
+  pattern was applied. Tracked in commit `a61a161` and originally
+  documented in `DEBUG_CONTEXT.md` (cleared at end of phase).
+
+**Step 7 — Presentation Tool + draft mode:**
+
+- `studio/sanity.config.ts` adds `presentationTool({ previewUrl: …
+  previewMode/draftMode → '/api/draft-mode/enable' })`. Imported from
+  `sanity/presentation` (the bundled path) — the standalone
+  `@sanity/presentation` package is now a deprecated re-export that
+  would crash at runtime. `@sanity/presentation` is still listed as a
+  dependency to satisfy the brief's install step but the actual import
+  path is the bundled one.
+- `site/src/app/api/draft-mode/enable/route.ts` — calls
+  `validatePreviewUrl(previewClient, request.url)`,
+  same-origin-checks the redirectTo against
+  `env.NEXT_PUBLIC_SITE_URL` (F10 hardening), then
+  `(await draftMode()).enable()` and redirects to
+  `pathname + search + hash` only.
+- `site/src/app/api/draft-mode/disable/route.ts` — disables the cookie
+  and returns "Draft mode disabled". F15 (POST-only + origin check) is
+  deferred per brief.
+- `site/src/lib/sanity/live.ts` — `defineLive({ client: sanityClient })`
+  exposes `sanityFetch` and `SanityLive`. The brief's
+  `export { SanityLive } from 'next-sanity'` form doesn't exist in
+  next-sanity@12; the factory pattern is the current API.
+- Layout renders `<SanityLive />` always and `<VisualEditing />` only
+  when `(await draftMode()).isEnabled`. `VisualEditing` imported from
+  `next-sanity/visual-editing` (the brief's `next-app-router` subpath
+  also doesn't exist in this version).
+
+**Step 8 — phase scripts + smoke test + Vercel deploy:**
+
+- `scripts/scaffold/start-scaffold-phase.ts` requires `--confirm`,
+  asserts the schema_complete → scaffold_running transition, idempotent
+  on re-run.
+- `scripts/scaffold/complete-scaffold-phase.ts` requires `--confirm`
+  and `--preview-url`, transitions to scaffold_complete and writes
+  `metadata.scaffold_phase = { completed_at, vercel_preview_url }`.
+- `npm run build` passes locally with zero TS / ESLint errors. `npm
+  run start` smoke tests on http://localhost:3000 confirmed `/`,
+  `/uk`, `/team→/about-us`, `/our-work→/customer-stories`,
+  `/live-job-role/x→talent.cloudemployee.io/x`, sample webflow
+  `/after-care→/how-it-works`, `/sitemap.xml`, `/robots.txt`, GTM and
+  GeoTargetly tags all working.
+- Preview deploy at
+  `https://mygratr-c3utcgloa-cloud-employee.vercel.app` (Vercel
+  deployment protection on; smoke-tested via the project owner's
+  account, all 9 brief-spec checks pass).
+- `migrations.status = scaffold_complete` for CE migration; metadata
+  includes the preview URL.
+
+### Patterns Established (added to CONVENTIONS.md)
+
+- **Next.js App Router conventions for the generated site**: every
+  page's `generateMetadata()` calls `generateCanonical(path, locale)`
+  and `generateHreflang(usPath)` from `site/src/lib/locale.ts`. The
+  canonical/hreflang generators normalise paths defensively and are
+  the single source of truth.
+- **UK locale via URL prefix, not Next.js i18n**: handled by an
+  explicit `site/src/app/uk/` segment, never the framework's i18n
+  config.
+- **Third-party scripts only render with confirmed identifiers**: each
+  script in `site/src/components/third-party-scripts.tsx` is gated on
+  a constant pulled verbatim from audit output. Unconfirmed IDs return
+  `null` — never fabricated values.
+- **Redirect data extraction pattern**: gitignored audit artefacts go
+  through `scripts/scaffold/extract-redirects.ts` and produce tracked
+  TS files inside `site/`. `next.config.ts` only imports tracked files
+  so Vercel builds don't depend on `audit-output/`.
+- **Sanity Live factory**: `defineLive({ client })` in
+  `site/src/lib/sanity/live.ts` exports `sanityFetch` + `SanityLive`
+  for the rest of the site.
+
+### Files Created / Modified
+
+- `site/` — entire Next.js 16 app (≈40 files including create-next-app
+  scaffold).
+- `site/src/lib/env.ts`, `locale.ts`, `sanity/{client,queries,live}.ts`,
+  `redirects/{generated,regex,webflow}-redirects.ts`.
+- `site/src/components/locale-provider.tsx`, `third-party-scripts.tsx`,
+  `layout/{nav,footer}.tsx`.
+- `site/src/app/{layout,page,robots,sitemap}.ts(x)`,
+  `uk/{layout,page,[...slug]/page}.tsx`,
+  `api/draft-mode/{enable,disable}/route.ts`.
+- `site/next.config.ts` (overwrote create-next-app stub).
+- `studio/sanity.config.ts` (added `presentationTool`).
+- `studio/package.json` + `studio/package-lock.json` (added
+  `@sanity/presentation`).
+- `scripts/scaffold/{extract-redirects,start-scaffold-phase,complete-scaffold-phase}.ts`.
+- `package.json` — three new scripts: `redirects:extract`,
+  `scaffold:start`, `scaffold:complete`.
+- `.gitignore` extended; `site/.gitignore` exception for
+  `.env.local.example`.
+
+### Data State After Phase
+
+- `migrations` row CE: `status = scaffold_complete`,
+  `current_phase = scaffold_complete`,
+  `metadata.scaffold_phase = { completed_at, vercel_preview_url }`.
+- Vercel preview URL: `https://mygratr-c3utcgloa-cloud-employee.vercel.app`.
+- 11 commits on `feat/scaffold-1`; merging to `main` closes the phase.
+
+### Surprises / Brief Deviations
+
+- **Next.js 16 instead of 15.** create-next-app installs 16.2.4; brief
+  permits 15+. Recorded for context only — no code adjustments needed.
+- **Brief mentioned three import paths that don't exist in the current
+  package versions**:
+  `@sanity/visual-editing/next-app-router` (use
+  `@sanity/visual-editing/react` or `next-sanity/visual-editing`),
+  `@sanity/presentation` direct import (use `sanity/presentation`),
+  `next-sanity` root re-export of `SanityLive` (use
+  `defineLive({ client })`). All three resolved by the more current
+  recommended path.
+- **Webflow redirects source.** Brief says hand-authored from
+  redirects-verification.md, but that markdown only contains summary
+  statistics + 5 examples; the 317 actual rows live in
+  webflow-redirects.csv (gitignored). Resolved by extending the
+  Step 6c extraction-script pattern.
+- **Path-to-regexp parameter rules.** Webflow `/foo(.*)` doesn't
+  translate cleanly because path-to-regexp can't repeat without a
+  separator. Split into two rules per affected pattern.
+- **Vercel deployment protection.** Preview URL returned 401 to
+  ordinary curl; Jake verified the smoke checklist against the
+  protected URL through `vercel curl` / browser auth.
+
+---
+
 ## MYGRATR-SCHEMA-1 — Sanity Schema Design (April 2026)
 
 ### What Was Built

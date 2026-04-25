@@ -104,6 +104,69 @@
   `schema:smoke-test`, `schema:record`
 - **Phase:** MYGRATR-SCHEMA-1
 
+## Next.js Scaffold (CE customer-facing site)
+- **Description:** Customer-facing Next.js 16 app at `site/` that renders
+  Sanity content. Includes Sanity client + preview client wiring, locale
+  routing helpers (canonical / hreflang / `/uk` prefix mirror), root
+  layout with the 17 audit-confirmed third-party scripts, robots and
+  sitemap stubs, full redirect translation pipeline, Sanity Presentation
+  Tool integration with draft-mode + visual editing.
+- **Pages:**
+  - `site/src/app/page.tsx` — `/` (homePage placeholder; TEMPLATE-HOME
+    fills in the fold sections)
+  - `site/src/app/uk/page.tsx` — `/uk` (UK locale mirror)
+  - `site/src/app/uk/[...slug]/page.tsx` — catch-all 404 placeholder
+    (TEMPLATE-* replaces with explicit dynamic segments per design doc §10)
+  - `site/src/app/layout.tsx` — root layout: Inter font, metadata
+    defaults, GeoTargetly + GTM head/body, Nav/Footer stubs, SanityLive,
+    conditional VisualEditing, GlobalScripts
+- **API Routes:**
+  - `site/src/app/api/draft-mode/enable/route.ts` — preview-secret
+    validation, same-origin redirect guard, draftMode().enable()
+  - `site/src/app/api/draft-mode/disable/route.ts` — draftMode().disable()
+- **File-convention routes:**
+  - `site/src/app/robots.ts` — Disallow: /download-thank-you/
+  - `site/src/app/sitemap.ts` — homepage + UK homepage stub (CONTENT-1
+    expands)
+- **Lib Modules (site):**
+  - `site/src/lib/env.ts` — Zod env loader scoped to the Next.js app
+  - `site/src/lib/locale.ts` — `LOCALES`, `getLocaleFromPath`,
+    `buildLocalePath`, `generateCanonical`, `generateHreflang`
+  - `site/src/lib/sanity/client.ts` — `sanityClient` + `previewClient`
+  - `site/src/lib/sanity/queries.ts` — `getSiteSettings` smoke-test stub
+  - `site/src/lib/sanity/live.ts` — `defineLive({ client })` factory
+    exposing `sanityFetch` and `SanityLive`
+  - `site/src/lib/redirects/{generated,regex,webflow}-redirects.ts` —
+    auto-generated tracked redirect tables
+- **Components:**
+  - `site/src/components/locale-provider.tsx` — client `LocaleContext`
+  - `site/src/components/third-party-scripts.tsx` — `GeoTargetlyScript`,
+    `GtmHeadScript`, `GtmNoScript`, `GlobalScripts`
+  - `site/src/components/layout/nav.tsx`, `footer.tsx` — server stubs
+    that null-guard `getSiteSettings()`
+- **Studio change:** `studio/sanity.config.ts` adds `presentationTool`
+  from `sanity/presentation` with previewMode/draftMode pointing at
+  `/api/draft-mode/enable`.
+- **Scripts:**
+  - `scripts/scaffold/extract-redirects.ts` — reads gitignored
+    `audit-output/` and writes three tracked TS files into
+    `site/src/lib/redirects/`
+  - `scripts/scaffold/start-scaffold-phase.ts` — schema_complete →
+    scaffold_running transition
+  - `scripts/scaffold/complete-scaffold-phase.ts` — scaffold_running →
+    scaffold_complete; records `metadata.scaffold_phase.vercel_preview_url`
+- **Config:**
+  - `site/next.config.ts` — composes the four redirect tables,
+    `turbopack.root: __dirname`
+  - `site/.env.local.example` — committed env template
+- **DB Tables:** `migrations` (status → scaffold_complete with
+  `metadata.scaffold_phase`)
+- **External systems:** Vercel preview deploy at
+  `https://mygratr-c3utcgloa-cloud-employee.vercel.app`
+- **npm scripts:** `npm run redirects:extract`, `scaffold:start`,
+  `scaffold:complete`, plus `cd site && npm run dev|build|start`
+- **Phase:** MYGRATR-SCAFFOLD-1
+
 ## Site Audit Agent
 - **Description:** Produces the authoritative migration manifest for a source
   site — reconciles URLs from four sources, extracts content per page,

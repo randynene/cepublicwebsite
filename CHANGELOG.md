@@ -1,5 +1,54 @@
 # CHANGELOG.md
 
+## MYGRATR-SCAFFOLD-1 — Next.js Scaffold (April 2026)
+Next.js 16.2.4 site scaffolded at `site/` (App Router, TypeScript, Tailwind v4)
+in the same monorepo as `studio/` and `src/`. Sanity wiring lives in
+`site/src/lib/sanity/`: `sanityClient` (published + CDN in production, stega
+disabled outside preview deploys), `previewClient` (authenticated, draft
+perspective, stega on), and `live.ts` which calls `defineLive({ client })`
+to expose `<SanityLive />` and `sanityFetch` (next-sanity 12 replaced the
+direct `SanityLive` export with this factory). Site-level env validator at
+`site/src/lib/env.ts` uses Zod with a `NEXT_PUBLIC_VERCEL_URL` fallback so
+preview builds don't crash. Locale routing: `site/src/lib/locale.ts` exports
+`LOCALES`, `getLocaleFromPath`, `buildLocalePath`, `generateCanonical`,
+`generateHreflang` — every TEMPLATE-* `generateMetadata()` consumes those two
+generators for canonical + hreflang. UK locale mirror under `site/src/app/uk/`
+(`layout.tsx` wraps in `LocaleProvider`, `page.tsx` mirrors the home, catch-all
+404s until TEMPLATE-* defines explicit dynamic segments). Root layout loads
+17 confirmed third-party scripts via `next/script` with brief-spec strategies
+(GeoTargetly beforeInteractive; GTM/LinkedIn/Clara/Hotjar/Facebook/HubSpot/
+GSAP/Swiper/Finsweet afterInteractive; Calendly lazyOnload; GA4 fired through
+GTM, not loaded directly). Inter font (300–700) wired via `next/font/google` —
+extracted from CE's WebFont.load call in `audit-output/pages/home/content.json`.
+Robots disallows `/download-thank-you/` per design doc §10; sitemap.ts is a
+homepage-only stub for CONTENT-1 to expand. OG fallback `public/og-default.png`
+(1×1 PNG) with override-pattern comment in layout for TEMPLATE-* phases. Nav
+and footer are server-component stubs that null-guard the
+`getSiteSettings()` result; both will be populated from Sanity globals in
+TEMPLATE-NAV / TEMPLATE-FOOTER. Redirects: `scripts/scaffold/extract-redirects.ts`
+(`npm run redirects:extract`) reads gitignored `audit-output/` and writes
+three tracked TS files inside `site/src/lib/redirects/`: 12 crawl-discovered
+301/302s (from `ce-canonical-urls.json`, null-target rows dropped), 12 regex
+rules (from `ce-regex-redirects.json`, Webflow `(.*)` → Next.js `:slug*`
+with split-pattern handling for `/foo(.*)` cases), 316 heterogeneous
+Webflow rules (from `webflow-redirects.csv`, deduped against locked rules,
+336 `/live-job-role/*` rows collapsed into the locked catch-all regex).
+`next.config.ts` composes them with the four locked rules from design doc §8.
+Sanity Presentation Tool wired in `studio/sanity.config.ts` (imported from
+`sanity/presentation` — the standalone `@sanity/presentation` package is
+deprecated). Draft-mode enable/disable routes under
+`site/src/app/api/draft-mode/`: enable validates the preview-url-secret with
+`previewClient` and same-origin checks the redirect target before flipping
+the cookie. `<VisualEditing />` from `next-sanity/visual-editing` renders
+conditionally on `draftMode().isEnabled`. Phase scripts under
+`scripts/scaffold/`: start-scaffold-phase (transition to scaffold_running)
+and complete-scaffold-phase (transition to scaffold_complete + record
+Vercel preview URL in `metadata.scaffold_phase`). All 11 commits green
+locally; Vercel preview deploy at
+`https://mygratr-c3utcgloa-cloud-employee.vercel.app` smoke-tested through
+`vercel curl` (deployment protection on). `migrations.status =
+scaffold_complete` for CE migration.
+
 ## MYGRATR-SCHEMA-1 — Sanity Schema Design (April 2026)
 Translated the locked design doc into working code. Sanity Studio v5
 scaffolded at `studio/` against project `lzbhll1u` / dataset `production`.
