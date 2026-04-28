@@ -95,18 +95,30 @@ export async function uploadImage(imageField: unknown): Promise<unknown | null> 
 // Convert a Webflow MultiReference field into a Sanity reference array.
 // `refPrefix` is the deterministic _id prefix used when the referenced docs
 // were created (e.g. 'tag' → _ref becomes 'tag-{webflowId}').
+//
+// Webflow v2 returns MultiReference items in two shapes depending on the
+// collection: a plain string ID (e.g. video `tags`) or an object with
+// `.id` (e.g. older shapes). Both are accepted; non-string, non-object
+// entries are dropped.
 export function toRefs(
   multiRefField: unknown,
   refPrefix: string,
 ): Array<{ _type: 'reference'; _ref: string; _key: string }> {
   if (!Array.isArray(multiRefField)) return []
-  return multiRefField
-    .filter((ref): ref is { id: string } => !!ref?.id)
-    .map((ref) => ({
-      _type: 'reference' as const,
-      _ref: `${refPrefix}-${ref.id}`,
-      _key: ref.id.slice(0, 8),
-    }))
+  const ids: string[] = []
+  for (const entry of multiRefField) {
+    if (typeof entry === 'string' && entry.trim() !== '') {
+      ids.push(entry)
+    } else if (entry && typeof entry === 'object') {
+      const id = (entry as { id?: unknown }).id
+      if (typeof id === 'string' && id.trim() !== '') ids.push(id)
+    }
+  }
+  return ids.map((id) => ({
+    _type: 'reference' as const,
+    _ref: `${refPrefix}-${id}`,
+    _key: id.slice(0, 8),
+  }))
 }
 
 // Pull the option name from a Webflow Option field object.
