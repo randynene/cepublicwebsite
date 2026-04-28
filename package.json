@@ -24,7 +24,8 @@
     "content:migrate-benefit-values": "tsx scripts/content/migrate-benefit-values.ts",
     "content:migrate-staff-benefits": "tsx scripts/content/migrate-staff-benefits.ts",
     "content:verify-1a": "tsx scripts/content/verify-content-1a.ts",
-    "content:migrate-team-members": "tsx scripts/content/migrate-team-members.ts"
+    "content:migrate-team-members": "tsx scripts/content/migrate-team-members.ts",
+    "content:migrate-reviews": "tsx scripts/content/migrate-reviews.ts"
   },
   "keywords": [],
   "author": "",
