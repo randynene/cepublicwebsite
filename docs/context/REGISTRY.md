@@ -200,6 +200,15 @@ Grouped in `studio/schemas/structure.ts` into six Studio nav sections.
 | scripts/content/migrate-benefit-values.ts | Webflow `-- Client Benefits & Company Values` → Sanity `benefitValue` (Option-field resolved via collection schema) | 9 Sanity docs + 1 `content_migrations` row (`benefit-values`) | CONTENT-1A |
 | scripts/content/migrate-staff-benefits.ts | Webflow `-- Staff Benefits` → Sanity `staffBenefit` | 6 Sanity docs + 1 `content_migrations` row (`staff-benefits`) | CONTENT-1A |
 | scripts/content/verify-content-1a.ts | Final parity check — exits 0 only when all 5 CONTENT-1A slugs hit migrated_count == expected and status == 'complete' | stdout summary; exits 0 / 1 | CONTENT-1A |
+| scripts/content/migrate-team-members.ts | Webflow `team` → Sanity `teamMember` (28); image upload, RichText → Portable Text | 28 Sanity docs + 1 `content_migrations` row (`team-members`) | CONTENT-1B |
+| scripts/content/migrate-reviews.ts | Webflow `reviews` → Sanity `review` (26); `nameClient` ← `name-client`, drops Webflow `name` | 26 Sanity docs + 1 `content_migrations` row (`reviews`) | CONTENT-1B |
+| scripts/content/migrate-videos.ts | Webflow `videos` → Sanity `video` (32); resolves `type` and `team` Option fields via `fetchOptionIdMap()` | 32 Sanity docs + 1 `content_migrations` row (`videos`) | CONTENT-1B |
+| scripts/content/migrate-book-a-call.ts | Webflow `book-a-call` → Sanity `bookACall` (6); Webflow `title` → Sanity `metaDescription` | 6 Sanity docs + 1 `content_migrations` row (`book-a-call`) | CONTENT-1B |
+| scripts/content/migrate-events.ts | Webflow `events` → Sanity `event` (1); resolves `event-type` from string ID | 1 Sanity doc + 1 `content_migrations` row (`events`) | CONTENT-1B |
+| scripts/content/migrate-tools.ts | Webflow `tools` → Sanity `tool` (2); strips API keys from Culture Match `hidden-code` | 2 Sanity docs + 1 `content_migrations` row (`tools`) | CONTENT-1B |
+| scripts/content/migrate-downloads.ts | Webflow `download` → Sanity `download` (5); reads `meta-thunbnail` (Webflow's typo) for `metaThumbnail` | 5 Sanity docs + 1 `content_migrations` row (`downloads`) | CONTENT-1B |
+| scripts/content/migrate-downloads-access.ts | Webflow `download-thank-you` → Sanity `downloadAccess` (5) | 5 Sanity docs + 1 `content_migrations` row (`downloads-access`) | CONTENT-1B |
+| scripts/content/verify-content-1b.ts | Final parity check for CONTENT-1B — exits 0 only when all 8 collections hit 100% | stdout summary; exits 0 / 1 | CONTENT-1B |
 
 ## Lib Files
 
@@ -221,7 +230,8 @@ Grouped in `studio/schemas/structure.ts` into six Studio nav sections.
 | src/lib/content/sanity-write-client.ts | sanityWriteClient | `@sanity/client` write client for migration scripts | CONTENT-1A |
 | src/lib/content/webflow-read-client.ts | getCollectionItems(collectionId), WebflowItem type | Paginated Webflow REST v2 reader (offset+limit) | CONTENT-1A |
 | src/lib/content/migration-tracker.ts | recordMigration({ collectionSlug, source, migrated, status, errorLog }) | Upsert into content_migrations keyed by (org_id, migration_id, collection_slug) | CONTENT-1A |
-| src/lib/content/ce-collection-ids.ts | CE_COLLECTION_IDS (10-key as-const map) | CE-specific Webflow collection IDs in scope for CONTENT-1A | CONTENT-1A |
+| src/lib/content/ce-collection-ids.ts | CE_COLLECTION_IDS (18-key as-const map; extended in CONTENT-1B) | CE-specific Webflow collection IDs in scope for CONTENT-1A + 1B | CONTENT-1A |
+| src/lib/content/migration-helpers.ts | toPortableText (JSDOM-injected parseHtml), extractUrl (object + plain-string), uploadImage, toRefs, extractOption, webflowSlug | Shared helpers for every CONTENT-1B+ migrator | CONTENT-1B |
 
 ## npm Scripts
 
@@ -244,6 +254,15 @@ Grouped in `studio/schemas/structure.ts` into six Studio nav sections.
 | `npm run content:migrate-benefit-values` | Migrate Webflow Client Benefits & Company Values → Sanity `benefitValue` (9 items) |
 | `npm run content:migrate-staff-benefits` | Migrate Webflow Staff Benefits → Sanity `staffBenefit` (6 items) |
 | `npm run content:verify-1a` | Final parity check for CONTENT-1A — exits 0 when all 5 collections hit 100% |
+| `npm run content:migrate-team-members` | Migrate Webflow team → Sanity `teamMember` (28 items, real image asset uploads) |
+| `npm run content:migrate-reviews` | Migrate Webflow reviews → Sanity `review` (26 items) |
+| `npm run content:migrate-videos` | Migrate Webflow videos → Sanity `video` (32 items, Option-field resolution) |
+| `npm run content:migrate-book-a-call` | Migrate Webflow book-a-call → Sanity `bookACall` (6 items) |
+| `npm run content:migrate-events` | Migrate Webflow events → Sanity `event` (1 item) |
+| `npm run content:migrate-tools` | Migrate Webflow tools → Sanity `tool` (2 items, API-key stripping) |
+| `npm run content:migrate-downloads` | Migrate Webflow download → Sanity `download` (5 items) |
+| `npm run content:migrate-downloads-access` | Migrate Webflow download-thank-you → Sanity `downloadAccess` (5 items) |
+| `npm run content:verify-1b` | Final parity check for CONTENT-1B — exits 0 when all 8 collections hit 100% |
 
 ## Audit Output Files (populated by AUDIT-1)
 

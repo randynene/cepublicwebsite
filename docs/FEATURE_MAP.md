@@ -167,6 +167,60 @@
   `scaffold:complete`, plus `cd site && npm run dev|build|start`
 - **Phase:** MYGRATR-SCAFFOLD-1
 
+## Content Migration — Reference-Light Collections (CONTENT-1B)
+- **Description:** Second slice of the Webflow → Sanity content migration.
+  105 items across 8 Sanity document types (`teamMember` 28, `review` 26,
+  `video` 32, `bookACall` 6, `event` 1, `tool` 2, `download` 5,
+  `downloadAccess` 5). Standalone collections + collections that
+  reference only `tag` documents already migrated in CONTENT-1A. Image
+  fields land as real Sanity assets via `uploadImage()` (no more
+  staging URLs). Webflow RichText fields parse into Sanity Portable
+  Text via JSDOM-injected `@sanity/block-tools`. Slug fix from this
+  phase was retroactively applied to the 5 CONTENT-1A migrators.
+- **Page:** None (CLI scripts)
+- **API Routes:** None
+- **Lib Modules (extends CONTENT-1A):**
+  - `src/lib/content/migration-helpers.ts` — `toPortableText` (with
+    JSDOM `parseHtml`), `extractUrl`, `uploadImage`, `toRefs`,
+    `extractOption`, `webflowSlug`
+  - `src/lib/content/ce-collection-ids.ts` — extended with 8 CONTENT-1B
+    collection IDs
+- **Scripts:**
+  - `scripts/content/migrate-team-members.ts` — `teamMember` (28)
+  - `scripts/content/migrate-reviews.ts` — `review` (26); Sanity
+    `nameClient` ← Webflow `name-client`, drops Webflow `name`
+  - `scripts/content/migrate-videos.ts` — `video` (32); resolves
+    `type` and `team` Option fields via `fetchOptionIdMap()` →
+    TYPE_MAP/TEAM_MAP camelCase
+  - `scripts/content/migrate-book-a-call.ts` — `bookACall` (6); Webflow
+    `title` → Sanity `metaDescription` (mislabelled in Webflow)
+  - `scripts/content/migrate-events.ts` — `event` (1)
+  - `scripts/content/migrate-tools.ts` — `tool` (2); strips API keys
+    from Culture Match `hidden-code` (empirically also dropped by
+    `htmlToBlocks` script-discard)
+  - `scripts/content/migrate-downloads.ts` — `download` (5); reads
+    Webflow `meta-thunbnail` (Webflow's typo) for `metaThumbnail`
+  - `scripts/content/migrate-downloads-access.ts` — `downloadAccess` (5)
+  - `scripts/content/verify-content-1b.ts` — final parity check;
+    exits 0 when all 8 collections show `migrated == expected` and
+    `status == 'complete'`
+- **DB Tables:** `content_migrations` (8 new rows, all
+  `status='complete'`, `parity_score=100`, `error_log=[]`)
+- **Sanity Studio dataset:** 105 new CMS docs in `lzbhll1u/production`,
+  plus retroactive slug backfill on the 53 CONTENT-1A docs
+- **Dependencies added:** `@sanity/block-tools`, `@sanity/schema`,
+  `jsdom`, `@types/jsdom`
+- **Docs:** `CONVENTIONS.md §"Content Migration Conventions"` updated;
+  `docs/WEBFLOW_TO_SANITY_FIELD_MAP.md` consulted (six of eight
+  collections had brief / field-map mismatches against the live API,
+  resolved by Jake decision 2026-04-28)
+- **npm scripts:** `npm run content:migrate-team-members`,
+  `content:migrate-reviews`, `content:migrate-videos`,
+  `content:migrate-book-a-call`, `content:migrate-events`,
+  `content:migrate-tools`, `content:migrate-downloads`,
+  `content:migrate-downloads-access`, `content:verify-1b`
+- **Phase:** MYGRATR-CONTENT-1B
+
 ## Content Migration — Flat Collections (CONTENT-1A)
 - **Description:** First slice of the Webflow → Sanity content migration.
   Migrates 53 reference-free items across 5 Sanity document types

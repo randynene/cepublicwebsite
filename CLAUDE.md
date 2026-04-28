@@ -14,8 +14,8 @@ Parent brand: Saxon.io. Owner: Jake Hall (non-developer, directs Claude Code).
 
 ## Current Phase
 
-**MYGRATR-CONTENT-1A — Flat Collections Migration** — COMPLETE
-**Next: MYGRATR-CONTENT-1B** — Reference-bearing collections
+**MYGRATR-CONTENT-1B — Reference-Light Collections Migration** — COMPLETE
+**Next: MYGRATR-CONTENT-1C** — Blogs / technology / services / stories + assets
 
 | Phase | Name | Status |
 |---|---|---|
@@ -25,8 +25,8 @@ Parent brand: Saxon.io. Owner: Jake Hall (non-developer, directs Claude Code).
 | MYGRATR-SCHEMA-1 | Sanity Schema Design | ✅ Complete |
 | MYGRATR-SCAFFOLD-1 | Next.js Scaffold | ✅ Complete |
 | MYGRATR-CONTENT-1A | Content Migration — flat collections | ✅ Complete |
-| **MYGRATR-CONTENT-1B** | **Content Migration — reference-bearing** | 🔜 **Next** |
-| MYGRATR-CONTENT-1C | Content Migration — blogs/tech/services/stories + assets | Planned |
+| MYGRATR-CONTENT-1B | Content Migration — reference-light | ✅ Complete |
+| **MYGRATR-CONTENT-1C** | **Content Migration — blogs/tech/services/stories + assets** | 🔜 **Next** |
 | MYGRATR-TEMPLATE-* | Template Build | Planned |
 | MYGRATR-QA-1 | Visual + Structural QA | Planned |
 | MYGRATR-LAUNCH | Cutover + Redirects | Planned |
@@ -89,24 +89,39 @@ Parent brand: Saxon.io. Owner: Jake Hall (non-developer, directs Claude Code).
   (createIfNotExists, idempotent) + 5 `smoke-test-*` integration-test
   docs created.
 
-**Content migration state (as of CONTENT-1A complete):**
-- `migrations.status = content_running` (partial — CONTENT-1A of 3;
+**Content migration state (as of CONTENT-1B complete):**
+- `migrations.status = content_running` (partial — CONTENT-1A + 1B of 3;
   `content_complete` ships with CONTENT-1C).
 - Collections migrated to Sanity prod dataset (project `lzbhll1u`):
-  `tags-consolidated` (22 across 6 categories), `blog-categories` (6),
-  `glassdoor-reviews` (10), `benefit-values` (9), `staff-benefits` (6).
-  53 CMS docs total. Deterministic `_id`s of the form `{type}-{webflowId}`.
-- Supabase `content_migrations`: 5 rows for CE migration, all
-  `status='complete'`, `parity_score=100`, `error_log=[]`. Unique
-  constraint `content_migrations_org_migration_collection_unique` on
-  `(org_id, migration_id, collection_slug)` added via Supabase SQL editor
-  this phase.
-- Image fields (benefitValue.thumbnailImage, staffBenefit.icon) staged
-  as `webflowImageUrl` strings on the doc root — Sanity asset upload
-  deferred to CONTENT-1C.
-- Remaining: CONTENT-1B (team members, reviews, videos, downloads,
-  events, tools, book-a-call) + CONTENT-1C (blogs, technology, services,
-  customer stories, asset migration).
+  - **CONTENT-1A:** `tags-consolidated` (22 across 6 categories),
+    `blog-categories` (6), `glassdoor-reviews` (10), `benefit-values` (9),
+    `staff-benefits` (6) — 53 docs.
+  - **CONTENT-1B:** `team-members` (28), `reviews` (26), `videos` (32),
+    `book-a-call` (6), `events` (1), `tools` (2), `downloads` (5),
+    `downloads-access` (5) — 105 docs.
+  - **Total:** 158 CMS docs. Deterministic `_id`s of the form
+    `{type}-{webflowId}`.
+- Supabase `content_migrations`: 13 rows for CE migration (5 CONTENT-1A
+  + 8 CONTENT-1B), all `status='complete'`, `parity_score=100`,
+  `error_log=[]`.
+- **Images:** uploaded as real Sanity assets via `uploadImage()` helper
+  (no `webflowImageUrl` staging strings as of CONTENT-1B). Image-asset
+  upload for CONTENT-1A `benefitValue.thumbnailImage` and
+  `staffBenefit.icon` still pending (deferred to CONTENT-1C).
+- **Slug bug fix:** during CONTENT-1B the original CONTENT-1A migrators
+  were found to ship every doc with `slug.current = null` (used
+  `item.slug` which Webflow v2 returns as null on some collections;
+  real slug is on `item.fieldData.slug`). All 5 CONTENT-1A migrators
+  re-run idempotently against the new `webflowSlug(item)` helper —
+  every CONTENT-1A doc now has a populated slug.
+- **Sanity Portable Text:** `@sanity/block-tools` requires a
+  Node-side HTML parser; `toPortableText` injects `JSDOM`-backed
+  `parseHtml` (`jsdom` and `@types/jsdom` added to deps).
+- Remaining: CONTENT-1C (blogs 98, technology 101, services 23,
+  customer stories 18, compare blogs 29) + meta backfills + CONTENT-1A
+  image-asset uploads.
+- Known debt: smoke-test `scaling-teams (SMOKE TEST)` tag doc persists
+  from SCHEMA-1 — delete in Studio before launch.
 
 **Scaffold state (as of SCAFFOLD-1 complete):**
 - Next.js 16.2.4 app at `site/` (App Router, TS strict, Tailwind v4).
@@ -300,4 +315,4 @@ Only after ALL of the above are complete do you start planning the next phase.
 | 11 | SCHEMA-1 | `TemplateType` conflict between string-literal and enum representations across `src/lib/types.ts` and `src/lib/audit-types.ts`. | ✅ Resolved in MYGRATR-CONTENT-1A |
 | 12 | CONTENT-1A | Direct Postgres connection from scripts is broken — pooler auth fails with `Tenant or user not found` at both 5432 and 6543, and `db.<ref>.supabase.co` doesn't resolve. REST writes work fine. Means future DDL needs the Supabase SQL editor. Rotate `SUPABASE_DB_URL` so scripts can apply schema changes again. | MYGRATR-INFRA |
 
-*Last updated: April 2026 — MYGRATR-CONTENT-1A complete. MYGRATR-CONTENT-1B next.*
+*Last updated: April 2026 — MYGRATR-CONTENT-1B complete. MYGRATR-CONTENT-1C next.*

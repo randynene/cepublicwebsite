@@ -1,5 +1,193 @@
 # PHASE_HISTORY.md
 
+## MYGRATR-CONTENT-1B — Reference-Light & Standalone Collections Migration (April 2026)
+
+### What Was Built
+
+**Step 1 — `CE_COLLECTION_IDS` extended:**
+
+- 8 new collection IDs added to `src/lib/content/ce-collection-ids.ts`
+  (teamMembers, reviews, videos, bookACall, eventsWebinars, toolsQuizzes,
+  downloads, downloadsAccess), all verified against
+  `GET /v2/sites/{siteId}/collections` on 2026-04-28.
+
+**Step 1a — Shared helpers (`src/lib/content/migration-helpers.ts`):**
+
+- `toPortableText(html)` — Converts Webflow RichText HTML to a Sanity
+  Portable Text array via `@sanity/block-tools`. Critical fix: the
+  package's default `parseHtml` uses the browser `DOMParser` global,
+  which doesn't exist in Node.js. Injects `(html) => new JSDOM(html).window.document`
+  via the `parseHtml` option. `jsdom` + `@types/jsdom` added to deps.
+  Without this fix every RichText field falls back to a single
+  plain-text block — caught during the team-members spot-check.
+- `extractUrl(linkField)` — Accepts both Webflow Link objects (with
+  `.url`/`.href`) and plain-string Link fields. Trims whitespace,
+  treats empty strings as null. Webflow returns Link fields in both
+  shapes depending on collection (team `linkedin-link` is a string;
+  video `main-video-embed-link` is an object).
+- `uploadImage(imageField)` — Fetches the Webflow CDN URL, uploads
+  via `sanityWriteClient.assets.upload('image', Buffer, { filename })`,
+  returns a Sanity image asset reference. Logs a warning and returns
+  null on failure — a missing image is acceptable; a crashed migration
+  is not. Replaces the CONTENT-1A `webflowImageUrl` staging pattern.
+- `toRefs(field, refPrefix)` — MultiReference fields → Sanity
+  references using deterministic `{prefix}-{webflowId}` IDs. Accepts
+  both the legacy `{id: string}` object form and the modern
+  plain-string ID form Webflow returns on video/download/event tags.
+- `extractOption(field)` — Pull `.name` from a Webflow Option field
+  object. Note: Webflow v2 returns Option fields as opaque ID strings
+  for most collections, so this helper is only useful when an Option
+  arrives as an object. Video/tool migrators use `fetchOptionIdMap()`
+  instead — fetch the collection schema once, build an ID→name map.
+- `webflowSlug(item)` — Reads `item.fieldData.slug` first, falls back
+  to top-level `item.slug`. Webflow v2 returns the slug only on
+  `fieldData.slug` for some collections (every team member has
+  `item.slug === null`).
+
+**Step 1b — Slug fix retroactively applied to CONTENT-1A:**
+
+- During team-members spot-check, every CONTENT-1A document was found
+  to have `slug.current = null` because the original CONTENT-1A
+  migrators referenced `item.slug` directly. The 5 CONTENT-1A
+  migrators (migrate-tags, migrate-blog-categories,
+  migrate-glassdoor-reviews, migrate-benefit-values,
+  migrate-staff-benefits) were updated to use `webflowSlug(item)` and
+  re-run idempotently via `createOrReplace`. After the fix:
+  53 CONTENT-1A docs + 28 team-member docs all carry populated slugs
+  (verified via GROQ count query — 0 missing across 6 doc types).
+- CONVENTIONS.md §"Content Migration Conventions" updated to show the
+  helper and document the historical bug.
+
+**Step 2 — Migrate teamMembers (28):**
+
+- `scripts/content/migrate-team-members.ts`. Field-name corrections
+  from live-API verification: image is `team-member` (not
+  `team-member-image`); tenure is `time-at-cloudemployee` (not
+  `time-at-cloud-employee`). Both `linkedin-link` and `book-a-call-link`
+  arrive as plain strings, handled via the loosened `extractUrl`.
+  metaTitle/metaDescription deferred to CONTENT-1C backfill.
+
+**Step 3 — Migrate reviews (26):**
+
+- `scripts/content/migrate-reviews.ts`. Sanity `nameClient` ← Webflow
+  `name-client` (the personal name, e.g. "Euan Cameron"). Webflow
+  `name` (the company name, e.g. "Willo®") is dropped — there is no
+  Sanity destination for it on the current `review` schema. Drops
+  legacy `featured-in-which-page` and `webpage-for-testimonial`
+  fields. metaTitle/metaDescription deferred to CONTENT-1C backfill.
+
+**Step 4 — Migrate videos (32):**
+
+- `scripts/content/migrate-videos.ts`. Webflow `meta-title` does not
+  exist on this collection — dropped from the migrator. `type` and
+  `team` resolve via `fetchOptionIdMap()` (CONTENT-1A pattern from
+  migrate-benefit-values.ts) → TYPE_MAP / TEAM_MAP camelCase. Video
+  tags use the plain-string ID form, handled by `toRefs` after a
+  helper loosening (matches the extractUrl precedent).
+
+**Step 5 — Migrate book-a-call (6):**
+
+- `scripts/content/migrate-book-a-call.ts`. Webflow `name` →
+  `firstName`, `last-name` → `lastName`. Webflow `title` field is
+  mislabelled and contains meta description copy — maps to
+  `metaDescription` per field map §12.
+
+**Step 6 — Migrate events (1):**
+
+- `scripts/content/migrate-events.ts`. Webflow slug is
+  `header-description---post-event` (three dashes). Webflow
+  `speakers-header` is dropped — no Sanity destination on the event
+  schema. Topics filter is `t.title && t.description` (not `||`)
+  because the Sanity `topicItem` sub-schema requires both fields.
+  `event-type` resolves from a single string ID via `tag-{id}`.
+
+**Step 7 — Migrate tools (2):**
+
+- `scripts/content/migrate-tools.ts`. FAQ slugs are `faq-header-1..10`
+  (not the brief's `faq-title-`). Webflow `blurbs` →
+  `metaDescription`. Culture Match `hidden-code` runs through
+  `stripApiKeys` (covers quoted-property forms; Webflow's embedded JS
+  uses unquoted property names so the regex doesn't actually match).
+  Empirically safe in this batch because `htmlToBlocks` discards
+  `<script>` content — both tools land in Sanity with `hiddenCode: []`
+  and zero key text. Verified by grep on the live key prefix.
+
+**Step 8 — Migrate downloads (5):**
+
+- `scripts/content/migrate-downloads.ts`. `metaThumbnail` reads from
+  Webflow `meta-thunbnail` (sic — Webflow's own typo). Three-dash
+  slugs throughout (`faq-title---N`, `button-text---N`,
+  `button-link---N`). `youllGet` packed into a `string[]` from three
+  separate Webflow fields. `howToUseIt`, `theImpact`, `getItNow`
+  packed into Sanity object fields.
+
+**Step 9 — Migrate downloads-access (5):**
+
+- `scripts/content/migrate-downloads-access.ts`. Three fields:
+  `name`, `slug`, `download-file-link`. Required `downloadFileLink`
+  validated explicitly (throws if missing).
+
+**Step 10 — Verification (`scripts/content/verify-content-1b.ts`):**
+
+- Reads `content_migrations` for the 8 CONTENT-1B collections, asserts
+  each has `migrated_item_count === expected && status === 'complete'`.
+  Final state: 8/8 collections at parity 100, exit 0.
+
+### Patterns Established
+
+- **JSDOM-injected `parseHtml` for `@sanity/block-tools` in Node.**
+  The package defaults to `DOMParser` which is browser-only. Always
+  pass `{ parseHtml: (html) => new JSDOM(html).window.document }` as
+  the third argument to `htmlToBlocks` in any Node-side migrator.
+- **Image upload at write time, not staging.** CONTENT-1A used a
+  `webflowImageUrl` string staged on the doc root. CONTENT-1B uploads
+  via `sanityWriteClient.assets.upload`. Failures are non-fatal: log
+  + return null + continue.
+- **MultiReference loosening parallels Link loosening.** Both
+  `extractUrl` and `toRefs` now accept the plain-string form Webflow
+  returns alongside the object form. Apply the same pattern to any
+  future helpers that wrap Webflow field shapes.
+- **`webflowSlug(item)` is mandatory.** Never reference `item.slug`
+  directly — top-level slug is `null` for some collections. CONTENT-1A
+  shipped with this bug; never repeat it.
+- **Field names verified against the live API before writing the
+  migrator.** Six of the eight CONTENT-1B collections had at least
+  one slug or shape mismatch between the brief / field map and the
+  live Webflow API. The DEBUG_CONTEXT.md sweep that surfaced these
+  is the recommended pre-flight for every future migrator.
+
+### Data State After Phase
+
+- Sanity production dataset (`lzbhll1u/production`):
+  - 53 CONTENT-1A docs (re-run with slugs backfilled).
+  - 105 CONTENT-1B docs across 8 types.
+  - 158 CMS docs total. Plus 34 SCHEMA-1 stubs + 5 smoke-test docs.
+- Image fields uploaded as real Sanity assets (no staging URLs)
+  except where the Webflow CDN was unhappy on the day. One
+  `backupImage` upload failed in videos (logged); 3 nullable
+  team-member `bookACallLink` strings were null in source (already
+  expected per brief §2 "18% fill rate").
+- `content_migrations` table: 13 rows for the CE migration (5
+  CONTENT-1A + 8 CONTENT-1B), all `status='complete'`,
+  `parity_score=100`, `error_log=[]`.
+- `migrations.status = content_running` (still partial — content
+  complete ships with CONTENT-1C).
+
+### Tech Debt Tracked
+
+- One `scaling-teams (SMOKE TEST)` tag document persists in Sanity
+  from SCHEMA-1; reference resolution from CONTENT-1A used the real
+  Webflow IDs so it's harmless, but should be deleted in Studio
+  before launch.
+- `stripApiKeys` regex only matches quoted-property forms
+  (`'key': '...'`); Webflow's embedded JS uses unquoted property
+  names (`key: '...'`). Currently safe because `htmlToBlocks`
+  discards `<script>` content, but the regex would not protect a
+  future migrator that preserves script content. Tighten before
+  CONTENT-1C if any RichText body could carry a credential.
+
+---
+
 ## MYGRATR-CONTENT-1A — Flat Collections Migration (April 2026)
 
 ### What Was Built

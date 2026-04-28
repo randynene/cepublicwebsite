@@ -1,5 +1,46 @@
 # CHANGELOG.md
 
+## MYGRATR-CONTENT-1B — Reference-Light Collections Migration (April 2026)
+Second slice of CONTENT-1: 105 Webflow items migrated into Sanity across 8
+collection slugs (team-members 28, reviews 26, videos 32, book-a-call 6,
+events 1, tools 2, downloads 5, downloads-access 5). Images now upload
+as real Sanity assets via the new `uploadImage()` helper — no more
+`webflowImageUrl` staging strings. New shared helpers under
+`src/lib/content/migration-helpers.ts`: `toPortableText` (HTML → Portable
+Text via `@sanity/block-tools` with a JSDOM-backed `parseHtml` injection,
+since `@sanity/block-tools` defaults to the browser DOMParser global which
+doesn't exist in Node), `extractUrl` (accepts both Webflow Link objects
+and plain-string Link fields), `uploadImage` (fetches the Webflow CDN URL,
+uploads via `sanityWriteClient.assets.upload`, returns null on failure
+with a console warning rather than crashing the migrator), `toRefs`
+(MultiReference fields → Sanity references using deterministic
+`{type}-{webflowId}` IDs; accepts both the legacy `{id}` object form and
+the modern plain-string ID form Webflow returns on video/download/event
+tags), `extractOption`, and `webflowSlug` (reads `fieldData.slug` first
+since Webflow v2 returns `null` at the top level for some collections).
+The slug fix was retroactively applied to all 5 CONTENT-1A migrators —
+every CONTENT-1A document had `slug.current = null` until they were
+re-run; backfilled idempotently via `createOrReplace`. CONVENTIONS.md
+§"Content Migration Conventions" updated to show the corrected pattern
+and document the historical bug. Three field-name corrections from
+live-API verification (Jake-approved 2026-04-28): teamMember image is
+`team-member` (not `team-member-image`); event post-event description
+is `header-description---post-event` (three dashes); tool FAQ slugs are
+`faq-header-1..10` (not `faq-title-`); download metaThumbnail reads
+from Webflow `meta-thunbnail` (Webflow's own typo). Two field-mapping
+calls: review `nameClient` ← Webflow `name-client` (the personal name)
+with company `name` dropped (no Sanity destination); video `meta-title`
+dropped (not present on the videos collection). Video `type` and `team`
+Option fields resolve via `fetchOptionIdMap()` → `TYPE_MAP`/`TEAM_MAP`
+camelCase normalisation. Culture Match `hidden-code` migrates with
+quoted-property API-key stripping; empirically all `<script>` content
+falls out during HTML→Portable Text conversion so no key text reaches
+Sanity (verified by grep on the live key prefix). Final parity check
+script `content:verify-1b` reads `content_migrations` for all 8 slugs
+and asserts 100% parity; exits 0. `migrations.status = content_running`
+remains (still partial — CONTENT-1A + 1B done; `content_complete`
+ships with CONTENT-1C).
+
 ## MYGRATR-CONTENT-1A — Flat Collections Migration (April 2026)
 First slice of CONTENT-1: 53 reference-free Webflow items migrated into Sanity
 across 5 collection slugs. New shared infrastructure under `src/lib/content/`
