@@ -1,20 +1,9 @@
 import { z } from 'zod';
 
-// ─── Enums ───────────────────────────────────────────────────────────────────
+import type { MigrationStatus } from '@/lib/pipeline/state-machine';
+import { TemplateType } from '@/lib/audit-types';
 
-export enum MigrationStatus {
-  PENDING = 'pending',
-  AUDIT = 'audit',
-  SCHEMA = 'schema',
-  SCAFFOLD = 'scaffold',
-  CONTENT = 'content',
-  BUILDING = 'building',
-  QA = 'qa',
-  LAUNCH = 'launch',
-  CUTOVER = 'cutover',
-  COMPLETE = 'complete',
-  FAILED = 'failed',
-}
+// ─── Enums ───────────────────────────────────────────────────────────────────
 
 export enum PhaseStatus {
   NOT_STARTED = 'not_started',
@@ -22,23 +11,6 @@ export enum PhaseStatus {
   COMPLETE = 'complete',
   FAILED = 'failed',
   ESCALATED = 'escalated',
-}
-
-export enum TemplateType {
-  HOME = 'home',
-  TECHNOLOGY = 'technology',
-  SERVICE = 'service',
-  BLOG = 'blog',
-  COMPARE = 'compare',
-  CUSTOMER_STORY = 'customer_story',
-  TEAM_MEMBER = 'team_member',
-  VIDEO = 'video',
-  REVIEW = 'review',
-  BOOK_A_CALL = 'book_a_call',
-  DOWNLOAD = 'download',
-  TOOL = 'tool',
-  STATIC = 'static',
-  UNKNOWN = 'unknown',
 }
 
 export enum Locale {
