@@ -21,7 +21,8 @@
     "content:migrate-tags": "tsx scripts/content/migrate-tags.ts",
     "content:migrate-blog-categories": "tsx scripts/content/migrate-blog-categories.ts",
     "content:migrate-glassdoor-reviews": "tsx scripts/content/migrate-glassdoor-reviews.ts",
-    "content:migrate-benefit-values": "tsx scripts/content/migrate-benefit-values.ts"
+    "content:migrate-benefit-values": "tsx scripts/content/migrate-benefit-values.ts",
+    "content:migrate-staff-benefits": "tsx scripts/content/migrate-staff-benefits.ts"
   },
   "keywords": [],
   "author": "",
