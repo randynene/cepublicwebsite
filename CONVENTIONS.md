@@ -1292,6 +1292,7 @@ in this lane.
 ```typescript
 import { ensureSanity, ensureWebflow } from '@/lib/env'
 import { CE_COLLECTION_IDS } from '@/lib/content/ce-collection-ids'
+import { webflowSlug } from '@/lib/content/migration-helpers'
 import { recordMigration } from '@/lib/content/migration-tracker'
 import { sanityWriteClient } from '@/lib/content/sanity-write-client'
 import { getCollectionItems } from '@/lib/content/webflow-read-client'
@@ -1308,6 +1309,7 @@ async function migrate(): Promise<void> {
       await sanityWriteClient.createOrReplace({
         _id: `someType-${item.id}`,        // deterministic
         _type: 'someType',
+        slug: { _type: 'slug', current: webflowSlug(item) },
         // field map from docs/WEBFLOW_TO_SANITY_FIELD_MAP.md
       })
       migrated++
@@ -1334,6 +1336,17 @@ async function migrate(): Promise<void> {
   ID translation table.
 - **`createOrReplace`, not `create`.** Migrators must be safely
   re-runnable.
+- **Slug resolution via `webflowSlug(item)`.** The Webflow v2 API
+  returns the slug on `fieldData.slug` for every collection; the
+  top-level `item.slug` is inconsistent — populated for some
+  collections, `null` for others (e.g. team members all have
+  `item.slug === null` while `item.fieldData.slug` is the real
+  slug). Always use the `webflowSlug(item)` helper from
+  `migration-helpers.ts` instead of `item.slug`. The original
+  CONTENT-1A migrators referenced `item.slug` directly and shipped
+  every CONTENT-1A document with `slug.current = null`; they were
+  back-filled in CONTENT-1B by re-running each migrator after the
+  helper landed.
 - **Pre-flight env guards.** Open with `ensureSanity()` +
   `ensureWebflow()` so a missing token throws immediately with a clear
   message instead of failing mid-migration.

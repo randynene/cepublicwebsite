@@ -6,6 +6,7 @@
 // Sanity assets at write time.
 import { Schema } from '@sanity/schema'
 import { htmlToBlocks } from '@sanity/block-tools'
+import { JSDOM } from 'jsdom'
 
 import { sanityWriteClient } from '@/lib/content/sanity-write-client'
 
@@ -24,12 +25,18 @@ const blockContentType = defaultSchema
   .fields.find((f: { name: string }) => f.name === 'body').type
 
 // Convert a Webflow RichText HTML string to a Sanity Portable Text array.
+// `@sanity/block-tools` defaults to the browser DOMParser global, which
+// doesn't exist in Node.js — inject a JSDOM-backed parser instead.
 // Falls back to a single plain-text block on parser error so a malformed
 // item never crashes the migration; logs a warning so the failure surfaces.
+function parseHtml(input: string): Document {
+  return new JSDOM(input).window.document
+}
+
 export function toPortableText(html: unknown): unknown[] {
   if (!html || typeof html !== 'string' || html.trim() === '') return []
   try {
-    return htmlToBlocks(html, blockContentType)
+    return htmlToBlocks(html, blockContentType, { parseHtml })
   } catch {
     console.warn(`toPortableText fallback for value: ${String(html).slice(0, 80)}`)
     return [
@@ -106,4 +113,19 @@ export function toRefs(
 export function extractOption(optionField: unknown): string | null {
   if (!optionField || typeof optionField !== 'object') return null
   return ((optionField as Record<string, unknown>)['name'] as string) ?? null
+}
+
+// Resolve a Webflow item's slug. Webflow v2 returns the slug on
+// `fieldData.slug` for every collection; the top-level `item.slug` is
+// inconsistent (`null` for some collections, populated for others).
+// Always prefer fieldData; fall back to top-level only if missing.
+export function webflowSlug(item: {
+  slug?: string | null
+  fieldData: Record<string, unknown>
+}): string | null {
+  const fromFieldData = item.fieldData['slug']
+  if (typeof fromFieldData === 'string' && fromFieldData.trim() !== '') {
+    return fromFieldData
+  }
+  return item.slug ?? null
 }

@@ -3,6 +3,7 @@
 // Total source items: 22.
 import { ensureSanity, ensureWebflow } from '@/lib/env'
 import { CE_COLLECTION_IDS } from '@/lib/content/ce-collection-ids'
+import { webflowSlug } from '@/lib/content/migration-helpers'
 import { recordMigration } from '@/lib/content/migration-tracker'
 import { sanityWriteClient } from '@/lib/content/sanity-write-client'
 import { getCollectionItems } from '@/lib/content/webflow-read-client'
@@ -37,7 +38,7 @@ async function migrateTags(): Promise<void> {
           _id: `tag-${item.id}`,
           _type: 'tag',
           name,
-          slug: { _type: 'slug', current: item.slug },
+          slug: { _type: 'slug', current: webflowSlug(item) },
           category,
           ...(category === 'eventsWebinars' && singularName
             ? { singularName }

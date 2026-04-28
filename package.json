@@ -23,7 +23,8 @@
     "content:migrate-glassdoor-reviews": "tsx scripts/content/migrate-glassdoor-reviews.ts",
     "content:migrate-benefit-values": "tsx scripts/content/migrate-benefit-values.ts",
     "content:migrate-staff-benefits": "tsx scripts/content/migrate-staff-benefits.ts",
-    "content:verify-1a": "tsx scripts/content/verify-content-1a.ts"
+    "content:verify-1a": "tsx scripts/content/verify-content-1a.ts",
+    "content:migrate-team-members": "tsx scripts/content/migrate-team-members.ts"
   },
   "keywords": [],
   "author": "",
@@ -39,6 +40,7 @@
     "cheerio": "^1.2.0",
     "csv-parse": "^6.2.1",
     "dotenv": "^17.4.2",
+    "jsdom": "^29.1.0",
     "node-fetch": "^2.7.0",
     "p-limit": "^7.3.0",
     "pg": "^8.20.0",
@@ -48,6 +50,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@types/jsdom": "^28.0.1",
     "@types/node": "^25.6.0",
     "nodemon": "^3.1.14",
     "tsx": "^4.21.0",
