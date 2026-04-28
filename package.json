@@ -29,7 +29,8 @@
     "content:migrate-videos": "tsx scripts/content/migrate-videos.ts",
     "content:migrate-book-a-call": "tsx scripts/content/migrate-book-a-call.ts",
     "content:migrate-events": "tsx scripts/content/migrate-events.ts",
-    "content:migrate-tools": "tsx scripts/content/migrate-tools.ts"
+    "content:migrate-tools": "tsx scripts/content/migrate-tools.ts",
+    "content:migrate-downloads": "tsx scripts/content/migrate-downloads.ts"
   },
   "keywords": [],
   "author": "",
