@@ -19,7 +19,8 @@
     "schema:record": "tsx scripts/schema/record-schema-designs.ts",
     "content:start": "tsx scripts/content/start-content-phase.ts",
     "content:migrate-tags": "tsx scripts/content/migrate-tags.ts",
-    "content:migrate-blog-categories": "tsx scripts/content/migrate-blog-categories.ts"
+    "content:migrate-blog-categories": "tsx scripts/content/migrate-blog-categories.ts",
+    "content:migrate-glassdoor-reviews": "tsx scripts/content/migrate-glassdoor-reviews.ts"
   },
   "keywords": [],
   "author": "",
