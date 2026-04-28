@@ -44,9 +44,17 @@ export function toPortableText(html: unknown): unknown[] {
   }
 }
 
-// Pull the URL string out of a Webflow Link field object.
+// Pull the URL string out of a Webflow Link field. Webflow returns Link
+// fields in two shapes depending on the collection: an object with `url`
+// (e.g. video `main-video-embed-link`) or a plain string (e.g. team
+// `linkedin-link`). Both are accepted; null/empty becomes null.
 export function extractUrl(linkField: unknown): string | null {
-  if (!linkField || typeof linkField !== 'object') return null
+  if (!linkField) return null
+  if (typeof linkField === 'string') {
+    const trimmed = linkField.trim()
+    return trimmed === '' ? null : trimmed
+  }
+  if (typeof linkField !== 'object') return null
   const link = linkField as Record<string, unknown>
   return (link['url'] as string) ?? (link['href'] as string) ?? null
 }
