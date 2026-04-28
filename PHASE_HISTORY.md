@@ -1,5 +1,207 @@
 # PHASE_HISTORY.md
 
+## MYGRATR-CONTENT-1A — Flat Collections Migration (April 2026)
+
+### What Was Built
+
+**Step 0a — Tech debt #10 and #11:**
+
+- Deleted the legacy `MigrationStatus` enum (shortform values like `'audit'`,
+  `'schema'`) and the duplicate `TemplateType` enum from `src/lib/types.ts`.
+- Replaced internal references with imports from the canonical sources:
+  `MigrationStatus` (string-literal union) from
+  `src/lib/pipeline/state-machine.ts`, and `TemplateType` (UPPERCASE enum
+  matching all audit scripts) from `src/lib/audit-types.ts`.
+- Locale, Migration, Organisation, PageRecord, QAResult, etc. all kept;
+  none are imported externally — types.ts is internal scaffolding only.
+- `npx tsc --noEmit` clean.
+
+**Step 0b — Phase transition:**
+
+- `scripts/content/start-content-phase.ts` mirrors the
+  `start-scaffold-phase.ts` shape exactly: `--confirm` required, idempotent
+  on re-run if status is already `content_running`, calls
+  `assertValidTransition()` from `pipeline/state-machine.ts` before update.
+- `migrations.status` and `current_phase` moved
+  `scaffold_complete → content_running`.
+
+**Step 1 — Migration infrastructure (`src/lib/content/`):**
+
+- `sanity-write-client.ts` — `@sanity/client` write client with
+  `apiVersion: '2024-01-01'`, `useCdn: false`, token from
+  `env.SANITY_API_TOKEN`. No `'server-only'` import (CLI scripts run via
+  `tsx`, not Next.js).
+- `webflow-read-client.ts` — single `getCollectionItems(collectionId)`
+  helper with offset+limit pagination at 100 per page (exits when a page
+  returns fewer items than the limit; safer than comparing against
+  `pagination.total` which can shift on live data). All migrators read
+  Webflow exclusively through this module.
+- `migration-tracker.ts` — `recordMigration({ collectionSlug, source,
+  migrated, status, errorLog })` upserts to `content_migrations` with
+  `onConflict: 'org_id,migration_id,collection_slug'`. Computes
+  `parity_score` as `migrated/source*100` (or 0 if source is 0). Includes
+  `org_id` filter via the upsert payload.
+- `ce-collection-ids.ts` — typed `as const` map of the 10 Webflow
+  collection IDs in scope for CONTENT-1A, fetched live from
+  `GET /v2/sites/{siteId}/collections` and committed as seed data per
+  CONVENTIONS.md §"CE-Specific vs Reusable Discipline".
+
+**Step 1d — DDL gap:**
+
+- Brief §1d requires the `content_migrations_org_migration_collection_unique`
+  constraint on `(org_id, migration_id, collection_slug)`. A REST-side probe
+  (upsert with `onConflict` spec) returned `42P10`, confirming the
+  constraint was missing. Direct `pg` connection to the Supabase pooler
+  failed with `Tenant or user not found` at both 5432 and 6543, and the
+  `db.<ref>.supabase.co` direct hostname doesn't resolve — REST works
+  but DDL-via-pg is blocked. Per the brief's stop-on-ambiguity protocol,
+  DEBUG_CONTEXT.md was created with the exact ALTER TABLE; Jake ran it
+  via the Supabase SQL editor; the probe was re-run and confirmed the
+  constraint after which the migrators were written.
+
+**Step 2 — Tags (22 items, D2):**
+
+- `migrate-tags.ts` iterates a 6-key `CATEGORY_MAP`
+  (`tagsBlogs/Alternatives/Tools/VideoLibrary/Downloads/EventsWebinars`)
+  and writes Sanity `tag` documents with deterministic `_id: tag-{webflowId}`,
+  `slug: { _type: 'slug', current: webflowSlug }`, `category` from the map,
+  and `singularName` only when the source is `eventsWebinars` and Webflow
+  has a `singular-name` value. 22/22 migrated, 0 errors.
+
+**Step 3 — Blog categories (6 items, D13):**
+
+- `migrate-blog-categories.ts` reads the Webflow `hubs` collection and
+  writes `blogCategory-{webflowId}` Sanity docs. `name → name`,
+  `slug → slug.current`. `order` left unset — Seb sets it in Studio. 6/6.
+
+**Step 4 — Glassdoor reviews (10 items):**
+
+- `migrate-glassdoor-reviews.ts` follows the field map (`§14`):
+  `name → clientName` (required), `title → title`,
+  `review-description → reviewDescription`, `work-field → workField`.
+  Brief's indicative table (rating/date/source-url) was discarded in favour
+  of the actual field map per its own instruction. 10/10.
+
+**Step 5 — Benefit values (9 items):**
+
+- Webflow Option fields are stored as opaque IDs in `fieldData`. The
+  migrator first fetches `GET /v2/collections/{id}` to build an
+  `optionId → name` map for the `category` field, then resolves
+  `21c13274484fde9403a3d56c33fe7160 → benefits` and
+  `c0ffb288e564af046e3d5dfe99d1b52f → values`. The Sanity enum values
+  are lowercase (`benefits`/`values`) per the schema. Image handling:
+  `thumbnail-image.url` written to a `webflowImageUrl` staging string;
+  no Sanity asset upload (CONTENT-1C). 9/9.
+
+**Step 6 — Staff benefits (6 items):**
+
+- Same image strategy: `icon.url` stored at `webflowImageUrl`. No category
+  field on this collection. 6/6.
+
+**Step 7 — Verification:**
+
+- `verify-content-1a.ts` reads all rows for the CE migration from
+  `content_migrations`, compares `migrated_item_count` against an
+  `EXPECTED` map for the 5 slugs, and exits 1 on any mismatch. All 5
+  rows show `migrated/source = 22/22 | 6/6 | 10/10 | 9/9 | 6/6` and
+  `parity_score = 100`. Exits 0.
+
+### Patterns Established (added to CONVENTIONS.md)
+
+- **Single read-client + write-client per source/target.** Webflow reads
+  go through `src/lib/content/webflow-read-client.ts`; Sanity writes go
+  through `src/lib/content/sanity-write-client.ts`. Migration scripts
+  never call the Webflow REST API or `@sanity/client` constructors
+  directly. Adapter pattern doesn't apply yet (we're still single-source
+  CE/Webflow); these clients are the migration-lane equivalents and will
+  graduate to `CmsAdapter` implementations in a follow-up.
+- **Deterministic Sanity `_id`s** of the form `{typeName}-{sourceId}`
+  for every migrated doc. Idempotent re-runs use `createOrReplace`;
+  reference resolution (CONTENT-1B/C) becomes a string-template lookup
+  with no need for an ID translation table.
+- **Webflow Option-field resolution.** Webflow stores Option fields as
+  opaque IDs in `fieldData`. Resolve by fetching the collection schema
+  (`GET /v2/collections/{id}`) once per migrator and building an
+  `optionId → name` map; then map names to the target Sanity enum.
+- **Image staging.** Webflow CDN URLs land at `webflowImageUrl` on the
+  Sanity doc rather than triggering a Sanity asset upload during
+  CONTENT-1A. CONTENT-1C handles the actual asset migration.
+- **Pre-flight env guards.** Every migrator opens with `ensureSanity()`
+  + `ensureWebflow()` from `src/lib/env.ts` so a missing token throws
+  immediately with a clear message rather than failing mid-migration.
+- **Per-script `content_migrations` upsert.** Each migrator records its
+  own `parity_score`, `error_log[]`, and `status` ('complete' | 'failed')
+  via `recordMigration()`. The verifier is the single readout.
+
+### Files Created / Modified
+
+- `src/lib/content/{sanity-write-client,webflow-read-client,migration-tracker,ce-collection-ids}.ts`
+- `scripts/content/{start-content-phase,migrate-tags,migrate-blog-categories,migrate-glassdoor-reviews,migrate-benefit-values,migrate-staff-benefits,verify-content-1a}.ts`
+- `src/lib/types.ts` — removed `MigrationStatus` and `TemplateType` enums;
+  imports replaced with the canonical sources.
+- `package.json` — 7 new scripts: `content:start`, `content:migrate-tags`,
+  `content:migrate-blog-categories`, `content:migrate-glassdoor-reviews`,
+  `content:migrate-benefit-values`, `content:migrate-staff-benefits`,
+  `content:verify-1a`.
+- Database: `content_migrations` got the
+  `content_migrations_org_migration_collection_unique` constraint via
+  the SQL editor (no migration script committed — DDL was a one-off
+  unblock).
+- DEBUG_CONTEXT.md created mid-phase for the constraint blocker; deleted
+  after verification.
+
+### Data State After Phase
+
+- Supabase `migrations` (CE): `status = content_running`,
+  `current_phase = content_running`. `metadata.scaffold_phase` block
+  preserved from SCAFFOLD-1; no `content_phase` block written yet
+  (closes when `content_complete` ships in CONTENT-1C).
+- Supabase `content_migrations`: 5 rows for CE migration —
+  `tags-consolidated 22/22`, `blog-categories 6/6`,
+  `glassdoor-reviews 10/10`, `benefit-values 9/9`,
+  `staff-benefits 6/6`. All `status = 'complete'`, `parity_score = 100`,
+  `error_log = []`.
+- Sanity production dataset (project `lzbhll1u`): 53 new CMS docs across
+  5 types — `tag` (22), `blogCategory` (6), `glassdoorReview` (10),
+  `benefitValue` (9), `staffBenefit` (6). The 34 SCHEMA-1 stub
+  singletons/globals untouched.
+- Filesystem: `src/lib/content/` (4 files), `scripts/content/` (7 files).
+- 7 commits on `feat/content-1a` (tech debt + transition + infra +
+  5 migrator slices + verifier).
+
+### Surprises / Brief Deviations
+
+- **Constraint missing** on `content_migrations`. Brief anticipated this
+  and explicitly said "add it via the Supabase SQL editor before
+  proceeding". Direct `pg` from the script can't apply DDL — pooler auth
+  fails with `Tenant or user not found` at both 5432 and 6543, and the
+  direct DB hostname doesn't resolve. Resolved by Jake via SQL editor.
+  Minor follow-up for INFRA: rotate `SUPABASE_DB_URL` so future scripts
+  can apply DDL automatically.
+- **Glassdoor field map.** Brief's indicative table named
+  `rating/date/source-url`, but the actual `WEBFLOW_TO_SANITY_FIELD_MAP §14`
+  documents `clientName/title/reviewDescription/workField` — the brief
+  itself instructs "use the exact Webflow API field slugs listed there".
+  Followed the field map.
+- **Benefit values category.** Webflow Option fields ship as opaque IDs
+  rather than the Sanity enum string. Resolved by fetching the collection
+  schema and translating once. New pattern noted above.
+- **Image fields.** benefitValue and staffBenefit both have image fields
+  in their Sanity schemas (typed `image`), but the brief explicitly
+  defers asset migration to CONTENT-1C. Stored as `webflowImageUrl`
+  string at the doc root. Sanity is permissive about extra fields not in
+  the schema; they're stored on the doc and ignored by Studio.
+- **Tech Debt #11 wording.** Brief says "Standardise on the string-literal
+  union in `src/lib/audit-types.ts`", but `audit-types.ts` has
+  `TemplateType` as an UPPERCASE enum (and is heavily referenced by
+  `TemplateType.HOME` syntax across 4 audit scripts). Rewriting it as a
+  literal union would have broken those callsites. Took the pragmatic
+  read: "remove the duplicate from `src/lib/types.ts` and standardise on
+  whatever lives in audit-types.ts" — kept the enum, deleted the
+  duplicate. Type-checker clean.
+
+---
+
 ## MYGRATR-SCAFFOLD-1 — Next.js Scaffold (April 2026)
 
 ### What Was Built

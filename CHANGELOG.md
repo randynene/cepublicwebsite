@@ -1,5 +1,38 @@
 # CHANGELOG.md
 
+## MYGRATR-CONTENT-1A — Flat Collections Migration (April 2026)
+First slice of CONTENT-1: 53 reference-free Webflow items migrated into Sanity
+across 5 collection slugs. New shared infrastructure under `src/lib/content/`
+(`sanity-write-client`, `webflow-read-client` with offset+limit pagination,
+`migration-tracker` upserting via the new `(org_id, migration_id,
+collection_slug)` unique key, and `ce-collection-ids` as the seed-data map of
+the 10 Webflow collection IDs in scope for CONTENT-1A). Five idempotent
+migrators under `scripts/content/` (`migrate-tags`, `migrate-blog-categories`,
+`migrate-glassdoor-reviews`, `migrate-benefit-values`, `migrate-staff-benefits`)
+each call `ensureSanity()` + `ensureWebflow()` up front, `createOrReplace`
+documents using deterministic `_id`s (`{type}-{webflowId}`), and call
+`recordMigration()` with `status: complete | failed` plus an error log. Tags
+collapse 6 Webflow collections into one `tag` document type with `category`
+discriminator (D2). Hubs become `blogCategory` documents (D13 — order left
+unset for Studio). Glassdoor reviews map per `WEBFLOW_TO_SANITY_FIELD_MAP §14`
+(`name → clientName`, `review-description → reviewDescription`,
+`work-field → workField`). Benefit values resolve the Webflow `category` Option
+field by fetching the collection schema once and looking up option IDs
+(`21c1...→ benefits`, `c0ff...→ values`). Image fields on benefitValue and
+staffBenefit are stored as a `webflowImageUrl` staging string per brief §"Known
+Risks / Image fields" — Sanity asset upload is CONTENT-1C work. Final
+parity-check script (`content:verify-1a`) reads `content_migrations` and asserts
+`migrated_item_count === expected && status === complete` across all 5 slugs;
+exits 0. Tech debt #10 + #11 cleared (legacy `MigrationStatus` enum and
+duplicate `TemplateType` enum removed from `src/lib/types.ts`; canonical
+`MigrationStatus` lives in `pipeline/state-machine.ts`, canonical `TemplateType`
+in `audit-types.ts`). One pre-flight DDL gap: the
+`content_migrations_org_migration_collection_unique` constraint did not exist
+on the table; added by Jake via the Supabase SQL editor before the migrators
+ran (the pooler password in `.env` no longer authenticates direct DDL — REST
+writes work fine). `migrations.status = content_running` (partial — CONTENT-1A
+of 3); `content_complete` ships with CONTENT-1C.
+
 ## MYGRATR-SCAFFOLD-1 — Next.js Scaffold (April 2026)
 Next.js 16.2.4 site scaffolded at `site/` (App Router, TypeScript, Tailwind v4)
 in the same monorepo as `studio/` and `src/`. Sanity wiring lives in

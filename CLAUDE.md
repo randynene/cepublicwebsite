@@ -14,8 +14,8 @@ Parent brand: Saxon.io. Owner: Jake Hall (non-developer, directs Claude Code).
 
 ## Current Phase
 
-**MYGRATR-SCAFFOLD-1 — Next.js Scaffold** — COMPLETE
-**Next: MYGRATR-CONTENT-1** — Content Migration
+**MYGRATR-CONTENT-1A — Flat Collections Migration** — COMPLETE
+**Next: MYGRATR-CONTENT-1B** — Reference-bearing collections
 
 | Phase | Name | Status |
 |---|---|---|
@@ -24,7 +24,9 @@ Parent brand: Saxon.io. Owner: Jake Hall (non-developer, directs Claude Code).
 | MYGRATR-SCHEMA-0 | Schema Design Lock | ✅ Complete |
 | MYGRATR-SCHEMA-1 | Sanity Schema Design | ✅ Complete |
 | MYGRATR-SCAFFOLD-1 | Next.js Scaffold | ✅ Complete |
-| **MYGRATR-CONTENT-1** | **Content Migration** | 🔜 **Next** |
+| MYGRATR-CONTENT-1A | Content Migration — flat collections | ✅ Complete |
+| **MYGRATR-CONTENT-1B** | **Content Migration — reference-bearing** | 🔜 **Next** |
+| MYGRATR-CONTENT-1C | Content Migration — blogs/tech/services/stories + assets | Planned |
 | MYGRATR-TEMPLATE-* | Template Build | Planned |
 | MYGRATR-QA-1 | Visual + Structural QA | Planned |
 | MYGRATR-LAUNCH | Cutover + Redirects | Planned |
@@ -86,6 +88,25 @@ Parent brand: Saxon.io. Owner: Jake Hall (non-developer, directs Claude Code).
 - Sanity production dataset: 34 stub singleton/global docs seeded
   (createIfNotExists, idempotent) + 5 `smoke-test-*` integration-test
   docs created.
+
+**Content migration state (as of CONTENT-1A complete):**
+- `migrations.status = content_running` (partial — CONTENT-1A of 3;
+  `content_complete` ships with CONTENT-1C).
+- Collections migrated to Sanity prod dataset (project `lzbhll1u`):
+  `tags-consolidated` (22 across 6 categories), `blog-categories` (6),
+  `glassdoor-reviews` (10), `benefit-values` (9), `staff-benefits` (6).
+  53 CMS docs total. Deterministic `_id`s of the form `{type}-{webflowId}`.
+- Supabase `content_migrations`: 5 rows for CE migration, all
+  `status='complete'`, `parity_score=100`, `error_log=[]`. Unique
+  constraint `content_migrations_org_migration_collection_unique` on
+  `(org_id, migration_id, collection_slug)` added via Supabase SQL editor
+  this phase.
+- Image fields (benefitValue.thumbnailImage, staffBenefit.icon) staged
+  as `webflowImageUrl` strings on the doc root — Sanity asset upload
+  deferred to CONTENT-1C.
+- Remaining: CONTENT-1B (team members, reviews, videos, downloads,
+  events, tools, book-a-call) + CONTENT-1C (blogs, technology, services,
+  customer stories, asset migration).
 
 **Scaffold state (as of SCAFFOLD-1 complete):**
 - Next.js 16.2.4 app at `site/` (App Router, TS strict, Tailwind v4).
@@ -174,8 +195,10 @@ Parent brand: Saxon.io. Owner: Jake Hall (non-developer, directs Claude Code).
 | /scripts/audit/ | Full audit pipeline (14 steps + 3 orchestrators) |
 | /scripts/scaffold/ | Scaffold scripts: extract-redirects + start/complete phase |
 | /scripts/schema/ | Schema seed + record + phase-transition scripts |
+| /scripts/content/ | Content migration scripts (per-collection migrators + verify) |
 | /src/orchestrator/ | Job runner and phase orchestration |
 | /src/lib/adapters/webflow/ | WebflowAdapter (AUDIT-1 uses REST directly pending adapter) |
+| /src/lib/content/ | Content migration lane: webflow read-client, sanity write-client, migration tracker, CE collection IDs |
 | /src/lib/types.ts | Domain types + Zod schemas |
 | /src/lib/audit-types.ts | Audit pipeline enums and interfaces |
 | /studio/ | Sanity Studio v5 (project lzbhll1u, dataset production) |
@@ -273,7 +296,8 @@ Only after ALL of the above are complete do you start planning the next phase.
 | 7 | AUDIT-1 | Step 3e `semi_global` count (745+) is inflated because the global-script 80%-of-pages threshold misses scripts that appear on most but not all templates. Consider lowering to 60% or moving more patterns into the explicit `SCRIPT_PATTERNS` list. | MYGRATR-CONTENT-1 |
 | 8 | AUDIT-1 | HubSpot access token lacks `automation` scope — workflow cross-reference returned nothing. Verify scope before CONTENT-1 if per-form workflow routing matters. | MYGRATR-CONTENT-1 |
 | 9 | AUDIT-1 | 4 canonical URLs remain `UNKNOWN` (Cloudflare challenge script, sitemap.xml, hash URL, `/uk/embedding`). Step 1 content-type filter should drop the first three. | MYGRATR-CONTENT-1 |
-| 10 | SCHEMA-1 | Legacy `MigrationStatus` enum in `src/lib/types.ts` uses shortform values — conflicts with canonical string-literal union in `src/lib/pipeline/state-machine.ts`. Needs consolidation. | MYGRATR-CONTENT-1 |
-| 11 | SCHEMA-1 | `TemplateType` conflict between string-literal and enum representations across `src/lib/types.ts` and `src/lib/audit-types.ts`. | MYGRATR-CONTENT-1 |
+| 10 | SCHEMA-1 | Legacy `MigrationStatus` enum in `src/lib/types.ts` uses shortform values — conflicts with canonical string-literal union in `src/lib/pipeline/state-machine.ts`. Needs consolidation. | ✅ Resolved in MYGRATR-CONTENT-1A |
+| 11 | SCHEMA-1 | `TemplateType` conflict between string-literal and enum representations across `src/lib/types.ts` and `src/lib/audit-types.ts`. | ✅ Resolved in MYGRATR-CONTENT-1A |
+| 12 | CONTENT-1A | Direct Postgres connection from scripts is broken — pooler auth fails with `Tenant or user not found` at both 5432 and 6543, and `db.<ref>.supabase.co` doesn't resolve. REST writes work fine. Means future DDL needs the Supabase SQL editor. Rotate `SUPABASE_DB_URL` so scripts can apply schema changes again. | MYGRATR-INFRA |
 
-*Last updated: April 2026 — MYGRATR-SCAFFOLD-1 complete. MYGRATR-CONTENT-1 next.*
+*Last updated: April 2026 — MYGRATR-CONTENT-1A complete. MYGRATR-CONTENT-1B next.*

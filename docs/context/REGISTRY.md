@@ -193,13 +193,20 @@ Grouped in `studio/schemas/structure.ts` into six Studio nav sections.
 | scripts/scaffold/extract-redirects.ts | Reads gitignored audit-output and writes 3 tracked redirect TS files into site/ | site/src/lib/redirects/{generated,regex,webflow}-redirects.ts | SCAFFOLD-1 |
 | scripts/scaffold/start-scaffold-phase.ts | Transitions CE migration schema_complete → scaffold_running | `migrations` row update | SCAFFOLD-1 |
 | scripts/scaffold/complete-scaffold-phase.ts | Transitions scaffold_running → scaffold_complete + records preview URL in metadata | `migrations` row update | SCAFFOLD-1 |
+| scripts/content/start-content-phase.ts | Transitions CE migration scaffold_complete → content_running (idempotent, requires `--confirm`) | `migrations` row update | CONTENT-1A |
+| scripts/content/migrate-tags.ts | 6 Webflow tag collections → Sanity `tag` (consolidated, D2) | 22 Sanity docs + 1 `content_migrations` row (`tags-consolidated`) | CONTENT-1A |
+| scripts/content/migrate-blog-categories.ts | Webflow `hubs` → Sanity `blogCategory` (D13) | 6 Sanity docs + 1 `content_migrations` row (`blog-categories`) | CONTENT-1A |
+| scripts/content/migrate-glassdoor-reviews.ts | Webflow `-- Glassdoor reviews` → Sanity `glassdoorReview` | 10 Sanity docs + 1 `content_migrations` row (`glassdoor-reviews`) | CONTENT-1A |
+| scripts/content/migrate-benefit-values.ts | Webflow `-- Client Benefits & Company Values` → Sanity `benefitValue` (Option-field resolved via collection schema) | 9 Sanity docs + 1 `content_migrations` row (`benefit-values`) | CONTENT-1A |
+| scripts/content/migrate-staff-benefits.ts | Webflow `-- Staff Benefits` → Sanity `staffBenefit` | 6 Sanity docs + 1 `content_migrations` row (`staff-benefits`) | CONTENT-1A |
+| scripts/content/verify-content-1a.ts | Final parity check — exits 0 only when all 5 CONTENT-1A slugs hit migrated_count == expected and status == 'complete' | stdout summary; exits 0 / 1 | CONTENT-1A |
 
 ## Lib Files
 
 | File | Exports | Purpose | Phase |
 |---|---|---|---|
-| src/lib/types.ts | MigrationStatus (legacy — see Tech Debt #10), PhaseStatus, CmsAdapter interface, Zod schemas | Shared domain types + validation | MYGRATR-0 |
-| src/lib/audit-types.ts | UrlStatus, TemplateType, ClassificationMethod, InteractionType, CanonicalUrl, ScreenshotRecord, PageContent, ThirdPartyScript, ScriptInventory, HubSpotForm, TemplateClassification, CollectionRecord, AuditAnomaly | Audit pipeline types | AUDIT-1 |
+| src/lib/types.ts | PhaseStatus, Locale, MigrationTier, CmsAdapter interface, Zod schemas (FieldRecord/CollectionRecord/PageRecord) | Shared domain types + validation. Legacy `MigrationStatus` and `TemplateType` enums removed in CONTENT-1A — those now live in `pipeline/state-machine.ts` and `audit-types.ts` respectively. | MYGRATR-0 |
+| src/lib/audit-types.ts | UrlStatus, TemplateType (canonical UPPERCASE enum), ClassificationMethod, InteractionType, CanonicalUrl, ScreenshotRecord, PageContent, ThirdPartyScript, ScriptInventory, HubSpotForm, TemplateClassification, CollectionRecord, AuditAnomaly | Audit pipeline types + canonical TemplateType | AUDIT-1 |
 | src/lib/env.ts | env (parsed Zod schema), ensureWebflow/Firecrawl/Anthropic/Hubspot/Ahrefs/Sanity/SupabaseDb runtime guards | Validated env loader — single source of env access | SCHEMA-1 |
 | src/lib/supabase.ts | createServerClient() | Supabase admin client (service role; bypasses RLS) | SCHEMA-1 |
 | src/lib/pipeline/state-machine.ts | MigrationStatus (canonical string-literal union), assertValidTransition(), validNextStatuses() | Migration pipeline state machine | SCHEMA-1 |
@@ -211,6 +218,10 @@ Grouped in `studio/schemas/structure.ts` into six Studio nav sections.
 | site/src/lib/redirects/generated-redirects.ts | crawlRedirects | Auto-generated from ce-canonical-urls.json | SCAFFOLD-1 |
 | site/src/lib/redirects/regex-redirects.ts | regexRedirects | Auto-generated from ce-regex-redirects.json | SCAFFOLD-1 |
 | site/src/lib/redirects/webflow-redirects.ts | webflowRedirects | Auto-generated from webflow-redirects.csv | SCAFFOLD-1 |
+| src/lib/content/sanity-write-client.ts | sanityWriteClient | `@sanity/client` write client for migration scripts | CONTENT-1A |
+| src/lib/content/webflow-read-client.ts | getCollectionItems(collectionId), WebflowItem type | Paginated Webflow REST v2 reader (offset+limit) | CONTENT-1A |
+| src/lib/content/migration-tracker.ts | recordMigration({ collectionSlug, source, migrated, status, errorLog }) | Upsert into content_migrations keyed by (org_id, migration_id, collection_slug) | CONTENT-1A |
+| src/lib/content/ce-collection-ids.ts | CE_COLLECTION_IDS (10-key as-const map) | CE-specific Webflow collection IDs in scope for CONTENT-1A | CONTENT-1A |
 
 ## npm Scripts
 
@@ -226,6 +237,13 @@ Grouped in `studio/schemas/structure.ts` into six Studio nav sections.
 | `npm run redirects:extract` | Regenerate site/src/lib/redirects/* from audit-output (run after audit refresh) |
 | `npm run scaffold:start` | Transition CE migration to scaffold_running (needs `-- --confirm`) |
 | `npm run scaffold:complete` | Transition CE migration to scaffold_complete (needs `-- --confirm --preview-url=...`) |
+| `npm run content:start` | Transition CE migration to content_running (needs `-- --confirm`) |
+| `npm run content:migrate-tags` | Migrate 6 Webflow tag collections → Sanity `tag` (22 items) |
+| `npm run content:migrate-blog-categories` | Migrate Webflow hubs → Sanity `blogCategory` (6 items) |
+| `npm run content:migrate-glassdoor-reviews` | Migrate Webflow Glassdoor reviews → Sanity `glassdoorReview` (10 items) |
+| `npm run content:migrate-benefit-values` | Migrate Webflow Client Benefits & Company Values → Sanity `benefitValue` (9 items) |
+| `npm run content:migrate-staff-benefits` | Migrate Webflow Staff Benefits → Sanity `staffBenefit` (6 items) |
+| `npm run content:verify-1a` | Final parity check for CONTENT-1A — exits 0 when all 5 collections hit 100% |
 
 ## Audit Output Files (populated by AUDIT-1)
 
