@@ -167,6 +167,51 @@
   `scaffold:complete`, plus `cd site && npm run dev|build|start`
 - **Phase:** MYGRATR-SCAFFOLD-1
 
+## Content Migration — Flat Collections (CONTENT-1A)
+- **Description:** First slice of the Webflow → Sanity content migration.
+  Migrates 53 reference-free items across 5 Sanity document types
+  (`tag`, `blogCategory`, `glassdoorReview`, `benefitValue`, `staffBenefit`)
+  from 10 Webflow collections (6 tag collections consolidate per D2,
+  hubs → blogCategory per D13, plus 3 single-mapping types). No cross-
+  references, no fold structures, no portable text — those land in
+  CONTENT-1B/C. Deterministic Sanity `_id`s of the form
+  `{type}-{webflowId}` keep migrators idempotent.
+- **Page:** None (CLI scripts)
+- **API Routes:** None
+- **Lib Modules:**
+  - `src/lib/content/sanity-write-client.ts` — `@sanity/client` write client
+  - `src/lib/content/webflow-read-client.ts` — paginated Webflow REST reader
+  - `src/lib/content/migration-tracker.ts` — `recordMigration()` upsert into
+    `content_migrations` keyed by `(org_id, migration_id, collection_slug)`
+  - `src/lib/content/ce-collection-ids.ts` — CE-specific Webflow collection
+    ID seed map (10 IDs in scope for CONTENT-1A)
+- **Scripts:**
+  - `scripts/content/start-content-phase.ts` — scaffold_complete →
+    content_running transition (requires `--confirm`)
+  - `scripts/content/migrate-tags.ts` — 6 collections → `tag` (22 items)
+  - `scripts/content/migrate-blog-categories.ts` — hubs → `blogCategory` (6)
+  - `scripts/content/migrate-glassdoor-reviews.ts` — `glassdoorReview` (10)
+  - `scripts/content/migrate-benefit-values.ts` — `benefitValue` (9), with
+    Webflow Option-field resolution via collection schema fetch
+  - `scripts/content/migrate-staff-benefits.ts` — `staffBenefit` (6)
+  - `scripts/content/verify-content-1a.ts` — final parity check; exits 0
+    when all 5 collections show `migrated == expected` and
+    `status == 'complete'`
+- **DB Tables:** `content_migrations` (5 new rows, all
+  `status='complete'`, `parity_score=100`, `error_log=[]`),
+  `migrations` (status update to `content_running`). New unique
+  constraint `content_migrations_org_migration_collection_unique` on
+  `(org_id, migration_id, collection_slug)` added via Supabase SQL editor.
+- **External systems:** Webflow REST API v2 (read), Sanity
+  project `lzbhll1u` (write — 53 new CMS docs)
+- **Docs:** `docs/WEBFLOW_TO_SANITY_FIELD_MAP.md` (authoritative field
+  mapping consumed by every migrator)
+- **npm scripts:** `npm run content:start`, `content:migrate-tags`,
+  `content:migrate-blog-categories`, `content:migrate-glassdoor-reviews`,
+  `content:migrate-benefit-values`, `content:migrate-staff-benefits`,
+  `content:verify-1a`
+- **Phase:** MYGRATR-CONTENT-1A
+
 ## Site Audit Agent
 - **Description:** Produces the authoritative migration manifest for a source
   site — reconciles URLs from four sources, extracts content per page,

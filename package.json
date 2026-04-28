@@ -16,7 +16,14 @@
     "schema:start": "tsx scripts/schema/start-schema-phase.ts",
     "schema:seed-singletons": "tsx scripts/schema/seed-singletons.ts",
     "schema:smoke-test": "tsx scripts/schema/smoke-test-seed.ts",
-    "schema:record": "tsx scripts/schema/record-schema-designs.ts"
+    "schema:record": "tsx scripts/schema/record-schema-designs.ts",
+    "content:start": "tsx scripts/content/start-content-phase.ts",
+    "content:migrate-tags": "tsx scripts/content/migrate-tags.ts",
+    "content:migrate-blog-categories": "tsx scripts/content/migrate-blog-categories.ts",
+    "content:migrate-glassdoor-reviews": "tsx scripts/content/migrate-glassdoor-reviews.ts",
+    "content:migrate-benefit-values": "tsx scripts/content/migrate-benefit-values.ts",
+    "content:migrate-staff-benefits": "tsx scripts/content/migrate-staff-benefits.ts",
+    "content:verify-1a": "tsx scripts/content/verify-content-1a.ts"
   },
   "keywords": [],
   "author": "",

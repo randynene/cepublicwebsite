@@ -4,7 +4,7 @@
 > Updated after each phase to prevent architectural drift.
 > Patterns documented here reflect reality — never speculative.
 
-**Status:** MYGRATR-SCAFFOLD-1 Complete
+**Status:** MYGRATR-CONTENT-1A Complete
 
 ---
 
@@ -1259,6 +1259,106 @@ added to `studio/sanity.config.ts` plugins, with `previewMode.enable` and
 
 ---
 
+## Content Migration Conventions (MYGRATR-CONTENT-1A)
+
+The CONTENT lane reads from a source CMS (Webflow for CE) and writes to
+Sanity. Until WordPress/Squarespace adapters land, the lane is single-source
+and lives at `src/lib/content/`. These conventions apply to every migrator
+in this lane.
+
+**Two clients, one tracker, one seed file:**
+
+- `src/lib/content/webflow-read-client.ts` — single
+  `getCollectionItems(collectionId)` helper. Webflow paginates at 100;
+  loop with offset+limit and exit when a page returns fewer items than
+  the limit (don't compare against `pagination.total` — that can shift
+  on live data). Migrators never call the Webflow REST API directly.
+- `src/lib/content/sanity-write-client.ts` — `@sanity/client` write
+  client. No `'server-only'` import (CLI scripts are not Next.js).
+  `apiVersion: '2024-01-01'`, `useCdn: false`, token from `env.SANITY_API_TOKEN`.
+- `src/lib/content/migration-tracker.ts` — `recordMigration({...})`
+  upserts to `content_migrations` keyed by
+  `(org_id, migration_id, collection_slug)`. Computes `parity_score`,
+  collects `error_log[]`, sets `status = 'complete' | 'failed'`. Required
+  unique constraint:
+  `content_migrations_org_migration_collection_unique`.
+- `src/lib/content/ce-collection-ids.ts` — typed `as const` map of CE
+  Webflow collection IDs in scope for the current CONTENT slice.
+  CE-specific values per CONVENTIONS.md §"CE-Specific vs Reusable
+  Discipline" — never hardcoded inside lib logic.
+
+**Migrator script shape:**
+
+```typescript
+import { ensureSanity, ensureWebflow } from '@/lib/env'
+import { CE_COLLECTION_IDS } from '@/lib/content/ce-collection-ids'
+import { recordMigration } from '@/lib/content/migration-tracker'
+import { sanityWriteClient } from '@/lib/content/sanity-write-client'
+import { getCollectionItems } from '@/lib/content/webflow-read-client'
+
+ensureSanity()
+ensureWebflow()
+
+async function migrate(): Promise<void> {
+  const items = await getCollectionItems(CE_COLLECTION_IDS.someCollection)
+  const errors: string[] = []
+  let migrated = 0
+  for (const item of items) {
+    try {
+      await sanityWriteClient.createOrReplace({
+        _id: `someType-${item.id}`,        // deterministic
+        _type: 'someType',
+        // field map from docs/WEBFLOW_TO_SANITY_FIELD_MAP.md
+      })
+      migrated++
+    } catch (err) {
+      errors.push(`Failed ${item.id}: ${err instanceof Error ? err.message : String(err)}`)
+    }
+  }
+  await recordMigration({
+    collectionSlug: 'some-slug',
+    sourceItemCount: items.length,
+    migratedItemCount: migrated,
+    status: errors.length === 0 ? 'complete' : 'failed',
+    errorLog: errors,
+  })
+  if (errors.length > 0) process.exit(1)
+}
+```
+
+**Rules:**
+
+- **Deterministic `_id`s.** Every migrated Sanity doc uses
+  `{typeName}-{webflowId}`. Idempotent re-runs use `createOrReplace`;
+  reference resolution in CONTENT-1B/C is a string-template lookup, no
+  ID translation table.
+- **`createOrReplace`, not `create`.** Migrators must be safely
+  re-runnable.
+- **Pre-flight env guards.** Open with `ensureSanity()` +
+  `ensureWebflow()` so a missing token throws immediately with a clear
+  message instead of failing mid-migration.
+- **Field slugs from the field map.** Webflow `fieldData` keys are API
+  slugs (`review-description`, `thumbnail-image`), not display names.
+  Use `docs/WEBFLOW_TO_SANITY_FIELD_MAP.md` as the authority; brief
+  field tables are indicative only.
+- **Webflow Option fields are opaque IDs.** The collection schema
+  (`GET /v2/collections/{id}`) exposes `validations.options` as
+  `[{id, name}]`. Fetch once at the top of the migrator and map option
+  IDs to the target Sanity enum values.
+- **Image staging.** Until CONTENT-1C, image fields are stored as the
+  Webflow CDN URL on a top-level `webflowImageUrl` string. No Sanity
+  asset upload during CONTENT-1A. Sanity is permissive about extra
+  fields not declared in the schema.
+- **One `content_migrations` row per slug.** The verifier
+  (`content:verify-1a` and successors) reads this table to enforce
+  parity. Assert `migrated_item_count === expected` and
+  `status === 'complete'`; exit non-zero on failure.
+- **Per-script npm runner.** Every migrator gets its own
+  `content:migrate-{slug}` npm script for individual re-runs; the phase
+  orchestration runs them in sequence by hand.
+
+---
+
 ## Section 4: Phase History
 
 | Phase | Status | Key Patterns Established |
@@ -1268,3 +1368,4 @@ added to `studio/sanity.config.ts` plugins, with `previewMode.enable` and
 | MYGRATR-SCHEMA-0 | Complete | No new code patterns — doc-only phase. Locked schema design doc (`docs/MYGRATR_SCHEMA_DESIGN_DECISIONS.md`) produced through a CE_RAW_EXTRACT → CE_SITE_TRUTH → DESIGN_DECISIONS → red-team audit → fixes → re-audit → lock workflow. |
 | MYGRATR-SCHEMA-1 | Complete | Sanity v3 schema conventions (`defineType` / factory-function reuse / aggregator indexes), Sanity v5 singleton enforcement via `schema.templates` + `document.actions` filters (no `__experimental_actions`), Zod mirror pattern (every Sanity schema has a Zod twin; PortableText as `z.unknown()` until TEMPLATE-*), curated `schema_designs.sanity_schema` JSONB summaries rather than full defineType serialisation, env.ts / supabase.ts / state-machine.ts concrete implementations against the previously-abstract CONVENTIONS.md patterns. |
 | MYGRATR-SCAFFOLD-1 | Complete | Generated-site monorepo layout (`site/` + `studio/` + `src/`), locale routing via URL prefix (not Next i18n), generateCanonical / generateHreflang single-source helpers, third-party script identifier provenance from audit output, redirect extraction script writes tracked TS into `site/` (Vercel never reads `audit-output/`), defineLive factory for Sanity Live, draft-mode enable route with same-origin redirectTo check, presentationTool from `sanity/presentation` (bundled path, not the deprecated standalone package). |
+| MYGRATR-CONTENT-1A | Complete | Content-migration lane infrastructure under `src/lib/content/` (Webflow read-client with offset+limit pagination, Sanity write-client, migration tracker upserting `content_migrations` via `(org_id, migration_id, collection_slug)` unique key, CE-specific Webflow collection IDs as seed data); deterministic Sanity `_id`s of the form `{type}-{webflowId}` for idempotent re-runs and downstream reference resolution; Webflow Option-field resolution by fetching the collection schema once and mapping option IDs to names; image staging via top-level `webflowImageUrl` string instead of Sanity asset upload (deferred to CONTENT-1C); pre-flight env guards (`ensureSanity()` + `ensureWebflow()`) at the top of every migrator. |
