@@ -9,6 +9,7 @@
 // to the option name by fetching the collection schema once up front.
 import { env, ensureSanity, ensureWebflow } from '@/lib/env'
 import { CE_COLLECTION_IDS } from '@/lib/content/ce-collection-ids'
+import { webflowSlug } from '@/lib/content/migration-helpers'
 import { recordMigration } from '@/lib/content/migration-tracker'
 import { sanityWriteClient } from '@/lib/content/sanity-write-client'
 import { getCollectionItems } from '@/lib/content/webflow-read-client'
@@ -58,7 +59,7 @@ async function migrateBenefitValues(): Promise<void> {
         _id: `benefitValue-${item.id}`,
         _type: 'benefitValue',
         name,
-        slug: { _type: 'slug', current: item.slug },
+        slug: { _type: 'slug', current: webflowSlug(item) },
         category: categoryEnum,
         ...(paragraph ? { paragraph } : {}),
         ...(thumbnail?.url ? { webflowImageUrl: thumbnail.url } : {}),

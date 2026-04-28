@@ -5,6 +5,7 @@
 // URL on a `webflowImageUrl` staging field. Asset upload is CONTENT-1C work.
 import { ensureSanity, ensureWebflow } from '@/lib/env'
 import { CE_COLLECTION_IDS } from '@/lib/content/ce-collection-ids'
+import { webflowSlug } from '@/lib/content/migration-helpers'
 import { recordMigration } from '@/lib/content/migration-tracker'
 import { sanityWriteClient } from '@/lib/content/sanity-write-client'
 import { getCollectionItems } from '@/lib/content/webflow-read-client'
@@ -28,7 +29,7 @@ async function migrateStaffBenefits(): Promise<void> {
         _id: `staffBenefit-${item.id}`,
         _type: 'staffBenefit',
         name,
-        slug: { _type: 'slug', current: item.slug },
+        slug: { _type: 'slug', current: webflowSlug(item) },
         ...(icon?.url ? { webflowImageUrl: icon.url } : {}),
       }
       await sanityWriteClient.createOrReplace(doc)

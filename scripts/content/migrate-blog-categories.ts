@@ -5,6 +5,7 @@
 // Order is intentionally left unset; Seb sets ordering in Studio post-migration.
 import { ensureSanity, ensureWebflow } from '@/lib/env'
 import { CE_COLLECTION_IDS } from '@/lib/content/ce-collection-ids'
+import { webflowSlug } from '@/lib/content/migration-helpers'
 import { recordMigration } from '@/lib/content/migration-tracker'
 import { sanityWriteClient } from '@/lib/content/sanity-write-client'
 import { getCollectionItems } from '@/lib/content/webflow-read-client'
@@ -24,7 +25,7 @@ async function migrateBlogCategories(): Promise<void> {
         _id: `blogCategory-${item.id}`,
         _type: 'blogCategory',
         name,
-        slug: { _type: 'slug', current: item.slug },
+        slug: { _type: 'slug', current: webflowSlug(item) },
       }
       await sanityWriteClient.createOrReplace(doc)
       migrated++

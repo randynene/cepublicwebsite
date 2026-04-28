@@ -23,7 +23,16 @@
     "content:migrate-glassdoor-reviews": "tsx scripts/content/migrate-glassdoor-reviews.ts",
     "content:migrate-benefit-values": "tsx scripts/content/migrate-benefit-values.ts",
     "content:migrate-staff-benefits": "tsx scripts/content/migrate-staff-benefits.ts",
-    "content:verify-1a": "tsx scripts/content/verify-content-1a.ts"
+    "content:verify-1a": "tsx scripts/content/verify-content-1a.ts",
+    "content:migrate-team-members": "tsx scripts/content/migrate-team-members.ts",
+    "content:migrate-reviews": "tsx scripts/content/migrate-reviews.ts",
+    "content:migrate-videos": "tsx scripts/content/migrate-videos.ts",
+    "content:migrate-book-a-call": "tsx scripts/content/migrate-book-a-call.ts",
+    "content:migrate-events": "tsx scripts/content/migrate-events.ts",
+    "content:migrate-tools": "tsx scripts/content/migrate-tools.ts",
+    "content:migrate-downloads": "tsx scripts/content/migrate-downloads.ts",
+    "content:migrate-downloads-access": "tsx scripts/content/migrate-downloads-access.ts",
+    "content:verify-1b": "tsx scripts/content/verify-content-1b.ts"
   },
   "keywords": [],
   "author": "",
@@ -32,11 +41,14 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.90.0",
     "@mendable/firecrawl-js": "^4.18.4",
+    "@sanity/block-tools": "^3.70.0",
     "@sanity/client": "^7.21.0",
+    "@sanity/schema": "^5.22.0",
     "@supabase/supabase-js": "^2.103.3",
     "cheerio": "^1.2.0",
     "csv-parse": "^6.2.1",
     "dotenv": "^17.4.2",
+    "jsdom": "^29.1.0",
     "node-fetch": "^2.7.0",
     "p-limit": "^7.3.0",
     "pg": "^8.20.0",
@@ -46,6 +58,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@types/jsdom": "^28.0.1",
     "@types/node": "^25.6.0",
     "nodemon": "^3.1.14",
     "tsx": "^4.21.0",

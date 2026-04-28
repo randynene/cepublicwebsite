@@ -4,7 +4,7 @@
 > Updated after each phase to prevent architectural drift.
 > Patterns documented here reflect reality — never speculative.
 
-**Status:** MYGRATR-CONTENT-1A Complete
+**Status:** MYGRATR-CONTENT-1B Complete
 
 ---
 
@@ -1292,6 +1292,7 @@ in this lane.
 ```typescript
 import { ensureSanity, ensureWebflow } from '@/lib/env'
 import { CE_COLLECTION_IDS } from '@/lib/content/ce-collection-ids'
+import { webflowSlug } from '@/lib/content/migration-helpers'
 import { recordMigration } from '@/lib/content/migration-tracker'
 import { sanityWriteClient } from '@/lib/content/sanity-write-client'
 import { getCollectionItems } from '@/lib/content/webflow-read-client'
@@ -1308,6 +1309,7 @@ async function migrate(): Promise<void> {
       await sanityWriteClient.createOrReplace({
         _id: `someType-${item.id}`,        // deterministic
         _type: 'someType',
+        slug: { _type: 'slug', current: webflowSlug(item) },
         // field map from docs/WEBFLOW_TO_SANITY_FIELD_MAP.md
       })
       migrated++
@@ -1334,6 +1336,17 @@ async function migrate(): Promise<void> {
   ID translation table.
 - **`createOrReplace`, not `create`.** Migrators must be safely
   re-runnable.
+- **Slug resolution via `webflowSlug(item)`.** The Webflow v2 API
+  returns the slug on `fieldData.slug` for every collection; the
+  top-level `item.slug` is inconsistent — populated for some
+  collections, `null` for others (e.g. team members all have
+  `item.slug === null` while `item.fieldData.slug` is the real
+  slug). Always use the `webflowSlug(item)` helper from
+  `migration-helpers.ts` instead of `item.slug`. The original
+  CONTENT-1A migrators referenced `item.slug` directly and shipped
+  every CONTENT-1A document with `slug.current = null`; they were
+  back-filled in CONTENT-1B by re-running each migrator after the
+  helper landed.
 - **Pre-flight env guards.** Open with `ensureSanity()` +
   `ensureWebflow()` so a missing token throws immediately with a clear
   message instead of failing mid-migration.
@@ -1345,13 +1358,40 @@ async function migrate(): Promise<void> {
   (`GET /v2/collections/{id}`) exposes `validations.options` as
   `[{id, name}]`. Fetch once at the top of the migrator and map option
   IDs to the target Sanity enum values.
-- **Image staging.** Until CONTENT-1C, image fields are stored as the
-  Webflow CDN URL on a top-level `webflowImageUrl` string. No Sanity
-  asset upload during CONTENT-1A. Sanity is permissive about extra
-  fields not declared in the schema.
+- **Image upload at write time (CONTENT-1B+).** `uploadImage(field)`
+  fetches the Webflow CDN URL, uploads via
+  `sanityWriteClient.assets.upload('image', Buffer, { filename })`,
+  returns a Sanity image asset reference. Failures log a warning and
+  return null rather than crashing the migration. CONTENT-1A used a
+  `webflowImageUrl` string staging field; that pattern is retired.
+  CONTENT-1A image fields (benefitValue.thumbnailImage,
+  staffBenefit.icon) still need a one-shot upload pass — deferred to
+  CONTENT-1C.
+- **Portable Text via JSDOM-injected `parseHtml`.**
+  `@sanity/block-tools` defaults to the browser `DOMParser` global
+  which doesn't exist in Node. Always pass
+  `{ parseHtml: (html) => new JSDOM(html).window.document }` as the
+  third argument to `htmlToBlocks`. Without this, every RichText
+  field falls back to a single plain-text block — caught during the
+  CONTENT-1B team-members spot-check. `jsdom` and `@types/jsdom` are
+  required deps.
+- **`webflowSlug(item)` for every Sanity slug.** Webflow v2 returns
+  the slug only on `fieldData.slug` for some collections; the
+  top-level `item.slug` is `null` (e.g. all 28 team members had
+  `item.slug === null`). The `webflowSlug` helper reads
+  `fieldData.slug` first, falls back to `item.slug`. Never reference
+  `item.slug` directly. The original CONTENT-1A migrators did, and
+  shipped every CONTENT-1A doc with `slug.current = null`; they
+  were back-filled in CONTENT-1B.
+- **Webflow MultiReference / Link field shape variance.** Webflow v2
+  returns these in two shapes depending on the collection: object
+  with `.id` / `.url`, or a plain string (the ID, or the URL).
+  `extractUrl` and `toRefs` both accept both shapes. When adding a
+  new Webflow-shape helper, follow the same loosening pattern
+  rather than special-casing inside each migrator.
 - **One `content_migrations` row per slug.** The verifier
-  (`content:verify-1a` and successors) reads this table to enforce
-  parity. Assert `migrated_item_count === expected` and
+  (`content:verify-1a`, `content:verify-1b`, …) reads this table to
+  enforce parity. Assert `migrated_item_count === expected` and
   `status === 'complete'`; exit non-zero on failure.
 - **Per-script npm runner.** Every migrator gets its own
   `content:migrate-{slug}` npm script for individual re-runs; the phase
@@ -1369,3 +1409,4 @@ async function migrate(): Promise<void> {
 | MYGRATR-SCHEMA-1 | Complete | Sanity v3 schema conventions (`defineType` / factory-function reuse / aggregator indexes), Sanity v5 singleton enforcement via `schema.templates` + `document.actions` filters (no `__experimental_actions`), Zod mirror pattern (every Sanity schema has a Zod twin; PortableText as `z.unknown()` until TEMPLATE-*), curated `schema_designs.sanity_schema` JSONB summaries rather than full defineType serialisation, env.ts / supabase.ts / state-machine.ts concrete implementations against the previously-abstract CONVENTIONS.md patterns. |
 | MYGRATR-SCAFFOLD-1 | Complete | Generated-site monorepo layout (`site/` + `studio/` + `src/`), locale routing via URL prefix (not Next i18n), generateCanonical / generateHreflang single-source helpers, third-party script identifier provenance from audit output, redirect extraction script writes tracked TS into `site/` (Vercel never reads `audit-output/`), defineLive factory for Sanity Live, draft-mode enable route with same-origin redirectTo check, presentationTool from `sanity/presentation` (bundled path, not the deprecated standalone package). |
 | MYGRATR-CONTENT-1A | Complete | Content-migration lane infrastructure under `src/lib/content/` (Webflow read-client with offset+limit pagination, Sanity write-client, migration tracker upserting `content_migrations` via `(org_id, migration_id, collection_slug)` unique key, CE-specific Webflow collection IDs as seed data); deterministic Sanity `_id`s of the form `{type}-{webflowId}` for idempotent re-runs and downstream reference resolution; Webflow Option-field resolution by fetching the collection schema once and mapping option IDs to names; image staging via top-level `webflowImageUrl` string instead of Sanity asset upload (deferred to CONTENT-1C); pre-flight env guards (`ensureSanity()` + `ensureWebflow()`) at the top of every migrator. |
+| MYGRATR-CONTENT-1B | Complete | Shared migration-helpers module (`src/lib/content/migration-helpers.ts`): `toPortableText` with JSDOM-injected `parseHtml` for `@sanity/block-tools` (defaults to browser DOMParser which is absent in Node), `extractUrl` / `toRefs` accepting both Webflow object and plain-string shapes, `uploadImage` replacing the CONTENT-1A staging pattern with real Sanity asset uploads, `webflowSlug(item)` reading `fieldData.slug` first (top-level `item.slug` is `null` on some collections — caused every CONTENT-1A doc to ship with `slug.current = null`, retroactively backfilled), `extractOption` for object-shaped Option fields and `fetchOptionIdMap()` for the more common opaque-ID shape. Pre-flight live-API field-name verification before writing any migrator (six of eight CONTENT-1B collections had brief / field-map mismatches against reality — slug typos, missing fields, mislabelled fields). Webflow → Sanity field-name corrections logged in PHASE_HISTORY.md and reflected in `docs/WEBFLOW_TO_SANITY_FIELD_MAP.md`. Image-upload failures are non-fatal: log + return null + continue. |
