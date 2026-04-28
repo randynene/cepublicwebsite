@@ -17,7 +17,8 @@
     "schema:seed-singletons": "tsx scripts/schema/seed-singletons.ts",
     "schema:smoke-test": "tsx scripts/schema/smoke-test-seed.ts",
     "schema:record": "tsx scripts/schema/record-schema-designs.ts",
-    "content:start": "tsx scripts/content/start-content-phase.ts"
+    "content:start": "tsx scripts/content/start-content-phase.ts",
+    "content:migrate-tags": "tsx scripts/content/migrate-tags.ts"
   },
   "keywords": [],
   "author": "",
