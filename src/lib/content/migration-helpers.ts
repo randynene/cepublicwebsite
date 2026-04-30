@@ -326,3 +326,15 @@ export function resolveOption(
   }
   return camel
 }
+
+// Decode common HTML entities in a URL or text string. Webflow VideoLink
+// objects sometimes return `?h=xxx&amp;title=0` — running the URL through
+// this helper before storing prevents broken query strings on the live site.
+export function decodeHtmlEntities(str: string): string {
+  return str
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+}
