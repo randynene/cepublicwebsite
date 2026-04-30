@@ -9,8 +9,15 @@ export async function recordMigration(params: {
   migratedItemCount: number
   status: 'complete' | 'failed'
   errorLog?: string[]
+  // Optional parity denominator. Defaults to sourceItemCount. Override when
+  // the collection participates in cross-collection deduplication and the
+  // "expected to migrate" count is smaller than the source count (e.g. blog
+  // sub-category collections in CONTENT-1C, where most items are already
+  // covered by the canonical Blogs & Guides master).
+  parityBaselineCount?: number
 }): Promise<void> {
   const client = createServerClient()
+  const denominator = params.parityBaselineCount ?? params.sourceItemCount
   const { error } = await client
     .from('content_migrations')
     .upsert(
@@ -20,10 +27,7 @@ export async function recordMigration(params: {
         collection_slug: params.collectionSlug,
         source_item_count: params.sourceItemCount,
         migrated_item_count: params.migratedItemCount,
-        parity_score:
-          params.sourceItemCount > 0
-            ? (params.migratedItemCount / params.sourceItemCount) * 100
-            : 0,
+        parity_score: denominator > 0 ? (params.migratedItemCount / denominator) * 100 : 0,
         status: params.status,
         last_run_at: new Date().toISOString(),
         error_log: params.errorLog ?? [],

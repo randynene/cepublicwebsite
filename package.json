@@ -33,7 +33,8 @@
     "content:migrate-downloads": "tsx scripts/content/migrate-downloads.ts",
     "content:migrate-downloads-access": "tsx scripts/content/migrate-downloads-access.ts",
     "content:verify-1b": "tsx scripts/content/verify-content-1b.ts",
-    "content:verify-1c-prereqs": "tsx scripts/content/verify-content-1c-prereqs.ts"
+    "content:verify-1c-prereqs": "tsx scripts/content/verify-content-1c-prereqs.ts",
+    "content:migrate-blog-posts": "tsx scripts/content/migrate-blog-posts.ts"
   },
   "keywords": [],
   "author": "",
