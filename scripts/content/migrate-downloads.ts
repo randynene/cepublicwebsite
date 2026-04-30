@@ -37,13 +37,15 @@ async function migrateDownloads(): Promise<void> {
         .filter(Boolean)
         .map(String)
 
-      const faqs = Array.from({ length: 6 }, (_, i) => i + 1)
-        .map((n) => ({
-          _key: `faq-${n}`,
-          question: (f[`faq-title---${n}`] as string) ?? null,
-          answer: toPortableText(f[`faq-answer---${n}`]),
-        }))
-        .filter((faq) => faq.question)
+      const faqs = (
+        await Promise.all(
+          Array.from({ length: 6 }, (_, i) => i + 1).map(async (n) => ({
+            _key: `faq-${n}`,
+            question: (f[`faq-title---${n}`] as string) ?? null,
+            answer: await toPortableText(f[`faq-answer---${n}`]),
+          })),
+        )
+      ).filter((faq) => faq.question)
 
       const doc = {
         _id: `download-${item.id}`,
@@ -54,7 +56,7 @@ async function migrateDownloads(): Promise<void> {
         featured: (f['featured'] as boolean) ?? false,
         comingSoon: (f['coming-soon'] as boolean) ?? false,
         tags: toRefs(f['tags'], 'tag'),
-        mainDescription: toPortableText(f['main-description']),
+        mainDescription: await toPortableText(f['main-description']),
         headerFooterImage: await uploadImage(f['benefits-image']),
         button1Text: (f['button-text---1'] as string) ?? null,
         button1Link: extractUrl(f['button-link---1']),
@@ -65,17 +67,17 @@ async function migrateDownloads(): Promise<void> {
           videoThumbnail: await uploadImage(f['how-to-use-it-video-thumbnail']),
           videoUrl: extractUrl(f['how-to-use-it-video-link']),
           title: (f['how-to-use-it-title'] as string) ?? null,
-          description: toPortableText(f['how-to-use-it-description']),
+          description: await toPortableText(f['how-to-use-it-description']),
         },
         theImpact: {
           image: await uploadImage(f['thumbnail-image']),
           title: (f['benefits-title'] as string) ?? null,
-          description: toPortableText(f['the-impact-description']),
+          description: await toPortableText(f['the-impact-description']),
         },
         faqs,
         getItNow: {
           title: (f['get-it-now-title'] as string) ?? null,
-          description: toPortableText(f['get-it-now-description']),
+          description: await toPortableText(f['get-it-now-description']),
         },
         metaTitle: (f['meta-title'] as string) ?? null,
         metaDescription: (f['meta-description'] as string) ?? null,

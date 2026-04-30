@@ -118,10 +118,10 @@ async function migrateVideos(): Promise<void> {
         vimeoYoutubeStandardLink:
           (f['vimeo-youtube-standard-link'] as string) ?? null,
         backupImage: await uploadImage(f['backup-image']),
-        descriptionOfVideo: toPortableText(f['description-of-video']),
-        fullVideoTranscript: toPortableText(f['full-video-transcript']),
-        linksMentionedInVideo: toPortableText(f['links-mentioned-in-video']),
-        linkedinProfilesOfSpeakersInVideo: toPortableText(
+        descriptionOfVideo: await toPortableText(f['description-of-video']),
+        fullVideoTranscript: await toPortableText(f['full-video-transcript']),
+        linksMentionedInVideo: await toPortableText(f['links-mentioned-in-video']),
+        linkedinProfilesOfSpeakersInVideo: await toPortableText(
           f['linkedin-profiles-of-speakers-in-video'],
         ),
         tags: toRefs(f['tags'], 'tag'),

@@ -53,8 +53,8 @@ async function migrateEvents(): Promise<void> {
         name: f['name'] as string,
         slug: { _type: 'slug', current: webflowSlug(item) },
         dateTime: (f['date-time'] as string) ?? null,
-        headerDescription: toPortableText(f['header-description']),
-        headerDescriptionPostEvent: toPortableText(
+        headerDescription: await toPortableText(f['header-description']),
+        headerDescriptionPostEvent: await toPortableText(
           f['header-description---post-event'],
         ),
         headerButtonText: (f['header-button-text'] as string) ?? null,
@@ -62,16 +62,16 @@ async function migrateEvents(): Promise<void> {
         thumbnailImage: await uploadImage(f['thumbnail-image']),
         topics: {
           header: (f['topics-header'] as string) ?? null,
-          description: toPortableText(f['topics-description']),
+          description: await toPortableText(f['topics-description']),
           items: topicsItems,
         },
         speakers: toRefs(f['speakers'], 'teamMember'),
         signUp: {
           header: (f['sign-up-header'] as string) ?? null,
-          description: toPortableText(f['sign-up-description']),
-          formEmbed: toPortableText(f['sign-up-form-embed']),
+          description: await toPortableText(f['sign-up-description']),
+          formEmbed: await toPortableText(f['sign-up-form-embed']),
         },
-        onDemandEmbedDescription: toPortableText(
+        onDemandEmbedDescription: await toPortableText(
           f['on-demand-embed-description'],
         ),
         eventType: eventTypeRef,
