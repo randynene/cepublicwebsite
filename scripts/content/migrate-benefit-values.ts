@@ -7,9 +7,9 @@
 //
 // Webflow Option fields are stored as opaque IDs in fieldData; we resolve them
 // to the option name by fetching the collection schema once up front.
-import { env, ensureSanity, ensureWebflow } from '@/lib/env'
+import { ensureSanity, ensureWebflow } from '@/lib/env'
 import { CE_COLLECTION_IDS } from '@/lib/content/ce-collection-ids'
-import { webflowSlug } from '@/lib/content/migration-helpers'
+import { fetchOptionIdMap, webflowSlug } from '@/lib/content/migration-helpers'
 import { recordMigration } from '@/lib/content/migration-tracker'
 import { sanityWriteClient } from '@/lib/content/sanity-write-client'
 import { getCollectionItems } from '@/lib/content/webflow-read-client'
@@ -23,17 +23,6 @@ const CATEGORY_VALUE_MAP: Record<string, 'benefits' | 'values'> = {
 }
 
 type WebflowImage = { url: string; alt: string | null; fileId?: string }
-
-async function fetchOptionIdMap(collectionId: string, fieldSlug: string): Promise<Record<string, string>> {
-  const r = await fetch(`https://api.webflow.com/v2/collections/${collectionId}`, {
-    headers: { Authorization: `Bearer ${env.WEBFLOW_API_TOKEN}`, 'accept-version': '2.0.0' },
-  })
-  if (!r.ok) throw new Error(`Webflow collection schema fetch failed: ${r.status} ${await r.text()}`)
-  const data = (await r.json()) as { fields: Array<{ slug: string; validations?: { options?: Array<{ id: string; name: string }> } }> }
-  const field = data.fields.find((f) => f.slug === fieldSlug)
-  const options = field?.validations?.options ?? []
-  return Object.fromEntries(options.map((o) => [o.id, o.name]))
-}
 
 async function migrateBenefitValues(): Promise<void> {
   const optionMap = await fetchOptionIdMap(CE_COLLECTION_IDS.clientBenefits, 'category')

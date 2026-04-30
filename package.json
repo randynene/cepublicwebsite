@@ -32,7 +32,14 @@
     "content:migrate-tools": "tsx scripts/content/migrate-tools.ts",
     "content:migrate-downloads": "tsx scripts/content/migrate-downloads.ts",
     "content:migrate-downloads-access": "tsx scripts/content/migrate-downloads-access.ts",
-    "content:verify-1b": "tsx scripts/content/verify-content-1b.ts"
+    "content:verify-1b": "tsx scripts/content/verify-content-1b.ts",
+    "content:verify-1c-prereqs": "tsx scripts/content/verify-content-1c-prereqs.ts",
+    "content:migrate-blog-posts": "tsx scripts/content/migrate-blog-posts.ts",
+    "content:migrate-compare-blogs": "tsx scripts/content/migrate-compare-blogs.ts",
+    "content:migrate-technology": "tsx scripts/content/migrate-technology.ts",
+    "content:migrate-services": "tsx scripts/content/migrate-services.ts",
+    "content:migrate-customer-stories": "tsx scripts/content/migrate-customer-stories.ts",
+    "content:verify-1c": "tsx scripts/content/verify-content-1c.ts"
   },
   "keywords": [],
   "author": "",

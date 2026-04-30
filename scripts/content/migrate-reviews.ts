@@ -42,13 +42,13 @@ async function migrateReviews(): Promise<void> {
         position: (f['position'] as string) ?? null,
         order: (f['order'] as number) ?? null,
         testimonyShort: (f['testimony-short'] as string) ?? null,
-        testimonyParagraph: toPortableText(f['testimony-paragraph-2']),
-        testimonyFullPage: toPortableText(f['testimony-full-page']),
+        testimonyParagraph: await toPortableText(f['testimony-paragraph-2']),
+        testimonyFullPage: await toPortableText(f['testimony-full-page']),
         snippetForMeta: (f['snippet-for-meta'] as string) ?? null,
         memberImage: await uploadImage(f['member-image']),
         companyLogo: await uploadImage(f['company-logo']),
         thumbnailImage: await uploadImage(f['thumbnail-image']),
-        additionalInfo: toPortableText(f['additional-info']),
+        additionalInfo: await toPortableText(f['additional-info']),
       }
       await sanityWriteClient.createOrReplace(doc)
       migrated++

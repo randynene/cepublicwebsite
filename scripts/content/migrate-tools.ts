@@ -58,13 +58,15 @@ async function migrateTools(): Promise<void> {
     try {
       const f = item.fieldData
 
-      const faqs = Array.from({ length: 10 }, (_, i) => i + 1)
-        .map((n) => ({
-          _key: `faq-${n}`,
-          question: (f[`faq-header-${n}`] as string) ?? null,
-          answer: toPortableText(f[`faq-answer-${n}`]),
-        }))
-        .filter((faq) => faq.question)
+      const faqs = (
+        await Promise.all(
+          Array.from({ length: 10 }, (_, i) => i + 1).map(async (n) => ({
+            _key: `faq-${n}`,
+            question: (f[`faq-header-${n}`] as string) ?? null,
+            answer: await toPortableText(f[`faq-answer-${n}`]),
+          })),
+        )
+      ).filter((faq) => faq.question)
 
       const rawHidden = (f['hidden-code'] as string) ?? null
       const { cleaned, modified, uncertain } = stripApiKeys(rawHidden)
@@ -78,7 +80,7 @@ async function migrateTools(): Promise<void> {
         )
         hiddenCode = []
       } else if (cleaned) {
-        hiddenCode = toPortableText(cleaned)
+        hiddenCode = await toPortableText(cleaned)
       }
 
       const doc = {
@@ -87,15 +89,15 @@ async function migrateTools(): Promise<void> {
         name: f['name'] as string,
         slug: { _type: 'slug', current: webflowSlug(item) },
         subHeader: (f['sub-header'] as string) ?? null,
-        headerBlurb: toPortableText(f['header-blurb']),
-        description: toPortableText(f['description']),
+        headerBlurb: await toPortableText(f['header-blurb']),
+        description: await toPortableText(f['description']),
         button1Text: (f['button-1-text'] as string) ?? null,
         button1Link: extractUrl(f['button-1-link']),
         button2Text: (f['button-2-text'] as string) ?? null,
         button2Link: extractUrl(f['button-2-link']),
-        toolEmbed: toPortableText(f['tool-embed']),
+        toolEmbed: await toPortableText(f['tool-embed']),
         hiddenCode,
-        videoOverview: toPortableText(f['video-overview']),
+        videoOverview: await toPortableText(f['video-overview']),
         faqs,
         thumbnail: await uploadImage(f['thumbnail']),
         metaTitle: (f['meta-title'] as string) ?? null,

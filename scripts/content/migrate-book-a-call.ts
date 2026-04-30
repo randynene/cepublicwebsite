@@ -29,7 +29,7 @@ async function migrateBookACall(): Promise<void> {
         firstName: f['name'] as string,
         lastName: (f['last-name'] as string) ?? null,
         slug: { _type: 'slug', current: webflowSlug(item) },
-        calendlyEmbed: toPortableText(f['calendly-embed']),
+        calendlyEmbed: await toPortableText(f['calendly-embed']),
         metaDescription: (f['title'] as string) ?? null,
       }
       await sanityWriteClient.createOrReplace(doc)
