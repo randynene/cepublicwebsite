@@ -18,6 +18,17 @@ export async function recordMigration(params: {
 }): Promise<void> {
   const client = createServerClient()
   const denominator = params.parityBaselineCount ?? params.sourceItemCount
+  // Vacuous success: when nothing was eligible to migrate (e.g. a blog
+  // sub-category whose every item already lives in the master collection)
+  // AND nothing was migrated AND there were no errors, parity is 100%.
+  // 0/0 falling back to 0 would falsely fail Step 7 verification.
+  const errorCount = params.errorLog?.length ?? 0
+  const parityScore =
+    denominator > 0
+      ? (params.migratedItemCount / denominator) * 100
+      : params.migratedItemCount === 0 && errorCount === 0
+        ? 100
+        : 0
   const { error } = await client
     .from('content_migrations')
     .upsert(
@@ -27,7 +38,7 @@ export async function recordMigration(params: {
         collection_slug: params.collectionSlug,
         source_item_count: params.sourceItemCount,
         migrated_item_count: params.migratedItemCount,
-        parity_score: denominator > 0 ? (params.migratedItemCount / denominator) * 100 : 0,
+        parity_score: parityScore,
         status: params.status,
         last_run_at: new Date().toISOString(),
         error_log: params.errorLog ?? [],
