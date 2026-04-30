@@ -167,6 +167,98 @@
   `scaffold:complete`, plus `cd site && npm run dev|build|start`
 - **Phase:** MYGRATR-SCAFFOLD-1
 
+## Content Migration — Blogs / Compare / Tech / Services / Stories (CONTENT-1C)
+- **Description:** Third slice of the Webflow → Sanity content migration.
+  246 items across 5 Sanity document types: `blogPost` (74 unique across
+  7 source collections after dedup against the canonical
+  `Blogs & Guides` master), `compareBlog` (30), `technology` (101),
+  `service` (23), `customerStory` (18). The 6 sub-category blog
+  collections were near-complete duplicates of `Blogs & Guides`;
+  CONTENT-1C established the canonical-master + global-slug-set dedup
+  pattern. Inline `<img>` tags in Webflow RichText now upload to real
+  Sanity assets via the upgraded async `toPortableText()` two-pass walk
+  (Pass 1 JSDOM-extract + `Promise.allSettled` upload; Pass 2
+  htmlToBlocks with `<img>` and `<figure><img>` rules; iframe-in-figure
+  / Vimeo embeds skipped). 29 hard-gate verification checks pass.
+- **Page:** None (CLI scripts)
+- **API Routes:** None
+- **Lib Modules (extends CONTENT-1B):**
+  - `src/lib/content/migration-helpers.ts` — `toPortableText` upgraded
+    to async two-pass with inline image upload + null guard;
+    `fetchOptionIdMap` and `resolveOption` lifted from per-script
+    duplicates into shared exports; new `decodeHtmlEntities` for
+    VideoLink URLs; `toRefs` validates every Webflow ref ID against
+    `/^[a-f0-9]{24}$/i` before constructing `_ref` and uses the full
+    Webflow ID as the deterministic `_key`.
+  - `src/lib/content/migration-tracker.ts` — accepts an optional
+    `parityBaselineCount` so cross-collection dedup rows record full
+    `source_item_count` while parity is measured on the deduplicated
+    set; vacuous success (denominator=0, migrated=0, no errors)
+    yields 100.
+  - `src/lib/content/ce-collection-ids.ts` — extended with 11
+    CONTENT-1C collection IDs and a typed `CE_BLOG_COLLECTIONS`
+    iteration array.
+- **Scripts:**
+  - `scripts/content/verify-content-1c-prereqs.ts` — pre-flight check:
+    asserts `migrations.status = content_running` and that every
+    required brief §2 slug is present on the union of fields across
+    each of the 11 source collections.
+  - `scripts/content/migrate-blog-posts.ts` — `blogPost` (74 unique
+    across 7 source collections); canonical-master dedup pattern;
+    7 `content_migrations` rows, one per source collection.
+  - `scripts/content/migrate-compare-blogs.ts` — `compareBlog` (30);
+    `tags-2` slug; competitor extracted via three explicit regex
+    patterns; payload omits `category` field entirely.
+  - `scripts/content/migrate-technology.ts` — `technology` (101,
+    single pass — `associated-technologies` is 0% populated); brief
+    §2.3 slug sweep applied verbatim; `focus-3-title` double-duty
+    (fold-2 bullet 3 + fold-3 label) read once; 1 outlier handled
+    with `folds: []` + `needsReview: true`.
+  - `scripts/content/migrate-services.ts` — `service` (23);
+    `fetchOptionIdMap` calls hoisted above the item loop;
+    SERVICE_TYPE_MAP / PREFIX_MAP camelCase enums; `short-label`
+    slug (NOT `short-description`); `fold-2---paragraph-2` (trailing
+    `-2`); `associated-technologies` refs validated and resolved to
+    `technology-{id}`.
+  - `scripts/content/migrate-customer-stories.ts` — `customerStory`
+    (18); brief §2.5 slug corrections (`name`→`companyName`,
+    switch fields, VideoLink + `decodeHtmlEntities`, `the-` content
+    prefixes, triple-dash quote slugs); problem/solution/impact
+    packed independently — quote not gated on content presence.
+  - `scripts/content/verify-content-1c.ts` — final verifier: 29
+    hard-gate checks (Sanity counts excluding `smoke-test-*`,
+    Supabase parity for 11 rows, blogPost slug uniqueness,
+    `count(compareBlog && defined(category)) == 0`, reference
+    integrity spot-checks, service type/prefix enums, shortLabel
+    cross-check, inline image presence end-to-end, fold structure,
+    customerStory packing).
+- **DB Tables:** `content_migrations` (11 new rows: 7 blog source
+  collections + compare-blogs + technology + services +
+  customer-stories — all `status='complete'`, `parity_score=100`).
+  No schema migrations.
+- **Sanity Studio dataset:** 246 new CMS docs in `lzbhll1u/production`.
+  Total CMS docs after this phase: 404.
+- **Brief deviations vs live data:**
+  - blogPost: 74 unique (brief expected 98 — based on raw collection
+    sums; didn't account for master/sub-category duplication).
+  - compareBlog: 30 (brief expected 29 — live API returned 30).
+  - All deviations documented in PHASE_HISTORY.md and Step 7
+    expected-count overrides.
+- **Carryovers (CONTENT-1D scope):**
+  - metaTitle / metaDescription backfill on technology (101),
+    service (23), customerStory (18), teamMember (28), review (26),
+    bookACall (6) — ~202 fields total.
+  - Image-asset uploads for `benefitValue.thumbnailImage` (9) and
+    `staffBenefit.icon` (6) still on `webflowImageUrl` strings.
+  - 1 `video.backupImage` CDN retry; 1 video URL with `&amp;`
+    entity-encoded query string (run through `decodeHtmlEntities`).
+  - `migrations.status = content_complete` transition.
+- **npm scripts:** `npm run content:verify-1c-prereqs`,
+  `content:migrate-blog-posts`, `content:migrate-compare-blogs`,
+  `content:migrate-technology`, `content:migrate-services`,
+  `content:migrate-customer-stories`, `content:verify-1c`
+- **Phase:** MYGRATR-CONTENT-1C
+
 ## Content Migration — Reference-Light Collections (CONTENT-1B)
 - **Description:** Second slice of the Webflow → Sanity content migration.
   105 items across 8 Sanity document types (`teamMember` 28, `review` 26,

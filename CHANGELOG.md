@@ -1,5 +1,58 @@
 # CHANGELOG.md
 
+## MYGRATR-CONTENT-1C — Blogs / Tech / Services / Stories Migration (April 2026)
+Third slice of CONTENT-1: 246 Webflow items migrated into Sanity across
+5 document types (`blogPost` 74, `compareBlog` 30, `technology` 101,
+`service` 23, `customerStory` 18). Brief said 269 expected; reality
+landed at 246 because the 6 sub-category blog collections turned out to
+be near-complete duplicates of the canonical `Blogs & Guides` master
+(31 + 67 raw → 74 unique after slug dedup against the master). The
+brief's pre-flight slug-collision check fired with 31 collisions and
+halted the migrator on the first run; Jake's clarification 2026-04-30
+established `Blogs & Guides` as the canonical master and re-cast the
+sub-category collections as "anything not already in master" — each
+item's `blogCategory` comes from its own `resource-category` ref, not
+its source collection. Step 0a upgraded `toPortableText()` from a
+synchronous helper to an async two-pass walk: Pass 1 JSDOM-parses the
+HTML, extracts every `<img>` src, and uploads each via
+`Promise.allSettled` (one broken CDN image cannot abort the document);
+Pass 2 deserialises with custom rules emitting image blocks for
+`<img>` and `<figure><img>` (iframe-in-figure / Vimeo embeds skipped),
+all hooked into a registered `image` type on the compiled block-tools
+schema. Null guard at entry returns `[]` for null/undefined/empty
+strings (catches every nullable RichText call site). Step 0b lifted
+`fetchOptionIdMap` and `resolveOption` out of `migrate-videos.ts` and
+`migrate-benefit-values.ts` into `migration-helpers.ts`. Step 0c added
+`decodeHtmlEntities` for VideoLink URLs (Webflow returns
+`?h=xxx&amp;title=0`). `toRefs` now validates every Webflow ref ID
+against `/^[a-f0-9]{24}$/i` before constructing a `_ref` and uses the
+full ID as the deterministic `_key` (was a sliced 8-char prefix). Five
+new migrators under `scripts/content/`
+(`migrate-blog-posts`, `-compare-blogs`, `-technology`, `-services`,
+`-customer-stories`) plus a CONTENT-1C-specific pre-flight
+(`verify-content-1c-prereqs`) and verifier (`verify-content-1c`) that
+runs 29 hard-gate checks (Sanity counts, Supabase parity, slug
+uniqueness, reference integrity, compareBlog-no-`category` invariant,
+fold structure, customerStory section packing, inline-image presence
+end-to-end). `migration-tracker.ts` now accepts an optional
+`parityBaselineCount` so blog sub-category rows record
+`source_item_count` = full Webflow count while `parity_score` is
+measured against the deduplicated set; vacuous-success edge case
+(denominator=0, migrated=0, no errors) yields 100 instead of 0. Live
+counts logged: `blogs-and-guides` 31/31, `staff-augmentation-blogs`
+34→28 unique, `nearshoring-offshoring-blogs` 13→7,
+`scaling-teams-blogs` 10→3, `hiring-tips-blogs` 7→3,
+`managing-engineers-blogs` 7→2, `ai-software-dev-blogs` 3→0,
+`compare-blogs` 30 (brief said 29 — live API delta), `technology` 101
+(1 outlier handled per brief §5.9), `services` 23,
+`customer-stories` 18 (3 full narratives + 4 impact-quote-only + 11
+empty shells, exactly as brief §2.5 predicted). All 11 CONTENT-1C
+`content_migrations` rows show `parity_score=100` and `status=complete`.
+`migrations.status` remains `content_running` — `content_complete`
+fires after CONTENT-1D per the reconciled CLAUDE.md.
+metaTitle/metaDescription on technology/service/customerStory left
+null pending CONTENT-1D backfill.
+
 ## MYGRATR-CONTENT-1B — Reference-Light Collections Migration (April 2026)
 Second slice of CONTENT-1: 105 Webflow items migrated into Sanity across 8
 collection slugs (team-members 28, reviews 26, videos 32, book-a-call 6,

@@ -1,5 +1,368 @@
 # PHASE_HISTORY.md
 
+## MYGRATR-CONTENT-1C — Blogs / Compare / Tech / Services / Stories Migration (April 2026)
+
+### What Was Built
+
+**Step 0a — `toPortableText()` upgraded to async with inline image
+support (`src/lib/content/migration-helpers.ts`):**
+
+- Function signature changed from `(html) => unknown[]` to
+  `async (html) => Promise<unknown[]>`. Every existing caller in
+  `scripts/content/` (migrate-team-members, -reviews, -book-a-call,
+  -events, -tools, -downloads, -videos) updated to `await` the call.
+  Two FAQ-loop sites (migrate-tools, migrate-downloads) wrapped with
+  `await Promise.all(...)` over the inner map.
+- Null guard at entry — `null`, `undefined`, or empty string returns
+  `[]`. Protects every call site (customerStory empty fields, FAQ
+  answers, any future nullable RichText).
+- Compiled block-tools schema now registers an `image` type alongside
+  `block` so `htmlToBlocks` can emit image blocks.
+- Two-pass walk:
+  - **Pass 1** — JSDOM-parse the HTML, find every `<img>` and collect
+    its `src`, then upload via `Promise.allSettled` over
+    `uploadAssetFromUrl(src)`. A single broken CDN image logs a warning
+    and is skipped — it cannot abort the whole document. Both passes
+    use JSDOM so src URLs decode identically (no entity-encoding
+    mismatch between regex extraction and DOM parsing).
+  - **Pass 2** — `htmlToBlocks` with custom rules. The `<img>` rule
+    looks up src in the map and emits an image block with optional
+    `alt`. The `<figure>` rule first checks for an `<img>` child —
+    Vimeo embeds (`<figure><iframe>`) lack one and are skipped
+    entirely. When a child `<img>` is found and its src is in the map,
+    the rule emits an image block with the `<figcaption>` text as
+    `caption`. Failed uploads return `undefined` from the rule, so the
+    block is dropped rather than emitted with a broken `_ref`.
+- A private `uploadAssetFromUrl(url)` helper extracted so both the
+  inline image upload (Step 0a) and the public `uploadImage(field)`
+  helper share the same fetch+upload+filename logic.
+
+**Step 0b — `fetchOptionIdMap` and `resolveOption` lifted to shared
+helpers:**
+
+- Both functions previously existed as near-duplicate copies in
+  `scripts/content/migrate-videos.ts` and
+  `scripts/content/migrate-benefit-values.ts`. Moved to
+  `src/lib/content/migration-helpers.ts` and exported. Both scripts
+  now import from shared.
+- The shared `resolveOption` takes an `itemId` string parameter so
+  callers can prefix their warnings (`video ${id}`, `service ${id}`)
+  rather than the helper hardcoding `[video ${id}]`.
+
+**Step 0c — `decodeHtmlEntities(str)` helper added:**
+
+- Replaces `&amp;` / `&lt;` / `&gt;` / `&quot;` / `&#39;` with their
+  literal characters. Used by the customerStory migrator to clean up
+  Webflow VideoLink URLs (`?h=xxx&amp;title=0` → `?h=xxx&title=0`).
+
+**Step 0 — `toRefs` validation (carried in the same helpers diff):**
+
+- Every Webflow ref ID extracted from a multiRef field is validated
+  against `/^[a-f0-9]{24}$/i` (Webflow ObjectId shape) before being
+  used to construct a `_ref`. Malformed entries are logged
+  (`[toRefs:{prefix}] dropping malformed ref id: ...`) and dropped
+  rather than written as broken refs (`tag-[object Object]` was the
+  failure mode the brief audit flagged).
+- `_key` is now the full Webflow ID, not the sliced 8-char prefix —
+  matches the brief's "deterministic patterns, not random generation"
+  rule and avoids any theoretical key collision.
+
+**Step 1 — Branch + collection IDs + pre-flight verifier
+(`scripts/content/verify-content-1c-prereqs.ts`):**
+
+- 11 new collection IDs added to
+  `src/lib/content/ce-collection-ids.ts` (7 blog collections,
+  compareBlog, technology, service, customerStory). A typed
+  `CE_BLOG_COLLECTIONS` array fixes the iteration order so logging
+  is deterministic.
+- `verify-content-1c-prereqs` asserts `migrations.status =
+  content_running`, then fetches every item from each of the 11
+  source collections and asserts the union of `fieldData` keys
+  contains every required slug from the brief §2 sweep. Optional
+  slugs are listed too (warned but not failed). Pre-flight passed
+  clean on first run — every required slug present.
+
+**Step 2 — `blogPost` migrator (`scripts/content/migrate-blog-posts.ts`)
+— 74 unique items across 7 collections:**
+
+- **The dedup model.** Pre-flight slug-collision check fired with 31
+  collisions on first run. Per Jake's clarification 2026-04-30,
+  `Blogs & Guides` (`67459ce1ce88de64c07213a7`) is the canonical
+  master collection; the 6 sub-category collections (Staff
+  Augmentation, Nearshoring & Offshoring, Scaling Teams, Hiring Tips,
+  Managing Engineers, AI in Software Dev — all created together with
+  Webflow IDs `68f668xx…`) are mostly duplicates of master entries
+  with new IDs. The migrator iterates `Blogs & Guides` first, builds
+  a running slug set seeded with Sanity-existing slugs, then for each
+  sub-category skips items whose slug is already in the set. Each
+  item's `blogCategory` ref comes from its own `resource-category`
+  field, never from its source collection.
+- **Brief-mandated rules applied:**
+  - Author slug = `author-2` (NEVER `author`); ~25% fill rate, null
+    is expected and triggers `needsReview = true`.
+  - Date parsed via `/^(\d{4}-\d{2}-\d{2})/` regex prefix — never
+    `new Date(raw).toISOString().slice(0,10)` (timezone shift).
+  - FAQ loop is `for (let i = 1; i <= 6; i++)` (1-indexed
+    inclusive). Skip pairs with empty question. `_key = faq-{n}`.
+  - Every Webflow ref ID validated `/^[a-f0-9]{24}$/i` before
+    constructing `_ref`. Malformed → null + needsReview.
+- **Live counts** (`source` / `eligible` / `migrated`):
+  - Blogs & Guides — 31 / 31 / 31
+  - Staff Augmentation Blogs — 34 / 28 / 28
+  - Nearshoring & Offshoring Blogs — 13 / 7 / 7
+  - Scaling Teams Blogs — 10 / 3 / 3
+  - Hiring Tips Blogs — 7 / 3 / 3
+  - Managing Engineers Blogs — 7 / 2 / 2
+  - AI in Software Development Blogs — 3 / 0 / 0
+  - **Total unique migrated: 74** (brief expected 98 — based on raw
+    collection sums and didn't account for master/sub-category
+    duplication).
+- **Supabase tracking:** 7 rows in `content_migrations`, one per source
+  collection. For sub-categories, `source_item_count` records the full
+  Webflow count and `migrated_item_count` records the unique-only
+  count; parity is measured against the deduplicated set via the new
+  `parityBaselineCount` parameter on `recordMigration`.
+
+**Step 3 — `compareBlog` migrator
+(`scripts/content/migrate-compare-blogs.ts`) — 30 items:**
+
+- Brief said 29; live Webflow API returned 30. No internal slug
+  collisions; cross-type collisions with blogPost are tolerated as
+  warnings (different type, different routes).
+- **Brief-mandated rules:**
+  - tags slug = `tags-2` (NOT `tags`).
+  - author slug = `author-2`.
+  - **No `category` field on the payload** — compareBlog has no
+    resource-category. Step 7 verifier asserts
+    `*[_type=="compareBlog" && defined(category)] | count == 0`.
+  - `competitor` extracted via three explicit regex patterns
+    (`Cloud Employee vs X`, `X vs Cloud Employee`,
+    `Cloud Employee Alternatives to X`) — failed extraction emits
+    `competitor: null` + `needsReview: true`.
+- 30/30 migrated cleanly with zero errors.
+
+**Step 4 — `technology` migrator
+(`scripts/content/migrate-technology.ts`) — 101 items, single pass:**
+
+- `associated-technologies` is 0% populated, so no second pass.
+- **Slug sweep §2.3 honored — these slugs are chaotic and the brief
+  table is authoritative:** `technology-name`, `short-description`,
+  `header-blurb`, `fold-1---paragraph`, `section-1-label`,
+  `section-1-header`, `section-1-description`, `focus-1-title`,
+  `focus-1-blurb`, `fold-2---paragraph`, `focus-2-title`,
+  `focus-2-blurb`, `focus-3-title`, `focus-3-blurb`,
+  `fold-3---item-{n}-header/description`, `fold-4---label/header`,
+  `fold-5---{label,header,description,bullet-1..3}`,
+  `fold-6---label/header`.
+- **`focus-3-title` double-duty:** read once, used in BOTH fold-2
+  bullet 3 AND fold-3 label (Webflow template field shared).
+- **Fold 3 item filter** is `header || description` (not just
+  `header`) — 0/101 items have `fold-3---item-1-header` populated but
+  100/101 have `fold-3---item-1-description`.
+- Deterministic `_key`: fold = `fold-{n}`, fold item =
+  `fold-{n}-item-{m}`. Empty folds (no header/label/paragraph/bullets/
+  items/featuredImage) dropped from the array — fold-4 is 0% fill
+  across all 101 items and never emits.
+- All `uploadImage()` calls explicitly awaited (brief Finding 4).
+- **Outlier handled** per §5.9: 1/101 items (Android Studio, Webflow
+  id `685d6a6617a25b3c61fd3ec1`) is missing `technology-name` and all
+  fold content. Migrator falls back to `name` for `technologyName`,
+  ships `folds: []`, sets `needsReview: true`. No throw.
+- 101/101 migrated, 1 outlier flagged. metaTitle/metaDescription left
+  null — backfill in CONTENT-1D. All 101 ship `needsReview: true` to
+  surface the universal meta-backfill requirement.
+
+**Step 5 — `service` migrator
+(`scripts/content/migrate-services.ts`) — 23 items:**
+
+- `fetchOptionIdMap` calls hoisted ABOVE the item loop (brief Finding
+  9 — Webflow rate-limit avoidance).
+- `SERVICE_TYPE_MAP` and `PREFIX_MAP` resolve opaque Webflow Option
+  IDs to camelCase Sanity enum values.
+- Brief-mandated slug fixes:
+  - `short-label` (NOT `short-description` — that belongs to
+    Technology).
+  - `fold-2---paragraph-2` (trailing `-2`) — NOT
+    `fold-2---paragraph`.
+- `associated-technologies` refs validated against the Webflow
+  ObjectId regex; resolve to `technology-{id}` _refs created in Step 4.
+- Same fold packing rules as Technology — deterministic `_keys`,
+  awaited `uploadImage`, empty folds dropped.
+- 23/23 migrated cleanly. metaTitle/metaDescription deferred to
+  CONTENT-1D.
+
+**Step 6 — `customerStory` migrator
+(`scripts/content/migrate-customer-stories.ts`) — 18 items:**
+
+- **Field mapping** per brief §2.5:
+  - `name` → `companyName`, `customer-story-title` →
+    `customerStoryTitle`.
+  - Switch slugs corrected: `feature-in-home-page-header-scrolls`,
+    `feature-in-featured-customers-section`, `featured-on-cs-page`.
+  - VideoLink: extract `.url` from object, run through
+    `decodeHtmlEntities` (Step 0c).
+  - Content slugs use `the-` prefix (`the-customer-content`,
+    `the-problem-content`, `the-solution-content`,
+    `the-impact-content`).
+  - Quote slugs use triple-dash (`problem-quote---paragraph`,
+    `problem-quote---person-image`, `problem-quote---person-name`,
+    `problem-quote---person-title`; same for solution/impact).
+  - `video-testimonial-intro-content` (NOT `video-intro-content`).
+  - `video-url-2` dropped per D5.
+- **problem/solution/impact packed independently** — quote is NOT
+  gated on content presence (brief Step 6 fix vs v1.0). If content is
+  empty but quote exists, still emit the quote with
+  `content: null`.
+- **No `source` / `generatedAt` / `needsReview` fields** — schema
+  doesn't have them on customerStory. Empty-shell tracking via
+  console + carryover table only.
+- Live distribution exactly as brief §2.5 predicted:
+  - 3/18 full narratives — Event Connections, Salmon Software,
+    Willo®.
+  - 4/18 impact-quote-only — SQR, Travel Tech Client, Mercato,
+    CleanLink.
+  - 11/18 empty shells (content pending from CE).
+- metaTitle / metaDescription / openGraphImage left null.
+
+**Step 7 — Verification (`scripts/content/verify-content-1c.ts`):**
+
+- 29 hard-gate checks. Live state: ALL PASSED.
+  - Sanity counts: 74 / 30 / 101 / 23 / 18 (matches expectations).
+  - Supabase: 11 CONTENT-1C tracking rows present, every
+    `parity_score == 100`, every `status == complete`.
+  - blogPost slug uniqueness — 74 / 74 distinct.
+  - compareBlog: zero docs with `category` defined.
+  - Reference integrity spot-checks: 3 blogPost (tags + category +
+    author all resolve), 3 compareBlog (tags all
+    `category="alternatives"`), 3 service
+    (associatedTechnologies refs resolve to technology docs — actual
+    sample empty because all 23 had 0% Webflow fill, expected).
+  - service type/prefix enums valid (`staffAugmentation` etc.).
+  - shortLabel cross-check populated on both technology and service.
+  - blogPost contains inline image blocks — verified end-to-end via
+    GROQ count of `content[_type == "image"]`.
+  - Technology fold spot-checks: every sample emits the expected
+    headerIntro / featureBullets / itemList / paragraphSection /
+    headerOnly sequence.
+  - customerStory: Event Connections has problem+solution+impact;
+    SQR has impact.quote with null content and no problem; empty
+    shells render without crash.
+- One vacuous-success edge case fixed mid-verification:
+  `ai-software-dev-blogs` had `parity_score=0` because eligible=0
+  and migrated=0. `recordMigration` patched so when denominator is 0
+  AND migrated is 0 AND no errors, parity is 100 (vacuous success).
+  Re-ran the row update; verifier passed on second attempt.
+
+**Step 8 — Push and merge:**
+
+- 10 commits on `feat/content-1c` pushed to origin. Merged to main
+  via `--no-ff` (matching past phases: see commit
+  `Merge branch 'feat/content-1b' — MYGRATR-CONTENT-1B complete`).
+  Main pushed by Jake.
+
+### Patterns Established
+
+- **`toPortableText` is async and does inline image upload.** Every
+  caller of `toPortableText` (existing or new) must `await` the call.
+  When called inside `.map()` callbacks, wrap with
+  `await Promise.all(...)`. The function null-guards at entry so
+  passing `null` / `undefined` / `""` is always safe; image upload
+  failures degrade gracefully (skip the block, keep the rest of the
+  document). The two-pass walk uses JSDOM in BOTH passes so src URLs
+  decode identically; never use a regex to extract src from raw HTML
+  (entity-encoding mismatch with the DOM-parsed src in pass 2).
+- **`<figure>` deserializer must check for an `<img>` child.**
+  iframe-in-figure (Vimeo embeds) is the false-positive trap:
+  emitting an image block with `_ref: undefined` corrupts Sanity
+  references. The rule: if `figure.querySelector('img')` is null,
+  return `undefined` — the body of the figure falls through to text
+  rules.
+- **Cross-collection dedup via `parityBaselineCount`.** When
+  multiple Webflow source collections consolidate into one Sanity
+  type and contain duplicate items (slug collision), the canonical-
+  master pattern applies: pick one collection as authoritative, build
+  a running slug set, skip duplicates in subsequent collections. The
+  migration tracker records `source_item_count` = full Webflow count
+  for the row but accepts an optional `parityBaselineCount` =
+  unique-eligible count, so `parity_score = migrated /
+  parityBaselineCount * 100` shows 100 when every unique item
+  successfully migrates. Vacuous success (denominator=0,
+  migrated=0, no errors) yields 100, not 0.
+- **Every Webflow ref ID validated `/^[a-f0-9]{24}$/i` before
+  `_ref` construction.** Webflow occasionally returns object-shape
+  ref values where the API typing claims plain string; without
+  validation those round-trip into Sanity as `tag-[object Object]`.
+  `toRefs` now drops malformed entries with a console warning. Apply
+  the same guard for any single-reference field (resource-category,
+  author-2, eventType) — see the inline `validRefId(value)` helper
+  pattern in migrate-blog-posts.ts.
+- **Deterministic `_key` from Webflow ID, not random.** Array
+  members in Sanity (faqItem, references, fold items) need stable
+  `_key` values across re-runs so `createOrReplace` doesn't shuffle
+  Studio selection state. Use the full Webflow ID for ref `_key`s,
+  positional indices for FAQ (`faq-{n}`) and fold items
+  (`fold-{n}-item-{m}`).
+- **Date parsing via regex prefix, not `new Date()`.** Webflow
+  returns ISO datetimes; `new Date(raw).toISOString().slice(0,10)`
+  shifts items close to UTC boundary. Use
+  `/^(\d{4}-\d{2}-\d{2})/.exec(raw)[1]` to lift the date prefix
+  unchanged.
+- **Pre-flight slug collision check is a hard gate.** Before
+  writing any documents in a multi-collection migrator, fetch every
+  slug across the union of source collections and assert no
+  duplicates. Stop and report on collision — never silently skip,
+  never silently overwrite. (Step 2 would have written 31 broken
+  blogPost docs without this.)
+- **Option-field map fetches must hoist above the item loop.**
+  Webflow rate-limits at 60 req/min; calling `fetchOptionIdMap`
+  once per service (×23) instead of once per migrator burns an extra
+  46 requests for nothing. See `migrate-services.ts` `Promise.all`
+  hoisting at the top of `migrateServices()`.
+
+### Data State After Phase
+
+- Sanity production dataset (`lzbhll1u/production`):
+  - 53 CONTENT-1A docs.
+  - 105 CONTENT-1B docs.
+  - 246 CONTENT-1C docs (74 blogPost + 30 compareBlog + 101
+    technology + 23 service + 18 customerStory).
+  - **404 CMS docs total.** Plus 34 SCHEMA-1 stubs + 5 smoke-test
+    docs.
+- Inline images on Webflow blog content uploaded as real Sanity
+  assets (verified via the `count(content[_type == "image"]) > 0`
+  GROQ query — sample blogPost
+  `staff-augmentation-vs-consulting-outsourcing-and-managed-services`
+  has 2 inline image blocks).
+- `content_migrations` table: 24 rows for CE migration (5
+  CONTENT-1A + 8 CONTENT-1B + 11 CONTENT-1C). Every CONTENT-1C row
+  shows `status='complete'`, `parity_score=100`, `error_log=[]`.
+- `migrations.status = content_running` (still partial — 3 of 4
+  CONTENT slices done; `content_complete` ships after CONTENT-1D
+  per the reconciled CLAUDE.md).
+
+### Tech Debt Tracked
+
+- **Meta backfill carryover:** technology (101), service (23),
+  customerStory (18 — including `/customer-story/virgin` placeholder
+  text), teamMember (28), review (26), bookACall (6) all need
+  `metaTitle` / `metaDescription` populated before launch. Total ~
+  202 fields. Scope of CONTENT-1D.
+- **Author backfill:** every blogPost and compareBlog with
+  `author: null` ships with `needsReview: true`. Seb assigns bulk
+  defaults in Studio post-migration (~127 items per the design doc
+  open-question table).
+- **CONTENT-1A image upload carryovers:**
+  `benefitValue.thumbnailImage` (9) and `staffBenefit.icon` (6)
+  still hold `webflowImageUrl` staging strings. Scope of CONTENT-1D.
+- **CONTENT-1B carryovers:** 1 `video.backupImage` CDN failure; 1
+  video URL with `&amp;` entity-encoded query string (now have
+  `decodeHtmlEntities` available — can be re-run idempotently).
+- **Smoke-test cleanup:** `scaling-teams (SMOKE TEST)` tag,
+  `smoke-test-blog-category-scaling-teams`, `smoke-test-team-member`
+  persist from SCHEMA-1. Pre-launch cleanup.
+
+---
+
 ## MYGRATR-CONTENT-1B — Reference-Light & Standalone Collections Migration (April 2026)
 
 ### What Was Built

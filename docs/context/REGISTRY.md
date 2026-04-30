@@ -209,6 +209,13 @@ Grouped in `studio/schemas/structure.ts` into six Studio nav sections.
 | scripts/content/migrate-downloads.ts | Webflow `download` → Sanity `download` (5); reads `meta-thunbnail` (Webflow's typo) for `metaThumbnail` | 5 Sanity docs + 1 `content_migrations` row (`downloads`) | CONTENT-1B |
 | scripts/content/migrate-downloads-access.ts | Webflow `download-thank-you` → Sanity `downloadAccess` (5) | 5 Sanity docs + 1 `content_migrations` row (`downloads-access`) | CONTENT-1B |
 | scripts/content/verify-content-1b.ts | Final parity check for CONTENT-1B — exits 0 only when all 8 collections hit 100% | stdout summary; exits 0 / 1 | CONTENT-1B |
+| scripts/content/verify-content-1c-prereqs.ts | Pre-flight: assert `migrations.status = content_running` and that every required brief §2 slug exists on the union of fields across the 11 CONTENT-1C source collections | stdout pass/fail; exits 0 / 1 | CONTENT-1C |
+| scripts/content/migrate-blog-posts.ts | 7 Webflow blog collections → Sanity `blogPost` (canonical-master dedup against `Blogs & Guides`; 74 unique items written; each item's blogCategory comes from its own `resource-category` ref) | 74 Sanity docs + 7 `content_migrations` rows (one per source collection) | CONTENT-1C |
+| scripts/content/migrate-compare-blogs.ts | Webflow `Compare Blogs` → Sanity `compareBlog` (30); `tags-2` slug; payload omits `category` (no resource-category on this collection); competitor extracted via three explicit regex patterns | 30 Sanity docs + 1 `content_migrations` row (`compare-blogs`) | CONTENT-1C |
+| scripts/content/migrate-technology.ts | Webflow `Technology Pages` → Sanity `technology` (101, single pass — `associated-technologies` is 0% populated); §2.3 slug sweep verbatim; `focus-3-title` read once and used in both fold-2 bullet-3 and fold-3 label; 1 outlier handled gracefully | 101 Sanity docs + 1 `content_migrations` row (`technology`) | CONTENT-1C |
+| scripts/content/migrate-services.ts | Webflow `Services` → Sanity `service` (23); `fetchOptionIdMap` hoisted above item loop; SERVICE_TYPE_MAP / PREFIX_MAP camelCase enums; `short-label` slug; `fold-2---paragraph-2` (trailing -2) | 23 Sanity docs + 1 `content_migrations` row (`services`) | CONTENT-1C |
+| scripts/content/migrate-customer-stories.ts | Webflow `Customers / Customer Stories` → Sanity `customerStory` (18); switch slug corrections; VideoLink `.url` + `decodeHtmlEntities`; `the-` content prefixes; triple-dash quote slugs; problem/solution/impact packed independently | 18 Sanity docs + 1 `content_migrations` row (`customer-stories`) | CONTENT-1C |
+| scripts/content/verify-content-1c.ts | Final verifier — 29 hard-gate checks: Sanity counts (excluding `smoke-test-*`), Supabase parity for 11 rows, blogPost slug uniqueness, compareBlog `category` absence, reference integrity spot-checks, fold structure, customerStory section packing, inline-image presence end-to-end | stdout summary; exits 0 / 1 | CONTENT-1C |
 
 ## Lib Files
 
@@ -229,9 +236,9 @@ Grouped in `studio/schemas/structure.ts` into six Studio nav sections.
 | site/src/lib/redirects/webflow-redirects.ts | webflowRedirects | Auto-generated from webflow-redirects.csv | SCAFFOLD-1 |
 | src/lib/content/sanity-write-client.ts | sanityWriteClient | `@sanity/client` write client for migration scripts | CONTENT-1A |
 | src/lib/content/webflow-read-client.ts | getCollectionItems(collectionId), WebflowItem type | Paginated Webflow REST v2 reader (offset+limit) | CONTENT-1A |
-| src/lib/content/migration-tracker.ts | recordMigration({ collectionSlug, source, migrated, status, errorLog }) | Upsert into content_migrations keyed by (org_id, migration_id, collection_slug) | CONTENT-1A |
-| src/lib/content/ce-collection-ids.ts | CE_COLLECTION_IDS (18-key as-const map; extended in CONTENT-1B) | CE-specific Webflow collection IDs in scope for CONTENT-1A + 1B | CONTENT-1A |
-| src/lib/content/migration-helpers.ts | toPortableText (JSDOM-injected parseHtml), extractUrl (object + plain-string), uploadImage, toRefs, extractOption, webflowSlug | Shared helpers for every CONTENT-1B+ migrator | CONTENT-1B |
+| src/lib/content/migration-tracker.ts | recordMigration({ collectionSlug, source, migrated, status, errorLog, parityBaselineCount }) | Upsert into content_migrations keyed by (org_id, migration_id, collection_slug). `parityBaselineCount` (CONTENT-1C) makes parity_score measure on the deduplicated set; vacuous success (denominator=0, migrated=0, no errors) yields 100. | CONTENT-1A (extended CONTENT-1C) |
+| src/lib/content/ce-collection-ids.ts | CE_COLLECTION_IDS (29-key as-const map: 10 CONTENT-1A + 8 CONTENT-1B + 11 CONTENT-1C). CE_BLOG_COLLECTIONS (typed iteration array for the 7 blog source collections). | CE-specific Webflow collection IDs in scope for CONTENT-1A/1B/1C | CONTENT-1A (extended CONTENT-1B + 1C) |
+| src/lib/content/migration-helpers.ts | toPortableText (async; two-pass JSDOM walk uploading inline `<img>` to real Sanity assets via `Promise.allSettled`; null guard at entry; `<figure>` rule skips iframe-in-figure), extractUrl, uploadImage, toRefs (validates `/^[a-f0-9]{24}$/i` and uses full Webflow ID as `_key`), extractOption, webflowSlug, fetchOptionIdMap (CONTENT-1C lift), resolveOption (CONTENT-1C lift), decodeHtmlEntities (CONTENT-1C) | Shared helpers for every CONTENT-1B+ migrator | CONTENT-1B (extended CONTENT-1C) |
 
 ## npm Scripts
 
@@ -263,6 +270,13 @@ Grouped in `studio/schemas/structure.ts` into six Studio nav sections.
 | `npm run content:migrate-downloads` | Migrate Webflow download → Sanity `download` (5 items) |
 | `npm run content:migrate-downloads-access` | Migrate Webflow download-thank-you → Sanity `downloadAccess` (5 items) |
 | `npm run content:verify-1b` | Final parity check for CONTENT-1B — exits 0 when all 8 collections hit 100% |
+| `npm run content:verify-1c-prereqs` | Pre-flight: assert `migrations.status = content_running` and brief §2 slugs exist on each of the 11 CONTENT-1C collections |
+| `npm run content:migrate-blog-posts` | Migrate 7 Webflow blog collections → Sanity `blogPost` (74 unique items after dedup against `Blogs & Guides` master) |
+| `npm run content:migrate-compare-blogs` | Migrate Webflow `Compare Blogs` → Sanity `compareBlog` (30 items) |
+| `npm run content:migrate-technology` | Migrate Webflow `Technology Pages` → Sanity `technology` (101 items, single pass) |
+| `npm run content:migrate-services` | Migrate Webflow `Services` → Sanity `service` (23 items, Option-field enum resolution) |
+| `npm run content:migrate-customer-stories` | Migrate Webflow `Customers / Customer Stories` → Sanity `customerStory` (18 items) |
+| `npm run content:verify-1c` | Final verifier for CONTENT-1C — 29 hard-gate checks; exits 0 only when all pass |
 
 ## Audit Output Files (populated by AUDIT-1)
 

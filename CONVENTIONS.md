@@ -1399,6 +1399,130 @@ async function migrate(): Promise<void> {
 
 ---
 
+## Async toPortableText with Inline Image Upload (MYGRATR-CONTENT-1C)
+
+`toPortableText` is async and uploads inline `<img>` tags from Webflow
+RichText to real Sanity assets via a two-pass walk. CONTENT-1B's
+synchronous variant silently dropped every `<img>`; CONTENT-1C catches
+them. Every caller must `await` the helper.
+
+```typescript
+// Pass 1 — extract and upload (one broken CDN URL must not abort the doc)
+const doc = new JSDOM(html).window.document
+const srcs = [...doc.querySelectorAll('img')]
+  .map(img => img.getAttribute('src'))
+  .filter((s): s is string => !!s)
+const results = await Promise.allSettled(srcs.map(uploadAssetFromUrl))
+const srcToAssetRef = new Map(/* fulfilled results only */)
+
+// Pass 2 — deserialize with image rules
+return htmlToBlocks(html, blockContentType, {
+  parseHtml,                 // JSDOM-backed, same parser as Pass 1
+  rules: [{ deserialize(el, _next, block) { /* <img> + <figure> */ } }],
+})
+
+// Inside scripts/content/*.ts
+aboutContent: await toPortableText(f['about-content']),
+
+// Inside .map() callbacks
+const faqs = (await Promise.all(
+  Array.from({ length: 6 }, (_, i) => i + 1).map(async (n) => ({
+    _key: `faq-${n}`,
+    question: f[`faq-title-${n}`],
+    answer: await toPortableText(f[`faq-content-${n}`]),
+  }))
+)).filter((faq) => faq.question)
+```
+
+**Rules:**
+
+- Always `await` the call. Inside `.map()`, wrap with
+  `await Promise.all(...)` over the inner async map.
+- Use `Promise.allSettled` for image uploads, never `Promise.all` — one
+  broken CDN URL must not abort the whole document.
+- `<figure>` deserializer MUST check for an `<img>` child before
+  processing. Iframe-in-figure (Vimeo embeds) lacks one — return
+  `undefined` so the body falls through to text rules. Emitting an
+  image block with `_ref: undefined` corrupts Sanity references.
+- Both Pass 1 src extraction and Pass 2 deserialization must use
+  JSDOM. Mixing a regex extractor in Pass 1 with the DOM parser in
+  Pass 2 produces an entity-encoding mismatch (`&amp;` ≠ `&`) and the
+  Pass 2 `<img>` rule will look up a key that doesn't exist in the
+  map.
+- Null guard at entry — `null`, `undefined`, and empty strings all
+  return `[]`. Every nullable RichText call site (customerStory empty
+  fields, FAQ answers) is protected by the helper, not by the caller.
+- The compiled block-tools schema must register the `image` type
+  alongside `block` so `htmlToBlocks` can emit image blocks. Add the
+  registration once per process — it lives in
+  `migration-helpers.ts`.
+
+---
+
+## Cross-Collection Dedup with Parity Baseline (MYGRATR-CONTENT-1C)
+
+When multiple Webflow source collections consolidate into one Sanity
+type and contain duplicate items (slug collision), designate one
+collection as the canonical master and dedupe every other collection
+against it. Each item's category/tag/etc. comes from its own
+`resource-category` ref — never from its source collection. The
+`migration-tracker` accepts an optional `parityBaselineCount` so
+`parity_score` is measured against the deduplicated set rather than
+raw source count.
+
+```typescript
+// In the migrator
+const globalSlugSet = new Set<string>(sanityExistingSlugs)
+
+for (const collection of CE_BLOG_COLLECTIONS) {
+  const items = await getCollectionItems(collection.id)
+  const isMaster = collection.id === CE_COLLECTION_IDS.blogsAndGuides
+
+  const eligible = items.filter((item) => {
+    const slug = webflowSlug(item)
+    if (!slug) return false
+    if (!isMaster && globalSlugSet.has(slug)) return false  // dup
+    return true
+  })
+
+  for (const item of eligible) {
+    await sanityWriteClient.createOrReplace(buildDoc(item))
+    const slug = webflowSlug(item)
+    if (slug) globalSlugSet.add(slug)
+  }
+
+  await recordMigration({
+    collectionSlug: collection.collectionSlug,
+    sourceItemCount: items.length,        // full Webflow count
+    migratedItemCount: eligible.length,   // unique-only that we wrote
+    parityBaselineCount: eligible.length, // parity baseline
+    status: 'complete',
+    errorLog: [],
+  })
+}
+```
+
+**Rules:**
+
+- Pre-flight slug-collision check is a hard gate. Before writing any
+  documents, fetch every slug across the union of source collections
+  and report duplicates. Stop on collision in a single-source
+  migrator (compareBlog). For multi-source dedup migrators (blogPost),
+  the duplicates are expected — designate the canonical master and
+  iterate it first.
+- Seed the `globalSlugSet` with slugs already in Sanity for
+  partial-rerun resilience. A previously-migrated slug at a different
+  `_id` won't be re-written under a new ID.
+- `parityBaselineCount` defaults to `sourceItemCount`. Override only
+  when the collection participates in cross-collection dedup AND the
+  "expected to migrate" count is smaller than the source count.
+- Vacuous success (denominator=0, migrated=0, no errors) yields
+  `parity_score = 100`. Without this, a sub-category collection
+  whose every item duplicates the master would false-fail the Step 7
+  verifier with `parity_score = 0`.
+
+---
+
 ## Section 4: Phase History
 
 | Phase | Status | Key Patterns Established |
@@ -1410,3 +1534,4 @@ async function migrate(): Promise<void> {
 | MYGRATR-SCAFFOLD-1 | Complete | Generated-site monorepo layout (`site/` + `studio/` + `src/`), locale routing via URL prefix (not Next i18n), generateCanonical / generateHreflang single-source helpers, third-party script identifier provenance from audit output, redirect extraction script writes tracked TS into `site/` (Vercel never reads `audit-output/`), defineLive factory for Sanity Live, draft-mode enable route with same-origin redirectTo check, presentationTool from `sanity/presentation` (bundled path, not the deprecated standalone package). |
 | MYGRATR-CONTENT-1A | Complete | Content-migration lane infrastructure under `src/lib/content/` (Webflow read-client with offset+limit pagination, Sanity write-client, migration tracker upserting `content_migrations` via `(org_id, migration_id, collection_slug)` unique key, CE-specific Webflow collection IDs as seed data); deterministic Sanity `_id`s of the form `{type}-{webflowId}` for idempotent re-runs and downstream reference resolution; Webflow Option-field resolution by fetching the collection schema once and mapping option IDs to names; image staging via top-level `webflowImageUrl` string instead of Sanity asset upload (deferred to CONTENT-1C); pre-flight env guards (`ensureSanity()` + `ensureWebflow()`) at the top of every migrator. |
 | MYGRATR-CONTENT-1B | Complete | Shared migration-helpers module (`src/lib/content/migration-helpers.ts`): `toPortableText` with JSDOM-injected `parseHtml` for `@sanity/block-tools` (defaults to browser DOMParser which is absent in Node), `extractUrl` / `toRefs` accepting both Webflow object and plain-string shapes, `uploadImage` replacing the CONTENT-1A staging pattern with real Sanity asset uploads, `webflowSlug(item)` reading `fieldData.slug` first (top-level `item.slug` is `null` on some collections — caused every CONTENT-1A doc to ship with `slug.current = null`, retroactively backfilled), `extractOption` for object-shaped Option fields and `fetchOptionIdMap()` for the more common opaque-ID shape. Pre-flight live-API field-name verification before writing any migrator (six of eight CONTENT-1B collections had brief / field-map mismatches against reality — slug typos, missing fields, mislabelled fields). Webflow → Sanity field-name corrections logged in PHASE_HISTORY.md and reflected in `docs/WEBFLOW_TO_SANITY_FIELD_MAP.md`. Image-upload failures are non-fatal: log + return null + continue. |
+| MYGRATR-CONTENT-1C | Complete | `toPortableText` upgraded to async two-pass walk for inline image upload (Pass 1 JSDOM-extract `<img>` srcs and `Promise.allSettled` upload them; Pass 2 deserialize with custom rules emitting image blocks for `<img>` and `<figure><img>`, skipping iframe-in-figure); null-guard at entry; both passes use JSDOM so src URLs decode identically (no entity-encoding mismatch). `<figure>` deserializer must check for `<img>` child before processing — iframe-in-figure (Vimeo embeds) lacks one and falls through to text rules. Cross-collection deduplication pattern: when multiple Webflow source collections consolidate into one Sanity type and contain duplicate items, designate one as the canonical master (`Blogs & Guides` for blogPost), iterate it first, build a running slug set seeded with Sanity-existing slugs, skip duplicates in subsequent collections; `migration-tracker.recordMigration` accepts an optional `parityBaselineCount` so `parity_score = migrated / parityBaselineCount * 100` is measured on the deduplicated set rather than raw source count, and vacuous success (denominator=0, migrated=0, no errors) yields 100. Every Webflow ref ID validated against `/^[a-f0-9]{24}$/i` (Webflow ObjectId shape) before constructing a `_ref` — `toRefs` drops malformed entries with a console warning rather than writing `tag-[object Object]`. Deterministic `_key` from the full Webflow ID for refs (was sliced 8-char prefix); positional indices for FAQ (`faq-{n}`) and fold items (`fold-{n}-item-{m}`). Date parsing via regex prefix `/^(\d{4}-\d{2}-\d{2})/` instead of `new Date(raw).toISOString().slice(0,10)` (timezone shift). Pre-flight slug-collision check is a hard gate — surface duplicates and stop before writing any documents. Option-field map fetches must hoist above the item loop (Webflow rate-limit avoidance). `decodeHtmlEntities` for VideoLink URLs (`?h=xxx&amp;title=0` → `?h=xxx&title=0`). `fetchOptionIdMap` and `resolveOption` lifted out of duplicates in two migrators and consolidated in shared helpers. |
