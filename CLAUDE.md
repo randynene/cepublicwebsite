@@ -90,8 +90,8 @@ Parent brand: Saxon.io. Owner: Jake Hall (non-developer, directs Claude Code).
   docs created.
 
 **Content migration state (as of CONTENT-1B complete):**
-- `migrations.status = content_running` (partial — CONTENT-1A + 1B of 3;
-  `content_complete` ships with CONTENT-1C).
+- `migrations.status = content_running` (partial — CONTENT-1A + 1B of 4;
+  `content_complete` ships after CONTENT-1D per the CONTENT-1C brief).
 - Collections migrated to Sanity prod dataset (project `lzbhll1u`):
   - **CONTENT-1A:** `tags-consolidated` (22 across 6 categories),
     `blog-categories` (6), `glassdoor-reviews` (10), `benefit-values` (9),
