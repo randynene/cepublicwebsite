@@ -6,10 +6,12 @@
 //   resolve them via fetchOptionIdMap() (CONTENT-1A pattern from
 //   migrate-benefit-values.ts) before applying TYPE_MAP / TEAM_MAP
 //   to camelCase the Sanity enum value.
-import { env, ensureSanity, ensureWebflow } from '@/lib/env'
+import { ensureSanity, ensureWebflow } from '@/lib/env'
 import { CE_COLLECTION_IDS } from '@/lib/content/ce-collection-ids'
 import {
   extractUrl,
+  fetchOptionIdMap,
+  resolveOption,
   toPortableText,
   toRefs,
   uploadImage,
@@ -41,53 +43,6 @@ const TEAM_MAP: Record<string, string> = {
   'Employee Experience Team': 'employeeExperienceTeam',
 }
 
-async function fetchOptionIdMap(
-  collectionId: string,
-  fieldSlug: string,
-): Promise<Record<string, string>> {
-  const r = await fetch(`https://api.webflow.com/v2/collections/${collectionId}`, {
-    headers: {
-      Authorization: `Bearer ${env.WEBFLOW_API_TOKEN}`,
-      'accept-version': '2.0.0',
-    },
-  })
-  if (!r.ok) {
-    throw new Error(`Webflow collection schema fetch failed: ${r.status} ${await r.text()}`)
-  }
-  const data = (await r.json()) as {
-    fields: Array<{
-      slug: string
-      validations?: { options?: Array<{ id: string; name: string }> }
-    }>
-  }
-  const field = data.fields.find((f) => f.slug === fieldSlug)
-  const options = field?.validations?.options ?? []
-  return Object.fromEntries(options.map((o) => [o.id, o.name]))
-}
-
-function resolveOption(
-  optionId: unknown,
-  idToName: Record<string, string>,
-  enumMap: Record<string, string>,
-  fieldName: string,
-  itemId: string,
-): string | null {
-  if (!optionId) return null
-  const id = typeof optionId === 'string' ? optionId : null
-  if (!id) return null
-  const name = idToName[id]
-  if (!name) {
-    console.warn(`[video ${itemId}] unknown option id "${id}" for field "${fieldName}"`)
-    return null
-  }
-  const camel = enumMap[name]
-  if (!camel) {
-    console.warn(`[video ${itemId}] no camelCase mapping for ${fieldName}="${name}"`)
-    return null
-  }
-  return camel
-}
-
 async function migrateVideos(): Promise<void> {
   const collectionId = CE_COLLECTION_IDS.videos
   const [typeIdMap, teamIdMap] = await Promise.all([
@@ -108,8 +63,8 @@ async function migrateVideos(): Promise<void> {
         name: f['name'] as string,
         slug: { _type: 'slug', current: webflowSlug(item) },
         label: (f['label-short-name-like-talent-retention'] as string) ?? null,
-        type: resolveOption(f['type'], typeIdMap, TYPE_MAP, 'type', item.id),
-        team: resolveOption(f['team'], teamIdMap, TEAM_MAP, 'team', item.id),
+        type: resolveOption(f['type'], typeIdMap, TYPE_MAP, 'type', `video ${item.id}`),
+        team: resolveOption(f['team'], teamIdMap, TEAM_MAP, 'team', `video ${item.id}`),
         order: (f['order'] as number) ?? null,
         featured: (f['featured'] as boolean) ?? false,
         mainVideoEmbedLink: extractUrl(f['main-video-embed-link']),

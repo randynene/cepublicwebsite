@@ -12,6 +12,7 @@ import { Schema } from '@sanity/schema'
 import { htmlToBlocks } from '@sanity/block-tools'
 import { JSDOM } from 'jsdom'
 
+import { env } from '@/lib/env'
 import { sanityWriteClient } from '@/lib/content/sanity-write-client'
 
 const defaultSchema = Schema.compile({
@@ -269,4 +270,59 @@ export function webflowSlug(item: {
     return fromFieldData
   }
   return item.slug ?? null
+}
+
+// Fetch the option-id → option-name map for a Webflow Option field. Webflow
+// v2 stores Option fields in fieldData as opaque IDs; the `validations.options`
+// list on the collection schema gives the human-readable names. Cache callers
+// outside any item loop — Webflow rate-limits at 60 req/min.
+export async function fetchOptionIdMap(
+  collectionId: string,
+  fieldSlug: string,
+): Promise<Record<string, string>> {
+  const r = await fetch(`https://api.webflow.com/v2/collections/${collectionId}`, {
+    headers: {
+      Authorization: `Bearer ${env.WEBFLOW_API_TOKEN}`,
+      'accept-version': '2.0.0',
+    },
+  })
+  if (!r.ok) {
+    throw new Error(`Webflow collection schema fetch failed: ${r.status} ${await r.text()}`)
+  }
+  const data = (await r.json()) as {
+    fields: Array<{
+      slug: string
+      validations?: { options?: Array<{ id: string; name: string }> }
+    }>
+  }
+  const field = data.fields.find((f) => f.slug === fieldSlug)
+  const options = field?.validations?.options ?? []
+  return Object.fromEntries(options.map((o) => [o.id, o.name]))
+}
+
+// Resolve a Webflow Option field value (an opaque ID) to a Sanity enum string.
+// Two-step resolution: option ID → option name (via `idToName`), then name →
+// camelCase enum value (via `enumMap`). Returns null on any miss, with a
+// console.warn so missing data surfaces during migration.
+export function resolveOption(
+  optionId: unknown,
+  idToName: Record<string, string>,
+  enumMap: Record<string, string>,
+  fieldName: string,
+  itemId: string,
+): string | null {
+  if (!optionId) return null
+  const id = typeof optionId === 'string' ? optionId : null
+  if (!id) return null
+  const name = idToName[id]
+  if (!name) {
+    console.warn(`[${itemId}] unknown option id "${id}" for field "${fieldName}"`)
+    return null
+  }
+  const camel = enumMap[name]
+  if (!camel) {
+    console.warn(`[${itemId}] no camelCase mapping for ${fieldName}="${name}"`)
+    return null
+  }
+  return camel
 }
