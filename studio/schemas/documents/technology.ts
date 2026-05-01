@@ -4,6 +4,7 @@ import {
   imageField,
   localeField,
   metaFields,
+  metaSourceFields,
   slugField,
   sourceTrackingFields,
 } from '../_shared'
@@ -46,6 +47,7 @@ export default defineType({
     }),
 
     ...metaFields(),
+    ...metaSourceFields(),
 
     defineField({
       name: 'faqs',

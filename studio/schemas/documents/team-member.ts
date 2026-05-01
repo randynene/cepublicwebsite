@@ -1,6 +1,13 @@
 import { defineField, defineType } from 'sanity'
 
-import { imageField, localeField, metaFields, slugField } from '../_shared'
+import {
+  imageField,
+  localeField,
+  metaFields,
+  metaSourceFields,
+  slugField,
+  sourceTrackingFieldsCarryover,
+} from '../_shared'
 
 export default defineType({
   name: 'teamMember',
@@ -39,6 +46,8 @@ export default defineType({
       initialValue: false,
     }),
     ...metaFields({ og: false }),
+    ...metaSourceFields(),
+    ...sourceTrackingFieldsCarryover(),
     localeField(),
   ],
   preview: { select: { title: 'name', subtitle: 'position', media: 'teamMemberImage' } },

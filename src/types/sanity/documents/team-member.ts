@@ -3,11 +3,15 @@ import { z } from 'zod'
 import {
   LocaleSchema,
   MetaFieldsNoOgSchema,
+  MetaSourceFieldsSchema,
   PortableTextSchema,
   SanityBaseDocumentSchema,
   SanityImageSchema,
   SanitySlugSchema,
+  SourceTrackingFieldsCarryoverSchema,
 } from '../shared'
+
+// Pre-CONTENT-1D docs have source: undefined despite initialValue. See Finding F18.
 
 export const TeamMemberSchema = SanityBaseDocumentSchema.extend({
   _type: z.literal('teamMember'),
@@ -23,5 +27,8 @@ export const TeamMemberSchema = SanityBaseDocumentSchema.extend({
   bookACallLink: z.string().url().optional(),
   hideFromTeamAboutPage: z.boolean(),
   locale: LocaleSchema,
-}).merge(MetaFieldsNoOgSchema)
+})
+  .merge(MetaFieldsNoOgSchema)
+  .merge(MetaSourceFieldsSchema)
+  .merge(SourceTrackingFieldsCarryoverSchema)
 export type TeamMember = z.infer<typeof TeamMemberSchema>

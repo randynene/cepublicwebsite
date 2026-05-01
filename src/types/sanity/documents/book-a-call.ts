@@ -1,6 +1,14 @@
 import { z } from 'zod'
 
-import { PortableTextSchema, SanityBaseDocumentSchema, SanitySlugSchema } from '../shared'
+import {
+  MetaSourceFieldsSchema,
+  PortableTextSchema,
+  SanityBaseDocumentSchema,
+  SanitySlugSchema,
+  SourceTrackingFieldsCarryoverSchema,
+} from '../shared'
+
+// Pre-CONTENT-1D docs have source: undefined despite initialValue. See Finding F18.
 
 export const BookACallSchema = SanityBaseDocumentSchema.extend({
   _type: z.literal('bookACall'),
@@ -11,4 +19,6 @@ export const BookACallSchema = SanityBaseDocumentSchema.extend({
   metaTitle: z.string(),
   metaDescription: z.string(),
 })
+  .merge(MetaSourceFieldsSchema)
+  .merge(SourceTrackingFieldsCarryoverSchema)
 export type BookACall = z.infer<typeof BookACallSchema>

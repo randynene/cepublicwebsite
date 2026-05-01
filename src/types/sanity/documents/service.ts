@@ -4,12 +4,15 @@ import {
   FoldSchema,
   LocaleSchema,
   MetaFieldsSchema,
+  MetaSourceFieldsSchema,
   SanityBaseDocumentSchema,
   SanityImageSchema,
   SanityRefSchema,
   SanitySlugSchema,
   SourceTrackingFieldsSchema,
 } from '../shared'
+
+// Pre-CONTENT-1D docs have source: undefined despite initialValue. See Finding F18.
 
 export const ServiceSchema = SanityBaseDocumentSchema.extend({
   _type: z.literal('service'),
@@ -27,5 +30,6 @@ export const ServiceSchema = SanityBaseDocumentSchema.extend({
   locale: LocaleSchema,
 })
   .merge(MetaFieldsSchema)
+  .merge(MetaSourceFieldsSchema)
   .merge(SourceTrackingFieldsSchema)
 export type Service = z.infer<typeof ServiceSchema>

@@ -218,6 +218,29 @@ export const SourceTrackingFieldsSchema = z.object({
   needsReview: z.boolean(),
 })
 
+// CONTENT-1D §0a — retroactive source-tracking applied to schemas that
+// already have published content without these fields. All optional —
+// pre-CONTENT-1D docs have these as undefined despite the studio
+// `initialValue: 'manual'` (Finding F18: initialValue does NOT
+// retroactively populate existing docs).
+export const SourceTrackingFieldsCarryoverSchema = z.object({
+  source: SourceSchema.optional(),
+  generatedAt: z.string().datetime().optional(),
+  needsReview: z.boolean().optional(),
+})
+
+// CONTENT-1D §0a — split per-field provenance (Finding F21).
+// Pre-CONTENT-1D docs have these as undefined.
+const MetaSourceObjectSchema = z.object({
+  provider: z.string().optional(),
+  scrapedAt: z.string().datetime().optional(),
+  url: z.string().optional(),
+})
+export const MetaSourceFieldsSchema = z.object({
+  metaTitleSource: MetaSourceObjectSchema.optional(),
+  metaDescriptionSource: MetaSourceObjectSchema.optional(),
+})
+
 // Base document — every Sanity document has these.
 export const SanityBaseDocumentSchema = z.object({
   _id: z.string(),
