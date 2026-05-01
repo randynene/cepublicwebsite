@@ -39,7 +39,8 @@
     "content:migrate-technology": "tsx scripts/content/migrate-technology.ts",
     "content:migrate-services": "tsx scripts/content/migrate-services.ts",
     "content:migrate-customer-stories": "tsx scripts/content/migrate-customer-stories.ts",
-    "content:verify-1c": "tsx scripts/content/verify-content-1c.ts"
+    "content:verify-1c": "tsx scripts/content/verify-content-1c.ts",
+    "content:verify-1d-prereqs": "tsx scripts/content/verify-content-1d-prereqs.ts"
   },
   "keywords": [],
   "author": "",
