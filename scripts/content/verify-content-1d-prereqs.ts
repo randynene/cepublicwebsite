@@ -360,16 +360,20 @@ function checkForbiddenImports(): void {
 
 // ---------- Step 0a.2 supplementary: schema + Zod field presence ----------
 function checkStep0aFields(): void {
-  // Static grep — fields wired into 4 newly-extended schemas + provenance
-  // pair on all 6 in-scope schemas. Informational; flagged as non-hard
-  // (warning) since this verifier is also intended to run BEFORE Step 0a.
+  // The fields land via shared helper invocations
+  // (sourceTrackingFieldsCarryover, metaSourceFields, MetaSourceFieldsSchema,
+  // SourceTrackingFieldsCarryoverSchema). Each consumer file is wired up
+  // when it (a) imports the helper and (b) invokes it / merges it. We
+  // accept either direct field declaration OR helper usage as wired.
+  // Informational — flagged non-hard so this verifier is meaningful both
+  // before AND after Step 0a runs.
   const studioFiles = [
     'studio/schemas/documents/customer-story.ts',
     'studio/schemas/documents/team-member.ts',
     'studio/schemas/documents/review.ts',
     'studio/schemas/documents/book-a-call.ts',
   ]
-  const provenanceFiles = [
+  const provenanceStudioFiles = [
     ...studioFiles,
     'studio/schemas/documents/technology.ts',
     'studio/schemas/documents/service.ts',
@@ -383,49 +387,114 @@ function checkStep0aFields(): void {
     'src/types/sanity/documents/service.ts',
   ]
 
+  // Confirm shared helpers exist with the expected names. If they're
+  // missing, the per-file checks below would be meaningless.
+  const studioShared = fs.readFileSync(
+    path.join(REPO_ROOT, 'studio/schemas/_shared.ts'),
+    'utf-8',
+  )
+  const helpersPresent =
+    /sourceTrackingFieldsCarryover/.test(studioShared) &&
+    /metaSourceFields/.test(studioShared)
+  record(
+    'Step 0a: studio shared helpers defined',
+    helpersPresent,
+    helpersPresent
+      ? 'sourceTrackingFieldsCarryover + metaSourceFields exist in _shared.ts'
+      : 'helpers missing in studio/schemas/_shared.ts',
+    false,
+  )
+
+  const zodShared = fs.readFileSync(path.join(REPO_ROOT, 'src/types/sanity/shared.ts'), 'utf-8')
+  const zodHelpersPresent =
+    /MetaSourceFieldsSchema/.test(zodShared) &&
+    /SourceTrackingFieldsCarryoverSchema/.test(zodShared)
+  record(
+    'Step 0a: Zod shared schemas defined',
+    zodHelpersPresent,
+    zodHelpersPresent
+      ? 'MetaSourceFieldsSchema + SourceTrackingFieldsCarryoverSchema exist in shared.ts'
+      : 'shared zod schemas missing',
+    false,
+  )
+
+  // needsReview is added to the 4 carryover types via
+  // sourceTrackingFieldsCarryover(). Accept either the helper invocation
+  // or a literal `needsReview` declaration.
   const missingNeedsReview: string[] = []
   for (const rel of studioFiles) {
     const text = fs.readFileSync(path.join(REPO_ROOT, rel), 'utf-8')
-    if (!/needsReview/.test(text)) missingNeedsReview.push(rel)
+    const wired =
+      /sourceTrackingFieldsCarryover\s*\(/.test(text) || /name:\s*['"]needsReview['"]/.test(text)
+    if (!wired) missingNeedsReview.push(rel)
   }
   record(
     'Step 0a: needsReview wired in 4 carryover schemas',
     missingNeedsReview.length === 0,
     missingNeedsReview.length === 0
-      ? '4/4 schemas have needsReview'
+      ? '4/4 schemas wire sourceTrackingFieldsCarryover() (or declare needsReview directly)'
       : `MISSING in: ${missingNeedsReview.join(', ')}`,
     false,
   )
 
+  // Provenance fields land via metaSourceFields() helper invocation. Accept
+  // either the helper or a literal metaTitleSource/metaDescriptionSource.
   const missingProvenance: string[] = []
-  for (const rel of provenanceFiles) {
+  for (const rel of provenanceStudioFiles) {
     const text = fs.readFileSync(path.join(REPO_ROOT, rel), 'utf-8')
-    if (!/metaTitleSource/.test(text) || !/metaDescriptionSource/.test(text)) {
-      missingProvenance.push(rel)
-    }
+    const wired =
+      /metaSourceFields\s*\(/.test(text) ||
+      (/name:\s*['"]metaTitleSource['"]/.test(text) &&
+        /name:\s*['"]metaDescriptionSource['"]/.test(text))
+    if (!wired) missingProvenance.push(rel)
   }
   record(
     'Step 0a: split provenance fields wired in 6 schemas',
     missingProvenance.length === 0,
     missingProvenance.length === 0
-      ? '6/6 schemas have metaTitleSource + metaDescriptionSource'
+      ? '6/6 schemas wire metaSourceFields() (or declare both fields directly)'
       : `MISSING in: ${missingProvenance.join(', ')}`,
     false,
   )
 
+  // Zod twins import + merge MetaSourceFieldsSchema. Accept either the
+  // merge or a direct field declaration.
   const missingZod: string[] = []
   for (const rel of zodFiles) {
     const text = fs.readFileSync(path.join(REPO_ROOT, rel), 'utf-8')
-    if (!/metaTitleSource/.test(text) || !/metaDescriptionSource/.test(text)) {
-      missingZod.push(rel)
-    }
+    const wired =
+      /MetaSourceFieldsSchema/.test(text) ||
+      (/metaTitleSource/.test(text) && /metaDescriptionSource/.test(text))
+    if (!wired) missingZod.push(rel)
   }
   record(
     'Step 0a: Zod twins extended with provenance fields',
     missingZod.length === 0,
     missingZod.length === 0
-      ? '6/6 Zod twins extended'
+      ? '6/6 Zod twins merge MetaSourceFieldsSchema (or declare fields directly)'
       : `MISSING in: ${missingZod.join(', ')}`,
+    false,
+  )
+
+  // Carryover Zod twins — 4 types should additionally merge
+  // SourceTrackingFieldsCarryoverSchema for the §7.2 triplet.
+  const carryoverZodFiles = [
+    'src/types/sanity/documents/customer-story.ts',
+    'src/types/sanity/documents/team-member.ts',
+    'src/types/sanity/documents/review.ts',
+    'src/types/sanity/documents/book-a-call.ts',
+  ]
+  const missingCarryover: string[] = []
+  for (const rel of carryoverZodFiles) {
+    const text = fs.readFileSync(path.join(REPO_ROOT, rel), 'utf-8')
+    if (!/SourceTrackingFieldsCarryoverSchema/.test(text)) missingCarryover.push(rel)
+  }
+  record(
+    'Step 0a: Zod carryover twins merge SourceTrackingFieldsCarryoverSchema',
+    missingCarryover.length === 0,
+    missingCarryover.length === 0
+      ? '4/4 carryover Zod twins extended'
+      : `MISSING in: ${missingCarryover.join(', ')}`,
     false,
   )
 }
