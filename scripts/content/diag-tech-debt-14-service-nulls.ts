@@ -121,11 +121,18 @@ async function main(): Promise<void> {
   console.log('=== Tech Debt #14 — service doc null-field diagnostic ===\n')
 
   // Webflow source field population (cross-reference).
-  type FieldPopulation = { collections?: Array<{ displayName?: string; collectionSlug?: string; totalItems?: number; fields?: Array<{ slug: string; type: string; usPopulatedCount: number; usPopulatedRate: number }> }> }
+  type CollectionFP = {
+    displayName?: string
+    collectionSlug?: string
+    totalItems?: number
+    fields?: Array<{ slug: string; type: string; usPopulatedCount: number; usPopulatedRate: number }>
+  }
   const fpRaw = JSON.parse(
     fs.readFileSync(path.join(REPO_ROOT, 'audit-output', 'ce-field-population.json'), 'utf-8'),
-  ) as FieldPopulation | Array<{ displayName?: string; collectionSlug?: string; totalItems?: number; fields?: Array<{ slug: string; type: string; usPopulatedCount: number; usPopulatedRate: number }> }>
-  const fpArr = Array.isArray(fpRaw) ? fpRaw : Object.values(fpRaw)
+  ) as Record<string, unknown> | CollectionFP[]
+  const fpArr: CollectionFP[] = Array.isArray(fpRaw)
+    ? fpRaw
+    : (Object.values(fpRaw) as CollectionFP[])
   const svcWebflow = fpArr.find((c) =>
     /service/i.test(c.displayName ?? c.collectionSlug ?? ''),
   )

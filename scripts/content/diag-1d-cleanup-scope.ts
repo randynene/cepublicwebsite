@@ -94,10 +94,19 @@ async function main(): Promise<void> {
   console.log('=== CONTENT-1D-CLEANUP scope check ===\n')
 
   // ---------- Webflow source cross-reference ----------
-  type FieldPopulation = Array<{ displayName?: string; collectionSlug?: string; totalItems?: number; fields?: Array<{ slug: string; type: string; usPopulatedCount: number; usPopulatedRate: number }> }>
-  const fpRaw = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, 'audit-output', 'ce-field-population.json'), 'utf-8')) as FieldPopulation | Record<string, unknown>
-  const fpArr = (Array.isArray(fpRaw) ? fpRaw : Object.values(fpRaw)) as FieldPopulation
-  const wfBySanityType: Record<string, FieldPopulation[number] | undefined> = {
+  type CollectionFP = {
+    displayName?: string
+    collectionSlug?: string
+    totalItems?: number
+    fields?: Array<{ slug: string; type: string; usPopulatedCount: number; usPopulatedRate: number }>
+  }
+  const fpRaw = JSON.parse(
+    fs.readFileSync(path.join(REPO_ROOT, 'audit-output', 'ce-field-population.json'), 'utf-8'),
+  ) as Record<string, unknown> | CollectionFP[]
+  const fpArr: CollectionFP[] = Array.isArray(fpRaw)
+    ? fpRaw
+    : (Object.values(fpRaw) as CollectionFP[])
+  const wfBySanityType: Record<string, CollectionFP | undefined> = {
     service: fpArr.find((c) => /^services?$/i.test(c.collectionSlug ?? '') || /^services$/i.test(c.displayName ?? '')),
     technology: fpArr.find((c) => /technology/i.test(c.displayName ?? c.collectionSlug ?? '')),
     customerStory: fpArr.find((c) => /customer/i.test(c.displayName ?? c.collectionSlug ?? '')),
