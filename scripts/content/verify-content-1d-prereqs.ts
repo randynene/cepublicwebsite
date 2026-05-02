@@ -47,13 +47,27 @@ const IN_SCOPE_ROUTE_PREFIXES = [
   '/book-a-call/',
 ]
 
-// 3 specific smoke-test doc _ids in CONTENT-1D scope (brief §7).
+// CONTENT-1D Step 7 scope DEVIATION (Jake decision 2026-05-02): the brief
+// originally targeted 3 smoke-test docs and left 2 (smoke-test-blog-post,
+// smoke-test-technology-with-folds) for pre-launch cleanup. Decision B was
+// taken to delete all 5 in this phase — they are SCHEMA-1 test artefacts
+// with no production value, and smoke-test-blog-post's inbound references
+// to the original 3 trigger the brief's halt-on-refs guard if left in
+// place. Outcomes:
+//   - smoke_test_docs_remaining: 0 post-1D
+//   - No pre-launch smoke-test cleanup tech debt
+//   - Brief Exit Criterion #7 wording shifts ("3 deleted, 2 remain"
+//     becomes "5 deleted, 0 remain"). Documented in post-phase update.
+//
+// Deletion order matters: smoke-test-blog-post MUST be deleted first
+// (or its refs nulled out) since it references 3 of the others. The
+// migrator script enforces this ordering.
 const SMOKE_TEST_IDS_IN_SCOPE = [
-  // The smoke-test tag — discovered at runtime; confirmed-existence check
-  // happens after lookup. Placeholder here; resolved in checkSmokeTestDocs.
-  '__SMOKE_TEST_TAG__',
+  'smoke-test-blog-post',
+  'smoke-test-tag-scaling-teams',
   'smoke-test-blog-category-scaling-teams',
   'smoke-test-team-member',
+  'smoke-test-technology-with-folds',
 ] as const
 
 type CheckResult = { name: string; ok: boolean; detail: string; hard: boolean }
@@ -237,31 +251,35 @@ function checkUnknownUrlOverlap(): void {
   )
 }
 
-// ---------- Check 5: smoke-test docs exist + zero refs ----------
+// ---------- Check 5: smoke-test docs exist + refs only inside scope ----------
 async function checkSmokeTestDocs(): Promise<void> {
-  // Resolve the smoke-test tag _id by name.
+  // Discovery query — confirms the smoke-test tag _id matches the
+  // deterministic SCHEMA-1 pattern. Belt-and-suspenders against drift.
   const tagMatches = await sanityWriteClient.fetch<Array<{ _id: string; name: string }>>(
     `*[_type == "tag" && name == $name]{_id, name}`,
     { name: 'scaling-teams (SMOKE TEST)' },
   )
   if (tagMatches.length !== 1) {
     record(
-      'Smoke-test tag discovery',
+      'Smoke-test tag discovery (sanity check)',
       false,
       `expected exactly 1 match for name="scaling-teams (SMOKE TEST)"; got ${tagMatches.length}`,
     )
     return
   }
-  const smokeTestTagId = tagMatches[0]._id
-  record('Smoke-test tag discovery', true, `tag _id=${smokeTestTagId}`)
+  if (tagMatches[0]._id !== 'smoke-test-tag-scaling-teams') {
+    record(
+      'Smoke-test tag discovery (sanity check)',
+      false,
+      `tag name match resolved to unexpected _id=${tagMatches[0]._id} (expected smoke-test-tag-scaling-teams)`,
+    )
+    return
+  }
+  record('Smoke-test tag discovery (sanity check)', true, `tag _id=${tagMatches[0]._id}`)
 
-  const idsToCheck = [
-    smokeTestTagId,
-    'smoke-test-blog-category-scaling-teams',
-    'smoke-test-team-member',
-  ]
+  const inScopeSet = new Set<string>(SMOKE_TEST_IDS_IN_SCOPE)
 
-  for (const id of idsToCheck) {
+  for (const id of SMOKE_TEST_IDS_IN_SCOPE) {
     const exists = await sanityWriteClient.fetch<{ _id: string; _type: string } | null>(
       `*[_id == $id][0]{_id, _type}`,
       { id },
@@ -271,27 +289,48 @@ async function checkSmokeTestDocs(): Promise<void> {
       continue
     }
     record(`Smoke-test doc exists: ${id}`, true, `_type=${exists._type}`)
+
+    // Refs are safe IF every inbound ref also comes from a smoke-test doc
+    // we're deleting in this phase — i.e. inside SMOKE_TEST_IDS_IN_SCOPE.
+    // Any inbound ref from a non-scope doc halts the cleanup.
     const refs = await sanityWriteClient.fetch<Array<{ _id: string; _type: string }>>(
       `*[references($id)]{_id, _type}`,
       { id },
     )
-    const ok = refs.length === 0
-    record(
-      `Smoke-test doc inbound refs: ${id}`,
-      ok,
-      ok ? '0 inbound refs (safe to delete)' : `${refs.length} refs: ${refs.map((r) => r._id).join(', ')}`,
-    )
+    const externalRefs = refs.filter((r) => !inScopeSet.has(r._id))
+    if (externalRefs.length === 0) {
+      record(
+        `Smoke-test doc inbound refs (in-scope only): ${id}`,
+        true,
+        refs.length === 0
+          ? '0 inbound refs'
+          : `${refs.length} refs (all inside delete scope): ${refs.map((r) => r._id).join(', ')}`,
+      )
+    } else {
+      record(
+        `Smoke-test doc inbound refs (in-scope only): ${id}`,
+        false,
+        `${externalRefs.length} refs from outside delete scope: ${externalRefs.map((r) => r._id).join(', ')}`,
+      )
+    }
   }
 
-  // Sanity check the production tag exists too — proves we're deleting only
-  // the SMOKE TEST variant, not the production category tag.
-  const productionTag = await sanityWriteClient.fetch<{ _id: string } | null>(
-    `*[_type == "tag" && slug.current == "scaling-teams" && name == "Scaling Teams"][0]{_id}`,
+  // Brief deviation (Jake decision 2026-05-02): production "Scaling Teams"
+  // tag check relaxed. The brief's safety guard assumed a tag-vs-tag
+  // confusion that doesn't apply — there is no production `tag` with
+  // slug "scaling-teams" (the production analog is a `blogCategory`,
+  // type-distinct from the smoke-test tag). Combined with
+  // deleteByIdStrict()'s _type validation before delete, there's no
+  // collision risk. Replaced with an _id-prefix sanity check.
+  const allInScopeStartWithSmokeTest = SMOKE_TEST_IDS_IN_SCOPE.every((id) =>
+    id.startsWith('smoke-test-'),
   )
   record(
-    'Production "Scaling Teams" tag exists',
-    !!productionTag,
-    productionTag ? `_id=${productionTag._id}` : 'NOT FOUND — would delete production tag if smoke-test cleanup ran',
+    'Smoke-test deletion targets carry smoke-test- _id prefix',
+    allInScopeStartWithSmokeTest,
+    allInScopeStartWithSmokeTest
+      ? `all ${SMOKE_TEST_IDS_IN_SCOPE.length} _ids start with "smoke-test-"`
+      : 'one or more in-scope _ids missing smoke-test- prefix — halt',
   )
 }
 
