@@ -3,12 +3,16 @@ import { z } from 'zod'
 import {
   LocaleSchema,
   MetaFieldsSchema,
+  MetaSourceFieldsSchema,
   PortableTextSchema,
   QuoteBlockSchema,
   SanityBaseDocumentSchema,
   SanityImageSchema,
   SanitySlugSchema,
+  SourceTrackingFieldsCarryoverSchema,
 } from '../shared'
+
+// Pre-CONTENT-1D docs have source: undefined despite initialValue. See Finding F18.
 
 const StorySectionSchema = z.object({
   content: PortableTextSchema.optional(),
@@ -39,5 +43,8 @@ export const CustomerStorySchema = SanityBaseDocumentSchema.extend({
   ctaContent: PortableTextSchema.optional(),
   reviewSnippetForMeta: z.string().optional(),
   locale: LocaleSchema,
-}).merge(MetaFieldsSchema)
+})
+  .merge(MetaFieldsSchema)
+  .merge(MetaSourceFieldsSchema)
+  .merge(SourceTrackingFieldsCarryoverSchema)
 export type CustomerStory = z.infer<typeof CustomerStorySchema>

@@ -21,7 +21,15 @@ const schema = z.object({
 
   SANITY_PROJECT_ID: z.string().optional().default(''),
   SANITY_DATASET: z.string().optional().default(''),
+  // Legacy general-purpose token. Retained for SCHEMA-lane seed scripts
+  // (seed-singletons, smoke-test-seed). Migration scripts use
+  // SANITY_MIGRATION_WRITE_TOKEN — see ensureSanityMigrationWriteToken().
   SANITY_API_TOKEN: z.string().optional().default(''),
+  // CONTENT-1D §0.1 — least-privilege migration token, single-dataset scope.
+  SANITY_MIGRATION_WRITE_TOKEN: z.string().optional().default(''),
+  // Site read-token. MUST be unset when migration scripts run — its presence
+  // signals the wrong client context. Asserted at sanityWriteClient load.
+  SANITY_API_READ_TOKEN: z.string().optional().default(''),
 })
 
 export const env = schema.parse(process.env)
@@ -52,6 +60,22 @@ export function ensureSanity(): void {
   if (!env.SANITY_PROJECT_ID) throw new Error('SANITY_PROJECT_ID not configured — set in .env')
   if (!env.SANITY_DATASET) throw new Error('SANITY_DATASET not configured — set in .env')
   if (!env.SANITY_API_TOKEN) throw new Error('SANITY_API_TOKEN not configured — set in .env')
+}
+
+// Migration-script preflight. Asserts the dedicated write token is present
+// and the site's read token is absent in the current process — read-token
+// presence indicates the script is running in the wrong client context.
+export function ensureSanityMigrationWriteToken(): void {
+  if (!env.SANITY_PROJECT_ID) throw new Error('SANITY_PROJECT_ID not configured — set in .env')
+  if (!env.SANITY_DATASET) throw new Error('SANITY_DATASET not configured — set in .env')
+  if (!env.SANITY_MIGRATION_WRITE_TOKEN) {
+    throw new Error('SANITY_MIGRATION_WRITE_TOKEN required — set in .env (migration scripts only)')
+  }
+  if (env.SANITY_API_READ_TOKEN) {
+    throw new Error(
+      'SANITY_API_READ_TOKEN must NOT be present in migration script context — read token belongs in site/.env.local',
+    )
+  }
 }
 
 export function ensureSupabaseDb(): void {

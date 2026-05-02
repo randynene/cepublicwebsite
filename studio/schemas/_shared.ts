@@ -51,6 +51,79 @@ export function sourceTrackingFields(): FieldDefinition[] {
   ]
 }
 
+// CONTENT-1D §0a — retroactive §7.2 source-tracking applied to schemas
+// that already have published content without the source-tracking triplet.
+//
+// Differences from `sourceTrackingFields()` (used by technology/service,
+// which were migrated with `source: 'imported'`):
+//   - `source` is `hidden: true` and NOT required — F18: `initialValue`
+//     does NOT backfill the pre-CONTENT-1D docs in these collections;
+//     they remain `source: undefined`. Marking required would fail
+//     validation on every existing doc.
+//   - `generatedAt` is `hidden: true` (provenance metadata, not editorial).
+//   - `needsReview` is visible — drives Seb's Studio review queue.
+export function sourceTrackingFieldsCarryover(): FieldDefinition[] {
+  return [
+    defineField({
+      name: 'source',
+      title: 'Source',
+      type: 'string',
+      options: { list: [...SOURCE_OPTIONS] },
+      initialValue: 'manual',
+      hidden: true,
+    }),
+    defineField({
+      name: 'generatedAt',
+      title: 'Generated at',
+      type: 'datetime',
+      hidden: true,
+    }),
+    defineField({
+      name: 'needsReview',
+      title: 'Needs review',
+      type: 'boolean',
+      initialValue: false,
+    }),
+  ]
+}
+
+// CONTENT-1D §0a — split per-field provenance (F21).
+// Hidden audit-trail objects recording how each meta field was set.
+//
+// `metaTitleSource.provider` ∈ {'live-scrape', 'placeholder'}
+// `metaDescriptionSource.provider` ∈ {'live-scrape', 'snippetForMeta-copy',
+//                                     'placeholder', 'webflow-cms'}
+//
+// Split (vs single `metaSource` object) is required because review docs
+// may have title from live-scrape but description from snippetForMeta-copy
+// — a single provenance object cannot represent both accurately.
+export function metaSourceFields(): FieldDefinition[] {
+  return [
+    defineField({
+      name: 'metaTitleSource',
+      title: 'Meta title source',
+      type: 'object',
+      hidden: true,
+      fields: [
+        { name: 'provider', type: 'string' },
+        { name: 'scrapedAt', type: 'datetime' },
+        { name: 'url', type: 'url' },
+      ],
+    }),
+    defineField({
+      name: 'metaDescriptionSource',
+      title: 'Meta description source',
+      type: 'object',
+      hidden: true,
+      fields: [
+        { name: 'provider', type: 'string' },
+        { name: 'scrapedAt', type: 'datetime' },
+        { name: 'url', type: 'url' },
+      ],
+    }),
+  ]
+}
+
 export function metaFields(opts: { og?: boolean } = {}): FieldDefinition[] {
   const fields: FieldDefinition[] = [
     defineField({

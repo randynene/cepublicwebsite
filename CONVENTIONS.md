@@ -1275,7 +1275,11 @@ in this lane.
   on live data). Migrators never call the Webflow REST API directly.
 - `src/lib/content/sanity-write-client.ts` — `@sanity/client` write
   client. No `'server-only'` import (CLI scripts are not Next.js).
-  `apiVersion: '2024-01-01'`, `useCdn: false`, token from `env.SANITY_API_TOKEN`.
+  `apiVersion: '2024-01-01'`, `useCdn: false`, token from
+  `env.SANITY_MIGRATION_WRITE_TOKEN` (NOT the legacy
+  `SANITY_API_TOKEN` — see "Token Scoping Rule" below). Module-load
+  assertion in the client file throws if the migration token is
+  unset OR if `SANITY_API_READ_TOKEN` is also present.
 - `src/lib/content/migration-tracker.ts` — `recordMigration({...})`
   upserts to `content_migrations` keyed by
   `(org_id, migration_id, collection_slug)`. Computes `parity_score`,
@@ -1523,6 +1527,304 @@ for (const collection of CE_BLOG_COLLECTIONS) {
 
 ---
 
+## Live-Site Meta Backfill Pattern (MYGRATR-CONTENT-1D)
+
+When meta tags (`metaTitle`, `metaDescription`) need to be populated from
+the customer's live site rather than the source CMS, the pipeline is
+Playwright-backed and serial. The reusable shape:
+
+```typescript
+// src/lib/content/meta-scraper.ts
+export async function scrapeMeta(browser: Browser, url: string): Promise<ScrapedMeta>
+export async function withBrowser<T>(fn: (b: Browser) => Promise<T>): Promise<T>
+
+// src/lib/content/meta-normaliser.ts
+export function normaliseMeta(raw): NormaliseResult        // strips brand suffixes, enforces 60/140-160
+export function truncateAtWord(s: string, max: number): string
+
+// src/lib/content/meta-backfill-runner.ts
+export async function runMetaBackfill(opts: RunOptions): Promise<void>
+```
+
+**Rules:**
+
+- `waitUntil: 'domcontentloaded'`, 20s per-page timeout. `page.title()`
+  reads `document.title` (post-JS-mutation) — correct semantic for SEO.
+- Concurrency is **serial** — one Playwright context at a time.
+  Customer hosting (especially shared / Cloudflare-fronted) will throttle
+  parallel scrapes.
+- **1.5-second inter-request delay** between fetches, skipped on the
+  last iteration. Run during off-peak hours (timezone-aware) to minimise
+  collision with live customer activity.
+- **20-minute phase-wide wall-clock abort gate** in the runner. Hard
+  `process.exit(1)` (NOT `break`) — break would let the script continue
+  to the next collection. Failure `content_migrations` row written
+  BEFORE the exit so the verifier sees an explicit "phase aborted" signal.
+- **Never pad / fabricate a metaDescription to hit 140 chars.** Short is
+  recoverable in Studio; fabricated is not. The normaliser logs a
+  warning when a description falls below 140 chars and the runner
+  surfaces this via `needsReview = true`.
+- Brand-suffix stripping is the only customer-specific bit of the
+  normaliser; pass `BRAND_SUFFIXES` as an arg when generalising.
+- **Hard failures vs soft warnings** in the runner: HTTP non-200,
+  length issues, missing optional fields are SOFT (logged, surfaced via
+  `needsReview = true`, do not mark the `content_migrations` row
+  `failed`). Only `patch.commit()` errors, `urlForDoc` throws, and
+  bypass-patch errors are HARD. The row's status semantically reflects
+  "did the migration step succeed end-to-end" — drift docs (404 from
+  the live site) are not script failures.
+- **Per-field provenance must split** (`metaTitleSource` +
+  `metaDescriptionSource`). A single `metaSource` object can't represent
+  the case where title comes from live-scrape but description comes from
+  a different upstream source (e.g. `snippetForMeta-copy` for review docs).
+
+**FieldPolicy enum** drives runner behaviour declaratively:
+
+```typescript
+interface FieldPolicy {
+  title: 'scrape-always'
+  description: 'scrape-always' | 'skip-if-present-else-scrape'
+              | 'snippet-copy-else-scrape' | 'never-touch'
+}
+```
+
+`'never-touch'` is structural — the runner MUST NOT call `scrapeMeta()`
+for the description field, MUST NOT normalise it, MUST NOT validate it.
+It writes only `metaTitle` (always scraped) and the doc's other fields
+remain untouched.
+
+**Pre-scrape decision hook** evaluated BEFORE URL construction:
+
+```typescript
+type PreScrapeDecision =
+  | { kind: 'continue' }
+  | { kind: 'bypass'; patch: Record<string, unknown> }
+```
+
+Lets per-collection scripts short-circuit known-placeholder docs (e.g.
+`/customer-story/virgin`) with a hardcoded patch and `provider:
+'placeholder'` provenance, without ever fetching the live URL.
+
+---
+
+## Deletion Safety Rule (MYGRATR-CONTENT-1D)
+
+**Migration scripts MUST use `deleteByIdStrict()` for all deletions.**
+Query-based delete patterns (`*[name == ...]` then iterate-and-delete,
+or `*[slug.current == ...]`) are forbidden — `name` and `slug` are
+mutable, non-unique fields and using one as a deletion key is a
+single-keystroke disaster waiting to happen.
+
+```typescript
+// src/lib/content/migration-helpers.ts
+export async function deleteByIdStrict(
+  client: SanityWriteClient,
+  id: string,
+  expectedType: string,
+): Promise<void>
+```
+
+The double-guard:
+1. Caller passes the exact `_id` (no querying for it).
+2. Helper fetches the doc and asserts `_type === expectedType` BEFORE
+   delete. Even if the wrong `_id` is passed, the type mismatch halts
+   before any destructive call.
+
+**Throws on:** doc not found at the supplied `_id`; doc found but `_type`
+doesn't match expectedType.
+
+**Idempotency:** callers handle "doc already gone" themselves (catch the
+not-found throw and continue). The strict default keeps accidental
+no-ops from masking deletion-graph mistakes.
+
+When deleting a graph of related docs, **order matters** — delete the
+ref-holders FIRST so subsequent deletions don't trip the brief's
+halt-on-refs guard. Document the ordering in a top-of-file comment in
+the deletion script.
+
+---
+
+## Verifier-Throws Pattern (MYGRATR-CONTENT-1D)
+
+State-transition scripts that depend on a verifier's pass/fail decision
+**must rely on structural unreachability**, not boolean return-value
+inspection.
+
+```typescript
+// scripts/content/verify-content-1d.ts
+export async function verifyContent1D(opts: VerifyOptions = {}): Promise<void> {
+  const failures: string[] = []
+  // ... all checks push to `failures` (do NOT short-circuit)
+  if (failures.length > 0) {
+    throw new Error(`Content-1D verification failed:\n${failures.map(f => `  - ${f}`).join('\n')}`)
+  }
+}
+
+// scripts/content/complete-content-phase.ts
+async function main(): Promise<void> {
+  if (!process.argv.includes('--confirm')) {
+    console.error('Refusing to run without --confirm flag.')
+    process.exit(1)
+  }
+  await verifyContent1D({ skipStateCheck: true })   // throws on failure → unhandled rejection
+  await assertValidTransition(current.status, 'content_complete')
+  await supabase.from('migrations').update({ ... }).eq('id', migrationId)
+}
+main()   // NO `.catch(...)` — unhandled rejection intentionally propagates
+```
+
+**Rules:**
+- The verifier function exports `Promise<void>` and throws on any
+  failure. Never returns a boolean.
+- Collect all failures into an array and throw once at the end with
+  every failure joined. Don't fail-on-first.
+- The state-transition script MUST NOT wrap the verifier call in
+  try/catch.
+- The script's `main()` must be invoked WITHOUT `.catch()` at the top
+  level. The unhandled rejection is intentional — it propagates to
+  Node's top-level handler, the process exits non-zero, and the lines
+  AFTER the verifier call (`assertValidTransition`, the Supabase
+  update) become structurally unreachable.
+- `--confirm`-style flags gate HUMAN INTENT. The verifier is the
+  CORRECTNESS gate. Both are required.
+- If the verifier needs to be invoked from a context where the
+  state-related checks aren't yet meaningful (e.g. before the
+  state transition has happened), expose a `{skipStateCheck: boolean}`
+  option rather than a separate verifier function.
+
+---
+
+## Token Scoping Rule (MYGRATR-CONTENT-1D)
+
+Destructive operations (writes, patches, deletes, asset uploads) must
+use a least-privilege scoped token, separate from any read tokens.
+
+**For the CE Sanity dataset (CONTENT-1D and beyond):**
+
+- `SANITY_MIGRATION_WRITE_TOKEN` — single-dataset (`production`),
+  least-privilege (document patch + delete + asset upload only — no
+  project-admin, no all-datasets).
+- `SANITY_API_READ_TOKEN` — site read-only token; lives in
+  `site/.env.local` ONLY. **Must NEVER be present in the migration
+  script process.**
+
+`src/lib/content/sanity-write-client.ts` calls
+`ensureSanityMigrationWriteToken()` at module load:
+
+```typescript
+if (!env.SANITY_MIGRATION_WRITE_TOKEN) {
+  throw new Error('SANITY_MIGRATION_WRITE_TOKEN required')
+}
+if (env.SANITY_API_READ_TOKEN) {
+  throw new Error('SANITY_API_READ_TOKEN must NOT be present in migration script context')
+}
+```
+
+The read-token-presence check is the path-alias collision guard (F14):
+if a migration script accidentally imports `@/lib/sanity/client`
+(resolves to the site's read client), the read token's presence in the
+process would be the only signal something's wrong. The throw at
+module load short-circuits before any write happens.
+
+**Rules:**
+- A new least-privilege token per phase that performs writes against
+  shared infrastructure.
+- Token rotation is a hard pre-launch gate, not optional tech debt.
+  CONTENT-1D rotation tracked as Tech Debt #15: **MUST resolve before
+  MYGRATR-LAUNCH** (Exit Criterion #10).
+- Document both tokens in `.env.example`. `.env.example` carries the
+  comment that the read token is intentionally absent in the migration
+  context.
+
+---
+
+## Path Alias Discipline (MYGRATR-CONTENT-1D)
+
+The monorepo has two `@/*` path aliases — `@/*` resolves to `src/*` at
+the repo root and to `site/src/*` inside `site/`. Migration scripts run
+from the repo root and must import the migration write client only from
+the orchestrator lib, never from the site's read client.
+
+**Rule:** migration scripts under `scripts/**` and library code under
+`src/lib/content/**` import `sanityWriteClient` exclusively from
+`@/lib/content/sanity-write-client`. They MUST NOT import from
+`@/lib/sanity/*` or from `site/src/lib/sanity/*`.
+
+**Two-layer guard:**
+
+1. **Static check** — the prereq verifier runs a regex grep across
+   `scripts/**` and `src/lib/content/**` for forbidden import patterns
+   (`@/lib/sanity/*`, `site/src/lib/sanity/*`). The check is part of
+   `verify-content-1d-prereqs.ts` and ran clean every time it was
+   invoked. (An ESLint `no-restricted-imports` rule would also work
+   if/when ESLint is added at repo root.)
+2. **Runtime assertion** — the read-token-presence check in the
+   write-client (Token Scoping Rule above) is the load-bearing guard.
+   Even if a wrong import slips past static analysis, the throw at
+   module load happens before any write.
+
+---
+
+## Two-Factor scrapedAt-Guarded Unset (MYGRATR-CONTENT-1D)
+
+When clearing a monotonically-set flag is necessary as a one-off
+correction (e.g. clearing false-positive `needsReview` flags from a
+buggy migrator pass), the protection MUST be structural — not a
+temporal "I'll be careful" — so future re-runs of the migrator can't
+accidentally re-trigger the clear logic on a legitimate flag.
+
+```typescript
+// guard 1: flag must currently be the artefact value
+if (doc.needsReview !== true) throw new Error('flag may already be cleared, or never set')
+
+// guard 2: the doc must carry a provenance timestamp from the known buggy-run date
+const scrapedAt = doc.metaTitleSource?.scrapedAt
+if (typeof scrapedAt !== 'string' || !scrapedAt.startsWith('2026-05-02')) {
+  throw new Error('flag may have been set by a later legitimate review pass')
+}
+
+// only after BOTH conditions pass
+await sanityWriteClient.patch(doc._id).unset(['needsReview']).commit()
+```
+
+**Why both factors:** the flag value alone (`needsReview === true`)
+doesn't distinguish "buggy-pass artefact" from "real review". The
+scrapedAt timestamp pinpoints exactly which migrator run set the value.
+Re-running the migrator after the buggy run moves `scrapedAt` to a new
+date → the guard refuses → no clearance fires.
+
+**Use sparingly.** This is a one-off corrective tool, not a routine
+pattern. The brief's monotonic-flag rule still holds for general
+operations. Document each application as a brief deviation.
+
+---
+
+## Brief Deviation Logging (MYGRATR-CONTENT-1D)
+
+When a phase encounters scope or constraints that require deviating
+from the locked brief, document each deviation explicitly:
+
+1. **Per-deviation `content_migrations` row.** New `collection_slug`
+   identifying the deviation (e.g. `drift-cleanup`,
+   `bookacall-metadescription-truncation`,
+   `bookacall-stale-needsreview-unset`). The row's `error_log` carries
+   the rationale + the affected `_id` list.
+2. **Per-doc structural guards.** Every write inside a deviation passes
+   through preconditions that fail closed if state has shifted since
+   the deviation was authorised (length-snapshot match,
+   provenance-timestamp prefix, etc.).
+3. **Numbered deviation IDs in commit messages, brief deviation log,
+   and PHASE_HISTORY.** Pattern: `DEV-N` where N is a monotonic counter.
+4. **Halt on first guard failure.** Deviations are bundled but NOT
+   greedy — a single state mismatch halts the operation; the user
+   re-diagnoses before any further writes.
+5. **Verifier expectations updated.** The verifier's
+   `ALL_NEW_1D_SLUGS` list (or equivalent) extends to include each
+   deviation's `content_migrations` slug; counts and totals update
+   accordingly.
+
+---
+
 ## Section 4: Phase History
 
 | Phase | Status | Key Patterns Established |
@@ -1535,3 +1837,4 @@ for (const collection of CE_BLOG_COLLECTIONS) {
 | MYGRATR-CONTENT-1A | Complete | Content-migration lane infrastructure under `src/lib/content/` (Webflow read-client with offset+limit pagination, Sanity write-client, migration tracker upserting `content_migrations` via `(org_id, migration_id, collection_slug)` unique key, CE-specific Webflow collection IDs as seed data); deterministic Sanity `_id`s of the form `{type}-{webflowId}` for idempotent re-runs and downstream reference resolution; Webflow Option-field resolution by fetching the collection schema once and mapping option IDs to names; image staging via top-level `webflowImageUrl` string instead of Sanity asset upload (deferred to CONTENT-1C); pre-flight env guards (`ensureSanity()` + `ensureWebflow()`) at the top of every migrator. |
 | MYGRATR-CONTENT-1B | Complete | Shared migration-helpers module (`src/lib/content/migration-helpers.ts`): `toPortableText` with JSDOM-injected `parseHtml` for `@sanity/block-tools` (defaults to browser DOMParser which is absent in Node), `extractUrl` / `toRefs` accepting both Webflow object and plain-string shapes, `uploadImage` replacing the CONTENT-1A staging pattern with real Sanity asset uploads, `webflowSlug(item)` reading `fieldData.slug` first (top-level `item.slug` is `null` on some collections — caused every CONTENT-1A doc to ship with `slug.current = null`, retroactively backfilled), `extractOption` for object-shaped Option fields and `fetchOptionIdMap()` for the more common opaque-ID shape. Pre-flight live-API field-name verification before writing any migrator (six of eight CONTENT-1B collections had brief / field-map mismatches against reality — slug typos, missing fields, mislabelled fields). Webflow → Sanity field-name corrections logged in PHASE_HISTORY.md and reflected in `docs/WEBFLOW_TO_SANITY_FIELD_MAP.md`. Image-upload failures are non-fatal: log + return null + continue. |
 | MYGRATR-CONTENT-1C | Complete | `toPortableText` upgraded to async two-pass walk for inline image upload (Pass 1 JSDOM-extract `<img>` srcs and `Promise.allSettled` upload them; Pass 2 deserialize with custom rules emitting image blocks for `<img>` and `<figure><img>`, skipping iframe-in-figure); null-guard at entry; both passes use JSDOM so src URLs decode identically (no entity-encoding mismatch). `<figure>` deserializer must check for `<img>` child before processing — iframe-in-figure (Vimeo embeds) lacks one and falls through to text rules. Cross-collection deduplication pattern: when multiple Webflow source collections consolidate into one Sanity type and contain duplicate items, designate one as the canonical master (`Blogs & Guides` for blogPost), iterate it first, build a running slug set seeded with Sanity-existing slugs, skip duplicates in subsequent collections; `migration-tracker.recordMigration` accepts an optional `parityBaselineCount` so `parity_score = migrated / parityBaselineCount * 100` is measured on the deduplicated set rather than raw source count, and vacuous success (denominator=0, migrated=0, no errors) yields 100. Every Webflow ref ID validated against `/^[a-f0-9]{24}$/i` (Webflow ObjectId shape) before constructing a `_ref` — `toRefs` drops malformed entries with a console warning rather than writing `tag-[object Object]`. Deterministic `_key` from the full Webflow ID for refs (was sliced 8-char prefix); positional indices for FAQ (`faq-{n}`) and fold items (`fold-{n}-item-{m}`). Date parsing via regex prefix `/^(\d{4}-\d{2}-\d{2})/` instead of `new Date(raw).toISOString().slice(0,10)` (timezone shift). Pre-flight slug-collision check is a hard gate — surface duplicates and stop before writing any documents. Option-field map fetches must hoist above the item loop (Webflow rate-limit avoidance). `decodeHtmlEntities` for VideoLink URLs (`?h=xxx&amp;title=0` → `?h=xxx&title=0`). `fetchOptionIdMap` and `resolveOption` lifted out of duplicates in two migrators and consolidated in shared helpers. |
+| MYGRATR-CONTENT-1D | Complete | Live-Site Meta Backfill Pattern (Playwright-driven `<title>` + `<meta description>` extraction with brand-suffix strip, length compliance, never-fabricate rule, 1.5s inter-request delay, 20-min phase-wide hard abort gate). FieldPolicy enum drives runner behaviour declaratively (`title: 'scrape-always'`; `description: 'scrape-always' | 'snippet-copy-else-scrape' | 'never-touch'`); pre-scrape hook evaluated BEFORE URL construction so placeholders short-circuit cleanly. Hard-failure vs soft-warning separation in the runner: HTTP non-200 + length warnings are SOFT (logged, surfaced via `needsReview=true`, do NOT mark the row failed); only `patch.commit()` errors / `urlForDoc` throws / bypass-patch errors are HARD. Split per-field provenance (`metaTitleSource` + `metaDescriptionSource`) replaces a single `metaSource` object — required because review docs may have title from live-scrape AND description from snippetForMeta-copy. `deleteByIdStrict()` mandatory for migration-script deletions: query-based deletes forbidden, `_id`-only with `_type` validation before delete. Verifier-throws structural pattern: verifier exports a function that throws on failure (never returns boolean), state-transition script calls it WITHOUT try/catch, unhandled rejection propagates → state transition unreachable. Token Scoping: migration scripts use a least-privilege single-dataset `SANITY_MIGRATION_WRITE_TOKEN` (NOT the legacy `SANITY_API_TOKEN`); module-load assertion in the write client throws if the migration token is missing OR if the site's read token is also present (path-alias collision guard). Studio production deploy is a hard ordering gate before any data write that depends on new schema fields — every meta-backfill script carries a top-of-file `// HARD GATE` comment. Two-factor scrapedAt-guarded `unset` for one-off corrections of a monotonically-set flag (`flag === true` AND `metaTitleSource.scrapedAt` startsWith the known buggy-run date — re-running the migrator moves scrapedAt forward and structurally blocks accidental clearance of any future legitimate flag). Brief deviations recorded with explicit per-doc guards + dedicated `content_migrations` rows (`drift-cleanup`, `bookacall-metadescription-truncation`, `bookacall-stale-needsreview-unset`) for audit trail. |

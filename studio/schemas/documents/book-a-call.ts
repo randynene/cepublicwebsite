@@ -1,5 +1,7 @@
 import { defineField, defineType } from 'sanity'
 
+import { metaSourceFields, sourceTrackingFieldsCarryover } from '../_shared'
+
 interface BookACallDoc {
   firstName?: string
   lastName?: string
@@ -55,6 +57,8 @@ export default defineType({
       description: 'Maps from the Webflow `title` field (mislabelled as a title, but used as a meta description — §3.14 / D9).',
       validation: (Rule) => Rule.required().min(140).max(160),
     }),
+    ...metaSourceFields(),
+    ...sourceTrackingFieldsCarryover(),
   ],
   preview: {
     select: { title: 'firstName', subtitle: 'lastName' },

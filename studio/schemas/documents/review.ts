@@ -1,6 +1,13 @@
 import { defineField, defineType } from 'sanity'
 
-import { imageField, localeField, metaFields, slugField } from '../_shared'
+import {
+  imageField,
+  localeField,
+  metaFields,
+  metaSourceFields,
+  slugField,
+  sourceTrackingFieldsCarryover,
+} from '../_shared'
 
 export default defineType({
   name: 'review',
@@ -45,6 +52,8 @@ export default defineType({
     defineField({ name: 'additionalInfo', title: 'Additional info', type: 'portableText' }),
 
     ...metaFields({ og: false }),
+    ...metaSourceFields(),
+    ...sourceTrackingFieldsCarryover(),
     localeField(),
   ],
   preview: { select: { title: 'nameClient', subtitle: 'position', media: 'memberImage' } },

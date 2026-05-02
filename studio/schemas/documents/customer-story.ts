@@ -1,6 +1,13 @@
 import { defineField, defineType } from 'sanity'
 
-import { imageField, localeField, metaFields, slugField } from '../_shared'
+import {
+  imageField,
+  localeField,
+  metaFields,
+  metaSourceFields,
+  slugField,
+  sourceTrackingFieldsCarryover,
+} from '../_shared'
 
 export default defineType({
   name: 'customerStory',
@@ -94,6 +101,8 @@ export default defineType({
     }),
 
     ...metaFields(),
+    ...metaSourceFields(),
+    ...sourceTrackingFieldsCarryover(),
     localeField(),
   ],
   preview: {
