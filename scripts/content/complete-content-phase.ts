@@ -65,7 +65,10 @@ async function main(): Promise<void> {
     content_phase: {
       started_at: startedAt,
       completed_at: new Date().toISOString(),
-      total_cms_docs: 404,
+      // DEV-3 (authorised 2026-05-02): drift cleanup deleted 16 orphan
+      // docs (1 customerStory + 15 reviews). Brief baseline was 404
+      // (53 + 105 + 246); post-deviation = 404 − 16 = 388.
+      total_cms_docs: 388,
       // Decision B: 0 (5 in-scope smoke-test docs deleted in Step 7,
       // none deferred to pre-launch). Brief originally specified 2.
       smoke_test_docs_remaining: 0,

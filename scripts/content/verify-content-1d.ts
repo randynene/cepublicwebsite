@@ -52,9 +52,21 @@ const CARRYOVER_SLUGS = [
   'video-embed-link-encoding-fix',
 ]
 
+// Brief deviations DEV-3/DEV-4/DEV-5 added to the new-row count.
+const DEVIATION_SLUGS = [
+  'drift-cleanup',                           // DEV-3 — 16 deletions
+  'bookacall-metadescription-truncation',    // DEV-4 — 6 patches
+  'bookacall-stale-needsreview-unset',       // DEV-5 — 6 unsets
+]
+
 const CLEANUP_SLUG = 'smoke-test-cleanup'
 
-const ALL_NEW_1D_SLUGS = [...META_BACKFILL_SLUGS, ...CARRYOVER_SLUGS, CLEANUP_SLUG]
+const ALL_NEW_1D_SLUGS = [
+  ...META_BACKFILL_SLUGS,
+  ...CARRYOVER_SLUGS,
+  CLEANUP_SLUG,
+  ...DEVIATION_SLUGS,
+]
 
 const SMOKE_TEST_IDS = [
   'smoke-test-blog-post',
@@ -286,7 +298,7 @@ export async function verifyContent1D(opts: VerifyOptions = {}): Promise<void> {
     if (missing.length > 0) {
       fail(`missing content_migrations rows: ${missing.join(', ')}`)
     } else {
-      note(`✅ all 11 CONTENT-1D rows present`)
+      note(`✅ all ${ALL_NEW_1D_SLUGS.length} CONTENT-1D rows present`)
     }
     // status / parity check
     const failed = (rows ?? []).filter((r) => r.status !== 'complete' || r.parity_score !== 100)
@@ -298,7 +310,10 @@ export async function verifyContent1D(opts: VerifyOptions = {}): Promise<void> {
     }
   }
 
-  // Total CE rows post-1D should be 35 (24 prior + 11 new).
+  // Total CE rows post-1D should be 38 (24 prior + 14 new — 11 brief
+  // baseline + 3 deviation rows: drift-cleanup, bookacall-metadescription-
+  // truncation, bookacall-stale-needsreview-unset).
+  const expectedTotal = 24 + ALL_NEW_1D_SLUGS.length
   const { data: allRows, error: allRowsError } = await supabase
     .from('content_migrations')
     .select('collection_slug')
@@ -307,10 +322,10 @@ export async function verifyContent1D(opts: VerifyOptions = {}): Promise<void> {
   if (allRowsError) {
     fail(`Supabase total row count fetch error: ${allRowsError.message}`)
   } else if (allRows) {
-    if (allRows.length === 35) {
-      note(`✅ total content_migrations row count = 35 (24 prior + 11 new)`)
+    if (allRows.length === expectedTotal) {
+      note(`✅ total content_migrations row count = ${expectedTotal} (24 prior + ${ALL_NEW_1D_SLUGS.length} new)`)
     } else {
-      fail(`total content_migrations row count = ${allRows.length}, expected 35`)
+      fail(`total content_migrations row count = ${allRows.length}, expected ${expectedTotal}`)
     }
   }
 
@@ -337,10 +352,11 @@ export async function verifyContent1D(opts: VerifyOptions = {}): Promise<void> {
       if (!cp) {
         fail('metadata.content_phase block missing')
       } else {
-        if (cp.total_cms_docs === 404) {
-          note('✅ metadata.content_phase.total_cms_docs = 404')
+        // DEV-3: drift cleanup deleted 16 docs, so total drops 404 → 388.
+        if (cp.total_cms_docs === 388) {
+          note('✅ metadata.content_phase.total_cms_docs = 388 (404 baseline − 16 drift)')
         } else {
-          fail(`metadata.content_phase.total_cms_docs = ${String(cp.total_cms_docs)} (expected 404)`)
+          fail(`metadata.content_phase.total_cms_docs = ${String(cp.total_cms_docs)} (expected 388 — 404 baseline − 16 drift)`)
         }
         // Decision B — 0 not 2.
         if (cp.smoke_test_docs_remaining === 0) {

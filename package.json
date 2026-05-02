@@ -53,6 +53,9 @@
     "content:migrate-video-backup-image-retry": "tsx scripts/content/migrate-video-backup-image-retry.ts",
     "content:fix-video-embed-link-encoding": "tsx scripts/content/fix-video-embed-link-encoding.ts",
     "content:cleanup-smoke-test-docs": "tsx scripts/content/cleanup-smoke-test-docs.ts",
+    "content:cleanup-drift-docs": "tsx scripts/content/cleanup-drift-docs.ts",
+    "content:truncate-bookacall-metadescription": "tsx scripts/content/truncate-bookacall-metadescription.ts",
+    "content:unset-bookacall-stale-needsreview": "tsx scripts/content/unset-bookacall-stale-needsreview.ts",
     "content:verify-1d": "tsx scripts/content/run-verify-content-1d.ts",
     "content:complete": "tsx scripts/content/complete-content-phase.ts"
   },
