@@ -19,7 +19,15 @@ const BRAND_SUFFIXES = [
 export interface NormaliseResult {
   metaTitle: string | null
   metaDescription: string | null
-  // Logged into content_migrations.error_log; also feeds shouldFlagForReview.
+  // Split per-field so shouldFlagForReview() can weigh only the
+  // warnings relevant to fields the policy actually writes.
+  // bookACall (description=never-touch) should not flag for review on
+  // a description-side warning since the description was sealed in
+  // CONTENT-1B and is not being touched here.
+  titleWarnings: string[]
+  descriptionWarnings: string[]
+  // Combined view — logged into content_migrations.error_log so the
+  // operator sees everything the scrape produced regardless of policy.
   warnings: string[]
 }
 
@@ -27,7 +35,8 @@ export function normaliseMeta(raw: {
   rawTitle: string | null
   rawDescription: string | null
 }): NormaliseResult {
-  const warnings: string[] = []
+  const titleWarnings: string[] = []
+  const descriptionWarnings: string[] = []
 
   let metaTitle = raw.rawTitle?.trim() ?? null
   if (metaTitle) {
@@ -38,33 +47,41 @@ export function normaliseMeta(raw: {
       }
     }
     if (metaTitle.length > 60) {
-      warnings.push(`metaTitle exceeded 60 chars (${metaTitle.length}); truncated at word boundary`)
+      titleWarnings.push(
+        `metaTitle exceeded 60 chars (${metaTitle.length}); truncated at word boundary`,
+      )
       metaTitle = truncateAtWord(metaTitle, 60)
     }
     if (metaTitle.length === 0) metaTitle = null
   } else {
-    warnings.push('rawTitle missing on live page')
+    titleWarnings.push('rawTitle missing on live page')
   }
 
   let metaDescription = raw.rawDescription?.trim() ?? null
   if (metaDescription) {
     if (metaDescription.length > 160) {
-      warnings.push(
+      descriptionWarnings.push(
         `metaDescription exceeded 160 chars (${metaDescription.length}); truncated at word boundary`,
       )
       metaDescription = truncateAtWord(metaDescription, 160)
     }
     if (metaDescription.length < 140 && metaDescription.length > 0) {
-      warnings.push(
+      descriptionWarnings.push(
         `metaDescription under 140 chars (${metaDescription.length}); accepted as-is — never fabricate`,
       )
     }
     if (metaDescription.length === 0) metaDescription = null
   } else {
-    warnings.push('rawDescription missing on live page')
+    descriptionWarnings.push('rawDescription missing on live page')
   }
 
-  return { metaTitle, metaDescription, warnings }
+  return {
+    metaTitle,
+    metaDescription,
+    titleWarnings,
+    descriptionWarnings,
+    warnings: [...titleWarnings, ...descriptionWarnings],
+  }
 }
 
 // F17: if `s.slice(0, max)` lands on a long whitespace prefix run, the

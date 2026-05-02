@@ -162,12 +162,21 @@ function shouldFlagForReview(
   policy: FieldPolicy,
   descriptionPath: DescriptionPathUsed,
 ): boolean {
-  if (!scraped) return true // pre-scrape bypass paths should set their own needsReview
+  if (!scraped) return true // pre-scrape bypass paths set their own needsReview directly
   if (scraped.status !== 200) return true
   if (!normalised.metaTitle) return true
-  if (descriptionPath === 'live-scrape' && !normalised.metaDescription) return true
+  // Title-side warnings always count — policy.title is always scrape-always.
+  if (normalised.titleWarnings.length > 0) return true
+  // Description-side warnings only matter when this run is actually
+  // writing the description. For never-touch / no-write paths the
+  // description came from a prior phase; this run isn't touching it
+  // and shouldn't flag the doc for a description-side concern that
+  // was already accepted upstream.
+  if (descriptionPath === 'live-scrape') {
+    if (!normalised.metaDescription) return true
+    if (normalised.descriptionWarnings.length > 0) return true
+  }
   if (descriptionPath === 'snippetForMeta-copy') return true // truncation may cut mid-sentence
-  if (normalised.warnings.length > 0) return true
   return false
 }
 
@@ -254,8 +263,15 @@ export async function runMetaBackfill(opts: RunOptions): Promise<void> {
             `${doc._id}: scrape returned ${scraped.status}${scraped.errorMessage ? ` (${scraped.errorMessage})` : ''}`,
           )
         }
-        if (normalised.warnings.length > 0) {
-          for (const w of normalised.warnings) {
+        // Title warnings always relevant. Description warnings only
+        // relevant when the run is actually writing the description —
+        // never-touch / no-write paths don't fail the row over the
+        // description side because we didn't touch it.
+        for (const w of normalised.titleWarnings) {
+          errors.push(`${doc._id}: ${w}`)
+        }
+        if (descriptionPath === 'live-scrape' || descriptionPath === 'snippetForMeta-copy') {
+          for (const w of normalised.descriptionWarnings) {
             errors.push(`${doc._id}: ${w}`)
           }
         }
