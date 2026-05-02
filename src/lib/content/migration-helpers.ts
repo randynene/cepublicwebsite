@@ -338,3 +338,56 @@ export function decodeHtmlEntities(str: string): string {
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
 }
+
+// CONTENT-1D §7 (F11, F19) — strict-by-_id deletion helper.
+//
+// Migration scripts MUST use this helper for all deletions. Query-based
+// delete patterns (`*[name == ...]` then iterate-and-delete, or
+// `*[slug.current == ...]`) are forbidden — `name` and `slug` are
+// mutable, non-unique fields and using one as a deletion key is a
+// single-keystroke disaster waiting to happen.
+//
+// The double-guard:
+//   1. Caller passes the exact `_id` (no querying for it).
+//   2. We fetch the doc and assert `_type === expectedType` BEFORE delete.
+//      Even if the wrong `_id` is passed, the type mismatch halts before
+//      any destructive call.
+//
+// Throws on:
+//   - doc not found at the supplied _id
+//   - doc found but _type doesn't match expectedType
+//
+// Idempotency: callers handle "doc already gone" themselves (catch the
+// not-found throw and continue). The strict default keeps accidental
+// no-ops from masking deletion-graph mistakes.
+type SanityWriteClient = typeof import('./sanity-write-client').sanityWriteClient
+
+export async function deleteByIdStrict(
+  client: SanityWriteClient,
+  id: string,
+  expectedType: string,
+): Promise<void> {
+  if (!id || typeof id !== 'string') {
+    throw new Error(`deleteByIdStrict: id must be a non-empty string (got ${typeof id})`)
+  }
+  if (!expectedType || typeof expectedType !== 'string') {
+    throw new Error(`deleteByIdStrict: expectedType must be a non-empty string`)
+  }
+  const doc = await client.getDocument(id)
+  if (!doc) throw new Error(`deleteByIdStrict: doc ${id} not found`)
+  if (doc._type !== expectedType) {
+    throw new Error(
+      `deleteByIdStrict: ${id} expected _type="${expectedType}", got "${doc._type}"`,
+    )
+  }
+  // Best-effort human label for the audit log line.
+  const d = doc as Record<string, unknown>
+  const slug = d['slug'] as { current?: string } | undefined
+  const label =
+    (typeof d['name'] === 'string' && d['name']) ||
+    (typeof d['title'] === 'string' && d['title']) ||
+    slug?.current ||
+    '(no label)'
+  console.log(`Deleting ${id} (_type=${expectedType}, label="${label}")`)
+  await client.delete(id)
+}
