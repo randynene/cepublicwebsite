@@ -1,5 +1,428 @@
 # PHASE_HISTORY.md
 
+## MYGRATR-CONTENT-1D — Meta Backfills + Carryover Fixes + content_complete (May 2026)
+
+### What Was Built
+
+**Step 0.1 — Token scoping (`src/lib/env.ts`, `src/lib/content/sanity-write-client.ts`, `.env.example`):**
+
+- Added `SANITY_MIGRATION_WRITE_TOKEN` (least-privilege, single-dataset
+  `production`, document patch + delete + asset upload only — no
+  project-admin / no all-datasets) to env schema.
+- Added `SANITY_API_READ_TOKEN` to env schema (always expected absent
+  in migration script context).
+- New `ensureSanityMigrationWriteToken()` helper throws if write token
+  missing OR if `SANITY_API_READ_TOKEN` is also present.
+  `sanity-write-client.ts` calls this at module load — every CONTENT-1D
+  script that imports `sanityWriteClient` triggers the assertion.
+- Legacy `SANITY_API_TOKEN` retained for SCHEMA-lane seed scripts
+  (`scripts/schema/seed-singletons.ts`, `smoke-test-seed.ts`) which
+  create their own clients locally; out of scope for CONTENT-1D's
+  least-privilege migration.
+- Token rotation post-1D tracked as Tech Debt — **MUST resolve
+  before MYGRATR-LAUNCH** (Exit Criterion #10).
+
+**Step 0a — Retroactive §7.2 source-tracking + split per-field
+provenance (6 schemas + 6 Zod twins):**
+
+- 4 schemas (`customer-story`, `team-member`, `review`, `book-a-call`)
+  lacked the §7.2 source-tracking triplet. Added via new
+  `sourceTrackingFieldsCarryover()` helper in `studio/schemas/_shared.ts`:
+  `source` and `generatedAt` are `hidden: true` and NOT required
+  (F18 — `initialValue` does NOT retroactively populate existing docs;
+  marking required would fail validation on every existing doc),
+  `needsReview` is visible (drives Seb's review queue).
+- All 6 in-scope schemas (above 4 + `technology` + `service`) gained
+  `metaTitleSource` and `metaDescriptionSource` via new
+  `metaSourceFields()` helper. Both are hidden `object` types with
+  `provider`, `scrapedAt`, `url` sub-fields. Splitting per-field
+  (vs single `metaSource`) is required because review docs may have
+  title from live-scrape AND description from snippetForMeta-copy —
+  a single object can't represent both accurately (F21).
+- Zod twins extended with new optional schemas in
+  `src/types/sanity/shared.ts`: `MetaSourceFieldsSchema` and
+  `SourceTrackingFieldsCarryoverSchema` (all fields optional). Each of
+  the 6 doc twin files (`technology.ts`, `service.ts`, `customer-story.ts`,
+  `team-member.ts`, `review.ts`, `book-a-call.ts`) imports + merges the
+  appropriate combo. Top-of-file comment in each carryover twin:
+  *"Pre-CONTENT-1D docs have source: undefined despite initialValue.
+  See Finding F18."*
+- Studio production deploy at
+  `https://mygratr-cloudemployee.sanity.studio/` (first-ever deploy;
+  hostname `mygratr-cloudemployee` chosen by user). `appId` pinned in
+  `studio/sanity.cli.ts` for non-interactive future deploys.
+- Hard ordering gate (F22): every meta-backfill script carries a
+  top-of-file `// HARD GATE` comment forbidding execution before
+  Studio deploy + Seb confirmation. Applied: Seb confirmed
+  `needsReview` toggle visible on all 4 carryover doc types in his
+  Studio session before Steps 5–7 ran.
+
+**Step 0.2 + 0a.2 — Pre-flight verifier
+(`scripts/content/verify-content-1d-prereqs.ts`):**
+
+- 32 checks across 8 categories: token presence/absence, migration
+  state, doc counts per type with smoke-test exclusion (F9), live
+  scrape scope build + plausibility guard, UNKNOWN URL overlap with
+  in-scope routes, smoke-test doc existence + reference graph,
+  Playwright availability, ESLint-equivalent forbidden-import grep
+  on `scripts/**` and `src/lib/content/**` (F14 — runtime token
+  assertion is the load-bearing guard; the grep catches wrong
+  imports at edit time without adding ESLint as a root devDep), and
+  Step 0a schema/Zod field-presence (helper-based wiring accepted —
+  greps for the helper invocation OR a direct field declaration).
+
+**Step 1 — `urlForDoc` + canonical assertion
+(`src/lib/content/url-builder.ts`, `scripts/content/test-url-builder.ts`):**
+
+- `urlForDoc({_type, slug})` switch over the 6 in-scope types using
+  routes from `MYGRATR_SCHEMA_DESIGN_DECISIONS.md §10`. Throws on
+  unsupported `_type` and on empty `slug.current`.
+- Two-tier test: Tier 1 (HARD) round-trips hardcoded known-good slugs
+  from the audit canonical set — confirms `urlForDoc` semantics
+  independent of Sanity data quality. Tier 2 (INFO) walks every
+  Sanity doc per type and reports drift coverage; tier 2 surfaces 32
+  conservative drift candidates (5 technology, 9 customerStory, 17
+  review, 1 bookACall) but the live scrape later resolved most as
+  true HTTP 200 — only 16 turned out to be real drift.
+
+**Steps 2 + 3 — Playwright meta scraper + normaliser
+(`src/lib/content/meta-scraper.ts`, `meta-normaliser.ts`):**
+
+- `scrapeMeta(browser, url)` with `waitUntil: 'domcontentloaded'`,
+  20s per-page timeout, custom User-Agent
+  (`Mygratr-MetaBackfill/1.0`). Returns HTTP status + raw title + raw
+  description + scrapedAt + optional errorMessage. Non-200 returns
+  null meta with status preserved (drift handled gracefully).
+  `withBrowser(fn)` factory ensures clean browser lifecycle.
+- `normaliseMeta({rawTitle, rawDescription})` strips 6 brand-suffix
+  variants ("| Cloud Employee", etc.), enforces 60/140-160 length
+  compliance, truncates at word boundary via `truncateAtWord` with
+  the F17 whitespace-prefix fallback (never returns empty for
+  non-empty input). Hard rule: never pad / fabricate a description
+  to hit 140 chars — short is recoverable in Studio, fabricated is
+  not. Warnings split into `titleWarnings` and `descriptionWarnings`
+  so the runner can apply only relevant warnings to
+  `shouldFlagForReview` (the never-touch path on bookACall is
+  insulated from description-side warnings).
+
+**Step 5 — Shared backfill runner
+(`src/lib/content/meta-backfill-runner.ts` + 6 thin per-collection
+scripts):**
+
+- `runMetaBackfill({type, policy, collectionSlug, preScrapeHook})`
+  enforces every CONTENT-1D structural protection in one place:
+  - **F1** phase-wide 20-min wall-clock abort gate, hard
+    `process.exit(1)` (NOT break) — failure row written before exit.
+  - **F4** monotonic `needsReview` (omitted from patch when
+    computed false; never overwrites prior `true`).
+  - **F5** `metaTitle` never written empty (omitted on null/empty;
+    verifier catches it).
+  - **F6** `FieldPolicy.description: 'never-touch' | 'scrape-always' |
+    'snippet-copy-else-scrape' | 'skip-if-present-else-scrape'`
+    honoured structurally — `never-touch` skips scrape, normalisation,
+    and validation entirely.
+  - **F7** `preScrapeHook` evaluated BEFORE URL construction; bypass
+    docs receive a hardcoded patch and skip the scrape.
+  - **F8** snippet-copy path routes through `truncateAtWord(s, 160)`
+    with post-truncation length assertion (`>0 && ≤160`).
+  - **F13** 1.5-second inter-request delay (skipped on last
+    iteration).
+  - **F21** split per-field provenance written via separate
+    `metaTitleSource` and `metaDescriptionSource` patches.
+- Hard-failure / soft-warning separation: HTTP non-200 (drift) and
+  length warnings are SOFT (logged, surfaced via `needsReview=true`,
+  do NOT mark the row failed); only `patch.commit()` errors,
+  `urlForDoc` throws, and bypass-patch errors are HARD (mark the row
+  `status='failed'`). Lets verifier check #8 demand
+  `status='complete'` on every row even when drift exists.
+- 6 per-collection scripts under `scripts/content/migrate-meta-*.ts`
+  are thin wrappers invoking `runMetaBackfill` with their type +
+  policy + optional hook:
+  - technology / service / customerStory / teamMember — both fields
+    `scrape-always`; customerStory has the `/customer-story/virgin`
+    pre-scrape hook (hardcoded placeholder patch with
+    `provider: 'placeholder'`).
+  - review — title `scrape-always`, description
+    `snippet-copy-else-scrape`.
+  - bookACall — title `scrape-always`, description `never-touch`
+    (IMMUTABLE policy declared in script header per CONTENT-1B
+    history).
+- Initial buggy `shouldFlagForReview` pass on bookACall flagged all 6
+  docs (description warnings on a never-touch policy were counted in
+  the catch-all `warnings.length > 0` check); fix split warnings into
+  title vs description and applied descriptionWarnings only when the
+  run actually wrote the description (live-scrape /
+  snippetForMeta-copy paths). 6 false-positive flags persisted from
+  the buggy pass; cleared in DEV-5 (Op 3).
+
+**Step 6 — 4 carryover scripts (3 image + 1 encoding):**
+
+- `migrate-benefit-value-thumbnails.ts` (9 docs) +
+  `migrate-staff-benefit-icons.ts` (6 docs) — F16 idempotency:
+  fetch-and-skip if target field already set, single-`.commit()`
+  set + unset, on upload failure only patch `needsReview: true`
+  (never unset webflowImageUrl until asset attached).
+- `migrate-video-backup-image-retry.ts` +
+  `fix-video-embed-link-encoding.ts` — F20 vacuous-success ordering:
+  when query returns 0 docs, record migration row (0/0/complete)
+  BEFORE returning so verifier's row-count check passes. Both ran
+  vacuous (CONTENT-1B's earlier carryovers had already resolved).
+
+**Step 7 — Smoke-test cleanup (Decision B: 5-doc scope):**
+
+- Brief originally specified 3 in-scope smoke-test deletions and 2
+  deferred to pre-launch. Diagnostics revealed `smoke-test-blog-post`
+  references all 3 of the in-scope docs — the brief's halt-on-refs
+  guard would have fired. Decision B (Jake authorisation 2026-05-02):
+  delete all 5 SCHEMA-1 smoke-test artefacts in this phase.
+  `smoke_test_docs_remaining: 0`, no pre-launch smoke-test cleanup
+  tech debt, exit criterion #7 wording shifted accordingly.
+- Deletion order enforced by `cleanup-smoke-test-docs.ts`:
+  `smoke-test-blog-post` (the only ref-holder) FIRST, then the
+  other 4 in any order. Each delete via new `deleteByIdStrict()`
+  helper in `migration-helpers.ts` — `_id`-only with `_type`
+  validation before delete; the helper logs `_id`, `_type`, and a
+  human label before calling `client.delete()`.
+- Brief deviation DEV-2: production "Scaling Teams" `tag` safety
+  check relaxed (replaced with `_id`-prefix sanity check). The
+  brief's check assumed a tag-vs-tag confusion that doesn't apply —
+  the production analog is a `blogCategory`, type-distinct from the
+  smoke-test tag; `deleteByIdStrict`'s `_type` validation is the
+  load-bearing structural protection.
+
+**Step 9 — Verifier
+(`scripts/content/verify-content-1d.ts` + `run-verify-content-1d.ts`):**
+
+- F2 STRUCTURAL: `verifyContent1D()` throws a typed error on any
+  failure. Never returns a boolean. Collects all failures into an
+  array and throws once at the end with all failures joined — gives
+  Seb a complete picture rather than fail-on-first.
+- 9 hard-gate checks: meta coverage, length compliance, per-field
+  provenance presence, provider value sanity, image carryovers
+  cleared, encoding fix applied, smoke-test cleanup
+  (Decision B 5/0), 14 new content_migrations rows + 38 total CE
+  rows + all `status=complete` + `parity_score=100`, optional state
+  check (skipped pre-Step-8).
+- `run-verify-content-1d.ts` CLI entrypoint with
+  `--skip-state-check` flag.
+
+**Step 8 — State transition
+(`scripts/content/complete-content-phase.ts`):**
+
+- F2 STRUCTURAL: calls `verifyContent1D()` WITHOUT try/catch. On
+  failure, the unhandled rejection propagates to Node's top-level
+  handler → process exits non-zero → the `assertValidTransition` and
+  Supabase update lines are structurally unreachable. The state
+  transition cannot run if verification fails. `main()` is called
+  WITHOUT `.catch()` per F2 spec.
+- `--confirm` flag gates HUMAN INTENT; the verifier is the
+  CORRECTNESS gate. Both required.
+- `metadata.content_phase`: `total_cms_docs: 388` (404 baseline − 16
+  drift), `smoke_test_docs_remaining: 0` (Decision B),
+  `content_migrations_rows: 38`, phases list, completed_at
+  timestamp.
+
+**Brief deviations applied with explicit per-doc guards (Op 1+):**
+
+- **DEV-3** — `cleanup-drift-docs.ts` deleted 16 docs (1
+  customerStory + 15 reviews) whose slugs return HTTP 404 on
+  cloudemployee.io and have zero inbound references. Pre-flight
+  re-runs the inbound-ref check from D2 + a single-sample live 404
+  retest before any delete — halts if state changed since
+  diagnostics. Each delete via `deleteByIdStrict`. Post-delete
+  confirmation pass.
+- **DEV-4** — `truncate-bookacall-metadescription.ts` truncated 6
+  bookACall metaDescriptions exceeding the 140–160 schema bound.
+  Per-doc guards: `_type === 'bookACall'`, `metaDescription.length`
+  matches the D3 snapshot (184/186/188/190/191/192), truncated
+  length ∈ [140, 160]. Surgical `.set` on metaDescription only —
+  never-touch policy explicitly overridden as a one-off CONTENT-1B
+  carryover correction.
+- **DEV-5** — `unset-bookacall-stale-needsreview.ts` cleared the 6
+  false-positive `needsReview` flags from the buggy initial runner
+  pass. Two-factor guard: `needsReview === true` AND
+  `metaTitleSource.scrapedAt` startsWith `'2026-05-02'` (re-running
+  the migrator moves the scrapedAt forward and structurally blocks
+  accidental clearance of any future legitimate flag). Surgical
+  `.unset(['needsReview'])` only — monotonic-flag rule explicitly
+  overridden for these 6 _ids only.
+
+### Files Created (~25)
+
+**Library:**
+- `src/lib/content/url-builder.ts`
+- `src/lib/content/meta-scraper.ts`
+- `src/lib/content/meta-normaliser.ts`
+- `src/lib/content/meta-backfill-runner.ts`
+
+**Scripts (executed):**
+- `scripts/content/verify-content-1d-prereqs.ts`
+- `scripts/content/test-url-builder.ts`
+- `scripts/content/migrate-meta-{technology,service,customer-story,team-member,review,book-a-call}.ts`
+- `scripts/content/migrate-{benefit-value-thumbnails,staff-benefit-icons,video-backup-image-retry}.ts`
+- `scripts/content/fix-video-embed-link-encoding.ts`
+- `scripts/content/cleanup-smoke-test-docs.ts`
+- `scripts/content/cleanup-drift-docs.ts`
+- `scripts/content/truncate-bookacall-metadescription.ts`
+- `scripts/content/unset-bookacall-stale-needsreview.ts`
+- `scripts/content/verify-content-1d.ts` + `run-verify-content-1d.ts`
+- `scripts/content/complete-content-phase.ts`
+
+**Scripts (read-only diagnostics, kept as reusable tools):**
+- `scripts/content/inspect-smoke-test-state.ts`
+- `scripts/content/inspect-validation-issues.ts`
+- `scripts/content/diag-1d-canonical-cross-check.ts`
+- `scripts/content/diag-2-1d-inbound-refs.ts`
+- `scripts/content/diag-3-1d-bookacall-truncation-preview.ts`
+- `scripts/content/diag-4-1d-runner-bug-postmortem.ts`
+- `scripts/content/diag-5-1d-builder-orphan-check.ts`
+
+**Modified:**
+- `src/lib/env.ts` — token scoping
+- `src/lib/content/sanity-write-client.ts` — module-load assertions
+- `src/lib/content/migration-helpers.ts` — `deleteByIdStrict`
+- `src/types/sanity/shared.ts` — `MetaSourceFieldsSchema`,
+  `SourceTrackingFieldsCarryoverSchema`
+- `src/types/sanity/documents/{customer-story,team-member,review,book-a-call,technology,service}.ts`
+- `studio/schemas/_shared.ts` — `sourceTrackingFieldsCarryover`,
+  `metaSourceFields`
+- `studio/schemas/documents/{customer-story,team-member,review,book-a-call,technology,service}.ts`
+- `studio/sanity.cli.ts` — `appId` pinned post-deploy
+- `package.json` — 17 new npm scripts
+- `.env.example` — created, documents both Sanity tokens
+
+### Patterns Established
+
+- **Live-Site Meta Backfill Pattern.** Playwright + `urlForDoc` switch
+  + normaliser + per-field provenance. Reusable for customer 2+
+  via `meta-scraper.ts` + `meta-normaliser.ts` (brand-suffix list is
+  the only customer-specific bit; lift into Mygratr.MetaBackfill
+  module post-CE).
+- **`FieldPolicy` enum + pre-scrape hook.** `runMetaBackfill` accepts
+  a `policy: {title, description}` and optional `preScrapeHook(doc)`
+  → `{kind: 'continue'} | {kind: 'bypass', patch}`. Lets per-collection
+  scripts stay thin wrappers.
+- **Hard-failure vs soft-warning separation.** Runner distinguishes
+  script failures (HTTP non-200 → soft, since the runner did its job;
+  `patch.commit()` error → hard) from data warnings (length, missing
+  optional fields → soft, surfaced via `needsReview=true`). Lets the
+  row's `status` semantically reflect "did the migration step
+  succeed" while error_log captures everything for audit.
+- **Verifier-throws structural pattern.** Verifier exports
+  `verifyContent1D()` that throws on failure; state-transition script
+  calls it WITHOUT try/catch; unhandled rejection propagates → exit
+  non-zero → state transition is structurally unreachable on
+  verification failure. `main()` itself called WITHOUT `.catch()`.
+- **Two-factor scrapedAt-guarded unset.** When clearing a
+  monotonically-set flag is necessary as a one-off correction,
+  guard with `flag === true` AND
+  `metaTitleSource.scrapedAt` startsWith the known buggy-run date.
+  Re-running the migrator moves the scrapedAt forward; the guard
+  refuses to fire on any future legitimate flag.
+- **`deleteByIdStrict` deletion safety.** All migration-script
+  deletions go through this helper: `_id`-only (no querying), fetch
+  doc, assert `_type` matches expected before any destructive call.
+  Query-based delete patterns (`*[name == ...]` or
+  `*[slug.current == ...]` then iterate-and-delete) forbidden in
+  migration scripts — `name` and `slug` are mutable and using either
+  as a deletion key is a single-keystroke disaster.
+- **Token scoping.** Migration scripts use a least-privilege
+  single-dataset token. Module-load assertion in the write client
+  rejects the wrong token context (read token presence triggers
+  immediate throw).
+- **Studio deploy ordering gate.** Schema modifications require a
+  Studio deploy AND human confirmation that new fields are visible
+  in the editor's session BEFORE any data write touches the new
+  fields. Top-of-file `// HARD GATE` comment in every migration
+  script that touches new fields.
+
+### Final Data State
+
+- Sanity production dataset:
+  - **388 CMS docs** (53 CONTENT-1A + 105 CONTENT-1B + 246 CONTENT-1C
+    minus 16 DEV-3 drift deletions). Brief baseline 404; deviation
+    documented.
+  - 0 SCHEMA-1 smoke-test docs remaining (all 5 deleted in Step 7
+    Decision B).
+  - 0 docs with `webflowImageUrl` staging string + missing target
+    image field.
+  - 0 docs with `&amp;` in `mainVideoEmbedLink`.
+  - All 6 in-scope meta types have `metaTitle` + `metaDescription`
+    populated (technology 101, service 23, customerStory 17,
+    teamMember 28, review 11, bookACall 6 — counts post-DEV-3).
+  - All 6 in-scope types carry `metaTitleSource` provenance; 5 of 6
+    carry `metaDescriptionSource` (bookACall description came from
+    CONTENT-1B without provenance tracking — verifier accepts this).
+  - All 6 bookACall metaDescriptions ≤ 160 chars (post-DEV-4).
+  - 0 bookACall docs with stale `needsReview = true` (post-DEV-5).
+- Supabase `migrations` (CE):
+  - `status = content_complete`, `current_phase = content_complete`.
+  - `metadata.content_phase`: `started_at: null` (CONTENT-1A start
+    not recorded), `completed_at: 2026-05-02T07:36:52.008Z`,
+    `total_cms_docs: 388`, `smoke_test_docs_remaining: 0`,
+    `content_migrations_rows: 38`,
+    `phases: [CONTENT-1A, CONTENT-1B, CONTENT-1C, CONTENT-1D]`.
+- Supabase `content_migrations` (CE): **38 rows** (24 prior + 14
+  CONTENT-1D — 11 brief baseline + 3 deviation rows). All
+  `status='complete'` + `parity_score=100`.
+
+### Brief Deviations (5 total in CONTENT-1D)
+
+| ID | Description | Rationale |
+|---|---|---|
+| DEV-1 | Smoke-test cleanup scope 3 → 5 (Decision B) | `smoke-test-blog-post` references all 3 in-scope docs; brief halt-on-refs guard would fire. Cleaner to delete all 5 in this phase. |
+| DEV-2 | Production "Scaling Teams" `tag` safety check relaxed | No production `tag` exists with that slug; production analog is a `blogCategory` (different type). `deleteByIdStrict`'s `_type` validation is the load-bearing protection. |
+| DEV-3 | 16 drift docs deleted; `total_cms_docs: 404 → 388` | Diagnostics confirmed all 16 are HTTP 404 + zero inbound refs + zero singleton/global mentions. Brief expected manual remediation; bulk delete is unambiguously safe and unblocks `content_complete`. |
+| DEV-4 | bookACall metaDescription `never-touch` overridden for 6 docs | CONTENT-1B carryover bug (Webflow `title` field mislabelled and oversized). Length-snapshot guard prevents drift. Surgical `.set` on description only. |
+| DEV-5 | bookACall `needsReview` monotonic-flag rule overridden for 6 docs | Initial buggy `shouldFlagForReview` pass. Two-factor guard (flag value + scrapedAt prefix) prevents collateral on any future legitimate flag. |
+
+### Discoveries / Surprises
+
+- **Tier 2 drift estimate was conservative.** The pre-scrape Tier 2
+  check estimated 32 drift docs across 4 types; live HTTP fetches
+  showed only 16 — many "drift" slugs had been added to Webflow
+  after AUDIT-1 ran and DO have live URLs.
+- **CONTENT-1B's bookACall.metaDescription violated the schema.**
+  The Webflow `title` field (which CONTENT-1B copied) runs 184–192
+  chars; the schema constraint is 140–160. The brief's "never-touch"
+  was based on the assumption CONTENT-1B's data was schema-compliant.
+  Required DEV-4.
+- **Initial `shouldFlagForReview` ran too greedily.** Treating any
+  warning as a flag-trigger conflated description-side warnings on a
+  never-touch description policy. Required the warnings split + the
+  hard/soft hardFailures-vs-warnings refactor. Caught early
+  (bookACall smoke run, before any of the other 5 collections ran).
+- **`technology.associatedTechnologies = []` on all 101 docs.** A
+  CONTENT-1C migrator wrote a service-only field onto every
+  technology doc (empty arrays — Sanity tolerates silently). Logged
+  as Tech Debt #13.
+
+### Resolved Tech Debt
+
+- **#15 (CONTENT-1D introduced)** — bookACall metaDescription
+  length-violation pattern. **Resolved in CONTENT-1D Op 2** (DEV-4
+  truncation).
+- **#16 (CONTENT-1D introduced)** — drift docs disposition.
+  **Resolved in CONTENT-1D Op 1** (DEV-3 deletion).
+
+### New Tech Debt Logged (Inert)
+
+- **#13** — 101 technology docs hold `associatedTechnologies: []`
+  (CONTENT-1C migrator wrote a service-only field). Inert. Resolution:
+  one-shot unset patch in TEMPLATE-* phase or pre-launch.
+- **#14** — Service docs surface "Invalid property value" warnings in
+  Studio for null-valued optional image fields. Inert (null is
+  acceptable for optional fields, Studio's strict validation flags
+  them anyway). Resolution: investigate post-CONTENT-1D, then either
+  adjust schema field types or unset the null values.
+
+### New Tech Debt Logged (Blocking — pre-launch)
+
+- **#15 (post-CONTENT-1D rotation)** — `SANITY_MIGRATION_WRITE_TOKEN`
+  rotation. **MUST resolve before MYGRATR-LAUNCH** (Exit Criterion #10).
+
+---
+
 ## MYGRATR-CONTENT-1C — Blogs / Compare / Tech / Services / Stories Migration (April 2026)
 
 ### What Was Built

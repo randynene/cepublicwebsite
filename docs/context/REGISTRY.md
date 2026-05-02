@@ -216,6 +216,32 @@ Grouped in `studio/schemas/structure.ts` into six Studio nav sections.
 | scripts/content/migrate-services.ts | Webflow `Services` → Sanity `service` (23); `fetchOptionIdMap` hoisted above item loop; SERVICE_TYPE_MAP / PREFIX_MAP camelCase enums; `short-label` slug; `fold-2---paragraph-2` (trailing -2) | 23 Sanity docs + 1 `content_migrations` row (`services`) | CONTENT-1C |
 | scripts/content/migrate-customer-stories.ts | Webflow `Customers / Customer Stories` → Sanity `customerStory` (18); switch slug corrections; VideoLink `.url` + `decodeHtmlEntities`; `the-` content prefixes; triple-dash quote slugs; problem/solution/impact packed independently | 18 Sanity docs + 1 `content_migrations` row (`customer-stories`) | CONTENT-1C |
 | scripts/content/verify-content-1c.ts | Final verifier — 29 hard-gate checks: Sanity counts (excluding `smoke-test-*`), Supabase parity for 11 rows, blogPost slug uniqueness, compareBlog `category` absence, reference integrity spot-checks, fold structure, customerStory section packing, inline-image presence end-to-end | stdout summary; exits 0 / 1 | CONTENT-1C |
+| scripts/content/verify-content-1d-prereqs.ts | Pre-flight: 32 checks across token presence/absence, migration state, doc counts (smoke-test excluded), live scrape scope build, UNKNOWN URL overlap, smoke-test doc existence + ref graph, Playwright availability, forbidden-import grep (F14 ESLint-equivalent), Step 0a schema/Zod field-presence | stdout summary; exits 0 / 1 | CONTENT-1D |
+| scripts/content/test-url-builder.ts | Two-tier URL builder assertion: HARD known-good slugs (one per type, hardcoded from audit canonical set) + INFO Sanity-data coverage report. Halts only on Tier 1 fail. | stdout summary; exits 0 / 1 | CONTENT-1D |
+| scripts/content/migrate-meta-technology.ts | Live-scrape `metaTitle` + `metaDescription` for 101 technology docs via shared runner (`runMetaBackfill`); both fields `scrape-always` | 101 patches + 1 row (`meta-backfill-technology`) | CONTENT-1D |
+| scripts/content/migrate-meta-service.ts | Same pattern for 23 service docs | 23 patches + 1 row (`meta-backfill-service`) | CONTENT-1D |
+| scripts/content/migrate-meta-customer-story.ts | Same pattern for 18 customerStory docs; pre-scrape hook short-circuits `/customer-story/virgin` to a hardcoded placeholder patch (provider: 'placeholder') | 18 patches (1 bypassed) + 1 row (`meta-backfill-customer-story`) | CONTENT-1D |
+| scripts/content/migrate-meta-team-member.ts | Same pattern for 28 teamMember docs | 28 patches + 1 row (`meta-backfill-team-member`) | CONTENT-1D |
+| scripts/content/migrate-meta-review.ts | 26 review docs; `description: 'snippet-copy-else-scrape'` — copies `snippetForMeta` (truncated to 160 via truncateAtWord) to metaDescription if present, scrapes otherwise | 26 patches + 1 row (`meta-backfill-review`) | CONTENT-1D |
+| scripts/content/migrate-meta-book-a-call.ts | 6 bookACall docs; `description: 'never-touch'` (CONTENT-1B-populated, IMMUTABLE per brief). metaTitle scraped fresh. | 6 patches + 1 row (`meta-backfill-book-a-call`) | CONTENT-1D |
+| scripts/content/migrate-benefit-value-thumbnails.ts | F16 idempotency: 9 `benefitValue` docs with `webflowImageUrl` → upload via `uploadImage`, set `thumbnailImage`, unset `webflowImageUrl` (same-commit) | 9 patches + 1 row (`image-carryover-benefit-values`) | CONTENT-1D |
+| scripts/content/migrate-staff-benefit-icons.ts | Same pattern for 6 `staffBenefit.icon` | 6 patches + 1 row (`image-carryover-staff-benefits`) | CONTENT-1D |
+| scripts/content/migrate-video-backup-image-retry.ts | F20 vacuous-success — record migration row (0/0/complete) when query returns 0 docs (CONTENT-1B's earlier carryover already resolved) | 1 row (`image-carryover-video-backup`) | CONTENT-1D |
+| scripts/content/fix-video-embed-link-encoding.ts | Vacuous-success — `mainVideoEmbedLink` `&amp;` decode via `decodeHtmlEntities`. 0 docs needed it. | 1 row (`video-embed-link-encoding-fix`) | CONTENT-1D |
+| scripts/content/cleanup-smoke-test-docs.ts | Decision B 5-doc scope. `deleteByIdStrict` for 5 hardcoded SCHEMA-1 smoke-test `_id`s; `smoke-test-blog-post` deleted FIRST (only ref-holder). External-ref pre-flight check halts if any non-in-scope referrer. | 5 deletions + 1 row (`smoke-test-cleanup`) | CONTENT-1D |
+| scripts/content/cleanup-drift-docs.ts | DEV-3 brief deviation. Pre-flight: re-runs D2 inbound-ref check + single-sample live 404 retest. Then `deleteByIdStrict` for 16 hardcoded `_id`s (1 customerStory + 15 review). Post-delete confirmation pass. | 16 deletions + 1 row (`drift-cleanup`) | CONTENT-1D |
+| scripts/content/truncate-bookacall-metadescription.ts | DEV-4 brief deviation. Per-doc guards: `_type === 'bookACall'`, `metaDescription.length` matches D3 snapshot, truncated length ∈ [140, 160]. Surgical `.set` on metaDescription only. | 6 patches + 1 row (`bookacall-metadescription-truncation`) | CONTENT-1D |
+| scripts/content/unset-bookacall-stale-needsreview.ts | DEV-5 brief deviation. Two-factor guard: `needsReview === true` AND `metaTitleSource.scrapedAt` startsWith '2026-05-02'. Surgical `.unset(['needsReview'])`. | 6 unsets + 1 row (`bookacall-stale-needsreview-unset`) | CONTENT-1D |
+| scripts/content/verify-content-1d.ts | Throws-on-failure verifier (F2). Exports `verifyContent1D({skipStateCheck?})`. 9 hard-gate checks. Never returns boolean. | (export) | CONTENT-1D |
+| scripts/content/run-verify-content-1d.ts | CLI entrypoint. Calls `verifyContent1D` without try/catch. `--skip-state-check` flag for pre-Step-8 runs. | stdout; exits 0 / 1 | CONTENT-1D |
+| scripts/content/complete-content-phase.ts | Step 8 state transition. Calls `verifyContent1D({skipStateCheck: true})` WITHOUT try/catch (F2). `--confirm` required. Updates `migrations.status = content_complete` with `metadata.content_phase` block (388 docs / 0 smoke-test / 38 rows / phases list). | `migrations` row update | CONTENT-1D |
+| scripts/content/inspect-smoke-test-state.ts | Read-only diagnostic — enumerates every smoke-test doc in dataset. Reusable for customer 2+. | stdout | CONTENT-1D |
+| scripts/content/inspect-validation-issues.ts | Read-only diagnostic — walks every CONTENT-1D in-scope doc and asserts top-level field primitive shape against expected types. Reusable for schema-vs-data drift investigation. | stdout | CONTENT-1D |
+| scripts/content/diag-1d-canonical-cross-check.ts | Read-only diagnostic for the 16 drift `_id`s — audit-output canonical-list check + live 5s Playwright fetch with 1.5s inter-request delay. | stdout markdown table | CONTENT-1D |
+| scripts/content/diag-2-1d-inbound-refs.ts | Read-only diagnostic — `*[references($id)]` per drift `_id`, classifies referrers (drift / smoke-test / external / draft). | stdout markdown table | CONTENT-1D |
+| scripts/content/diag-3-1d-bookacall-truncation-preview.ts | Read-only diagnostic — side-by-side current / `truncateAtWord(s, 160)` / dropped tail for 6 bookACall metaDescriptions. | stdout | CONTENT-1D |
+| scripts/content/diag-4-1d-runner-bug-postmortem.ts | Read-only diagnostic — plain-English writeup of the buggy `shouldFlagForReview` pass + current state of the 6 affected bookACall docs. | stdout | CONTENT-1D |
+| scripts/content/diag-5-1d-builder-orphan-check.ts | Read-only diagnostic — triple sub-check on the customerStory builder doc (refs / singletons+globals / audit-output presence). | stdout | CONTENT-1D |
 
 ## Lib Files
 
@@ -234,11 +260,15 @@ Grouped in `studio/schemas/structure.ts` into six Studio nav sections.
 | site/src/lib/redirects/generated-redirects.ts | crawlRedirects | Auto-generated from ce-canonical-urls.json | SCAFFOLD-1 |
 | site/src/lib/redirects/regex-redirects.ts | regexRedirects | Auto-generated from ce-regex-redirects.json | SCAFFOLD-1 |
 | site/src/lib/redirects/webflow-redirects.ts | webflowRedirects | Auto-generated from webflow-redirects.csv | SCAFFOLD-1 |
-| src/lib/content/sanity-write-client.ts | sanityWriteClient | `@sanity/client` write client for migration scripts | CONTENT-1A |
+| src/lib/content/sanity-write-client.ts | sanityWriteClient | `@sanity/client` write client for migration scripts. CONTENT-1D: switched to `SANITY_MIGRATION_WRITE_TOKEN` (least-privilege, single-dataset); module-load assertion throws if migration token missing OR if `SANITY_API_READ_TOKEN` also present (path-alias collision guard, F14). | CONTENT-1A (extended CONTENT-1D) |
 | src/lib/content/webflow-read-client.ts | getCollectionItems(collectionId), WebflowItem type | Paginated Webflow REST v2 reader (offset+limit) | CONTENT-1A |
 | src/lib/content/migration-tracker.ts | recordMigration({ collectionSlug, source, migrated, status, errorLog, parityBaselineCount }) | Upsert into content_migrations keyed by (org_id, migration_id, collection_slug). `parityBaselineCount` (CONTENT-1C) makes parity_score measure on the deduplicated set; vacuous success (denominator=0, migrated=0, no errors) yields 100. | CONTENT-1A (extended CONTENT-1C) |
 | src/lib/content/ce-collection-ids.ts | CE_COLLECTION_IDS (29-key as-const map: 10 CONTENT-1A + 8 CONTENT-1B + 11 CONTENT-1C). CE_BLOG_COLLECTIONS (typed iteration array for the 7 blog source collections). | CE-specific Webflow collection IDs in scope for CONTENT-1A/1B/1C | CONTENT-1A (extended CONTENT-1B + 1C) |
-| src/lib/content/migration-helpers.ts | toPortableText (async; two-pass JSDOM walk uploading inline `<img>` to real Sanity assets via `Promise.allSettled`; null guard at entry; `<figure>` rule skips iframe-in-figure), extractUrl, uploadImage, toRefs (validates `/^[a-f0-9]{24}$/i` and uses full Webflow ID as `_key`), extractOption, webflowSlug, fetchOptionIdMap (CONTENT-1C lift), resolveOption (CONTENT-1C lift), decodeHtmlEntities (CONTENT-1C) | Shared helpers for every CONTENT-1B+ migrator | CONTENT-1B (extended CONTENT-1C) |
+| src/lib/content/migration-helpers.ts | toPortableText (async; two-pass JSDOM walk uploading inline `<img>` to real Sanity assets via `Promise.allSettled`; null guard at entry; `<figure>` rule skips iframe-in-figure), extractUrl, uploadImage, toRefs (validates `/^[a-f0-9]{24}$/i` and uses full Webflow ID as `_key`), extractOption, webflowSlug, fetchOptionIdMap (CONTENT-1C lift), resolveOption (CONTENT-1C lift), decodeHtmlEntities (CONTENT-1C), `deleteByIdStrict(client, id, expectedType)` (CONTENT-1D — `_id`-only deletion with `_type` validation before delete) | Shared helpers for every CONTENT-1B+ migrator | CONTENT-1B (extended CONTENT-1C, CONTENT-1D) |
+| src/lib/content/url-builder.ts | urlForDoc({_type, slug}), inScopePathPrefixes() | URL construction for the 6 CONTENT-1D in-scope doc types (technology/service/customerStory/teamMember/review/bookACall); routes from `MYGRATR_SCHEMA_DESIGN_DECISIONS.md §10` | CONTENT-1D |
+| src/lib/content/meta-scraper.ts | scrapeMeta(browser, url), withBrowser(fn), ScrapedMeta | Playwright-backed live-page meta extractor; `waitUntil: 'domcontentloaded'`, 20s per-page timeout, custom UA | CONTENT-1D |
+| src/lib/content/meta-normaliser.ts | normaliseMeta({rawTitle, rawDescription}), truncateAtWord(s, max), NormaliseResult (titleWarnings/descriptionWarnings/warnings split) | Brand-suffix strip + length compliance + word-boundary truncation with whitespace-prefix fallback (F17). Hard rule: never pad/fabricate metaDescription. | CONTENT-1D |
+| src/lib/content/meta-backfill-runner.ts | runMetaBackfill(opts), FieldPolicy enum, PreScrapeDecision, SanityDocLite | Shared runner enforcing every CONTENT-1D structural protection (F1 abort gate / F4 monotonic needsReview / F5 metaTitle-never-empty / F6 never-touch structural / F7 hook-before-URL / F8 truncation assertion / F13 1.5s delay / F21 split provenance) + hard-failure vs soft-warning row-status separation. | CONTENT-1D |
 
 ## npm Scripts
 
@@ -277,6 +307,24 @@ Grouped in `studio/schemas/structure.ts` into six Studio nav sections.
 | `npm run content:migrate-services` | Migrate Webflow `Services` → Sanity `service` (23 items, Option-field enum resolution) |
 | `npm run content:migrate-customer-stories` | Migrate Webflow `Customers / Customer Stories` → Sanity `customerStory` (18 items) |
 | `npm run content:verify-1c` | Final verifier for CONTENT-1C — 29 hard-gate checks; exits 0 only when all pass |
+| `npm run content:verify-1d-prereqs` | CONTENT-1D pre-flight verifier — 32 checks (token presence, migration state, doc counts, scrape scope, UNKNOWN URL overlap, smoke-test refs, Playwright, forbidden imports, Step 0a field presence) |
+| `npm run content:test-url-builder` | Two-tier URL-builder assertion (Tier 1 known-good HARD; Tier 2 coverage INFO) |
+| `npm run content:migrate-meta-technology` | Live-scrape meta backfill for 101 technology docs |
+| `npm run content:migrate-meta-service` | Live-scrape meta backfill for 23 service docs |
+| `npm run content:migrate-meta-customer-story` | Live-scrape meta backfill for 18 customerStory docs (virgin pre-scrape bypass) |
+| `npm run content:migrate-meta-team-member` | Live-scrape meta backfill for 28 teamMember docs |
+| `npm run content:migrate-meta-review` | Meta backfill for 26 review docs (description: snippet-copy-else-scrape) |
+| `npm run content:migrate-meta-book-a-call` | metaTitle scrape for 6 bookACall docs (description: never-touch) |
+| `npm run content:migrate-benefit-value-thumbnails` | F16 idempotent thumbnailImage upload for 9 benefitValue docs |
+| `npm run content:migrate-staff-benefit-icons` | F16 idempotent icon upload for 6 staffBenefit docs |
+| `npm run content:migrate-video-backup-image-retry` | F20 vacuous-success — record migration row when 0 videos need retry |
+| `npm run content:fix-video-embed-link-encoding` | F20 vacuous-success — decode `&amp;` in mainVideoEmbedLink (0 docs needed it) |
+| `npm run content:cleanup-smoke-test-docs` | Decision B: deleteByIdStrict on 5 SCHEMA-1 smoke-test docs in ref-graph order |
+| `npm run content:cleanup-drift-docs` | DEV-3: deleteByIdStrict on 16 drift _ids (1 customerStory + 15 review) with pre-flight inbound-ref recheck + sample 404 retest |
+| `npm run content:truncate-bookacall-metadescription` | DEV-4: truncate 6 bookACall metaDescriptions to ≤160 chars (per-doc length-snapshot guard) |
+| `npm run content:unset-bookacall-stale-needsreview` | DEV-5: unset stale needsReview on 6 bookACall _ids (two-factor: needsReview===true + scrapedAt prefix) |
+| `npm run content:verify-1d` | Final verifier for CONTENT-1D — `verifyContent1D()` throws on failure (F2). Use `-- --skip-state-check` pre-Step-8. |
+| `npm run content:complete` | Step 8 state transition (`-- --confirm` required). Calls verifier WITHOUT try/catch (F2); transitions content_running → content_complete with metadata.content_phase block. |
 
 ## Audit Output Files (populated by AUDIT-1)
 

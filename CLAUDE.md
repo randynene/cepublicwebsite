@@ -14,8 +14,8 @@ Parent brand: Saxon.io. Owner: Jake Hall (non-developer, directs Claude Code).
 
 ## Current Phase
 
-**MYGRATR-CONTENT-1C — Blogs / Compare / Tech / Services / Stories Migration** — COMPLETE
-**Next: MYGRATR-CONTENT-1D** — Meta backfills + image-upload carryovers + content_complete transition
+**MYGRATR-CONTENT-1D — Meta Backfills + Carryover Fixes + content_complete** — COMPLETE
+**Next: MYGRATR-TEMPLATE-*** — Template Build
 
 | Phase | Name | Status |
 |---|---|---|
@@ -27,8 +27,8 @@ Parent brand: Saxon.io. Owner: Jake Hall (non-developer, directs Claude Code).
 | MYGRATR-CONTENT-1A | Content Migration — flat collections | ✅ Complete |
 | MYGRATR-CONTENT-1B | Content Migration — reference-light | ✅ Complete |
 | MYGRATR-CONTENT-1C | Content Migration — blogs/compare/tech/services/stories | ✅ Complete |
-| **MYGRATR-CONTENT-1D** | **Meta backfills + image-upload carryovers + content_complete** | 🔜 **Next** |
-| MYGRATR-TEMPLATE-* | Template Build | Planned |
+| MYGRATR-CONTENT-1D | Meta backfills + carryover fixes + content_complete | ✅ Complete |
+| **MYGRATR-TEMPLATE-*** | **Template Build** | 🔜 **Next** |
 | MYGRATR-QA-1 | Visual + Structural QA | Planned |
 | MYGRATR-LAUNCH | Cutover + Redirects | Planned |
 | MYGRATR-MONITOR-1 | Post-cutover SEO | Planned |
@@ -90,9 +90,12 @@ Parent brand: Saxon.io. Owner: Jake Hall (non-developer, directs Claude Code).
   (createIfNotExists, idempotent) + 5 `smoke-test-*` integration-test
   docs created.
 
-**Content migration state (as of CONTENT-1C complete):**
-- `migrations.status = content_running` (partial — CONTENT-1A + 1B + 1C
-  of 4; `content_complete` fires at end of CONTENT-1D).
+**Content migration state (as of CONTENT-1D complete):**
+- `migrations.status = content_complete` /
+  `current_phase = content_complete`. `metadata.content_phase`:
+  `total_cms_docs: 388`, `smoke_test_docs_remaining: 0`,
+  `content_migrations_rows: 38`, completed_at 2026-05-02,
+  `phases: [CONTENT-1A, CONTENT-1B, CONTENT-1C, CONTENT-1D]`.
 - Collections migrated to Sanity prod dataset (project `lzbhll1u`):
   - **CONTENT-1A:** `tags-consolidated` (22 across 6 categories),
     `blog-categories` (6), `glassdoor-reviews` (10), `benefit-values` (9),
@@ -103,40 +106,53 @@ Parent brand: Saxon.io. Owner: Jake Hall (non-developer, directs Claude Code).
   - **CONTENT-1C:** `blogPost` (74 unique across 7 source
     collections), `compareBlog` (30), `technology` (101),
     `service` (23), `customerStory` (18) — 246 docs.
-  - **Total:** 404 CMS docs. Deterministic `_id`s of the form
-    `{type}-{webflowId}`.
-- Supabase `content_migrations`: 24 rows for CE migration (5
-  CONTENT-1A + 8 CONTENT-1B + 11 CONTENT-1C), all `status='complete'`,
-  `parity_score=100`, `error_log=[]`.
-- **CONTENT-1C dedup model:** the 7 Webflow blog collections contained
-  duplicate items. `Blogs & Guides` is canonical master; sub-category
-  collections supply only items not already in master. Each item's
-  `blogCategory` ref comes from its own `resource-category`, not its
-  source collection. `blogPost` source/migrated counts diverge for
-  sub-category rows, but `parity_score = 100` is enforced via
-  `parityBaselineCount` = unique-eligible count.
+  - **CONTENT-1D deviations:** 16 drift docs deleted (1 customerStory
+    + 15 reviews — Webflow CMS items whose slugs returned 404 on
+    cloudemployee.io and had zero inbound refs). 5 SCHEMA-1
+    smoke-test docs deleted (Decision B — brief originally specified
+    3 + 2 deferred; ref chain made the larger scope cleaner). All 6
+    bookACall metaDescriptions truncated to ≤ 160 chars at word
+    boundary (CONTENT-1B carryover fix).
+  - **Total:** **388 CMS docs** (404 baseline − 16 drift). Deterministic
+    `_id`s of the form `{type}-{webflowId}`.
+- Supabase `content_migrations`: 38 rows for CE migration (24 prior
+  + 14 CONTENT-1D — 11 brief baseline + 3 deviation rows for audit
+  trail: `drift-cleanup`, `bookacall-metadescription-truncation`,
+  `bookacall-stale-needsreview-unset`). All `status='complete'`,
+  `parity_score=100`.
+- **Meta tag state (post-CONTENT-1D):** every in-scope doc has
+  `metaTitle` + `metaDescription` populated and split per-field
+  provenance (`metaTitleSource` + `metaDescriptionSource`) recorded
+  for live-scrape vs `snippetForMeta-copy` vs `placeholder`.
+  bookACall.metaDescription was sealed in CONTENT-1B (never-touch
+  policy in CONTENT-1D, with one-off truncation deviation).
+- **Schema state:** the 4 CONTENT-1D in-scope schemas without §7.2
+  source-tracking (`customerStory`, `teamMember`, `review`,
+  `bookACall`) gained the triplet retroactively via
+  `sourceTrackingFieldsCarryover()` — `source` and `generatedAt` are
+  hidden and NOT required (F18: initialValue does NOT retroactively
+  populate). All 6 in-scope schemas + their Zod twins have the split
+  per-field provenance pair.
+- **Studio production deploy** at
+  `https://mygratr-cloudemployee.sanity.studio/`. First-ever deploy
+  during CONTENT-1D Step 0a. `appId` pinned in `studio/sanity.cli.ts`
+  for non-interactive future deploys.
 - **Inline images:** Webflow RichText `<img>` tags upload to real Sanity
-  assets via the upgraded async `toPortableText()` two-pass walk
-  (Step 0a). `<figure>` deserializer skips iframe-in-figure (Vimeo
+  assets via the async `toPortableText()` two-pass walk (CONTENT-1C
+  Step 0a). `<figure>` deserializer skips iframe-in-figure (Vimeo
   embeds). `Promise.allSettled` over uploads — one broken CDN URL
   cannot abort the document.
-- **Images:** uploaded as real Sanity assets via `uploadImage()` (since
-  CONTENT-1B). Carryovers pending CONTENT-1D: `benefitValue.thumbnailImage`
-  (9), `staffBenefit.icon` (6), 1 `video.backupImage` CDN retry.
+- **Images:** uploaded as real Sanity assets via `uploadImage()` since
+  CONTENT-1B. CONTENT-1A carryovers (9 `benefitValue.thumbnailImage`
+  + 6 `staffBenefit.icon`) cleared in CONTENT-1D Step 6.
 - **Slug bug fix history:** the original CONTENT-1A migrators shipped
   with `slug.current = null`; backfilled idempotently in CONTENT-1B via
   `webflowSlug(item)` helper. All CONTENT-1A/1B/1C docs now carry
   populated slugs.
-- **Sanity Portable Text:** `@sanity/block-tools` is now async (Step 0a
-  upgrade) and uses JSDOM in both passes (extract + deserialize) so
-  src URLs decode identically. `jsdom` and `@types/jsdom` deps.
-- Remaining for CONTENT-1D: meta backfills (~202 fields across
-  technology/service/customerStory/teamMember/review/bookACall) +
-  CONTENT-1A image-asset uploads + CONTENT-1B video URL
-  entity-encoding fix + content_complete transition.
-- Known debt: smoke-test `scaling-teams (SMOKE TEST)` tag doc,
-  `smoke-test-blog-category-scaling-teams`, `smoke-test-team-member`
-  persist from SCHEMA-1 — pre-launch cleanup.
+- **Sanity Portable Text:** `@sanity/block-tools` is now async
+  (CONTENT-1C Step 0a) and uses JSDOM in both passes
+  (extract + deserialize) so src URLs decode identically. `jsdom` and
+  `@types/jsdom` deps.
 
 **Scaffold state (as of SCAFFOLD-1 complete):**
 - Next.js 16.2.4 app at `site/` (App Router, TS strict, Tailwind v4).
@@ -198,7 +214,8 @@ Parent brand: Saxon.io. Owner: Jake Hall (non-developer, directs Claude Code).
 | AHREFS_API_KEY | In .env — REST v3 key for SEO baseline (AUDIT-1) |
 | SANITY_PROJECT_ID | In .env — for SCHEMA-1 |
 | SANITY_DATASET | In .env — for SCHEMA-1 |
-| SANITY_API_TOKEN | In .env — for SCHEMA-1 |
+| SANITY_API_TOKEN | In .env — legacy; SCHEMA-lane seed scripts only |
+| SANITY_MIGRATION_WRITE_TOKEN | In .env — least-privilege migration write token (CONTENT-1D §0.1). Single-dataset (`production`) scope; permits document patch/delete + asset upload only. Rotate post-1D — see Tech Debt #15. |
 | SUPABASE_DB_URL | In .env — Postgres direct URL (migrations) |
 | NEXT_PUBLIC_SANITY_PROJECT_ID | In `site/.env.local` — Sanity project ID for the Next.js app (`lzbhll1u`) |
 | NEXT_PUBLIC_SANITY_DATASET | In `site/.env.local` — Sanity dataset (`production`) |
@@ -329,5 +346,8 @@ Only after ALL of the above are complete do you start planning the next phase.
 | 10 | SCHEMA-1 | Legacy `MigrationStatus` enum in `src/lib/types.ts` uses shortform values — conflicts with canonical string-literal union in `src/lib/pipeline/state-machine.ts`. Needs consolidation. | ✅ Resolved in MYGRATR-CONTENT-1A |
 | 11 | SCHEMA-1 | `TemplateType` conflict between string-literal and enum representations across `src/lib/types.ts` and `src/lib/audit-types.ts`. | ✅ Resolved in MYGRATR-CONTENT-1A |
 | 12 | CONTENT-1A | Direct Postgres connection from scripts is broken — pooler auth fails with `Tenant or user not found` at both 5432 and 6543, and `db.<ref>.supabase.co` doesn't resolve. REST writes work fine. Means future DDL needs the Supabase SQL editor. Rotate `SUPABASE_DB_URL` so scripts can apply schema changes again. | MYGRATR-INFRA |
+| 13 | CONTENT-1D | All 101 `technology` docs hold `associatedTechnologies: []` (CONTENT-1C migrator wrote a service-only field on the wrong type). Inert — Sanity tolerates extra fields silently and the value is empty. Resolution: one-shot `unset(['associatedTechnologies'])` patch on technology docs. | MYGRATR-TEMPLATE-* |
+| 14 | CONTENT-1D | Service docs surface "Invalid property value" warnings in Studio for null-valued optional image fields (e.g. some `serviceLogo` slots). Inert — null is acceptable for optional fields, but Studio's strict validation flags them. Resolution: investigate scope; either tighten schema field types to allow null cleanly, or unset null values in a one-shot patch. | MYGRATR-TEMPLATE-* / pre-launch |
+| **15** | **CONTENT-1D** | **`SANITY_MIGRATION_WRITE_TOKEN` rotation. Token used by all CONTENT-1D migration writes; carries document patch/delete + asset upload permissions. MUST be rotated and the new value committed to `.env` (replacing the existing) before any further large-scale Sanity writes against production. Hard pre-launch gate per Exit Criterion #10.** | **MUST resolve before MYGRATR-LAUNCH** |
 
-*Last updated: April 2026 — MYGRATR-CONTENT-1C complete. MYGRATR-CONTENT-1D next.*
+*Last updated: May 2026 — MYGRATR-CONTENT-1D complete. MYGRATR-TEMPLATE-* next.*

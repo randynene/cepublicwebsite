@@ -1,5 +1,71 @@
 # CHANGELOG.md
 
+## MYGRATR-CONTENT-1D — Meta Backfills + Carryover Fixes + content_complete (May 2026)
+Closing slice of CONTENT-1. Meta tags scraped live from cloudemployee.io
+via Playwright across 6 doc types (technology 101, service 23,
+customerStory 18, teamMember 28, review 26, bookACall 6 — title only;
+description was already populated in CONTENT-1B). New
+`src/lib/content/meta-backfill-runner.ts` enforces every structural
+protection in one place: F1 phase-wide 20-minute wall-clock abort gate
+with hard `process.exit(1)` (NOT break) and failure row written
+before exit; F4 monotonic `needsReview` (omitted from patch when
+computed false, never overwrites prior `true`); F5 `metaTitle` never
+written empty (omitted on null/empty so verifier catches it);
+F6 `FieldPolicy` enum honoured structurally (`description: never-touch`
+skips scrape + normalisation + validation entirely); F7 pre-scrape
+hook evaluated BEFORE URL construction (customerStory `virgin`
+short-circuits to a hardcoded placeholder patch); F8 `snippetForMeta`
+copy path with post-truncation length assertion; F13 1.5s
+inter-request delay; F21 split per-field provenance
+(`metaTitleSource` + `metaDescriptionSource`). Step 0a retroactively
+applied §7.2 source-tracking (`source` / `generatedAt` /
+`needsReview`) to the 4 schemas that lacked it (customerStory,
+teamMember, review, bookACall) and added the provenance pair to all 6
+in-scope types; `sourceTrackingFieldsCarryover` (hidden
+source/generatedAt, no `required` validation) carries the
+"initialValue does not retroactively populate" caveat from F18.
+Step 0.1 introduced `SANITY_MIGRATION_WRITE_TOKEN` (single-dataset,
+least-privilege) replacing the legacy `SANITY_API_TOKEN` for migration
+scripts; module-load assertion in `sanity-write-client.ts` throws if
+the new token is missing OR if `SANITY_API_READ_TOKEN` is also
+present (path-alias collision guard, F14). 4 carryover scripts
+resolved CONTENT-1A image staging (9 `benefitValue.thumbnailImage`
++ 6 `staffBenefit.icon` uploaded as real Sanity assets) plus the
+CONTENT-1B `video.backupImage` retry and `mainVideoEmbedLink`
+encoding fix (both vacuous — 0 docs needed work). Smoke-test cleanup
+(`deleteByIdStrict` enforces `_id`-only, `_type`-validated deletion;
+query-based deletes forbidden in migration scripts) deleted all 5
+SCHEMA-1 smoke-test docs in ref-graph order
+(`smoke-test-blog-post` first; the rest in any order — Decision B,
+brief originally specified 3 + 2 deferred but the ref chain made the
+larger scope cleaner). Verifier rewritten as `verifyContent1D()`
+that throws on any failure (F2): the state-transition script calls
+it WITHOUT try/catch, unhandled rejection propagates to Node
+top-level, the `assertValidTransition` and Supabase update lines are
+structurally unreachable on verification failure. Three brief
+deviations applied with explicit per-doc guards: DEV-3 deleted 16
+drift docs (1 customerStory + 15 reviews — Webflow CMS items whose
+slugs return 404 on the live site; D1 + D2 + D5 confirmed each is
+HTTP 404 + zero inbound refs + zero singleton/global mentions),
+DEV-4 truncated 6 bookACall metaDescriptions to 160 chars at word
+boundary (CONTENT-1B carryover bug — Webflow `title` field
+mislabelled and oversized, never-touch policy explicitly overridden
+with state-snapshot guard against the 184/186/188/190/191/192
+lengths from D3), DEV-5 unset `needsReview` on 6 bookACall docs
+flagged by the buggy initial `shouldFlagForReview` pass
+(monotonic-flag rule overridden with two-factor guard:
+`needsReview === true` AND `metaTitleSource.scrapedAt` startsWith
+`'2026-05-02'` — re-running the migrator moves scrapedAt forward
+and structurally blocks accidental clearance of any future
+legitimate flag). Final state: `migrations.status = content_complete`
+with `metadata.content_phase` block recording 388 CMS docs (404
+baseline − 16 drift), 0 smoke-test docs remaining, 38
+content_migrations rows for CE (24 prior + 14 new — 11 brief
+baseline + 3 deviation rows). Studio production deploy at
+`https://mygratr-cloudemployee.sanity.studio/`. New
+`SANITY_MIGRATION_WRITE_TOKEN` rotation flagged as Tech Debt #15 —
+**MUST resolve before MYGRATR-LAUNCH** (Exit Criterion #10).
+
 ## MYGRATR-CONTENT-1C — Blogs / Tech / Services / Stories Migration (April 2026)
 Third slice of CONTENT-1: 246 Webflow items migrated into Sanity across
 5 document types (`blogPost` 74, `compareBlog` 30, `technology` 101,

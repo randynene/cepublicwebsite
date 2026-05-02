@@ -392,3 +392,92 @@
   `audit-output/screenshots/{slug}/{bp}.png`
 - **npm scripts:** `npm run audit:run`, `audit:chunk2`, `audit:chunk3`
 - **Phase:** MYGRATR-AUDIT-1
+
+## Content Migration — Meta Backfills + Carryover Fixes (CONTENT-1D)
+- **Description:** Live-site meta backfill (`metaTitle` +
+  `metaDescription`) for the 6 Tier-1 CMS doc types whose CONTENT-1A/B/C
+  migrators left the fields null. Plus image carryovers from CONTENT-1A
+  (benefitValue.thumbnailImage, staffBenefit.icon) and CONTENT-1B fixups
+  (video.backupImage retry, mainVideoEmbedLink &amp; encoding).
+  SCHEMA-1 smoke-test cleanup. State transition to `content_complete`.
+  Three brief deviations applied with explicit per-doc guards: drift
+  cleanup (16 deletions), bookACall metaDescription truncation (6
+  patches), bookACall stale needsReview unset (6 unsets).
+- **Lib Modules:**
+  - `src/lib/content/url-builder.ts` — `urlForDoc({_type, slug})` switch
+    over the 6 in-scope types using routes from
+    `MYGRATR_SCHEMA_DESIGN_DECISIONS.md §10`
+  - `src/lib/content/meta-scraper.ts` — Playwright `scrapeMeta` +
+    `withBrowser` factory; 20s per-page timeout,
+    `waitUntil: 'domcontentloaded'`, custom UA
+  - `src/lib/content/meta-normaliser.ts` — `normaliseMeta` (brand-suffix
+    strip + length compliance + split title/description warnings) +
+    `truncateAtWord(s, max)` with F17 whitespace-prefix fallback
+  - `src/lib/content/meta-backfill-runner.ts` — shared `runMetaBackfill`
+    with FieldPolicy enum, pre-scrape hook, F1 abort gate, F4
+    monotonic needsReview, F5 metaTitle-never-empty, F6 never-touch
+    structural, F7 hook-before-URL, F8 truncation assertion, F13
+    delay, F21 split provenance, hard/soft separation
+  - `src/lib/content/migration-helpers.ts` (extended) —
+    `deleteByIdStrict(client, id, expectedType)`
+  - `src/lib/content/sanity-write-client.ts` (modified) — module-load
+    assertion for `SANITY_MIGRATION_WRITE_TOKEN` presence + read-token
+    absence
+  - `src/lib/env.ts` (modified) — `SANITY_MIGRATION_WRITE_TOKEN` +
+    `SANITY_API_READ_TOKEN` declarations + `ensureSanityMigrationWriteToken()`
+- **Sanity Schemas (extended):**
+  - `studio/schemas/_shared.ts` — new helpers
+    `sourceTrackingFieldsCarryover()` (hidden source/generatedAt, NOT
+    required) + `metaSourceFields()` (split provenance pair)
+  - `studio/schemas/documents/{customer-story,team-member,review,book-a-call}.ts` —
+    add carryover §7.2 + provenance pair
+  - `studio/schemas/documents/{technology,service}.ts` — add provenance
+    pair only (already had §7.2)
+- **Zod Twins (extended):**
+  - `src/types/sanity/shared.ts` — new `MetaSourceFieldsSchema` +
+    `SourceTrackingFieldsCarryoverSchema`
+  - `src/types/sanity/documents/{customer-story,team-member,review,book-a-call,technology,service}.ts`
+- **Scripts (executed):**
+  - `scripts/content/verify-content-1d-prereqs.ts` — 32-check pre-flight
+  - `scripts/content/test-url-builder.ts` — two-tier (HARD known-good
+    + INFO coverage) URL assertion
+  - `scripts/content/migrate-meta-{technology,service,customer-story,team-member,review,book-a-call}.ts`
+  - `scripts/content/migrate-{benefit-value-thumbnails,staff-benefit-icons,video-backup-image-retry}.ts`
+  - `scripts/content/fix-video-embed-link-encoding.ts`
+  - `scripts/content/cleanup-smoke-test-docs.ts` (5-doc scope per
+    Decision B)
+  - `scripts/content/cleanup-drift-docs.ts` (16 deletions, DEV-3)
+  - `scripts/content/truncate-bookacall-metadescription.ts` (DEV-4)
+  - `scripts/content/unset-bookacall-stale-needsreview.ts` (DEV-5)
+  - `scripts/content/verify-content-1d.ts` +
+    `scripts/content/run-verify-content-1d.ts` (verifier-throws
+    pattern, F2)
+  - `scripts/content/complete-content-phase.ts` (state transition;
+    NO try/catch around verifier per F2)
+- **Read-only diagnostics (reusable for customer 2+):**
+  - `scripts/content/inspect-smoke-test-state.ts`
+  - `scripts/content/inspect-validation-issues.ts`
+  - `scripts/content/diag-1d-canonical-cross-check.ts`
+  - `scripts/content/diag-2-1d-inbound-refs.ts`
+  - `scripts/content/diag-3-1d-bookacall-truncation-preview.ts`
+  - `scripts/content/diag-4-1d-runner-bug-postmortem.ts`
+  - `scripts/content/diag-5-1d-builder-orphan-check.ts`
+- **DB Tables:** `content_migrations` (14 new rows for CONTENT-1D —
+  6 meta backfill + 4 carryover + 1 cleanup + 3 deviation), `migrations`
+  (update status to `content_complete` + populate
+  `metadata.content_phase`)
+- **External APIs:** Playwright (Chromium headless), Sanity HTTP API
+  (write client only, single-dataset scope)
+- **npm scripts:** `content:verify-1d-prereqs`, `content:test-url-builder`,
+  `content:migrate-meta-technology`, `content:migrate-meta-service`,
+  `content:migrate-meta-customer-story`, `content:migrate-meta-team-member`,
+  `content:migrate-meta-review`, `content:migrate-meta-book-a-call`,
+  `content:migrate-benefit-value-thumbnails`,
+  `content:migrate-staff-benefit-icons`,
+  `content:migrate-video-backup-image-retry`,
+  `content:fix-video-embed-link-encoding`,
+  `content:cleanup-smoke-test-docs`, `content:cleanup-drift-docs`,
+  `content:truncate-bookacall-metadescription`,
+  `content:unset-bookacall-stale-needsreview`, `content:verify-1d`,
+  `content:complete`
+- **Phase:** MYGRATR-CONTENT-1D
