@@ -310,10 +310,16 @@ export async function verifyContent1D(opts: VerifyOptions = {}): Promise<void> {
     }
   }
 
-  // Total CE rows post-1D should be 38 (24 prior + 14 new — 11 brief
-  // baseline + 3 deviation rows: drift-cleanup, bookacall-metadescription-
-  // truncation, bookacall-stale-needsreview-unset).
-  const expectedTotal = 24 + ALL_NEW_1D_SLUGS.length
+  // Total CE rows post-1D should be AT LEAST 38 (24 prior + 14 new —
+  // 11 brief baseline + 3 deviation rows: drift-cleanup,
+  // bookacall-metadescription-truncation, bookacall-stale-needsreview-unset).
+  //
+  // The check is a FLOOR (>=) rather than equality so post-phase patches
+  // (e.g. CONTENT-1D-CLEANUP / DEV-6 added 4 rows after the verifier was
+  // sealed; future post-phase corrections will add more). The
+  // ALL_NEW_1D_SLUGS-membership check above still enforces that every
+  // CONTENT-1D row is present; this check enforces the minimum.
+  const minExpectedTotal = 24 + ALL_NEW_1D_SLUGS.length
   const { data: allRows, error: allRowsError } = await supabase
     .from('content_migrations')
     .select('collection_slug')
@@ -322,10 +328,12 @@ export async function verifyContent1D(opts: VerifyOptions = {}): Promise<void> {
   if (allRowsError) {
     fail(`Supabase total row count fetch error: ${allRowsError.message}`)
   } else if (allRows) {
-    if (allRows.length === expectedTotal) {
-      note(`✅ total content_migrations row count = ${expectedTotal} (24 prior + ${ALL_NEW_1D_SLUGS.length} new)`)
+    if (allRows.length >= minExpectedTotal) {
+      const extra = allRows.length - minExpectedTotal
+      const suffix = extra > 0 ? ` (+ ${extra} post-phase patch row${extra === 1 ? '' : 's'})` : ''
+      note(`✅ total content_migrations row count = ${allRows.length} (≥ ${minExpectedTotal} CONTENT-1D minimum${suffix})`)
     } else {
-      fail(`total content_migrations row count = ${allRows.length}, expected ${expectedTotal}`)
+      fail(`total content_migrations row count = ${allRows.length}, expected ≥ ${minExpectedTotal}`)
     }
   }
 

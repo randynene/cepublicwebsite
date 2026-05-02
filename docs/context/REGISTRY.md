@@ -242,6 +242,13 @@ Grouped in `studio/schemas/structure.ts` into six Studio nav sections.
 | scripts/content/diag-3-1d-bookacall-truncation-preview.ts | Read-only diagnostic — side-by-side current / `truncateAtWord(s, 160)` / dropped tail for 6 bookACall metaDescriptions. | stdout | CONTENT-1D |
 | scripts/content/diag-4-1d-runner-bug-postmortem.ts | Read-only diagnostic — plain-English writeup of the buggy `shouldFlagForReview` pass + current state of the 6 affected bookACall docs. | stdout | CONTENT-1D |
 | scripts/content/diag-5-1d-builder-orphan-check.ts | Read-only diagnostic — triple sub-check on the customerStory builder doc (refs / singletons+globals / audit-output presence). | stdout | CONTENT-1D |
+| scripts/content/diag-tech-debt-14-service-nulls.ts | Read-only — service-only null-image scan (Tech Debt #14 original investigation). Walks every schema-declared non-primitive field on each service doc and classifies (null / undefined / valid / invalid). Reusable for customer 2+. | stdout | CONTENT-1D-CLEANUP (investigation) |
+| scripts/content/diag-1d-cleanup-scope.ts | Read-only — generalised null-literal scope check across service / technology / customerStory. Distinguishes "null literal stored" from "field absent" via direct getDocument key inspection (GROQ projection conflates both). Cross-references audit-output Webflow population. Also serves as post-cleanup re-verification. | stdout | CONTENT-1D-CLEANUP (scope check) |
+| scripts/content/probe-path-patch-syntax.ts | Read-only — picks one technology doc, constructs `client.patch(id).unset(['folds[_key=="..."].featuredImage'])`, calls `PatchBuilder.toJSON()` to inspect serialised payload. Confirms Sanity client accepts the path-patch syntax before destructive use. | stdout | CONTENT-1D-CLEANUP (probe) |
+| scripts/content/cleanup-service-null-thumbnail.ts | DEV-6 Op A. 23 service docs; `_type` + `thumbnail === null literal` guard; surgical `.unset(['thumbnail'])`. Audit row: service-null-thumbnail-unset. | 23 unsets + 1 row | CONTENT-1D-CLEANUP |
+| scripts/content/cleanup-technology-null-image-fields.ts | DEV-6 Op B. 101 technology docs; atomic per-doc patch covering 1–2 fields (thumbnail always; techLogo on 2 hardcoded _ids). Per-doc literal-null assertion + scope-membership consistency check. Audit row: technology-null-image-fields-unset. | 101 patches + 1 row | CONTENT-1D-CLEANUP |
+| scripts/content/cleanup-technology-null-folds-featured-image.ts | DEV-6 Op C. Path-patch primitive (`folds[_key=="..."].featuredImage`). Walks each doc's folds[], collects _keys for null-featuredImage entries, validates _key is non-empty string, issues atomic patch per doc. 100 docs patched. Audit row: technology-null-folds-featured-image-unset. | 100 path-patches + 1 row | CONTENT-1D-CLEANUP |
+| scripts/content/cleanup-customerstory-null-image-fields.ts | DEV-6 Op D. 17 customerStory docs; atomic per-doc patch covering 1–3 fields (companyProductImage on 5, thumbnail on 10, openGraphImage on 17). EXPLICITLY out of scope: companyLogo (Travel Tech Client deferred). Audit row: customer-story-null-image-fields-unset. | 17 patches + 1 row | CONTENT-1D-CLEANUP |
 
 ## Lib Files
 
@@ -325,6 +332,11 @@ Grouped in `studio/schemas/structure.ts` into six Studio nav sections.
 | `npm run content:unset-bookacall-stale-needsreview` | DEV-5: unset stale needsReview on 6 bookACall _ids (two-factor: needsReview===true + scrapedAt prefix) |
 | `npm run content:verify-1d` | Final verifier for CONTENT-1D — `verifyContent1D()` throws on failure (F2). Use `-- --skip-state-check` pre-Step-8. |
 | `npm run content:complete` | Step 8 state transition (`-- --confirm` required). Calls verifier WITHOUT try/catch (F2); transitions content_running → content_complete with metadata.content_phase block. |
+| `npm run content:probe-path-patch-syntax` | CONTENT-1D-CLEANUP probe — confirms Sanity client accepts `folds[_key=="..."].featuredImage` path syntax via PatchBuilder.toJSON() (no commit) |
+| `npm run content:cleanup-service-null-thumbnail` | CONTENT-1D-CLEANUP DEV-6 Op A — unset thumbnail on 23 service docs (literal-null guarded) |
+| `npm run content:cleanup-technology-null-image-fields` | CONTENT-1D-CLEANUP DEV-6 Op B — unset thumbnail on 101 + techLogo on 2 technology docs (atomic per-doc) |
+| `npm run content:cleanup-technology-null-folds-featured-image` | CONTENT-1D-CLEANUP DEV-6 Op C — path-patch unset `folds[_key="..."].featuredImage` on 100 technology docs |
+| `npm run content:cleanup-customerstory-null-image-fields` | CONTENT-1D-CLEANUP DEV-6 Op D — unset companyProductImage / thumbnail / openGraphImage on customerStory docs (atomic per-doc; companyLogo OUT OF SCOPE) |
 
 ## Audit Output Files (populated by AUDIT-1)
 
