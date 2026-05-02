@@ -1,5 +1,260 @@
 # PHASE_HISTORY.md
 
+## MYGRATR-CONTENT-1D-CLEANUP — Migrator-pattern null-image-field unsets (May 2026)
+
+### Brief Deviation DEV-6
+
+This is a post-phase patch on a closed CONTENT-1D — `migrations.status`
+remained `content_complete` throughout. The deviation: applying writes
+against the closed-phase scope while the context was fresh, rather than
+deferring all 158+100 corrections to a future TEMPLATE-* phase. Rationale
+for inline application:
+
+- Tech Debt #14 had been documented as inert during CONTENT-1D
+  post-phase, but the scope-expansion check (read-only) showed the
+  migrator pattern affected 158 top-level + 100 nested fields across 3
+  doc types — large enough that deferring meant carrying a substantial
+  block of editorial-noise tech debt past the closed phase.
+- The fix is mechanical (unset null literals) and idempotent.
+- Per-doc guard discipline mirrors the CONTENT-1D Op-pattern (DEV-3
+  through DEV-5), so the safety story is identical.
+- The bug's root cause (a migrator-pattern habit of writing
+  `field: null` rather than conditionally spreading) is a learn-once
+  CONVENTIONS.md update; we want it captured before customer-2's first
+  migration pass.
+
+### Root Cause — Migrator Pattern That Wrote Null Literals
+
+CONTENT-1A/1B/1C migrators uniformly wrote image-typed Sanity fields
+via:
+
+```typescript
+const doc = {
+  // ...
+  thumbnail: await uploadImage(f['thumbnail']),    // ← null when
+                                                    //   Webflow source
+                                                    //   field is empty
+  // ...
+}
+await sanityWriteClient.createOrReplace(doc)
+```
+
+`uploadImage(field)` (defined in `src/lib/content/migration-helpers.ts`)
+returns `null` when the Webflow input is empty/missing. The migrator
+took that null and wrote it into the doc literal under a key the schema
+declares as `image`. Sanity's strict validation flags this combination
+("schema says image, value is null") with "Invalid property value — The
+property value is stored as a value type that does not match the
+expected type". The fix-after-the-fact is to unset the null literals so
+the field is *absent* (Studio is happy with absent for an optional
+image field). The fix-going-forward (CONVENTIONS.md update below) is to
+use conditional spread instead of writing null:
+
+```typescript
+// CORRECT pattern — field absent on doc when source is empty
+const thumbnail = await uploadImage(f['thumbnail'])
+const doc = {
+  // ...
+  ...(thumbnail ? { thumbnail } : {}),
+  // ...
+}
+```
+
+Worst offender: `migrate-customer-stories.ts:143` — the CONTENT-1C
+customerStory migrator EXPLICITLY wrote `openGraphImage: null` for
+every doc, ensuring every customerStory tripped the warning even
+though the schema already accepts an absent value as the empty state.
+
+### Scope Across 3 Doc Types
+
+Read-only scope check (`scripts/content/diag-1d-cleanup-scope.ts`)
+enumerated:
+
+| Doc type | Field (top-level) | Required? | null-literal docs |
+|---|---|---|---|
+| service | thumbnail | no | 23/23 |
+| technology | techLogo | no | 2/101 |
+| technology | thumbnail | no | 101/101 |
+| customerStory | companyProductImage | no | 5/17 |
+| customerStory | thumbnail | no | 10/17 |
+| customerStory | openGraphImage | no | 17/17 |
+
+Plus **100 nested entries** in `technology.folds[].featuredImage` (the
+fold object's optional image was set to null by `migrate-technology.ts`
+when the Webflow `fold-1---featured-image` was empty; `foldHasContent()`
+kept the fold alive because of header/paragraph/bullet content).
+
+Two scope deviations from the original Tech Debt #14 prediction were
+surfaced and routed to separate cycles:
+
+- **`customerStory.companyLogo` required-field violation** on
+  `customerStory-68754c657697d163dd1a6126` ("Travel Tech Client" — an
+  anonymised real customer, not a placeholder shell). The Webflow
+  source for company-logo is 16/17 populated; the 1 missing item is
+  intentionally anonymised. Schema declares `Rule.required()` and the
+  doc holds a literal null, which is a real schema violation.
+  Deferred to its own investigation cycle for a schema-side fix
+  (relax `Rule.required()` to optional, add a template fallback for
+  anonymised customers).
+- **Other 9 doc types** (teamMember, review, bookACall, video, event,
+  tool, download, benefitValue, staffBenefit, blogPost, compareBlog)
+  not surveyed. May carry the same migrator pattern. Deferred for a
+  separate read-only diagnostic.
+
+### What Was Built
+
+**Step 1 — Read-only scope check (already on `main`):**
+
+`scripts/content/diag-1d-cleanup-scope.ts` enumerates every
+schema-declared image field per type, fetches each doc fully, and
+classifies each value as `absent` / `null` / `valid-image` / `invalid`.
+Critically, it disambiguates "null literal stored" from "field absent"
+by walking the raw doc shape — GROQ projection conflates the two.
+Cross-references `audit-output/ce-field-population.json` for Webflow
+source attribution. Reusable for customer-2+ migrations.
+
+**Step 2 — Op C path-patch syntax probe (read-only, no commit):**
+
+`scripts/content/probe-path-patch-syntax.ts` picks one technology doc
+known to have `folds[].featuredImage: null`, constructs the unset patch
+via `sanityWriteClient.patch(id).unset([...])`, calls
+`PatchBuilder.toJSON()` to inspect the serialised payload — and stops
+there. Verified that `@sanity/client` accepts the path syntax
+`folds[_key=="fold-1"].featuredImage` and emits the expected
+`{ id, unset: [<paths>] }` shape. **Probe before destructive primitives
+that haven't been exercised in this codebase yet** is now an established
+pattern (see CONVENTIONS.md "Path-Patch Primitive" section).
+
+**Step 3 — 4 cleanup ops + per-doc guards:**
+
+- `cleanup-service-null-thumbnail.ts` (Op A) — 23 service docs;
+  `_type === 'service'` AND `thumbnail === null literal` →
+  `.unset(['thumbnail'])`.
+- `cleanup-technology-null-image-fields.ts` (Op B) — 101 technology docs;
+  atomic per-doc patches covering 1–2 fields; per-doc literal-null
+  assertion AND scope-membership consistency check (catches drift if
+  scope expanded since scope check).
+- `cleanup-technology-null-folds-featured-image.ts` (Op C) — 100
+  technology docs; walks each doc's `folds[]`, collects `_key`s of
+  in-scope entries (`'featuredImage' in fold` AND `featuredImage === null`),
+  validates each `_key` is a non-empty string, builds an atomic patch
+  per doc with all collected paths.
+- `cleanup-customerstory-null-image-fields.ts` (Op D) — 17 customerStory
+  docs; atomic per-doc patches covering 1–3 fields. `openGraphImage`
+  unset on every doc (universal); `thumbnail` and `companyProductImage`
+  unset conditionally with literal-null assertions. **`companyLogo`
+  explicitly NOT touched.**
+
+Halt-on-first-guard-failure semantic per Op: a literal-null assertion
+mismatch on any doc fires `process.exit(1)` after writing a
+`status='failed'` audit-trail row. Cross-op orchestration: subsequent
+ops do NOT run if an earlier op exited non-zero. **Recovery is
+"re-run the phase from scratch"** — re-do the scope-check, build a
+fresh plan, re-authorise.
+
+**Step 4 — Path-patch primitive established in code:**
+
+```typescript
+client.patch(id).unset([
+  `folds[_key=="${k1}"].featuredImage`,
+  `folds[_key=="${k2}"].featuredImage`,
+]).commit()
+```
+
+`@sanity/client`'s path-patch syntax addresses array elements by their
+`_key` rather than positional index — robust against array reordering.
+The guard MUST validate `_key` is a non-empty string before constructing
+the path; otherwise the patch silently no-ops or targets the wrong
+element.
+
+### Files Created (5 + diagnostics already on main)
+
+```
+scripts/content/cleanup-service-null-thumbnail.ts
+scripts/content/cleanup-technology-null-image-fields.ts
+scripts/content/cleanup-technology-null-folds-featured-image.ts
+scripts/content/cleanup-customerstory-null-image-fields.ts
+scripts/content/probe-path-patch-syntax.ts
+```
+
+### Files Modified
+
+- `scripts/content/verify-content-1d.ts` — check #8 row-count relaxed
+  from `===` to `>=`. The ALL_NEW_1D_SLUGS-membership check still
+  enforces every CONTENT-1D row is present; the floor check tolerates
+  growth from post-phase patches.
+- `package.json` — 5 new npm scripts (4 cleanup ops + probe).
+- `scripts/content/diag-tech-debt-14-service-nulls.ts` +
+  `diag-1d-cleanup-scope.ts` — pre-existing TS narrowing fix on
+  `T | T[]` JSON parse.
+
+### Final Data State
+
+- **0 null-literal entries** on the 6 in-scope top-level fields across
+  service, technology, customerStory.
+- **0 null-literal entries** in `technology.folds[].featuredImage`.
+- **1 null-literal entry remains:** `customerStory.companyLogo` on
+  `customerStory-68754c657697d163dd1a6126` (deferred — separate cycle).
+- `content_migrations` total CE rows: **42** (38 CONTENT-1D + 4
+  CONTENT-1D-CLEANUP). All `status='complete'`, `parity_score=100`.
+- `migrations.status` unchanged: `content_complete`.
+- `metadata.content_phase` block unchanged (`total_cms_docs: 388`,
+  `smoke_test_docs_remaining: 0`); `content_migrations_rows: 38` is now
+  stale-but-low (actual is 42); chose not to re-run the state
+  transition just to refresh metadata.
+
+### Patterns Established (for CONVENTIONS.md)
+
+- **Migrator field-write conditional-spread rule.** Migrators that read
+  an optional source field and may produce null MUST omit the field via
+  conditional spread rather than writing null into the doc literal.
+- **Path-patch primitive for nested array-of-object fields.**
+  `_key`-addressed unset shape with `_key`-validation guard. Probe
+  syntax via `PatchBuilder.toJSON()` before any destructive use.
+- **Floor-check for content_migrations row count.** Verifier check #8
+  uses `>=` rather than `===` so post-phase patches add rows without
+  breaking the verifier; membership-set check still enforces every
+  in-phase row is present.
+
+### Tech Debt Resolution
+
+- **#14 (CONTENT-1D)** — RESOLVED 2026-05-02 via this cleanup phase
+  for the scoped {service, technology, customerStory} types.
+
+### Tech Debt Logged
+
+- **#16 (CONTENT-1D-CLEANUP)** — `customerStory.companyLogo` required-
+  field violation on `customerStory-68754c657697d163dd1a6126` (Travel
+  Tech Client). 1 doc; anonymised customer; intentional missing logo.
+  Recommended fix: schema-side — relax `Rule.required()` to optional,
+  add a template fallback (anonymised placeholder logo) for any doc
+  where companyLogo is absent. Deferred to separate cycle.
+- **#17 (CONTENT-1D-CLEANUP)** — Other 9 doc types (teamMember,
+  review, bookACall, video, event, tool, download, benefitValue,
+  staffBenefit, blogPost, compareBlog) not surveyed for the same
+  migrator-pattern null-literal issue. Inert until Studio surfaces
+  warnings or render-time issues appear. Resolution: optional
+  follow-up read-only diagnostic + per-type cleanup if needed.
+
+### Discoveries / Surprises
+
+- **`customerStory.openGraphImage` was the worst offender** (17/17
+  null literal) because `migrate-customer-stories.ts:143` explicitly
+  wrote `openGraphImage: null` rather than omitting the key. Same
+  pattern but more visible than the other migrators which simply
+  didn't include the key in the doc literal.
+- **Verifier check #8 needed updating** post-cleanup. The original
+  CONTENT-1D verifier hard-coded `=== 38` total rows; adding 4 audit
+  rows tripped it. Floor-check (`>=`) is the correct semantic for a
+  closed-phase verifier facing post-phase patches.
+- **One technology doc (`technology-685d6a68391b571d12d62ccf`) was
+  already clean** at the fold level (Op C reported `alreadyClean=1`)
+  — most likely it had `featuredImage` populated (one of the 2 docs
+  in TECHLOGO_NULL_IDS is also in this small subset, plausibly the
+  same doc).
+
+---
+
 ## MYGRATR-CONTENT-1D — Meta Backfills + Carryover Fixes + content_complete (May 2026)
 
 ### What Was Built

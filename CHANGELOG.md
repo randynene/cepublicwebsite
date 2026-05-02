@@ -1,5 +1,51 @@
 # CHANGELOG.md
 
+## MYGRATR-CONTENT-1D-CLEANUP — Migrator-pattern null-image-field unsets (May 2026)
+Post-phase patch on a closed CONTENT-1D. Tech Debt #14 surfaced a
+systemic migrator-pattern bug: `uploadImage()` in
+`src/lib/content/migration-helpers.ts` returns `null` when the Webflow
+source field is empty, and the CONTENT-1A/1B/1C migrators wrote that
+null literal directly into the doc (`thumbnail: await uploadImage(...)`)
+rather than omitting the field via conditional spread. Studio's strict
+validation flags every such doc with "Invalid property value" because a
+null literal stored where the schema declares `image` doesn't match the
+expected type. Scope-expansion across `service`, `technology`,
+`customerStory` confirmed 158 affected docs × 6 fields top-level + 100
+nested fold-level entries. Brief deviation **DEV-6** authorised; 4 ops
+applied with explicit per-doc guards:
+**Op A** unset `thumbnail` on 23 service docs;
+**Op B** unset `thumbnail` on 101 + `techLogo` on 2 technology docs in
+atomic per-doc patches;
+**Op C** unset `folds[_key=="..."].featuredImage` on 100 technology
+docs via the new path-patch primitive
+(`client.patch(id).unset(['folds[_key=="fold-1"].featuredImage'])`) —
+syntax probed in advance via a read-only dry-run that called
+`PatchBuilder.toJSON()` without committing;
+**Op D** unset `companyProductImage` on 5, `thumbnail` on 10,
+`openGraphImage` on 17 customerStory docs in atomic per-doc patches.
+Per-op halt-on-first-guard semantic: a literal-null assertion mismatch
+on any doc would have fired `process.exit(1)` and skipped subsequent
+ops; zero guard failures across all 4 ops. 4 new `content_migrations`
+audit-trail rows added (`service-null-thumbnail-unset`,
+`technology-null-image-fields-unset`,
+`technology-null-folds-featured-image-unset`,
+`customer-story-null-image-fields-unset`); CE total now 42 rows
+(38 CONTENT-1D + 4 cleanup). `migrations.status` stayed
+`content_complete` — no transition. Verifier check #8 row-count check
+relaxed from `===` to `>=` so post-phase patches don't trip it; the
+ALL_NEW_1D_SLUGS-membership check still enforces every CONTENT-1D row
+is present. Tech Debt #14 RESOLVED 2026-05-02. Two items remain
+deferred to separate cycles: `customerStory.companyLogo` required-field
+violation on Travel Tech Client (anonymised real customer; intentional
+missing logo; schema-side fix expected — relax `Rule.required()` to
+optional with template placeholder fallback), and a broader scan of the
+9 other doc types that may carry the same migrator-pattern null
+literals. CONVENTIONS.md gained two new sections: "Migrator
+Field-Write Pattern — Conditional Spread" (the rule that prevents this
+bug recurring in customer-2+ migrators) and "Path-Patch Primitive for
+Nested Array-of-Object Fields" (the `_key`-addressed unset shape with
+its `_key`-validation guard).
+
 ## MYGRATR-CONTENT-1D — Meta Backfills + Carryover Fixes + content_complete (May 2026)
 Closing slice of CONTENT-1. Meta tags scraped live from cloudemployee.io
 via Playwright across 6 doc types (technology 101, service 23,

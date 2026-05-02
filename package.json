@@ -57,7 +57,12 @@
     "content:truncate-bookacall-metadescription": "tsx scripts/content/truncate-bookacall-metadescription.ts",
     "content:unset-bookacall-stale-needsreview": "tsx scripts/content/unset-bookacall-stale-needsreview.ts",
     "content:verify-1d": "tsx scripts/content/run-verify-content-1d.ts",
-    "content:complete": "tsx scripts/content/complete-content-phase.ts"
+    "content:complete": "tsx scripts/content/complete-content-phase.ts",
+    "content:cleanup-service-null-thumbnail": "tsx scripts/content/cleanup-service-null-thumbnail.ts",
+    "content:cleanup-technology-null-image-fields": "tsx scripts/content/cleanup-technology-null-image-fields.ts",
+    "content:cleanup-technology-null-folds-featured-image": "tsx scripts/content/cleanup-technology-null-folds-featured-image.ts",
+    "content:cleanup-customerstory-null-image-fields": "tsx scripts/content/cleanup-customerstory-null-image-fields.ts",
+    "content:probe-path-patch-syntax": "tsx scripts/content/probe-path-patch-syntax.ts"
   },
   "keywords": [],
   "author": "",

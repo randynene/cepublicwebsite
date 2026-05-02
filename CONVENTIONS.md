@@ -1799,6 +1799,129 @@ operations. Document each application as a brief deviation.
 
 ---
 
+## Migrator Field-Write Pattern — Conditional Spread (MYGRATR-CONTENT-1D-CLEANUP)
+
+Migrators that read an optional source-CMS field and may produce a
+null/missing result MUST omit the field via conditional spread rather
+than writing `null` into the doc literal. Sanity's strict validation
+flags any null literal stored under a key whose schema declares a
+non-nullable type (e.g. `image`, `reference`, `url`) as
+"Invalid property value — The property value is stored as a value type
+that does not match the expected type". The fix is to make the field
+absent on the doc rather than present-with-null.
+
+```typescript
+// WRONG — writes null literal when uploadImage returns null;
+//        Studio flags every doc with "Invalid property value"
+const doc = {
+  _id: `service-${item.id}`,
+  _type: 'service',
+  thumbnail: await uploadImage(f['thumbnail']),  // ← null when source empty
+  // ...
+}
+await sanityWriteClient.createOrReplace(doc)
+
+// CORRECT — field absent on doc when source is empty
+const thumbnail = await uploadImage(f['thumbnail'])
+const doc = {
+  _id: `service-${item.id}`,
+  _type: 'service',
+  ...(thumbnail ? { thumbnail } : {}),
+  // ...
+}
+await sanityWriteClient.createOrReplace(doc)
+```
+
+**Rules:**
+
+- Applies to every nullable schema field sourced from external CMS:
+  `image`, `reference`, `url`, optional `string`, etc.
+- The conditional MUST NOT be `field !== null` alone — also reject
+  empty strings, empty arrays, and other falsy-but-present shapes that
+  the schema would reject. Use the field-type-appropriate predicate.
+- Migrators that write `null` for "the value is intentionally empty"
+  on a `string` field must instead use `Rule.allowNull()` on the
+  schema or omit the field entirely. Never write `null` to satisfy a
+  template's `?? defaultValue` fallback — Sanity's storage layer is
+  not the place to encode editorial defaults.
+- Worst-offender example surfaced in CONTENT-1D-CLEANUP:
+  `migrate-customer-stories.ts` wrote `openGraphImage: null` for
+  every customerStory doc, ensuring Studio flagged 17/17 docs even
+  though the schema was happy with the field being absent.
+
+**Detection / cleanup pattern when this rule has been violated** (see
+`scripts/content/cleanup-*.ts` for working examples):
+
+1. Read-only diagnostic walks every doc, classifies each schema-declared
+   non-primitive field as `absent` / `null` / `valid` / `invalid` (must
+   inspect raw doc shape — GROQ projection conflates absent with null).
+2. Per-doc guarded `.unset(['fieldName'])` patch with a literal-null
+   assertion before the destructive call.
+3. Halt on first guard failure across all ops in the cleanup phase
+   (`process.exit(1)`); recovery is "re-run from scratch" not "continue
+   past failure".
+4. Audit-trail row in `content_migrations` per cleanup op even though
+   the data correction sits outside the original phase scope.
+
+---
+
+## Path-Patch Primitive for Nested Array-of-Object Fields (MYGRATR-CONTENT-1D-CLEANUP)
+
+Sanity's `@sanity/client` supports `_key`-addressed path patches for
+nested fields inside arrays-of-objects. This is the right primitive
+when only specific elements inside an array need a change and a full
+array-rewrite would be wasteful or unsafe.
+
+```typescript
+// Unset featuredImage on the fold whose _key === "fold-1":
+client.patch(id).unset(['folds[_key=="fold-1"].featuredImage']).commit()
+
+// Multiple paths in one atomic patch:
+client.patch(id).unset([
+  `folds[_key=="${k1}"].featuredImage`,
+  `folds[_key=="${k2}"].featuredImage`,
+]).commit()
+```
+
+**Rules:**
+
+- **Address by `_key`, never by positional index.** Array reordering
+  in Studio leaves `_key`s stable but shifts indices.
+- **Validate `_key` is a non-empty string before constructing the
+  path.** A missing or non-string `_key` produces a path that either
+  silently no-ops or targets the wrong element. The cleanup pattern:
+
+  ```typescript
+  for (const fold of doc.folds) {
+    if (typeof fold !== 'object' || !fold) continue
+    if (!('featuredImage' in fold)) continue
+    if (fold.featuredImage !== null) continue
+    if (typeof fold._key !== 'string' || fold._key.length === 0) {
+      throw new Error(`fold with featuredImage:null has invalid _key`)
+    }
+    targetKeys.push(fold._key)
+  }
+  ```
+- **Probe new path syntax before destructive use.** The first time a
+  codebase exercises a path-patch shape, write a one-shot read-only
+  probe that constructs the patch via `client.patch(id).unset([...])`,
+  calls `PatchBuilder.toJSON()` to inspect the serialised payload, and
+  prints — without committing. Confirms the client accepts the syntax
+  and emits the expected `{ id, unset: [<paths>] }` shape. See
+  `scripts/content/probe-path-patch-syntax.ts` for the canonical example.
+- **Atomic per-doc patch.** Collect every `_key` for a doc into one
+  patch builder; issue ONE `.commit()` per doc covering all in-scope
+  elements. Splitting into multiple commits per doc is wasteful and
+  introduces a window where the doc is partially patched.
+- **`'fieldName' in obj` distinguishes absent from null.** `obj.field`
+  alone returns `undefined` for both cases. The cleanup pattern uses
+  `'featuredImage' in fold` AND `fold.featuredImage !== null` to
+  target only entries where the key is present and the value is null
+  (the buggy case), skipping both already-absent entries and
+  valid-image entries.
+
+---
+
 ## Brief Deviation Logging (MYGRATR-CONTENT-1D)
 
 When a phase encounters scope or constraints that require deviating
@@ -1838,3 +1961,4 @@ from the locked brief, document each deviation explicitly:
 | MYGRATR-CONTENT-1B | Complete | Shared migration-helpers module (`src/lib/content/migration-helpers.ts`): `toPortableText` with JSDOM-injected `parseHtml` for `@sanity/block-tools` (defaults to browser DOMParser which is absent in Node), `extractUrl` / `toRefs` accepting both Webflow object and plain-string shapes, `uploadImage` replacing the CONTENT-1A staging pattern with real Sanity asset uploads, `webflowSlug(item)` reading `fieldData.slug` first (top-level `item.slug` is `null` on some collections — caused every CONTENT-1A doc to ship with `slug.current = null`, retroactively backfilled), `extractOption` for object-shaped Option fields and `fetchOptionIdMap()` for the more common opaque-ID shape. Pre-flight live-API field-name verification before writing any migrator (six of eight CONTENT-1B collections had brief / field-map mismatches against reality — slug typos, missing fields, mislabelled fields). Webflow → Sanity field-name corrections logged in PHASE_HISTORY.md and reflected in `docs/WEBFLOW_TO_SANITY_FIELD_MAP.md`. Image-upload failures are non-fatal: log + return null + continue. |
 | MYGRATR-CONTENT-1C | Complete | `toPortableText` upgraded to async two-pass walk for inline image upload (Pass 1 JSDOM-extract `<img>` srcs and `Promise.allSettled` upload them; Pass 2 deserialize with custom rules emitting image blocks for `<img>` and `<figure><img>`, skipping iframe-in-figure); null-guard at entry; both passes use JSDOM so src URLs decode identically (no entity-encoding mismatch). `<figure>` deserializer must check for `<img>` child before processing — iframe-in-figure (Vimeo embeds) lacks one and falls through to text rules. Cross-collection deduplication pattern: when multiple Webflow source collections consolidate into one Sanity type and contain duplicate items, designate one as the canonical master (`Blogs & Guides` for blogPost), iterate it first, build a running slug set seeded with Sanity-existing slugs, skip duplicates in subsequent collections; `migration-tracker.recordMigration` accepts an optional `parityBaselineCount` so `parity_score = migrated / parityBaselineCount * 100` is measured on the deduplicated set rather than raw source count, and vacuous success (denominator=0, migrated=0, no errors) yields 100. Every Webflow ref ID validated against `/^[a-f0-9]{24}$/i` (Webflow ObjectId shape) before constructing a `_ref` — `toRefs` drops malformed entries with a console warning rather than writing `tag-[object Object]`. Deterministic `_key` from the full Webflow ID for refs (was sliced 8-char prefix); positional indices for FAQ (`faq-{n}`) and fold items (`fold-{n}-item-{m}`). Date parsing via regex prefix `/^(\d{4}-\d{2}-\d{2})/` instead of `new Date(raw).toISOString().slice(0,10)` (timezone shift). Pre-flight slug-collision check is a hard gate — surface duplicates and stop before writing any documents. Option-field map fetches must hoist above the item loop (Webflow rate-limit avoidance). `decodeHtmlEntities` for VideoLink URLs (`?h=xxx&amp;title=0` → `?h=xxx&title=0`). `fetchOptionIdMap` and `resolveOption` lifted out of duplicates in two migrators and consolidated in shared helpers. |
 | MYGRATR-CONTENT-1D | Complete | Live-Site Meta Backfill Pattern (Playwright-driven `<title>` + `<meta description>` extraction with brand-suffix strip, length compliance, never-fabricate rule, 1.5s inter-request delay, 20-min phase-wide hard abort gate). FieldPolicy enum drives runner behaviour declaratively (`title: 'scrape-always'`; `description: 'scrape-always' | 'snippet-copy-else-scrape' | 'never-touch'`); pre-scrape hook evaluated BEFORE URL construction so placeholders short-circuit cleanly. Hard-failure vs soft-warning separation in the runner: HTTP non-200 + length warnings are SOFT (logged, surfaced via `needsReview=true`, do NOT mark the row failed); only `patch.commit()` errors / `urlForDoc` throws / bypass-patch errors are HARD. Split per-field provenance (`metaTitleSource` + `metaDescriptionSource`) replaces a single `metaSource` object — required because review docs may have title from live-scrape AND description from snippetForMeta-copy. `deleteByIdStrict()` mandatory for migration-script deletions: query-based deletes forbidden, `_id`-only with `_type` validation before delete. Verifier-throws structural pattern: verifier exports a function that throws on failure (never returns boolean), state-transition script calls it WITHOUT try/catch, unhandled rejection propagates → state transition unreachable. Token Scoping: migration scripts use a least-privilege single-dataset `SANITY_MIGRATION_WRITE_TOKEN` (NOT the legacy `SANITY_API_TOKEN`); module-load assertion in the write client throws if the migration token is missing OR if the site's read token is also present (path-alias collision guard). Studio production deploy is a hard ordering gate before any data write that depends on new schema fields — every meta-backfill script carries a top-of-file `// HARD GATE` comment. Two-factor scrapedAt-guarded `unset` for one-off corrections of a monotonically-set flag (`flag === true` AND `metaTitleSource.scrapedAt` startsWith the known buggy-run date — re-running the migrator moves scrapedAt forward and structurally blocks accidental clearance of any future legitimate flag). Brief deviations recorded with explicit per-doc guards + dedicated `content_migrations` rows (`drift-cleanup`, `bookacall-metadescription-truncation`, `bookacall-stale-needsreview-unset`) for audit trail. |
+| MYGRATR-CONTENT-1D-CLEANUP | Complete | Migrator Field-Write Pattern — Conditional Spread (migrators that read an optional source field MUST omit the field via `...(value ? { field: value } : {})` rather than writing `null` into the doc literal; null literal stored under a key the schema declares as a non-nullable type triggers Studio's "Invalid property value" warning). Path-Patch Primitive for Nested Array-of-Object Fields (`_key`-addressed unset shape: `client.patch(id).unset(['folds[_key=="fold-1"].featuredImage'])`; validate `_key` is non-empty string before constructing path; probe new path syntax via `PatchBuilder.toJSON()` before destructive use). Floor-check (`>=`) on `content_migrations` row count in the verifier so post-phase patches add rows without breaking the verifier; membership-set check still enforces every in-phase row is present. Halt-on-first-guard-failure phase-wide semantic: a literal-null assertion mismatch on any doc in any cleanup op fires `process.exit(1)` and skips subsequent ops; recovery is "re-run from scratch" not "continue past failure". Brief deviation DEV-6 (post-phase patch on a closed phase; `migrations.status` stays `content_complete`; 4 audit-trail rows added: `service-null-thumbnail-unset`, `technology-null-image-fields-unset`, `technology-null-folds-featured-image-unset`, `customer-story-null-image-fields-unset`). |
