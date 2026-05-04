@@ -14,8 +14,8 @@ Parent brand: Saxon.io. Owner: Jake Hall (non-developer, directs Claude Code).
 
 ## Current Phase
 
-**MYGRATR-CONTENT-1D — Meta Backfills + Carryover Fixes + content_complete** — COMPLETE
-**Next: MYGRATR-TEMPLATE-*** — Template Build
+**MYGRATR-CONTENT-1D-CLEANUP — Migrator-pattern null-literal cleanup (Tech Debt #14 RESOLVED)** — COMPLETE
+**Next: MYGRATR-DESIGN-1** — Design Tokens, Primitives, Specs, Storybook, Visual Editing, Fidelity Guarantees
 
 | Phase | Name | Status |
 |---|---|---|
@@ -28,7 +28,9 @@ Parent brand: Saxon.io. Owner: Jake Hall (non-developer, directs Claude Code).
 | MYGRATR-CONTENT-1B | Content Migration — reference-light | ✅ Complete |
 | MYGRATR-CONTENT-1C | Content Migration — blogs/compare/tech/services/stories | ✅ Complete |
 | MYGRATR-CONTENT-1D | Meta backfills + carryover fixes + content_complete | ✅ Complete |
-| **MYGRATR-TEMPLATE-*** | **Template Build** | 🔜 **Next** |
+| MYGRATR-CONTENT-1D-CLEANUP | Migrator-pattern null-literal cleanup (Tech Debt #14) | ✅ Complete |
+| **MYGRATR-DESIGN-1** | **Design Tokens, Primitive Components, Complex-Component Specs, Storybook, Visual Editing, Fidelity Guarantees** | 🔜 **Next** |
+| MYGRATR-TEMPLATE-* | Template Build | Planned |
 | MYGRATR-QA-1 | Visual + Structural QA | Planned |
 | MYGRATR-LAUNCH | Cutover + Redirects | Planned |
 | MYGRATR-MONITOR-1 | Post-cutover SEO | Planned |
@@ -94,7 +96,7 @@ Parent brand: Saxon.io. Owner: Jake Hall (non-developer, directs Claude Code).
 - `migrations.status = content_complete` /
   `current_phase = content_complete`. `metadata.content_phase`:
   `total_cms_docs: 388`, `smoke_test_docs_remaining: 0`,
-  `content_migrations_rows: 38`, completed_at 2026-05-02,
+  `content_migrations_rows: 38`, (stale; actual 42 after CONTENT-1D-CLEANUP — DESIGN-1 Step 0a refreshes this) completed_at 2026-05-02,
   `phases: [CONTENT-1A, CONTENT-1B, CONTENT-1C, CONTENT-1D]`.
 - Collections migrated to Sanity prod dataset (project `lzbhll1u`):
   - **CONTENT-1A:** `tags-consolidated` (22 across 6 categories),
@@ -119,7 +121,7 @@ Parent brand: Saxon.io. Owner: Jake Hall (non-developer, directs Claude Code).
   + 14 CONTENT-1D — 11 brief baseline + 3 deviation rows for audit
   trail: `drift-cleanup`, `bookacall-metadescription-truncation`,
   `bookacall-stale-needsreview-unset`). All `status='complete'`,
-  `parity_score=100`.
+  `parity_score=100`. Post-CONTENT-1D-CLEANUP: 42 rows total (+4 cleanup audit rows: cleanup-service-null-thumbnail, cleanup-technology-null-image-fields, cleanup-technology-null-folds-featured-image, cleanup-customerstory-null-image-fields).
 - **Meta tag state (post-CONTENT-1D):** every in-scope doc has
   `metaTitle` + `metaDescription` populated and split per-field
   provenance (`metaTitleSource` + `metaDescriptionSource`) recorded
@@ -161,7 +163,10 @@ Parent brand: Saxon.io. Owner: Jake Hall (non-developer, directs Claude Code).
   protection on; smoke-tested via `vercel curl`).
 - Sanity wired: `sanityClient` + `previewClient` + `defineLive`-based
   `SanityLive`; Presentation Tool added to `studio/sanity.config.ts`
-  with `previewMode/draftMode → /api/draft-mode/enable`.
+  with `previewMode/draftMode → /api/draft-mode/enable`. **DESIGN-1 
+  collapses this to a single `sanityClient` with conditional stega 
+  gated on `SANITY_STEGA_ENABLED` (fallback `VERCEL_ENV === 'preview'`) 
+  per CMA-C2 + F7 — see DESIGN-1 brief v1.5 Step 8.**
 - Routing: locale helpers in `site/src/lib/locale.ts`; UK locale mirror
   at `site/src/app/uk/`. Canonical / hreflang / metadata defaults set
   in root layout (Inter font, OG fallback, robots.txt + sitemap stubs).
@@ -215,13 +220,13 @@ Parent brand: Saxon.io. Owner: Jake Hall (non-developer, directs Claude Code).
 | SANITY_PROJECT_ID | In .env — for SCHEMA-1 |
 | SANITY_DATASET | In .env — for SCHEMA-1 |
 | SANITY_API_TOKEN | In .env — legacy; SCHEMA-lane seed scripts only |
-| SANITY_MIGRATION_WRITE_TOKEN | In .env — least-privilege migration write token (CONTENT-1D §0.1). Single-dataset (`production`) scope; permits document patch/delete + asset upload only. Rotate post-1D — see Tech Debt #15. |
+| SANITY_MIGRATION_WRITE_TOKEN | In .env — least-privilege migration write token (rotated 2026-05-03 to `mygratr-templates-write` per Tech Debt #15). Single-dataset (`production`) scope; permits document patch/delete + asset upload only. |
 | SUPABASE_DB_URL | In .env — Postgres direct URL (migrations) |
 | NEXT_PUBLIC_SANITY_PROJECT_ID | In `site/.env.local` — Sanity project ID for the Next.js app (`lzbhll1u`) |
 | NEXT_PUBLIC_SANITY_DATASET | In `site/.env.local` — Sanity dataset (`production`) |
 | NEXT_PUBLIC_SITE_URL | In `site/.env.local` — public site URL for canonical/hreflang generation |
 | NEXT_PUBLIC_SANITY_STUDIO_URL | In `site/.env.local` — Studio URL for stega click-to-edit links |
-| SANITY_API_READ_TOKEN | In `site/.env.local` — read token used by `previewClient` for draft-mode validation |
+| SANITY_API_READ_TOKEN | In `site/.env.local` — read token. **DESIGN-1 retasks this as `serverToken` on `defineLive({ client, serverToken })` per CMA-C2 — single-client architecture replaces SCAFFOLD-1's `previewClient` split.** |
 
 ## Repo Structure
 
@@ -348,7 +353,7 @@ Only after ALL of the above are complete do you start planning the next phase.
 | 12 | CONTENT-1A | Direct Postgres connection from scripts is broken — pooler auth fails with `Tenant or user not found` at both 5432 and 6543, and `db.<ref>.supabase.co` doesn't resolve. REST writes work fine. Means future DDL needs the Supabase SQL editor. Rotate `SUPABASE_DB_URL` so scripts can apply schema changes again. | MYGRATR-INFRA |
 | 13 | CONTENT-1D | All 101 `technology` docs hold `associatedTechnologies: []` (CONTENT-1C migrator wrote a service-only field on the wrong type). Inert — Sanity tolerates extra fields silently and the value is empty. Resolution: one-shot `unset(['associatedTechnologies'])` patch on technology docs. | MYGRATR-TEMPLATE-* |
 | 14 | CONTENT-1D | ~~Service docs surface "Invalid property value" warnings in Studio for null-valued optional image fields. Inert — null is acceptable for optional fields, but Studio's strict validation flags them.~~ **RESOLVED 2026-05-02 via CONTENT-1D-CLEANUP (DEV-6).** Investigation surfaced the migrator-pattern root cause (uploadImage() returns null when Webflow source is empty; CONTENT-1A/1B/1C migrators wrote null literal rather than omitting via conditional spread). 4 cleanup ops applied across service / technology / customerStory: 158 top-level + 100 nested unsets. CONVENTIONS.md updated with the conditional-spread rule + path-patch primitive to prevent recurrence. See PHASE_HISTORY.md "MYGRATR-CONTENT-1D-CLEANUP" entry. | ✅ RESOLVED |
-| **15** | **CONTENT-1D** | **`SANITY_MIGRATION_WRITE_TOKEN` rotation. Token used by all CONTENT-1D migration writes; carries document patch/delete + asset upload permissions. MUST be rotated and the new value committed to `.env` (replacing the existing) before any further large-scale Sanity writes against production. Hard pre-launch gate per Exit Criterion #10.** | **MUST resolve before MYGRATR-LAUNCH** |
+| 15 | CONTENT-1D | ~~`SANITY_MIGRATION_WRITE_TOKEN` rotation. Token used by all CONTENT-1D migration writes; carries document patch/delete + asset upload permissions.~~ **RESOLVED 2026-05-03** — rotated to `mygratr-templates-write` (least-privilege replacement). New token committed to `.env`; old token revoked in Sanity dashboard. | ✅ RESOLVED |
 | 16 | CONTENT-1D-CLEANUP | `customerStory.companyLogo` required-field violation on 1 doc (`customerStory-68754c657697d163dd1a6126` — "Travel Tech Client", an anonymised real customer with substantive narrative + live URL, not a placeholder). Webflow source 16/17 populated; the 1 missing item is intentionally anonymised — no logo exists. Schema declares `Rule.required()` and the doc holds null literal — Studio shows hard validation error on save. **Recommended direction: schema-side fix** — relax `Rule.required()` to optional + add a template fallback (anonymised-customer placeholder logo) for any doc where companyLogo is absent. Don't backfill data (no logo to backfill); don't delete the doc (real production content). | MYGRATR-TEMPLATE-* / separate cycle |
 | 17 | CONTENT-1D-CLEANUP | **10 doc types with image fields not yet scanned for the same migrator-pattern null-literal issue addressed in CONTENT-1D-CLEANUP for {service, technology, customerStory}.** Specific types and their image fields (per `studio/schemas/documents/*.ts` and `docs/WEBFLOW_TO_SANITY_FIELD_MAP.md`): **`teamMember`** (teamMemberImage), **`review`** (memberImage, companyLogo, thumbnailImage), **`video`** (backupImage), **`download`** (headerFooterImage, metaThumbnail), **`tool`** (thumbnail), **`event`** (featuredImage, thumbnailImage), **`benefitValue`** (thumbnailImage), **`staffBenefit`** (icon), **`blogPost`** (thumbnailImage, openGraphImage), **`compareBlog`** (thumbnailImage, openGraphImage). Plus `openGraphImage` on every type that uses `metaFields()` with default `og: true`. Doc types EXPLICITLY OUT of scope (no image fields per schema): bookACall, glassdoorReview, tag, blogCategory, downloadAccess, privacyPolicyPage. **Specific scan that closes the loop:** extend `scripts/content/diag-1d-cleanup-scope.ts` to cover the 10 types listed above with their image fields (top-level + nested where applicable — e.g. video has none nested; event has none nested; review has none nested; the others are top-level only). Closure verdict: a single scan-run reporting zero null-literal entries across all 10 types. Any non-zero finding triggers a CONTENT-1D-CLEANUP-2 phase with the same op-pattern (per-doc literal-null-guarded `.unset()` patches + audit-trail rows). The CONVENTIONS.md "Migrator Field-Write Pattern — Conditional Spread" rule prevents new migrators from reintroducing the bug for customer 2+. | MYGRATR-TEMPLATE-* / pre-launch |
 
