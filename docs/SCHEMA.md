@@ -1,7 +1,7 @@
 # SCHEMA.md — Mygratr Database Schema
 
 Version: 0.6
-Last updated: May 2026 (CONTENT-1D complete — no Supabase DDL ran in this phase; 6 Sanity studio schemas extended retroactively, see "Sanity Schema Extensions" at the end of this document)
+Last updated: May 2026 (CONTENT-1D-CLEANUP complete — no Supabase DDL ran in CONTENT-1D or CONTENT-1D-CLEANUP; 6 Sanity studio schemas extended retroactively in CONTENT-1D, see "Sanity Schema Extensions" at the end of this document; +4 content_migrations audit rows added in CONTENT-1D-CLEANUP, total 42 rows for CE migration)
 
 ## Tables
 
@@ -248,6 +248,14 @@ First-ever deploy at `https://mygratr-cloudemployee.sanity.studio/`
 
 None. `migrations.metadata.content_phase` block populated with
 CONTENT-1D completion metadata (388 docs / 0 smoke-test remaining /
-38 content_migrations rows / phases list). 14 new
-`content_migrations` rows added to existing schema (no DDL — same
-columns).
+38 content_migrations rows at CONTENT-1D close — stale; actual 42
+post-CONTENT-1D-CLEANUP / phases list). 14 new
+`content_migrations` rows added to existing schema in CONTENT-1D
+(no DDL — same columns); +4 cleanup audit rows added in
+CONTENT-1D-CLEANUP (cleanup-service-null-thumbnail,
+cleanup-technology-null-image-fields,
+cleanup-technology-null-folds-featured-image,
+cleanup-customerstory-null-image-fields), bringing CE migration's
+content_migrations row total to 42. DESIGN-1 Step 0a refreshes the
+metadata.content_phase.content_migrations_rows value from stale 38
+to actual 42.
