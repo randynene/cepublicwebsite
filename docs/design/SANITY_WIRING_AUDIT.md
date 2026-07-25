@@ -1,7 +1,12 @@
 # Sanity wiring audit — key marketing pages
 
+> **Superseded for execution:** use
+> [`SANITY_EDITABILITY_EXECUTION_PLAN.md`](./SANITY_EDITABILITY_EXECUTION_PLAN.md)
+> for the consolidated fix backlog (batches 1 + 2). This file keeps batch-1 deep detail.
+
 **Date:** 2026-07-25  
-**Scope:** Home, How It Works, Fractional CTO, Hire Engineers (`/services/software-engineers`), Our Work, For Developers (`/for-developers` / “For Engineers”), Location pages (LATAM / Philippines / Eastern Europe).  
+**Scope (batch 1):** Home, How It Works, Fractional CTO, Hire Engineers (`/services/software-engineers`), Our Work, For Developers (`/for-developers` / “For Engineers”), Location pages (LATAM / Philippines / Eastern Europe).  
+**Batch 2 (in execution plan):** Pricing, About Us, Contact, Services hub, Customer Stories, Book a Call.  
 **Method:** Code-path audit (page → template → schema → GROQ). No content edits in this pass.
 
 **Status key**
