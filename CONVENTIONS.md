@@ -1245,17 +1245,26 @@ Draft mode is a two-route pair plus a layout flag:
   checks `redirectTo`** against `env.NEXT_PUBLIC_SITE_URL` before calling
   `(await draftMode()).enable()`. Never trust `redirectTo` from the
   Sanity payload — the same-origin check is the F10 hardening.
-- `site/src/app/api/draft-mode/disable/route.ts` disables the cookie. F15
-  (POST-only + origin check) is deferred to TEMPLATE-* / pre-launch.
+- `site/src/app/api/draft-mode/enable/route.ts` uses
+  `defineEnableDraftMode` from `next-sanity/draft-mode` (GET). That is the
+  package-supported pair for `sanity/presentation` on next-sanity@12 —
+  do not replace with a custom POST enable unless the installed package
+  documents Presentation support for it.
+- `site/src/app/api/draft-mode/disable/route.ts` is POST-only with a
+  normalised origin allowlist (Studio + site + preview/dev hosts). No GET.
 - Root layout renders `<VisualEditing />` (from
   `next-sanity/visual-editing`) only when `(await draftMode()).isEnabled`.
   `<SanityLive />` always renders so that live-revalidating fetches keep
   flowing on the published site too.
+- Single `sanityClient` + `defineLive({ client, serverToken })`. Stega is
+  gated by `SANITY_STEGA_ENABLED` (explicit) or `VERCEL_ENV === 'preview'`.
+  There is no `previewClient` switch.
 
 Studio side: `presentationTool` from `sanity/presentation` (the bundled
 path, not the deprecated standalone `@sanity/presentation` package) is
 added to `studio/sanity.config.ts` plugins, with `previewMode.enable` and
-`draftMode.enable` both pointing at `/api/draft-mode/enable`.
+`draftMode.enable` both pointing at `/api/draft-mode/enable`, and
+`previewUrl.origin` from `SANITY_STUDIO_PREVIEW_URL_ORIGIN`.
 
 ---
 

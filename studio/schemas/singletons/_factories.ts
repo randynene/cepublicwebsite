@@ -142,7 +142,9 @@ export function defineStaticPage(opts: {
           { type: 'faqSection' },
           { type: 'hubspotFormSection' },
         ],
-        validation: (Rule) => Rule.required().min(1),
+        // Optional: SCHEMA-1 stubs seeded without sections, which blocked
+        // Publish for Seb (Home Page meta is filled; sections was null).
+        // Templates treat missing/empty sections as "render nothing".
       }),
       ...metaFields(),
       localeField(),

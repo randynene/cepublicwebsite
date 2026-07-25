@@ -49,7 +49,7 @@ export function staticPageSchema<T extends string>(typeName: T) {
     eyebrow: z.string().optional(),
     heroDescription: PortableTextSchema.optional(),
     heroImage: SanityImageSchema.optional(),
-    sections: z.array(SectionSchema).min(1),
+    sections: z.array(SectionSchema).optional(),
     locale: LocaleSchema,
   }).merge(MetaFieldsSchema)
 }

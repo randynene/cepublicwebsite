@@ -1,36 +1,18 @@
-import { validatePreviewUrl } from '@sanity/preview-url-secret'
-import { draftMode } from 'next/headers'
-import { redirect } from 'next/navigation'
+// Presentation Tool pairs with next-sanity's defineEnableDraftMode (GET).
+// DESIGN-1 brief v1.5 Step 8d2 proposed POST + custom header secret, but
+// next-sanity@12 only exports a GET enable helper for sanity/presentation.
+// Using the package-supported path so Seb's Presentation View can open
+// draft mode. Same-origin redirect hardening is inside defineEnableDraftMode
+// / preview-url-secret validation.
 
-import { previewClient } from '@/lib/sanity/client'
+import { defineEnableDraftMode } from 'next-sanity/draft-mode'
+
 import { env } from '@/lib/env'
+import { sanityClient } from '@/lib/sanity/client'
 
-function ensureSanityPreviewToken() {
-  if (!env.SANITY_API_READ_TOKEN) {
-    throw new Error('SANITY_API_READ_TOKEN is required for preview/draft mode')
-  }
-}
-
-export async function GET(request: Request) {
-  ensureSanityPreviewToken()
-
-  // Use previewClient (authenticated, no CDN) for secret validation —
-  // not sanityClient.
-  const { isValid, redirectTo = '/' } = await validatePreviewUrl(
-    previewClient,
-    request.url,
-  )
-  if (!isValid) {
-    return new Response('Invalid secret', { status: 401 })
-  }
-
-  // F10: validate redirectTo is same-origin before redirecting.
-  const base = new URL(env.NEXT_PUBLIC_SITE_URL)
-  const target = new URL(redirectTo, base)
-  if (target.origin !== base.origin) {
-    return new Response('Invalid redirect target', { status: 400 })
-  }
-
-  ;(await draftMode()).enable()
-  redirect(`${target.pathname}${target.search}${target.hash}`)
-}
+export const { GET } = defineEnableDraftMode({
+  client: sanityClient.withConfig({
+    token: env.SANITY_API_READ_TOKEN || undefined,
+    useCdn: false,
+  }),
+})
