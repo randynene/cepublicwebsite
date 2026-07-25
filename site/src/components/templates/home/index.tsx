@@ -13,6 +13,7 @@ import {
   HERO_PROFILE_CARD_PEOPLE,
   HOME_CONTENT,
   HOME_PROCESS_VIDEO_URL,
+  toProfileCardPeople,
   type HomeContent,
   type HomeLogo,
   type HomeReason,
@@ -158,9 +159,13 @@ function ReasonIcon({
 
 function Hero({ content }: SectionProps) {
   const { hero } = content
-  // The mobile single-photo fallback shows the same lead person (Kyla) as
-  // the desktop auto-cycling card — see profile-card.tsx.
-  const mainProfile = HERO_PROFILE_CARD_PEOPLE[0]
+  // Prefer Sanity/HOME_CONTENT hero.profiles; fall back to the static slideshow
+  // constant when profiles are missing or incomplete (< 2 people).
+  const slideshow =
+    toProfileCardPeople(hero.profiles) ?? HERO_PROFILE_CARD_PEOPLE
+  // The mobile single-photo fallback shows the same lead person as the
+  // desktop auto-cycling card — see profile-card.tsx.
+  const mainProfile = slideshow[0]
   return (
     // Top 120px matches the reference; bottom stays tighter so the logo bar
     // sits cleanly under the card stack (py-120 on both sides left a dead gap).
@@ -241,7 +246,7 @@ function Hero({ content }: SectionProps) {
          * its grid column so the card's right edge sits on the same content-band
          * edge as the trusted-by logo row (aligns with the SCORPION logo). */}
         <div className="hidden lg:flex lg:justify-end">
-          <ProfileCard profiles={HERO_PROFILE_CARD_PEOPLE} />
+          <ProfileCard profiles={slideshow} />
         </div>
         {/* Mobile fallback — simple single photo, no card stack */}
         <div
@@ -254,6 +259,7 @@ function Hero({ content }: SectionProps) {
             fill
             sizes="90vw"
             className="object-cover"
+            style={{ objectPosition: mainProfile.pos }}
             priority
           />
           <div
@@ -1025,7 +1031,7 @@ export function HomeTemplate({ content = HOME_CONTENT }: { content?: HomeContent
       <Calculator content={content} />
       <RealEngineers content={content} />
       <ReadyToFind content={content} />
-      <WhereWeWork />
+      <WhereWeWork content={content.whereWeWork} />
       <Faq content={content} />
     </main>
   )

@@ -35,8 +35,39 @@ const profileMember = defineArrayMember({
     defineField({ name: 'flag', title: 'Flag emoji', type: 'string' }),
     defineField({ name: 'tags', title: 'Skill tags', type: 'array', of: [{ type: 'string' }] }),
     imageField('image', 'Photo'),
+    defineField({
+      name: 'objectPosition',
+      title: 'Photo crop position',
+      type: 'string',
+      description: 'CSS object-position for the hero-card crop (e.g. "center"). Defaults to center.',
+      initialValue: 'center',
+    }),
   ],
   preview: { select: { title: 'name', subtitle: 'role', media: 'image' } },
+})
+
+const whereWeWorkHubMember = defineArrayMember({
+  type: 'object',
+  name: 'whereWeWorkHub',
+  title: 'Hub',
+  fields: [
+    defineField({ name: 'name', title: 'Hub name', type: 'string', validation: (R) => R.required() }),
+    defineField({
+      name: 'href',
+      title: 'Link',
+      type: 'string',
+      validation: (R) => R.required(),
+      description: 'Path on this site, e.g. /services/latam-developers',
+    }),
+    imageField('image', 'Photo'),
+    defineField({
+      name: 'imageUrl',
+      title: 'Photo URL (fallback)',
+      type: 'url',
+      description: 'Used only when Photo asset is empty (e.g. temporary placeholder).',
+    }),
+  ],
+  preview: { select: { title: 'name', subtitle: 'href', media: 'image' } },
 })
 
 const logoMember = defineArrayMember({
@@ -89,7 +120,28 @@ const heroSection = defineField({
     defineField({ name: 'secondaryCta', title: 'Secondary CTA', type: 'string' }),
     defineField({ name: 'bottomPills', title: 'Bottom pills', type: 'array', of: [{ type: 'string' }] }),
     defineField({ name: 'floatingPills', title: 'Floating pills', type: 'array', of: [{ type: 'string' }] }),
-    defineField({ name: 'profiles', title: 'Engineer profiles', type: 'array', of: [profileMember] }),
+    defineField({
+      name: 'profiles',
+      title: 'Hero slideshow profiles',
+      type: 'array',
+      of: [profileMember],
+      description:
+        'Auto-cycling “matched engineer” card on desktop (and the lead photo on mobile). Order = slideshow order.',
+    }),
+  ],
+})
+
+const whereWeWorkSection = defineField({
+  name: 'whereWeWork',
+  title: 'Where we work',
+  type: 'object',
+  options: { collapsible: true, collapsed: true },
+  fields: [
+    defineField({ name: 'eyebrow', title: 'Eyebrow', type: 'string' }),
+    defineField({ name: 'titleLead', title: 'Title (lead)', type: 'string' }),
+    defineField({ name: 'titleAccent', title: 'Title (accent)', type: 'string' }),
+    defineField({ name: 'paragraph', title: 'Paragraph', type: 'text', rows: 3 }),
+    defineField({ name: 'hubs', title: 'Hubs', type: 'array', of: [whereWeWorkHubMember] }),
   ],
 })
 
@@ -451,6 +503,7 @@ export default defineType({
       calculatorSection,
       realEngineersSection,
       readyToFindSection,
+      whereWeWorkSection,
       locationsSection,
       faqSection,
     ].map((f) => ({ ...f, group: 'content' })),

@@ -49,6 +49,8 @@ export interface HomeProfile {
   flag: string
   tags: string[]
   image: string
+  /** CSS object-position for the hero slideshow crop. */
+  objectPosition?: string
 }
 
 export interface ProfileCardPerson {
@@ -59,6 +61,24 @@ export interface ProfileCardPerson {
   image: string
   /** CSS object-position for the photo layer's 488x280 crop. */
   pos: string
+}
+
+/** Map Sanity/HOME_CONTENT hero.profiles → ProfileCard slideshow shape. */
+export function toProfileCardPeople(
+  profiles: readonly HomeProfile[] | null | undefined,
+): ProfileCardPerson[] | null {
+  if (!profiles || profiles.length < 2) return null
+  const mapped = profiles
+    .filter((p) => Boolean(p?.image && p?.name))
+    .map((p) => ({
+      name: p.name,
+      role: p.role,
+      flag: p.flag || '',
+      chips: p.tags ?? [],
+      image: p.image,
+      pos: p.objectPosition?.trim() || 'center',
+    }))
+  return mapped.length >= 2 ? mapped : null
 }
 
 export interface HomeReason {
@@ -107,23 +127,8 @@ const HERO_BOTTOM_PILLS = [
 // (which stays reserved for the readyToFind section further down the page).
 const HERO_PROOF_BULLETS = ['One monthly fee', 'We handle HR & payroll', '300+ teams built'] as const
 
-// Hero profile card (right side) — the auto-cycling "matched engineer" card.
-// Faithful port of the locked reference (handoff brief + the bundled
-// "CloudEmployee Hero.html" export, Jul 2026). Hardcoded here rather than
-// wired into HOME_CONTENT/Sanity: it's illustrative marketing-demo content
-// (same pattern as `realEngineers.profiles` below, which reuses these same
-// photos), not per-person editorial copy, so it renders identically
-// regardless of what the homePage Sanity singleton holds.
-//
-// Photos are DEDICATED 488x280 landscape crops (the exact card photo-area size)
-// under `${IMG}/engineers/hero-card/`, so `object-fit:cover` shows them 1:1 with
-// no extra zoom/crop — that's why `pos` is plain `center` for every person.
-// (The taller portrait originals in `${IMG}/engineers/` are kept for the
-// `realEngineers` marquee further down; using them here made cover crop a
-// zoomed-in horizontal strip, which is the "too zoomed" problem this fixed.)
-// Marcello / Petra / Gabriel are cropped from the full-res designer photos
-// embedded in `hero talent component.fig`, framed to match the design's card
-// mockups. Kyla is the pixel-perfect asset from the earlier design bundle.
+// Fallback slideshow when Sanity hero.profiles is empty / invalid.
+// Canonical editable source is homePage.hero.profiles (seeded from HOME_CONTENT).
 export const HERO_PROFILE_CARD_PEOPLE: ProfileCardPerson[] = [
   {
     name: 'Kyla. T',
@@ -153,7 +158,6 @@ export const HERO_PROFILE_CARD_PEOPLE: ProfileCardPerson[] = [
     name: 'Gabriel. K',
     role: 'Devops Engineer · 10 yrs | Remote',
     flag: '🇧🇷',
-    // Design mockup shows "Kubernetes" twice (a typo); corrected to Docker.
     chips: ['Kubernetes', 'Docker', 'AWS', 'Mentors Juniors'],
     image: `${IMG}/engineers/hero-card/gabriel.jpg`,
     pos: 'center',
@@ -186,12 +190,8 @@ export interface WhereWeWorkContent {
   hubs: WhereWeWorkHub[]
 }
 
-// Static / illustrative marketing data — deliberately NOT wired into the
-// homePage Sanity singleton (same rationale as HERO_PROFILE_CARD_PEOPLE above):
-// the design treats the hub list as a fixed array and it renders identically
-// regardless of Sanity. Cape Town has no dedicated location page yet, so it
-// points at the general Hire Engineers page; swap its href when an Africa hub
-// page exists.
+// Fallback when Sanity whereWeWork is empty. Cape Town has no dedicated
+// location page yet → Hire Engineers until an Africa hub exists.
 export const WHERE_WE_WORK: WhereWeWorkContent = {
   eyebrow: 'Where we work',
   titleLead: 'Built on the ground in',
@@ -244,33 +244,44 @@ export const HOME_CONTENT = {
     secondaryCta: 'See how it works',
     bottomPills: HERO_PROOF_BULLETS,
     floatingPills: ['Live pair programming', '7-day shortlist'],
-    // Order = card stacking order in the hero photo stack:
-    //   [0] back card (top-right) · [1] middle card (bottom-right) · [2] front card (main).
-    // Skill tags render as chips (first tag styled lime); an empty list = no chips.
+    // Hero slideshow order (desktop auto-cycle + mobile lead photo = [0]).
+    // Dedicated 488×280 crops under engineers/hero-card/.
     profiles: [
       {
-        name: 'Marcelo D.',
-        role: 'Full-stack Engineer · 8 yrs',
-        flag: '🇲🇽',
-        tags: [],
-        image: `${IMG}/engineers/marcelo.jpg`,
+        name: 'Kyla. T',
+        role: 'Senior Backend Engineer · 6 yrs | Remote',
+        flag: '🇵🇭',
+        tags: ['Node.js', 'Python', 'AWS', 'Owns end-to-end'],
+        image: `${IMG}/engineers/hero-card/kyla.jpg`,
+        objectPosition: 'center',
       },
       {
-        name: 'Petar K.',
-        role: 'Senior Data Eng · 9 yrs',
+        name: 'Marcello. P',
+        role: 'Senior Data Engineer · 9 yrs | Remote',
+        flag: '🇦🇷',
+        tags: ['Python', 'Snowflake', 'Airflow', 'Async-first'],
+        image: `${IMG}/engineers/hero-card/marcello.jpg`,
+        objectPosition: 'center',
+      },
+      {
+        name: 'Petra. K',
+        role: 'Senior AI Engineer · 7 yrs | Remote',
         flag: '🇭🇷',
-        tags: ['K8s', 'Terraform', 'AWS'],
-        image: `${IMG}/engineers/petar-k.jpg`,
+        tags: ['RAG', 'LangChain', 'AWS', 'Product-minded'],
+        image: `${IMG}/engineers/hero-card/petra.jpg`,
+        objectPosition: 'center',
       },
       {
-        name: 'Kyla T.',
-        role: 'Senior Full-Stack · 6 yrs',
-        flag: '🇨🇴',
-        tags: ['React', 'Node.js', 'TypeScript'],
-        image: `${IMG}/engineers/kyla.jpg`,
+        name: 'Gabriel. K',
+        role: 'Devops Engineer · 10 yrs | Remote',
+        flag: '🇧🇷',
+        tags: ['Kubernetes', 'Docker', 'AWS', 'Mentors Juniors'],
+        image: `${IMG}/engineers/hero-card/gabriel.jpg`,
+        objectPosition: 'center',
       },
     ] as HomeProfile[],
   },
+  whereWeWork: WHERE_WE_WORK,
   trustedBy: {
     label: 'Trusted by 300+ engineering teams',
     labelLine1: 'TRUSTED BY 300+',

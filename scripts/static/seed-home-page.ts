@@ -120,9 +120,27 @@ async function buildDoc() {
           flag: p.flag,
           tags: [...p.tags],
           image: await img(p.image, p.name),
+          objectPosition: p.objectPosition ?? 'center',
         })),
       ),
       'hero-prof',
+    ),
+  }
+
+  // Hub photos are still Picsum placeholders (external URLs) — seed via
+  // imageUrl so Studio can later swap in a real Sanity image asset.
+  const whereWeWork = {
+    eyebrow: HC.whereWeWork.eyebrow,
+    titleLead: HC.whereWeWork.titleLead,
+    titleAccent: HC.whereWeWork.titleAccent,
+    paragraph: HC.whereWeWork.paragraph,
+    hubs: keyed(
+      HC.whereWeWork.hubs.map((h) => ({
+        name: h.name,
+        href: h.href,
+        imageUrl: h.image,
+      })),
+      'hub',
     ),
   }
 
@@ -268,6 +286,7 @@ async function buildDoc() {
           flag: p.flag,
           tags: [...p.tags],
           image: await img(p.image, p.name),
+          ...(p.objectPosition ? { objectPosition: p.objectPosition } : {}),
         })),
       ),
       're-prof',
@@ -327,6 +346,7 @@ async function buildDoc() {
     metaTitle: META_TITLE,
     metaDescription: META_DESCRIPTION,
     hero,
+    whereWeWork,
     trustedBy,
     clientStory,
     whyDifferent,

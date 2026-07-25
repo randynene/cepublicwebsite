@@ -1,6 +1,6 @@
 import Link from 'next/link'
 
-import { WHERE_WE_WORK } from './content'
+import { WHERE_WE_WORK, type WhereWeWorkContent } from './content'
 import './where-we-work.css'
 
 // "Where we work" — expanding-hub section (sits just above the FAQ; replaces
@@ -11,11 +11,14 @@ import './where-we-work.css'
 // scroll-snap carousel. The whole interaction is pure CSS (see where-we-work.css,
 // scoped under .ww) so this stays a stateless server component.
 //
-// Photos are Picsum placeholders — swap the per-hub `image` field in
-// WHERE_WE_WORK (content.ts) for real photos when they land. Each panel links
-// to its hub's location page.
-export function WhereWeWork() {
-  const { eyebrow, titleLead, titleAccent, paragraph, hubs } = WHERE_WE_WORK
+// Content comes from homePage.whereWeWork (Sanity) with WHERE_WE_WORK as the
+// static fallback. Each panel links to its hub's location page.
+export function WhereWeWork({
+  content = WHERE_WE_WORK,
+}: {
+  content?: WhereWeWorkContent
+}) {
+  const { eyebrow, titleLead, titleAccent, paragraph, hubs } = content
   return (
     <section className="ww">
       <div className="ww-head">

@@ -1,6 +1,6 @@
 # Sanity editability — consolidated execution plan
 
-**Status:** Ready to execute (audit complete; fixes not started)  
+**Status:** Executing (WP-01 + WP-02 in progress)  
 **Date:** 2026-07-25  
 **Goal:** Seb can edit *everything meaningful* on the main marketing pages via Sanity Studio → Publish → staging updates.  
 **Source of truth site:** https://staging.jakevibes.dev  
@@ -71,12 +71,12 @@ Jake to confirm once; defaults in **bold**:
 **Problem:** Kyla / Marcello / Petra / Gabriel slideshow + “HOW THEY WORK” / “✓ MATCHED” / card stats are hardcoded (`HERO_PROFILE_CARD_PEOPLE`, `profile-card.tsx`). Old `hero.profiles` schema is orphaned.
 
 **Do**
-- [ ] Add schema for slideshow people (photo, name, role, chips, optional stats) OR repurpose `hero.profiles` to match live `ProfileCard` shape
-- [ ] Wire `ProfileCard` to Sanity (remove `HERO_PROFILE_CARD_PEOPLE` dependency)
-- [ ] Make labels editable: MATCHED, HOW THEY WORK, stat labels (or confirm D5 leave as chrome)
-- [ ] Seed from current hardcoded assets under `public/design/home/engineers/hero-card/`
-- [ ] Remove/stop seeding unused floating-pill stack if superseded
-- [ ] Presentation smoke: edit a person name → publish → staging updates
+- [x] Add schema for slideshow people (photo, name, role, chips, optional stats) OR repurpose `hero.profiles` to match live `ProfileCard` shape
+- [x] Wire `ProfileCard` to Sanity (remove `HERO_PROFILE_CARD_PEOPLE` dependency)
+- [x] Make labels editable: MATCHED, HOW THEY WORK, stat labels (or confirm D5 leave as chrome) — **D5: chrome stays hardcoded**
+- [x] Seed from current hardcoded assets under `public/design/home/engineers/hero-card/`
+- [x] Remove/stop seeding unused floating-pill stack if superseded — floating pills kept in schema (still on content); slideshow uses `hero.profiles`
+- [ ] Presentation smoke: edit a person name → publish → staging updates — **needs re-seed + Studio deploy after merge**
 
 **Files (start):** `studio/schemas/singletons/home-page.ts`, `site/src/lib/sanity/queries/home-page.ts`, `site/src/components/templates/home/profile-card.tsx`, `site/src/components/templates/home/content.ts`, `site/src/components/templates/home/index.tsx`
 
@@ -87,10 +87,10 @@ Jake to confirm once; defaults in **bold**:
 **Problem:** Entire hub strip hardcoded (`WHERE_WE_WORK`); schema `locations` orphaned.
 
 **Do**
-- [ ] Schema for hubs (name, href, image, optional eyebrow) on `homePage` — prefer replacing orphan `locations` with fields that match live UI
-- [ ] Wire `where-we-work.tsx` to Sanity (drop Picsum/hardcoded hubs)
-- [ ] Seed from current intended hubs
-- [ ] Presentation smoke
+- [x] Schema for hubs (name, href, image, optional eyebrow) on `homePage` — prefer replacing orphan `locations` with fields that match live UI — added `whereWeWork` (kept orphan `locations` for now)
+- [x] Wire `where-we-work.tsx` to Sanity (drop Picsum/hardcoded hubs)
+- [x] Seed from current intended hubs
+- [ ] Presentation smoke — **needs re-seed + Studio deploy after merge**
 
 ---
 

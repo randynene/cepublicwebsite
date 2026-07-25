@@ -3,7 +3,12 @@ import 'server-only'
 import { z } from 'zod'
 
 import { sanityFetch } from '@/lib/sanity/live'
-import type { HomeContent } from '@/components/templates/home/content'
+import {
+  HOME_CONTENT,
+  type HomeContent,
+  type HomeProfile,
+  type WhereWeWorkContent,
+} from '@/components/templates/home/content'
 
 // homePage singleton fetch (route /). The GROQ projection dereferences every
 // image into the exact shape the template already consumes:
@@ -25,7 +30,14 @@ const HOME_PAGE_QUERY = /* groq */ `
   hero{
     eyebrow, titleLead, titleAccent, paragraphLines, primaryCta, secondaryCta,
     bottomPills, floatingPills,
-    profiles[]{ name, role, flag, tags, "image": image.asset->url }
+    profiles[]{ name, role, flag, tags, objectPosition, "image": image.asset->url }
+  },
+  whereWeWork{
+    eyebrow, titleLead, titleAccent, paragraph,
+    hubs[]{
+      name, href,
+      "image": coalesce(image.asset->url, imageUrl)
+    }
   },
   trustedBy{
     label, labelLine1, labelLine2,
@@ -69,7 +81,7 @@ const HOME_PAGE_QUERY = /* groq */ `
   },
   realEngineers{
     eyebrow, titleLead, titleAccent, badge,
-    profiles[]{ name, role, flag, tags, "image": image.asset->url }
+    profiles[]{ name, role, flag, tags, objectPosition, "image": image.asset->url }
   },
   readyToFind{
     eyebrow, titleLead, titleAccent, paragraph, steps, question, questionSub,
@@ -100,7 +112,15 @@ const zLogo = z.object({
   displayH: nzn,
   displayOpacity: nzn,
 })
-const zProfile = z.object({ name: nzs, role: nzs, flag: nzs, tags: zStrArr, image: nzs })
+const zProfile = z.object({
+  name: nzs,
+  role: nzs,
+  flag: nzs,
+  tags: zStrArr,
+  image: nzs,
+  objectPosition: nzs,
+})
+const zWhereWeWorkHub = z.object({ name: nzs, href: nzs, image: nzs })
 const zStat = z.object({ value: nzs, label: nzs })
 const zReason = z.object({ title: nzs, body: nzs, icon: nzs, proof: nzs })
 
@@ -120,6 +140,16 @@ export const HomePageSchema = z.object({
       bottomPills: zStrArr,
       floatingPills: zStrArr,
       profiles: z.array(zProfile).nullable().optional(),
+    })
+    .nullable()
+    .optional(),
+  whereWeWork: z
+    .object({
+      eyebrow: nzs,
+      titleLead: nzs,
+      titleAccent: nzs,
+      paragraph: nzs,
+      hubs: z.array(zWhereWeWorkHub).nullable().optional(),
     })
     .nullable()
     .optional(),
@@ -313,9 +343,62 @@ export async function fetchHomePage(): Promise<HomePageData | null> {
   return result.data
 }
 
-// Cast the lenient boundary shape into the template's literal content type.
-// Kept as a single named helper so the `as unknown as` bridge lives in one
-// place; the runtime object already matches HomeContent field-for-field.
+type SanityHeroProfile = NonNullable<NonNullable<HomePageData['hero']>['profiles']>[number]
+
+function mapHeroProfiles(
+  profiles: SanityHeroProfile[] | null | undefined,
+): HomeProfile[] | null {
+  if (!profiles || profiles.length === 0) return null
+  const mapped = profiles
+    .filter((p): p is NonNullable<SanityHeroProfile> => Boolean(p?.name && p?.role && p?.image))
+    .map((p) => ({
+      name: p.name as string,
+      role: p.role as string,
+      flag: p.flag ?? '',
+      tags: (p.tags ?? []).filter((t): t is string => typeof t === 'string'),
+      image: p.image as string,
+      ...(p.objectPosition ? { objectPosition: p.objectPosition } : {}),
+    }))
+  return mapped.length > 0 ? mapped : null
+}
+
+function mapWhereWeWork(section: HomePageData['whereWeWork']): WhereWeWorkContent | null {
+  if (!section) return null
+  const hubs = (section.hubs ?? [])
+    .filter((h): h is NonNullable<typeof h> => Boolean(h?.name && h?.href && h?.image))
+    .map((h) => ({
+      name: h.name as string,
+      href: h.href as string,
+      image: h.image as string,
+    }))
+  if (hubs.length === 0) return null
+  return {
+    eyebrow: section.eyebrow ?? HOME_CONTENT.whereWeWork.eyebrow,
+    titleLead: section.titleLead ?? HOME_CONTENT.whereWeWork.titleLead,
+    titleAccent: section.titleAccent ?? HOME_CONTENT.whereWeWork.titleAccent,
+    paragraph: section.paragraph ?? HOME_CONTENT.whereWeWork.paragraph,
+    hubs,
+  }
+}
+
+// Merge Sanity homePage into the template's HomeContent shape. Missing /
+// incomplete sections fall back to HOME_CONTENT so a partially-seeded doc
+// never blanks the page. Hero slideshow + Where we work are the WP-01/02
+// fields that must survive empty production data until re-seed.
 export function toHomeContent(data: HomePageData): HomeContent {
-  return data as unknown as HomeContent
+  const heroProfiles = mapHeroProfiles(data.hero?.profiles) ?? HOME_CONTENT.hero.profiles
+  const whereWeWork = mapWhereWeWork(data.whereWeWork) ?? HOME_CONTENT.whereWeWork
+
+  const merged = {
+    ...HOME_CONTENT,
+    ...(data as unknown as Partial<HomeContent>),
+    hero: {
+      ...HOME_CONTENT.hero,
+      ...(data.hero ?? {}),
+      profiles: heroProfiles,
+    },
+    whereWeWork,
+  }
+
+  return merged as HomeContent
 }
