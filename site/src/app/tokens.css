@@ -1,0 +1,375 @@
+/* site/src/app/tokens.css
+ * MYGRATR-DESIGN-1 Step 1 design tokens.
+ * All values extracted from cloudemployee.io live site
+ * (computed-style + parsed @media + CSS-source declaration probe +
+ * GSAP source-code cross-reference) across /, /about-us, /technology,
+ * /services, /blog at 1440x900.
+ *
+ * Authoritative source: docs/design/TOKENS.md (per-token provenance,
+ * uncertainties, cross-references).
+ *
+ * Tailwind v4 namespace-driven utility generation — verified via probes
+ * (Diagnostic 4 + Revision 1 cascade). Multi-hyphen utility names
+ * (text-h1-desktop, ease-reveal, etc.) generate cleanly.
+ *
+ * Type scale: mobile-first base sizes. Components add Tailwind responsive
+ * prefixes for upsizing. Probe-measured cascade (Step 2.6 HALT 3):
+ *   - h1 / h2 jump only at 992px (`lg:`) — single breakpoint.
+ *   - display jumps at 768px (`md:`) AND 992px (`lg:`) — two breakpoints.
+ *   - h4 / eyebrow show no breakpoint jumps in CE (uniform sizing).
+ * Example: `text-h1 lg:text-h1-desktop` for h1; `text-display-mobile
+ * md:text-display-tablet lg:text-display` for display CTAs.
+ *
+ * Dual-consumer motion pattern (DEV-5): --motion-* group is the source
+ * of truth (GSAP reads via getComputedStyle); --duration-* / --ease-*
+ * Tailwind aliases via var() generate utility classes.
+ */
+
+@theme {
+  /* ─── Colours ────────────────────────────────────────────────── */
+  /* D2 token re-extract (Jun 2026). Source of truth: docs/design/
+   * VISUAL_LANGUAGE_SPEC.md (LOCKED). New design is dark-default with a
+   * lime accent; the old teal era is fully removed.
+   *
+   * DEV-1 (D2) DEVIATION, tracked so it does not calcify silently:
+   *   The OLD token names (brand-primary / brand-secondary / brand-tertiary,
+   *   surface-base / surface-elevated, text-default) are KEPT as the live
+   *   utility API and REMAPPED to new-design values, so the ~30 existing
+   *   components re-skin with zero edits this phase. Their names no longer
+   *   match their meaning (e.g. brand-primary now resolves to lime, not a
+   *   teal "primary"). The forward-looking semantic tokens below
+   *   (bg-/section-/surface-/border-/text-/accent-) are the real names. D4
+   *   migrates components off the old aliases onto these, then the aliases
+   *   get deleted. Until then the mismatch is intentional, not a bug.
+   *
+   *   D2 ABSORBED TWO D4 ITEMS (on Jake's direction, so the boundary is
+   *   honest):
+   *     1. Lime-contrast pass — every lime fill now carries dark text
+   *        (button, tag, mega pill, checkbox glyph, header skip-link,
+   *        HubSpot submit, hub pagination, service-card CTA), plus the
+   *        bg-text-default dark-surface regressions the text-default flip
+   *        exposed (tooltip, dialog + mobile-drawer scrims, video
+   *        backgrounds, mega pill-dark).
+   *     2. Accordion shape-edit — thin plus glyph (no black circle) +
+   *        continuous dark ground with dividers, per the new FAQ reference.
+   *
+   *   REMAINING D4 CARRYOVER (NOT done in D2):
+   *     - Migrate components off the old-name aliases onto the semantic
+   *       tokens, then delete the aliases.
+   *     - Rename Button variants (primary-teal/-yellow/-navy → lime/alt/
+   *       navy); they render correctly but the names are stale.
+   *     - Button shape: leading circular-dark-icon pill + lime glow.
+   *     - Faint borders (Card/Dialog/Dropdown/Select/region-selector) →
+   *       border-subtle / border-default.
+   *     - Link `cc-blue` variant (dark-on-dark, invisible) → visible token.
+   *     - h4/h5/body-sm carryover sizes + responsive mobile type downscale.
+   *     - nav.tsx + nav-client.tsx are NOT in the D2 commit. They carry
+   *       (a) an unfinished STATIC-3 floating-pill header rewrite (pre-
+   *       existing in the working tree, not D2 work) AND (b) the D2 lime-
+   *       contrast fix riding along inside it (nav skip-link →
+   *       text-text-dark; mobile-drawer scrim → bg-bg-primary/70). Handoff
+   *       note for whoever finishes the STATIC-3 chrome: the contrast fix
+   *       is ALREADY in those files, do not redo it.
+   *
+   * PAIRING RULES (spec §3 + §6) — never break:
+   *   - Lime fills ALWAYS carry dark text (#060F1E / text-dark). Never lime
+   *     text on white, never lime text on lime.
+   *   - FAIL combos, never use: yellow on white (1.16:1); yellow on
+   *     yellow-10% (1.13:1).
+   *   - Passing refs: navy on lime 14.2:1 AAA; white on navy 18.7:1 AAA;
+   *     white-72% on navy 13.4:1 AAA; muted #6B7589 on white 5.7:1 AA;
+   *     disabled navy-40% on grey 4.6:1 AA (just passes).
+   *   - No teal. No external colours (spec §1d). */
+
+  /* New semantic tokens — DARK is the default skin (spec §1b, mode 17:0).
+   * The Light column lives in the [data-theme="light"] block after @theme;
+   * D3 opts a section into light by setting that attribute on its wrapper. */
+  --color-bg-primary: #070D18;        /* canonical dark ground (resolves the two navies to #070D18) */
+  --color-section-bg-card: #101B30;   /* card backgrounds */
+  --color-surface-tertiary: #1B2A45;  /* card fills, placeholder blocks, input fills */
+  --color-border-subtle: #22314D;     /* dividers, subtle card borders */
+  --color-border-default: #32435F;    /* strokes, input borders */
+  --color-text-primary: #FFFFFF;      /* headings, body */
+  --color-text-secondary: #B8C2D1;    /* body copy, captions */
+  --color-text-tertiary: #7F8CA0;     /* labels, metadata */
+  --color-accent-primary: #D4FF3C;    /* lime: CTAs, highlights, quote marks, accents */
+  --color-accent-alt: #C8FB28;        /* yellow-alt lime */
+  --color-text-dark: #060F1E;         /* text / icon on lime fills (always dark) */
+
+  /* Lime opacity scale (spec §1c) — apply via Tailwind's opacity modifier
+   * on accent-primary, e.g. bg-accent-primary/82. Canonical stops + use:
+   *   100% CTA / accent              25% badge border
+   *    82% body text (lime)          15% quiz selected
+   *    72% social proof (dark)       10% badge fill
+   *    60% bullets (light)            8% card overlay
+   *                                   3% section wash */
+
+  /* Old-name aliases (DEV-1) — live utility API, remapped to new values.
+   * Single source of truth is the semantic tokens above; Light mode only
+   * overrides those, and these follow automatically. */
+  --color-brand-primary: var(--color-accent-primary);     /* was CE teal; now lime */
+  --color-brand-secondary: var(--color-accent-alt);       /* was lime; now alt lime */
+  --color-brand-tertiary: var(--color-bg-primary);        /* was navy; now dark ground */
+
+  /* Text */
+  --color-text-default: var(--color-text-primary);        /* was #212121; now white (dark mode) */
+  --color-text-on-dark: #FFFFFF;                          /* text on dark elements (always white) */
+  --color-text-link: var(--color-accent-primary);         /* alias */
+
+  /* Surfaces */
+  --color-surface-base: var(--color-surface-tertiary);    /* subtle / hover surface */
+  --color-surface-elevated: var(--color-section-bg-card); /* cards, dialogs, menus */
+  --color-surface-overlay: rgba(255, 255, 255, 0.1);
+  --color-surface-tint-brand: rgba(212, 255, 60, 0.05);   /* lime wash (was teal 5%) */
+
+  /* SWEEP-CTA (Jul 2026) — secondary-button base. Deliberately distinct from
+   * --color-bg-primary (#070D18, the page ground) so a dark/"secondary" CTA
+   * still reads as a raised control rather than melting into the page.
+   * Source: SWEEP-CTA brief tokens table ("Dark surface"). */
+  --color-surface-sweep-dark: #0B1424;
+
+  /* Focus ring — accessibility-critical for interactive primitives.
+   * Aliases accent-primary so re-branding propagates. Width/offset stay as
+   * standard Tailwind literals (`ring-2 ring-offset-2`). */
+  --color-ring: var(--color-accent-primary);    /* alias */
+
+  /* Semantic state colours — error / warning / success. Customer-2 protocol:
+   * all three together at the first primitive that needs any. Used by
+   * aria-invalid styling, FormField ErrorMessage, Toast tone variants, future
+   * Alert primitive. Overridable via brand customization. */
+  --color-error: #bd0000;
+  --color-success: #16a34a;
+  --color-warning: #d97706;
+
+  /* ─── Typography ─────────────────────────────────────────────── */
+  /* Fonts (spec §2): Inter for UI / headings / body; Source Serif 4 Italic
+   * for the lime accent word + process numerals only. Both wired via
+   * next/font in layout.tsx (--font-inter, --font-source-serif). */
+  --font-base: var(--font-inter);
+  --font-serif: var(--font-source-serif);
+
+  /* Type scale — LIVE "Updated type scale, across all pages" (spec §2,
+   * Inter Semi Bold). The superseded Extra Bold draft is NOT used.
+   * Tailwind v4 pairs size with line-height / letter-spacing / weight via
+   * the --text-{name}--{prop} convention, so one utility (e.g. text-h1)
+   * carries all four. Values are the LIVE desktop scale; responsive mobile
+   * downscaling is applied per-component in D3/D4. */
+  --text-h1: 4.1875rem;                 /* 67px — hero headline */
+  --text-h1--line-height: 4.41rem;      /* 70.56px */
+  --text-h1--letter-spacing: -2.52px;
+  --text-h1--font-weight: 600;
+  --text-h1-desktop: var(--text-h1);    /* alias kept; components use lg:text-h1-desktop */
+
+  --text-h2: 3.625rem;                  /* 58px — marquee / section headings */
+  --text-h2--line-height: 3.8125rem;    /* 61px */
+  --text-h2--letter-spacing: -1.7px;
+  --text-h2--font-weight: 600;
+  --text-h2-desktop: var(--text-h2);    /* alias kept */
+
+  --text-h3: 2.875rem;                  /* 46px — section H2 in body (NEW: LIVE scale adds H3) */
+  --text-h3--line-height: 3.5rem;       /* 56px */
+  --text-h3--letter-spacing: -1.4px;
+  --text-h3--font-weight: 600;
+
+  /* h4 / h5 are not in the LIVE spec scale; carried over from D1, refine in
+   * D4 when a component actually needs them. */
+  --text-h4: 1.5rem;                    /* 24px — carryover */
+  --text-h5: 1.125rem;                  /* 18px — carryover */
+
+  /* Display — large CTA heading. Mapped to the LIVE H2 / marquee size (58px).
+   * Components reference display-mobile / tablet / desktop; kept as aliases
+   * so nothing breaks (responsive downscale is a D3/D4 component concern). */
+  --text-display: 3.625rem;             /* 58px */
+  --text-display--line-height: 3.8125rem;
+  --text-display--letter-spacing: -1.7px;
+  --text-display--font-weight: 600;
+  --text-display-tablet: var(--text-display);
+  --text-display-mobile: var(--text-display);
+
+  /* Accent — Source Serif 4 Italic, lime. Heading accent word + process
+   * numerals (spec §2 + §8c). Apply with font-serif + italic + text-accent-primary. */
+  --text-accent: 4.375rem;              /* 70px */
+  --text-accent--line-height: 1.05;
+  --text-accent--letter-spacing: -0.5px;
+
+  /* Eyebrow — UPPERCASE label (spec §2). Consumers must add uppercase
+   * (text-transform is not a font-size token). */
+  --text-eyebrow: 0.75rem;              /* 12px */
+  --text-eyebrow--letter-spacing: 1.68px;
+  --text-eyebrow--font-weight: 600;
+
+  /* Button label (spec §2: UI/Button 15px Inter Bold). NEW token. */
+  --text-button: 0.9375rem;             /* 15px */
+  --text-button--letter-spacing: -0.08px;
+  --text-button--font-weight: 700;
+
+  /* Body */
+  --text-body: 0.90625rem;              /* 14.5px — body default (spec §2) */
+  --text-body--line-height: 1.375rem;   /* 22px */
+  --text-body--letter-spacing: -0.08px;
+  --text-body-sm: 0.8125rem;            /* 13px — small text / captions (carryover, refine D4) */
+  --text-body-lead: 1.1875rem;          /* 19px — lead paragraphs (spec Body/Large) */
+  --text-body-lead--line-height: 1.78125rem; /* 28.5px */
+  --text-body-lead--letter-spacing: -0.08px;
+  --text-body-large: 1.1875rem;         /* 19px — aligns to spec Body/Large */
+
+  /* Weight — Tailwind: --font-weight-{name} → font-{name} utility */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;              /* NEW — button labels (Inter Bold) */
+
+  /* Line-height — Tailwind: --leading-{name} → leading-{name} utility */
+  --leading-tight: 1.07;
+  --leading-snug: 1.16;
+  --leading-relaxed: 1.20;
+  --leading-default: 1.50;
+
+  /* ─── Spacing — Tailwind base-multiplier (--spacing scalar) ──── */
+  /* Tailwind v4 spec: --spacing is a single scalar; p-N = calc(var(--spacing) * N).
+   * Setting --spacing: 0.5rem makes p-1 = 8px, p-2 = 16px, p-10 = 80px, p-20 = 160px.
+   * 8px-base scale retained.
+   * §5 [inferred-pending-Figma]: large vertical section rhythm ~120-160px;
+   * 320px gutter on full-width bars; ~24-32px internal card padding. These
+   * are applied at component level (arbitrary values), not as scalar tokens. */
+  --spacing: 0.5rem;
+
+  /* ─── Radii — §5 [inferred-pending-Figma] ───────────────────────
+   * Spec §5: pills = full; cards / panels ~16-20px; hero photo card ~24px
+   * (inset 1px border); small tag chips ~8-10px. Refine against Figma. */
+  --radius-xs: 0.25rem;     /* 4px */
+  --radius-sm: 0.625rem;    /* 10px — tag chips (§5) */
+  --radius-md: 1rem;        /* 16px — inputs, cards (§5) */
+  --radius-lg: 1.25rem;     /* 20px — panels (§5) */
+  --radius-card: 1.5rem;    /* 24px — hero photo card (§5) NEW */
+  --radius-xl: 2.5rem;      /* 40px */
+  --radius-2xl: 5rem;       /* 80px */
+  --radius-3xl: 10rem;      /* 160px */
+  --radius-pill: 9999px;    /* buttons = full pill */
+  --radius-circle: 50%;
+  --radius-button: var(--radius-pill);   /* alias */
+
+  /* ─── Shadows — §5 [inferred-pending-Figma] ─────────────────────
+   * Spec §5: primary lime pill carries a soft lime-tinted glow; dark cards
+   * use low-contrast elevation (mostly borders, not drop shadow). Refine
+   * against Figma. */
+  --shadow-elevated: 0px 2px 14px -5px rgba(0, 0, 0, 0.35);
+  --shadow-lime-glow: 0px 6px 24px -6px rgba(212, 255, 60, 0.45);  /* primary CTA pill */
+
+  /* ─── Breakpoints (CE-tuned, Tailwind utility names) ─────────── */
+  --breakpoint-sm: 30rem;       /* 480px — Webflow mobile-portrait (overrides Tailwind default 640) */
+  --breakpoint-md: 48rem;       /* 768px — Webflow tablet (matches Tailwind default) */
+  --breakpoint-lg: 62rem;       /* 992px — Webflow desktop (overrides Tailwind default 1024) */
+  --breakpoint-xl: 80rem;       /* 1280px — CE custom large-desktop (matches Tailwind default) */
+
+  /* ─── Motion ─────────────────────────────────────────────────── */
+  /* Source of truth: --motion-* group. GSAP reads these directly via
+   * getComputedStyle (e.g. parseFloat(...) / 1000 for duration in seconds).
+   * Source: GSAP Standard plugins on cloudemployee.io. */
+  --motion-reveal-duration: 500ms;        /* GSAP default */
+  --motion-reveal-stagger: 100ms;         /* universal in CE source */
+  --motion-reveal-y-offset: 10%;          /* yPercent: 10 */
+  --motion-hero-duration: 1500ms;
+  --motion-hero-scale-from: 1.2;
+  --motion-easing-reveal: cubic-bezier(0.165, 0.84, 0.44, 1);    /* power2.out approx */
+  --motion-easing-accordion: cubic-bezier(0.645, 0.045, 0.355, 1); /* power3.inOut approx */
+
+  /* Tailwind utility aliases (var() inside @theme — Diagnostic 4 pattern).
+   * Generates duration-reveal / ease-reveal / etc. utility classes for
+   * CSS transitions. */
+  --duration-reveal: var(--motion-reveal-duration);
+  --duration-hero: var(--motion-hero-duration);
+  --ease-reveal: var(--motion-easing-reveal);
+  --ease-accordion: var(--motion-easing-accordion);
+
+  /* ─── Animation utilities (Step 2.5 / 2.6 — A5 + A6) ─────────── */
+  /* Generates `animate-accordion-down` / `animate-accordion-up` utility
+   * classes, consumed by A5 Accordion. Radix exposes the content height
+   * via --radix-accordion-content-height during open/close transitions. */
+  --animate-accordion-down: accordion-down var(--duration-reveal) var(--ease-accordion);
+  --animate-accordion-up: accordion-up var(--duration-reveal) var(--ease-accordion);
+
+  /* Auto-scrolling logo / testimonial marquee (social-proof hubs). The track holds
+   * TWO copies of the list; translating to -50% lands the second copy exactly where
+   * the first began, so the loop is seamless. Duration is long + linear for a slow,
+   * calm drift; JS-free. `motion-reduce:animate-none` stops it. */
+  --animate-marquee: marquee-x 60s linear infinite;
+  --animate-marquee-slow: marquee-x 90s linear infinite;
+
+  /* ─── STATIC-3 — Chrome visual rebuild ───────────────────────── */
+  /* Header bar height. Used by globals.css body padding-top to reserve
+   * space and prevent CLS from the sticky bar. Source: Header.html
+   * frame 01 nav row `height:80px` (was 76px from the old live-site
+   * scroll-behavior.json; superseded by the export). Mobile derivative
+   * kept at the existing h-16 (64px) value used by STATIC-1 nav until
+   * a separate mobile audit refines it. */
+  --header-height: 94px;
+  --header-height-mobile: 72px;
+  --announcement-bar-height: 0px;
+  --announcement-bar-active-height: 32px;
+
+  /* Customer Story card background — Resources mega-menu right column.
+   * Deep forest green from live-site visual reference at
+   * docs/design/static-3-reference/mega-menu-resources.png. Exact hex
+   * verified at Step 4 visual-review gate; refine if Jake redirects. */
+  --color-dark-green: #0f2d24;
+
+  /* How It Works bottom-panel background — pale teal/mint. Source:
+   * mega-menu-how-it-works.png reference screenshot. Exact hex
+   * verified at Step 4 visual-review gate. */
+  --color-mint: #d8efe1;
+
+  /* Outline-light pill variant — footer section labels + Project
+   * Builds / AI Services bottom pills + "Contact us today" secondary
+   * CTA. Designed for transparent bg on the navy footer
+   * (`--color-brand-tertiary`). */
+  --color-outline-light-border: rgba(255, 255, 255, 0.3);
+  --color-outline-light-text: var(--color-text-on-dark);
+
+  /* AI Services pill gradient — purple-to-pink per brief §2.3 5-variant
+   * spec. Captured from live-site mega-menu-services.png reference.
+   * Refine exact stops at Step 3 visual-review gate. */
+  --color-pill-gradient-start: #5b3aa8;
+  --color-pill-gradient-end: #a259ca;
+}
+
+/* ─── Light mode (spec §1b, mode 17:1) ──────────────────────────────────
+ * Dark is the default skin (defined in @theme above). A section opts into
+ * light by carrying data-theme="light" on its wrapper (D3 wires this).
+ * Overriding the semantic tokens here cascades through the old-name aliases
+ * (DEV-1) too, so light sections work without per-component edits.
+ * "No teal. No external colours." (spec §1d) */
+[data-theme="light"] {
+  --color-bg-primary: #F7F9F0;        /* warm off-white, derived from the lime */
+  --color-section-bg-card: #FFFFFF;
+  --color-surface-tertiary: #EDE8DF;
+  --color-border-subtle: #D4CDBF;
+  --color-border-default: #B8B0A0;
+  --color-text-primary: #060F1E;
+  --color-text-secondary: #404B5A;
+  --color-text-tertiary: #6B7589;
+  --color-accent-primary: #5A7400;    /* lime darkened for AA text / icon on light */
+  --color-accent-alt: #5A7400;
+}
+
+/* ─── Keyframes (top-level — referenced by --animate-* tokens above and by
+ *     A6 Marquee via arbitrary utility) ──────────────────────────────── */
+@keyframes accordion-down {
+  from { height: 0 }
+  to { height: var(--radix-accordion-content-height) }
+}
+@keyframes accordion-up {
+  from { height: var(--radix-accordion-content-height) }
+  to { height: 0 }
+}
+/* A6 Marquee — track is rendered with children duplicated; a -50% translate
+ * lands exactly one full set, producing a seamless loop. Direction reversal
+ * is handled at the call site via [animation-direction:reverse]. */
+@keyframes marquee-x {
+  from { transform: translateX(0) }
+  to { transform: translateX(-50%) }
+}
+@keyframes marquee-y {
+  from { transform: translateY(0) }
+  to { transform: translateY(-50%) }
+}

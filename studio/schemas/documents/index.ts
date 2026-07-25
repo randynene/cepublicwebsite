@@ -16,9 +16,11 @@ import blogPost from './blog-post'
 import customerStory from './customer-story'
 import technology from './technology'
 import service from './service'
+import startHiringStep from './start-hiring-step'
 import industry from './industry'
 import persona from './persona'
 import location from './location'
+import locationPage from './location-page'
 
 export const documentTypes = [
   tag,
@@ -39,7 +41,9 @@ export const documentTypes = [
   customerStory,
   technology,
   service,
+  startHiringStep,
   industry,
   persona,
   location,
+  locationPage,
 ]

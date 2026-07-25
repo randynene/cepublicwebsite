@@ -6,19 +6,19 @@ import { defineLocations, presentationTool } from 'sanity/presentation'
 import { schemaTypes } from './schemas'
 import { deskStructure, SINGLETON_TYPES } from './schemas/structure'
 
-// Hosted Studio reads this at deploy time. Prefer the stable Vercel
-// production alias (not a per-deployment *.vercel.app URL).
+// Hosted Studio reads this at deploy time. Staging is the source of truth
+// for the designed site until cloudemployee.io cutover.
 const previewOrigin =
   process.env.SANITY_STUDIO_PREVIEW_URL_ORIGIN ??
   process.env.SANITY_STUDIO_PREVIEW_URL ??
-  'http://localhost:3000'
+  'https://staging.jakevibes.dev'
 
 const projectId = process.env.SANITY_PROJECT_ID || 'lzbhll1u'
 const dataset = process.env.SANITY_DATASET || 'production'
 
 export default defineConfig({
   name: 'mygratr',
-  title: 'Mygratr — Cloud Employee',
+  title: 'Cloud Employee',
   projectId,
   dataset,
 

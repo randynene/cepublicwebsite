@@ -9,6 +9,8 @@ import { ensureSanity, ensureWebflow } from '@/lib/env'
 import { CE_COLLECTION_IDS } from '@/lib/content/ce-collection-ids'
 import {
   extractUrl,
+  filterToMissingBySlug,
+  onlyMissingRequested,
   toPortableText,
   uploadImage,
   webflowSlug,
@@ -21,7 +23,11 @@ ensureSanity()
 ensureWebflow()
 
 async function migrateTeamMembers(): Promise<void> {
-  const items = await getCollectionItems(CE_COLLECTION_IDS.teamMembers)
+  const all = await getCollectionItems(CE_COLLECTION_IDS.teamMembers)
+  const items = onlyMissingRequested() ? await filterToMissingBySlug(all, 'teamMember') : all
+  if (onlyMissingRequested()) {
+    console.log(`--only-missing: ${items.length} of ${all.length} item(s) not yet in Sanity.`)
+  }
   let migrated = 0
   const errors: string[] = []
 

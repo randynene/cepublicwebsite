@@ -1,15 +1,16 @@
 import type { Metadata } from 'next'
 
+import { HomeTemplate } from '@/components/templates/home'
+import { HOME_CONTENT, HOME_META } from '@/components/templates/home/content'
+import { HomeJsonLd } from '@/components/templates/home/json-ld'
 import { generateCanonical, generateHreflang } from '@/lib/locale'
-import { sanityFetch } from '@/lib/sanity/live'
-
-// Schema field is `title` (heroFields on defineStaticPage) — not the
-// brief's provisional name `heroHeadline`.
-const HOME_HERO_QUERY = `*[_type == "homePage"][0]{ title, _id }`
+import { fetchHomePage, toHomeContent } from '@/lib/sanity/queries/home-page'
 
 export async function generateMetadata(): Promise<Metadata> {
+  const data = await fetchHomePage()
   return {
-    title: 'Cloud Employee',
+    title: data?.metaTitle ?? HOME_META.title,
+    description: data?.metaDescription ?? HOME_META.description,
     alternates: {
       canonical: generateCanonical('/', 'en-US'),
       languages: generateHreflang('/'),
@@ -18,13 +19,19 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const { data } = await sanityFetch({ query: HOME_HERO_QUERY })
-
-  // No marketing-copy fallback — empty h1 is preferable to a hardcoded
-  // string with no stega payload (false-positive click-to-edit).
+  const data = await fetchHomePage()
+  const content = data ? toHomeContent(data) : HOME_CONTENT
+  const title = data?.metaTitle ?? HOME_META.title
+  const description = data?.metaDescription ?? HOME_META.description
   return (
-    <main>
-      <h1 data-testid="home-hero-title">{data?.title}</h1>
-    </main>
+    <>
+      <HomeJsonLd
+        locale="en-US"
+        title={title}
+        description={description}
+        faqItems={content.faq.items}
+      />
+      <HomeTemplate content={content} />
+    </>
   )
 }

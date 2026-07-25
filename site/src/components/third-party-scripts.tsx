@@ -14,8 +14,25 @@ const HOTJAR_SITE_ID = 4985481
 const CLARA_WORKSPACE_ID = '09aa62df-5af6-4cec-b565-c335e907327d'
 const FACEBOOK_PIXEL_ID = '160820827844254'
 const HUBSPOT_PORTAL_ID = '22809822'
+const MARKER_PROJECT_ID = '6a607cb9bba82be8b774fc61'
 const GEOTARGETLY_SRC =
   'https://g10498469755.co/gr?id=-OJz6mUkL51tX4CyQPmd&refurl=https://www.google.com'
+
+// Marker.io is a review/bug-report widget for the staging review waves — it must
+// NOT render for real visitors on the live domain. This mirrors robots.ts: the
+// real site is the one whose serving host matches NEXT_PUBLIC_CANONICAL_HOST
+// (only set on cloudemployee.io at cutover). Everywhere else (staging, previews)
+// is "not the real site", so the widget shows there.
+function isCanonicalProductionSite(): boolean {
+  const canonicalHost = process.env.NEXT_PUBLIC_CANONICAL_HOST
+  let servingHost: string | null = null
+  try {
+    servingHost = new URL(process.env.NEXT_PUBLIC_SITE_URL ?? '').host
+  } catch {
+    servingHost = null
+  }
+  return !!canonicalHost && !!servingHost && canonicalHost === servingHost
+}
 
 // GeoTargetly — must fire before render to redirect at the edge.
 // Inline strategy="beforeInteractive" works only inside the root layout.
@@ -59,8 +76,18 @@ export function GtmNoScript() {
 // Remaining global scripts. Each renders only when its identifier is
 // confirmed from audit output.
 export function GlobalScripts() {
+  // Off on the real live domain, on everywhere else (staging review waves).
+  const showMarker = !isCanonicalProductionSite()
+
   return (
     <>
+      {showMarker && (
+        <Script id="marker-io" strategy="afterInteractive">
+          {`window.markerConfig = { project: '${MARKER_PROJECT_ID}', source: 'snippet' };
+!function(e,r,a){if(!e.__Marker){e.__Marker={};var t=[],n={__cs:t};["show","hide","isVisible","capture","cancelCapture","unload","reload","isExtensionInstalled","setReporter","clearReporter","setCustomData","on","off"].forEach(function(e){n[e]=function(){var r=Array.prototype.slice.call(arguments);r.unshift(e),t.push(r)}}),e.Marker=n;var s=r.createElement("script");s.async=1,s.src="https://edge.marker.io/latest/shim.js";var i=r.getElementsByTagName("script")[0];i.parentNode.insertBefore(s,i)}}(window,document);`}
+        </Script>
+      )}
+
       {LINKEDIN_PARTNER_ID && (
         <Script id="linkedin-insight" strategy="afterInteractive">
           {`_linkedin_partner_id = "${LINKEDIN_PARTNER_ID}";
@@ -129,6 +156,7 @@ fbq('track', 'PageView');`}
         id="finsweet-attributes"
         src="https://cdn.jsdelivr.net/npm/@finsweet/attributes@2/attributes.js"
         strategy="afterInteractive"
+        type="module"
       />
 
       {/* Calendly is loaded globally for scaffold simplicity. TEMPLATE-BAC

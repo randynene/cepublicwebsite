@@ -1,13 +1,6 @@
 import { defineField, defineType } from 'sanity'
 
-import {
-  imageField,
-  localeField,
-  metaFields,
-  metaSourceFields,
-  slugField,
-  sourceTrackingFields,
-} from '../_shared'
+import { imageField, localeField, metaFields, metaSourceFields, retiredField, slugField, sourceTrackingFields } from '../_shared'
 
 export default defineType({
   name: 'service',
@@ -56,6 +49,14 @@ export default defineType({
       type: 'string',
       validation: (Rule) => Rule.max(100),
     }),
+    defineField({
+      name: 'tagline',
+      title: 'Tagline',
+      type: 'string',
+      description:
+        'Short tagline used by Services mega-menu (e.g. "Scalable product-builders on demand"). Renders below the service name in the mega-menu item.',
+      validation: (Rule) => Rule.max(80),
+    }),
     imageField('thumbnail', 'Thumbnail'),
 
     defineField({
@@ -75,8 +76,19 @@ export default defineType({
 
     ...metaFields(),
     ...metaSourceFields(),
+
+    defineField({
+      name: 'faqs',
+      title: 'FAQs (page override)',
+      type: 'array',
+      of: [{ type: 'faqItem' }],
+      description:
+        'Optional. Leave EMPTY to use the shared Service & Technology FAQ block (matches the live site). Add items here only to give THIS page its own unique FAQs, which then replace the shared block for this page.',
+    }),
+
     ...sourceTrackingFields(),
     localeField(),
+    retiredField(),
   ],
   preview: { select: { title: 'name', subtitle: 'type', media: 'thumbnail' } },
 })

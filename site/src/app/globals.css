@@ -1,26 +1,328 @@
 @import "tailwindcss";
+@import "./tokens.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+body {
+  /* D2: dark ground is the default skin (spec §1b). */
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  color-scheme: dark;
+  font-family: var(--font-base);
+  font-size: var(--text-body);
+  line-height: var(--leading-default);
+  font-weight: var(--font-weight-regular);
+  /* STATIC-3 — reserve space for sticky chrome (nav + optional announcement bar). */
+  padding-top: calc(var(--header-height-mobile) + var(--announcement-bar-height));
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@media (min-width: 62rem) {
+  body {
+    padding-top: calc(var(--header-height) + var(--announcement-bar-height));
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ===========================================================================
+   TEMPLATE-HOME motion layer (progressive enhancement — no framer-motion).
+   ===========================================================================
+   Every rule below is gated behind BOTH `html.motion-ready` (added by
+   <MotionReady> on mount, site/src/components/motion/motion-ready.tsx) AND
+   `prefers-reduced-motion: no-preference`. Consequences:
+     - No JS (motion-ready never added)   → content renders fully visible,
+       unshifted, with zero animation. Never opacity:0 as a static default.
+     - prefers-reduced-motion: reduce      → this whole block doesn't match;
+       content is fully visible, no animation.
+     - Normal case                        → <Reveal> (site/src/components/
+       motion/reveal.tsx) toggles `.is-in-view` once per element via
+       IntersectionObserver; CSS below handles the actual transition.
+   Only `opacity` and `transform` are animated anywhere in this block — never
+   height/width/margin/top/left — so none of this can cause layout shift. */
+@media (prefers-reduced-motion: no-preference) {
+  html.motion-ready .reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 600ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  html.motion-ready .reveal.is-in-view {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* variant="scale" — fade + scale up (photo/video cards). */
+  html.motion-ready .reveal[data-reveal-variant='scale'] {
+    transform: scale(var(--reveal-scale-from, 0.96));
+  }
+  html.motion-ready .reveal[data-reveal-variant='scale'].is-in-view {
+    transform: scale(1);
+  }
+
+  /* variant="pop" — scale up while holding a fixed rotation (tilted badges). */
+  html.motion-ready .reveal[data-reveal-variant='pop'] {
+    transform: scale(0.7) rotate(var(--reveal-rotate, 0deg));
+  }
+  html.motion-ready .reveal[data-reveal-variant='pop'].is-in-view {
+    transform: scale(1) rotate(var(--reveal-rotate, 0deg));
+  }
+
+  /* variant="scale-x" — decorative progress-bar fill. The bar element keeps
+     its final width at all times (no CLS); only its horizontal scale
+     animates from the left edge, which is GPU-composited and never
+     triggers layout the way animating `width` would. */
+  html.motion-ready .reveal[data-reveal-variant='scale-x'] {
+    opacity: 1;
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  html.motion-ready .reveal[data-reveal-variant='scale-x'].is-in-view {
+    transform: scaleX(1);
+  }
+
+  /* Hero card stack — on-mount entrance (hero-cards.tsx). Uses
+     `animation-fill-mode: backwards` (not `both`/`forwards`) so once the
+     500ms animation completes, `transform` reverts to the normal cascade
+     (the inline style the hover-drift handler manages) instead of the CSS
+     animation permanently pinning it — otherwise the existing cursor-follow
+     drift would stop working after mount. */
+  html.motion-ready .hero-card-reveal {
+    animation: hero-card-in 500ms cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+    animation-delay: var(--reveal-delay, 0ms);
+  }
+  @keyframes hero-card-in {
+    from {
+      opacity: 0;
+      transform: rotate(var(--card-rot, 0deg)) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: rotate(var(--card-rot, 0deg)) scale(1);
+    }
+  }
+
+  html.motion-ready .hero-pill-reveal {
+    animation: hero-pill-in 400ms ease backwards;
+    animation-delay: var(--reveal-delay, 250ms);
+  }
+  @keyframes hero-pill-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Process video card play button — slow continuous pulse, paused on hover
+     (the existing group-hover:scale-105 utility takes over instead) and
+     paused entirely under reduced motion (whole block doesn't match). */
+  html.motion-ready .play-pulse {
+    animation: play-pulse 2.5s ease-in-out infinite;
+  }
+  .group:hover .play-pulse {
+    animation-play-state: paused;
+  }
+  @keyframes play-pulse {
+    0%,
+    100% {
+      transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+      transform: translate(-50%, -50%) scale(1.05);
+    }
+  }
+}
+
+/* Card hover-lift — independent of the reveal system above (direct user
+   interaction, not an on-load animation), but still reduced-motion aware. */
+.hover-lift {
+  transition: transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 240ms ease;
+}
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+}
+@media (prefers-reduced-motion: reduce) {
+  .hover-lift:hover {
+    transform: none;
+  }
+}
+
+/* Why-We're-Different card hover — lift + lime inner border. Scoped to those
+   four cards only; the base .hover-lift above is left unchanged for other cards. */
+.hover-lift-accent {
+  transition: transform 250ms cubic-bezier(0.22, 0.61, 0.36, 1), box-shadow 250ms ease;
+}
+.hover-lift-accent:hover {
+  transform: translateY(-4px);
+  box-shadow: inset 0 0 0 1px rgba(212, 255, 60, 0.45), 0 20px 40px -18px rgba(0, 0, 0, 0.5);
+}
+@media (prefers-reduced-motion: reduce) {
+  .hover-lift-accent:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+/* ===========================================================================
+   SWEEP-FILL CTA (Jul 2026) — the ONE standard hover behaviour for every CTA
+   site-wide. Replaces the earlier `.cta-shine` light-streak treatment: on
+   hover, a fill colour wipes left→right across the button and the content
+   inverts colour. Reference: Motion Lab.dc.html section 12 (SWEEP-CTA brief).
+
+   Structure contract (matches the brief exactly):
+     - the CTA carries `.sf` (the mechanic) + ONE colour variant
+       (`.sf-p` primary / `.sf-g` ghost / `.sf-s` secondary / `.sf-link` text
+       link). `.sf` makes the element a positioned, overflow-hidden box.
+     - label/icon content that should invert colour lives inside a child
+       tagged `.c`. A leading icon circle (if any) is tagged `.ic` instead —
+       it sits OUTSIDE `.c` so its own fill can invert independently.
+     - `.sf-up` (composable with any variant) sweeps upward instead of
+       left→right.
+   Shape (padding, radius, font-size, gap) is intentionally NOT set here —
+   every consumer keeps its own Tailwind sizing classes; only the colours,
+   timing and easing below are the fixed part.
+
+   Two deliberate deviations from the brief, both documented so they don't
+   read as bugs later:
+     1. GHOST/SECONDARY's rest-state outline is a real `border`, not
+        `box-shadow: inset`. This project's keyboard focus ring is ALSO
+        box-shadow-based (Tailwind `ring-2`), and this stylesheet's plain
+        (unlayered) CSS always outranks Tailwind's layered utilities — an
+        inset box-shadow here would silently erase the focus ring on every
+        ghost/secondary CTA. A real border doesn't touch box-shadow, so the
+        ring still paints. Colours are identical either way.
+     2. The sweep also triggers on `:focus-visible` (brief only specifies
+        `:hover`) so keyboard users get the same feedback mouse users do;
+        the focus ring is unaffected (deviation 1) and still shows on top. */
+.sf {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.sf > .c {
+  position: relative;
+  z-index: 1;
+  transition: color 0.35s ease;
+}
+.sf .ic {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  transition: background-color 0.35s ease, color 0.35s ease;
+}
+.sf::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  transform: translateX(-101%);
+  transition: transform 0.42s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+.sf:hover::before,
+.sf:focus-visible::before {
+  transform: translateX(0);
+}
+.sf-up::before {
+  transform: translateY(101%);
+}
+.sf-up:hover::before,
+.sf-up:focus-visible::before {
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .sf,
+  .sf *,
+  .sf::before {
+    transition: none !important;
+  }
+}
+
+/* PRIMARY — lime base, ink sweep, content flips to lime. Rest state has
+   no visible border (transparent, same width as the hover one, so nothing
+   shifts); on hover/focus a lime ring appears so the pill keeps a visible
+   outline once the fill goes dark instead of blending into the page. */
+.sf-p {
+  background: var(--color-accent-primary);
+  color: var(--color-text-dark);
+  border: 1.5px solid transparent;
+}
+.sf-p::before {
+  background: var(--color-text-dark);
+}
+.sf-p:hover,
+.sf-p:focus-visible {
+  border-color: var(--color-accent-primary);
+}
+.sf-p:hover > .c,
+.sf-p:focus-visible > .c {
+  color: var(--color-accent-primary);
+}
+.sf-p .ic {
+  background: var(--color-text-dark);
+  color: var(--color-accent-primary);
+}
+.sf-p:hover .ic,
+.sf-p:focus-visible .ic {
+  background: var(--color-accent-primary);
+  color: var(--color-text-dark);
+}
+
+/* GHOST — transparent + lime outline, lime sweep, content flips to ink. */
+.sf-g {
+  background: transparent;
+  color: var(--color-accent-primary);
+  border: 1.5px solid var(--color-accent-primary);
+}
+.sf-g::before {
+  background: var(--color-accent-primary);
+}
+.sf-g:hover > .c,
+.sf-g:focus-visible > .c {
+  color: var(--color-text-dark);
+}
+.sf-g .ic {
+  background: var(--color-accent-primary);
+  color: var(--color-text-dark);
+}
+.sf-g:hover .ic,
+.sf-g:focus-visible .ic {
+  background: var(--color-text-dark);
+  color: var(--color-accent-primary);
+}
+
+/* SECONDARY — dark base, lime sweep, content flips to ink, border lights up. */
+.sf-s {
+  background: var(--color-surface-sweep-dark);
+  color: var(--color-text-on-dark);
+  border: 1.5px solid var(--color-border-subtle);
+}
+.sf-s::before {
+  background: var(--color-accent-primary);
+}
+.sf-s:hover,
+.sf-s:focus-visible {
+  border-color: var(--color-accent-primary);
+}
+.sf-s:hover > .c,
+.sf-s:focus-visible > .c {
+  color: var(--color-text-dark);
+}
+
+/* TEXT LINK — highlighter sweep behind inline text. */
+.sf-link {
+  background: transparent;
+  color: var(--color-accent-primary);
+}
+.sf-link::before {
+  background: var(--color-accent-primary);
+}
+.sf-link:hover > .c,
+.sf-link:focus-visible > .c {
+  color: var(--color-text-dark);
 }

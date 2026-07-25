@@ -1,0 +1,48 @@
+import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
+
+import { CatalogueDetail } from '@/components/templates/catalogue/detail'
+import { TechnologyJsonLd } from '@/components/templates/technology/json-ld'
+import { mapTechnologyToContent } from '@/lib/catalogue/content'
+import { generateCanonical, generateHreflang } from '@/lib/locale'
+import { fetchAllTechnologySlugs, fetchTechnology, fetchTechnologyMeta } from '@/lib/sanity/queries/technology'
+import { fetchSharedServiceFaqs } from '@/lib/sanity/queries/shared-faqs'
+
+type RouteParams = { slug: string }
+
+export async function generateStaticParams(): Promise<RouteParams[]> {
+  const sanity = await fetchAllTechnologySlugs()
+  return sanity.map(({ slug }) => ({ slug }))
+}
+
+export async function generateMetadata({ params }: { params: Promise<RouteParams> }): Promise<Metadata> {
+  const { slug } = await params
+  const usPath = `/technology/${slug}`
+  const meta = await fetchTechnologyMeta(slug)
+  if (!meta) return {}
+  const metaTitle = meta.metaTitle?.trim()
+  return {
+    // metaTitle already carries the full live title (incl. "| Cloud Employee"),
+    // so render it verbatim rather than letting the root layout append its
+    // "%s | Cloud Employee" template and double-brand the page.
+    title: metaTitle ? { absolute: metaTitle } : meta.technologyName,
+    description: meta.metaDescription?.trim() || undefined,
+    alternates: { canonical: generateCanonical(usPath, 'en-GB'), languages: generateHreflang(usPath) },
+  }
+}
+
+export default async function TechnologyDetailUkPage({ params }: { params: Promise<RouteParams> }) {
+  const { slug } = await params
+  const technology = await fetchTechnology(slug)
+  if (!technology) notFound()
+
+  const shared = await fetchSharedServiceFaqs()
+  const content = mapTechnologyToContent(technology, shared)
+
+  return (
+    <>
+      <TechnologyJsonLd technology={technology} locale="en-GB" faqs={content.faqs} />
+      <CatalogueDetail content={content} hireHref="/uk/book-a-call" scheduleHref="/uk/book-a-call" />
+    </>
+  )
+}

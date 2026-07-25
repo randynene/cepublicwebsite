@@ -1,6 +1,6 @@
 import { defineField, defineType } from 'sanity'
 
-import { imageField, localeField, metaFields, slugField } from '../_shared'
+import { imageField, localeField, metaFields, retiredField, slugField } from '../_shared'
 
 export default defineType({
   name: 'event',
@@ -109,6 +109,7 @@ export default defineType({
 
     ...metaFields({ og: false }),
     localeField(),
+    retiredField(),
   ],
   preview: { select: { title: 'name', subtitle: 'dateTime', media: 'thumbnailImage' } },
 })

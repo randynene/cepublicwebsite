@@ -3,40 +3,39 @@
 Plain-English guide for editing Cloud Employee content in Sanity Studio
 with the Presentation preview.
 
-Studio: https://mygratr-cloudemployee.sanity.studio/
+Studio: https://mygratr-cloudemployee.sanity.studio/  
+Preview site (source of truth): https://staging.jakevibes.dev/
 
 ---
 
-## What works today (Seb unblock)
+## What works today
 
 1. Open Studio and sign in (you need an **Editor** role, not Viewer).
 2. Click **Presentation** in the top bar (the preview icon).
-3. Open **Home Page** (or use the location link to `/`).
-4. In the preview, click the big headline.
-5. Change the **Title** field on the left.
-6. Press **Publish**.
-7. The preview headline should update within a few seconds.
+3. Open a page document (e.g. **Home Page**).
+4. Confirm the preview loads **staging.jakevibes.dev** (the designed site).
+5. Click text in the preview → edit the field → **Publish**.
+6. Preview should update within a few seconds.
 
-This is a smoke page — it only shows the Home Page title for now.
-Full page templates come later (TEMPLATE-* phases).
+Staging is the designed Cloud Employee site. Live `cloudemployee.io` stays
+on Webflow until cutover.
 
 ---
 
 ## If Publish is grey / blocked / “doesn’t go through”
 
-Look for a red warning at the top of the document. Common causes:
+Look for a red or yellow warning at the bottom of the document. Common causes:
 
 | Message / feeling | Fix |
 |---|---|
-| Missing Meta title / Meta description | Fill Meta title (≤60 chars) and Meta description (140–160 chars), then Publish again. |
-| Account feels read-only | Ask Jake to set your Sanity project role to **Editor**. |
-| Preview is blank or errors | Jake needs to point Studio’s preview URL at the live Vercel site and redeploy Studio. |
-
-Home Page **Sections** are optional — an empty Sections list must not block Publish.
+| Missing Locale | Set **Locale** to **Default (US)** (or UK), then Publish. |
+| Missing Meta title / Meta description | Fill Meta title (≤60 chars) and Meta description (140–160 chars). |
+| Account feels read-only | Ask Jake to set your Sanity project role to **Editor** (or Admin). |
+| Preview is blank or wrong site | Studio preview origin should be `https://staging.jakevibes.dev`. |
 
 ---
 
-## Two round-trips (for later full Visual Editing)
+## Two round-trips
 
 **A — Click-to-edit (~10s):** click text/image in the preview → Studio focuses that field.
 
@@ -44,30 +43,24 @@ Home Page **Sections** are optional — an empty Sections list must not block Pu
 
 ---
 
-## Jake checklist (one-time ops)
+## Jake checklist (ops)
 
-1. Confirm Seb’s Sanity role is **Editor** (manage.sanity.io → project → members).
-2. In Vercel project env (Production + Preview):
-   - `NEXT_PUBLIC_SANITY_PROJECT_ID=lzbhll1u`
-   - `NEXT_PUBLIC_SANITY_DATASET=production`
-   - `NEXT_PUBLIC_SANITY_STUDIO_URL=https://mygratr-cloudemployee.sanity.studio`
-   - `NEXT_PUBLIC_SITE_URL=<stable Vercel production URL>`
-   - `SANITY_API_READ_TOKEN=<viewer read token>`
-3. Redeploy the Next.js site after env is set.
-4. Redeploy Studio with preview origin set:
+1. Confirm Seb’s Sanity role is **Editor** or **Administrator**.
+2. Vercel project serves staging content from the designed branch / `main` after lock-in.
+3. Redeploy Studio with preview origin set when needed:
 
 ```bash
 cd studio
-SANITY_STUDIO_PREVIEW_URL_ORIGIN=https://YOUR-STABLE-VERCEL-URL \
+SANITY_STUDIO_PREVIEW_URL_ORIGIN=https://staging.jakevibes.dev \
   npx sanity deploy
 ```
 
-5. In Sanity project CORS, allow the Studio host and the Vercel site origin.
-6. Smoke test: Presentation → click Home headline → edit Title → Publish → preview updates.
+4. Sanity CORS includes `https://staging.jakevibes.dev` (Allow credentials ON).
+5. Smoke test: Presentation → edit a visible field → Publish → staging updates.
 
 ---
 
 ## Note on live cloudemployee.io
 
-Publishing in Sanity updates the **new** Next.js + Sanity stack.
+Publishing in Sanity updates the **new** Next.js + Sanity stack on staging.
 It does **not** change the current live Webflow site until cutover (LAUNCH).

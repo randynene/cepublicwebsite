@@ -16,6 +16,18 @@
 | `docs/SKILLS/post-phase-update/SKILL.md` | SCHEMA-0 | Reusable skill definition |
 | `docs/SKILLS/red-team-audit/SKILL.md` | SCHEMA-0 | Reusable skill definition |
 | `docs/WEBFLOW_TO_SANITY_FIELD_MAP.md` | SCHEMA-1 | Field-level migration map consumed by CONTENT-1 |
+| `docs/design/TOKENS.md` | DESIGN-1 Step 1 | Per-token catalogue + provenance (Tailwind v4 CSS-first) |
+| `docs/design/COMPONENTS.md` | DESIGN-1 Step 2 | Single-source primitive inventory for Step 4 template authors (806 lines) |
+| `docs/CAPABILITY_LOG.md` | DESIGN-1 Step 9 (scaffolded at Step 2 milestone; Step 3 productisation IP consolidated at Step 3 close per Jake's direction) | Per-phase productisation IP — patterns Jake learns, frameworks, debugging approaches |
+| `docs/design/TIER_1_INVENTORY.md` | DESIGN-1 Step 3 | LOCKED v1.0 — 5 Tier-1 components (1 High + 3 Medium + 1 Low); inventory contract for Step 3b/3c/3d/3e specs and TEMPLATE-* phases |
+| `docs/design/components/{slug}.md` (×5) | DESIGN-1 Step 3 | 8-section complex-component specs — Behaviour · State machine · Tech stack · Timing · Breakpoints · Data binding · Edge cases · Acceptance criteria + Schema-vs-reality findings |
+| `docs/briefs/active/MYGRATR-DESIGN-1_BRIEF_v2.0.md` | DESIGN-1 | Active phase brief (DEV-1 through DEV-12 logged in §15) |
+| `docs/V0_PROMPT_TEMPLATE.md` | DESIGN-1 Step 5 | Canonical v0.dev prompt template — 6-section format; Sections 1/2/5/6 paste-as-is, Sections 3/4 per-template fill-in |
+| `docs/templates/_examples/v0-prompt-{blog,team-member,review}.md` | DESIGN-1 Step 5 | 3 worked examples — detail-by-slug (blog, team-member) vs listing-no-slug (review); REVIEW carries both testimonial-swiper schema-vs-reality findings forward |
+| `docs/design/storybook-deploy.md` | DESIGN-1 Step 4 | Customer-2 Vercel deploy runbook for Storybook (Framework Preset `Other`, `NEXT_PUBLIC_*` env-vars requirement, Standard Deployment Protection) |
+| `tools/eslint/ui-strings.json` | DESIGN-1 Step 6 | Canonical chrome-string SoT — 14 keys with `_meta` provenance block; generator input for `site/src/lib/ui-strings.ts` |
+| `docs/briefs/active/MYGRATR-DESIGN-1-BRIEF-A_v1.2.md` | DESIGN-1 Brief A | Brief A phase brief (Steps 4 + 5, closed) |
+| `docs/briefs/active/MYGRATR-DESIGN-1-BRIEF-B_v1.3.md` | DESIGN-1 Brief B | Brief B phase brief (Steps 6 + 8); Step 6 closed at HALT 1 |
 
 ## Database Tables
 
@@ -43,7 +55,7 @@
 | CUSTOMER_STORY | /customer-story/[slug] | Customer Stories | TBD |
 | TEAM_MEMBER | /team/[slug] | Team Members | TBD |
 | VIDEO | /videos/[slug] | Videos | TBD |
-| REVIEW | /reviews/[slug] | Reviews | TBD |
+| REVIEW | /reviews/[slug] | Reviews | TEMPLATE-REVIEW (Jul 2026) |
 | BOOK_A_CALL | /book-a-call/[slug] | Book A Call Pages | TBD |
 | DOWNLOAD | /download/[slug] | Downloads | TBD |
 | TOOL | /tools/[slug] | Tools & Quizzes | TBD |
@@ -135,6 +147,8 @@ Grouped in `studio/schemas/structure.ts` into six Studio nav sections.
 
 ## Site Components (`site/src/components/`)
 
+### SCAFFOLD-1 components
+
 | Component | Type | File | Purpose | Phase |
 |---|---|---|---|---|
 | LocaleProvider | client | locale-provider.tsx | Provides `Locale` via React context; useLocale() hook | SCAFFOLD-1 |
@@ -144,27 +158,188 @@ Grouped in `studio/schemas/structure.ts` into six Studio nav sections.
 | Nav | server stub | layout/nav.tsx | TEMPLATE-NAV will source from Sanity navigation global | SCAFFOLD-1 |
 | Footer | server stub | layout/footer.tsx | TEMPLATE-FOOTER will source from Sanity footer global | SCAFFOLD-1 |
 
+### DESIGN-1 Step 2 — primitives (`site/src/components/ui/`)
+
+22 brand-inventory primitives + Icon foundation. Hand-built atop @radix-ui directly (no shadcn). CVA standardised for variant API. Folder-per-primitive structure: `site/src/components/ui/{name}/index.tsx`. Per-primitive source-of-truth comments document probe-driven decisions; full reference at `docs/design/COMPONENTS.md`.
+
+| Primitive | Category | Path | Radix dep | Phase |
+|---|---|---|---|---|
+| Button | A — Foundation | `button/index.tsx` | — | DESIGN-1 Step 2 |
+| Link | A — Foundation | `link/index.tsx` | — | DESIGN-1 Step 2 |
+| Tag | A — Foundation | `tag/index.tsx` | — | DESIGN-1 Step 2 |
+| Card | A — Foundation | `card/index.tsx` | — | DESIGN-1 Step 2 |
+| Accordion | A — Foundation | `accordion/index.tsx` | `@radix-ui/react-accordion` | DESIGN-1 Step 2 (HALT 10 fix `4c0514f`) |
+| Marquee | A — Foundation | `marquee/index.tsx` | — | DESIGN-1 Step 2 |
+| Heading | B — Typography | `heading/index.tsx` | — | DESIGN-1 Step 2 |
+| Text | B — Typography | `text/index.tsx` | — | DESIGN-1 Step 2 |
+| PortableText | B — Typography | `portable-text/index.tsx` | `@portabletext/react` | DESIGN-1 Step 2 |
+| Input | C — Forms | `input/index.tsx` | — | DESIGN-1 Step 2 |
+| Textarea | C — Forms | `textarea/index.tsx` | — | DESIGN-1 Step 2 |
+| Select | C — Forms | `select/index.tsx` | `@radix-ui/react-select` | DESIGN-1 Step 2 |
+| Checkbox | C — Forms | `checkbox/index.tsx` | `@radix-ui/react-checkbox` | DESIGN-1 Step 2 |
+| RadioGroup | C — Forms | `radio-group/index.tsx` | `@radix-ui/react-radio-group` | DESIGN-1 Step 2 |
+| FormField | C — Forms | `form-field/index.tsx` | `react-hook-form` | DESIGN-1 Step 2 |
+| HubSpotFormEmbed | C — Forms | `hubspot-form-embed/index.tsx` | — | DESIGN-1 Step 2 |
+| Dialog | D — Overlays | `dialog/index.tsx` | `@radix-ui/react-dialog` | DESIGN-1 Step 2 |
+| Tooltip | D — Overlays | `tooltip/index.tsx` | `@radix-ui/react-tooltip` | DESIGN-1 Step 2 |
+| DropdownMenu | D — Overlays | `dropdown-menu/index.tsx` | `@radix-ui/react-dropdown-menu` | DESIGN-1 Step 2 |
+| Toast | D — Overlays | `toast/index.tsx` | `@radix-ui/react-toast` | DESIGN-1 Step 2 |
+| Image | E — Media + Layout | `image/index.tsx` | `@sanity/image-url` | DESIGN-1 Step 2 |
+| VideoEmbed | E — Media + Layout | `video-embed/index.tsx` | — | DESIGN-1 Step 2 |
+| Container | E — Media + Layout | `container/index.tsx` | — | DESIGN-1 Step 2 |
+| Divider | E — Media + Layout | `divider/index.tsx` | — | DESIGN-1 Step 2 |
+| Icon | Foundation | `icon/index.tsx` | — (sprite-based; 9 CE-derived glyphs) | DESIGN-1 Step 2 |
+
+### DESIGN-1 Step 3 — Tier-1 components (`docs/design/components/`)
+
+5 Tier-1 component specs locked at HALT 1 of Step 3. Each has an 8-section spec at `docs/design/components/{slug}.md`. Implementation paths under `site/src/components/` are TBD at TEMPLATE-* phases — likely `site/src/components/tier-1/` (cross-template) or `site/src/components/templates/{template-slug}/components/` (template-specific). Render utilities (#1) live at `site/src/components/utilities/` or `/animations/` (TBD).
+
+| # | Spec slug | Scope | Live URL | Complexity | Tech stack | 3b/3d role |
+|---|---|---|---|---|---|---|
+| 1 | `section-fade-reveal-global` | GLOBAL render utility (14 templates) | sitewide | High | GSAP attribute-selector orchestration | 3d stress-test (HALT 3) |
+| 2 | `home-hero-scale-in` | HOME | `/` | Medium | GSAP fromTo single-property | 3c batch |
+| 3 | `nav-sticky-transition-global` | GLOBAL | sitewide | Medium | GSAP ScrollTrigger + plain JS handler | 3c batch |
+| 4 | `testimonial-swiper-global` | GLOBAL (HOME, /reviews, /services) | various | Medium | Swiper 11 (library-mediated) | 3b first-spec (HALT 2 format-lock) |
+| 5 | `service-card-grid-hover-reveal` | SERVICE landing | `/services` | Low (down-classified at HALT 1 L3) | CSS-only | 3c batch |
+
+### DESIGN-1 Step 3 — Capture-asset directories (`docs/design/components/_assets/`)
+
+5 component dirs × 2 leaf dirs (`screenshots/` + `recordings/`) = 10 leaf dirs. Empty at HALT 4 (Step 3 close); populated during TEMPLATE-* phases per Step-3 brief §4.
+
+| Component slug | Asset dir |
+|---|---|
+| section-fade-reveal-global | `_assets/section-fade-reveal-global/{screenshots,recordings}/` |
+| home-hero-scale-in | `_assets/home-hero-scale-in/{screenshots,recordings}/` |
+| nav-sticky-transition-global | `_assets/nav-sticky-transition-global/{screenshots,recordings}/` |
+| testimonial-swiper-global | `_assets/testimonial-swiper-global/{screenshots,recordings}/` |
+| service-card-grid-hover-reveal | `_assets/service-card-grid-hover-reveal/{screenshots,recordings}/` |
+
+### DESIGN-1 Step 4 — Storybook stories (`site/src/components/**/stories.tsx`)
+
+30 stories on disk — Pair-rule one `stories.tsx` per primitive folder (25) + 5 Tier-1 scaffold-stage previews under `site/src/components/tier-1/`. Storybook 10.3.6 running `@storybook/nextjs` (webpack5 forced per Brief A v1.2 D2 lock). Tier-1 stories ship as primitive-composition previews per Hard Rule #7 — NO library wiring (no `gsap`, no `swiper` init, no working `ScrollTrigger`, no autoplay) until TEMPLATE-* time. Live on Vercel separate project at `https://mygratr-cloud-employee-storybook.vercel.app` (Standard Deployment Protection). Mechanical Pair-rule check: `find site/src/components/ui -mindepth 2 -name stories.tsx | wc -l` returns 25.
+
+| Group | Count | Paths | Phase |
+|---|---|---|---|
+| A — Foundation | 6 | `site/src/components/ui/{button,link,tag,card,accordion,marquee}/stories.tsx` | DESIGN-1 Step 4 |
+| B — Typography | 3 | `site/src/components/ui/{heading,text,portable-text}/stories.tsx` | DESIGN-1 Step 4 |
+| C — Forms | 7 | `site/src/components/ui/{input,textarea,select,checkbox,radio-group,form-field,hubspot-form-embed}/stories.tsx` | DESIGN-1 Step 4 |
+| D — Overlays | 4 | `site/src/components/ui/{dialog,tooltip,dropdown-menu,toast}/stories.tsx` | DESIGN-1 Step 4 |
+| E — Media + Layout | 4 | `site/src/components/ui/{image,video-embed,container,divider}/stories.tsx` | DESIGN-1 Step 4 |
+| Icon foundation | 1 | `site/src/components/ui/icon/stories.tsx` | DESIGN-1 Step 4 |
+| Tier-1 (scaffold-stage) | 5 | `site/src/components/tier-1/home-hero-scale-in.stories.tsx` · `site/src/components/tier-1/nav-sticky-transition-global.stories.tsx` · `site/src/components/tier-1/section-fade-reveal-global.stories.tsx` · `site/src/components/tier-1/service-card-grid-hover-reveal.stories.tsx` · `site/src/components/tier-1/testimonial-swiper-global.stories.tsx` | DESIGN-1 Step 4 |
+| **Total** | **30** | 25 primitive (Pair-rule) + 5 Tier-1 | |
+
+Storybook config: `site/.storybook/main.ts` (22 lines incl. HALT 1 `env: (config) => ({...config, NEXT_PUBLIC_SANITY_PROJECT_ID, NEXT_PUBLIC_SANITY_DATASET})` fix) + `site/.storybook/preview.tsx` (26 lines; imports `globals.css` for Tailwind v4 utility availability).
+
+### TEMPLATE-BLOG — template + shared components
+
+| Component | Type | File | Purpose | Phase |
+|---|---|---|---|---|
+| BlogTemplate | server | `templates/blog/index.tsx` | Pattern-establishing first detail-page template — 277 lines composing Heading + Text + Image + PortableText + Card + Tag + Accordion + Container + Divider + Icon + Link + Breadcrumbs against the BlogPost read-model | TEMPLATE-BLOG |
+| BlogPostJsonLd | server | `templates/blog/json-ld.tsx` | Builds BlogPosting + BreadcrumbList + (conditional) FAQPage schema.org objects + renders `<script type="application/ld+json">` blocks via `serializeJsonLd` | TEMPLATE-BLOG |
+| Breadcrumbs | server | `shared/breadcrumbs.tsx` | Shared accessible breadcrumbs primitive — `<nav aria-label="Breadcrumb">` + ordered list with home/blog/category links. Reusable across detail-page templates | TEMPLATE-BLOG |
+
+### TEMPLATE-TEAM_MEMBER — template + query module
+
+| Component | Type | File | Purpose | Phase |
+|---|---|---|---|---|
+| TeamMemberTemplate | server | `templates/team-member/index.tsx` | Second pattern-apply detail template — hero + about + CTAs + time/expertise sidebar + author articles grid; dark/lime D2 skin; reconciliation complete (Team Member.html export = fidelity reference for simple detail templates) | TEMPLATE-TEAM_MEMBER |
+| TeamMemberJsonLd | server | `templates/team-member/json-ld.tsx` | Builds Person + BreadcrumbList schema.org objects via `serializeJsonLd`; `worksFor` from siteSettings | TEMPLATE-TEAM_MEMBER |
+| ReviewTemplate | server | `templates/review/index.tsx` | Third detail template — Review.html export fidelity; hero review card + related reviews grid; company H1 via `getReviewCompanyName()` | TEMPLATE-REVIEW |
+| ReviewJsonLd | server | `templates/review/json-ld.tsx` | Builds Review + BreadcrumbList via `serializeJsonLd`; fixed 5-star rating | TEMPLATE-REVIEW |
+
+### STATIC-1 — chrome components
+
+| Component | Type | File | Purpose | Phase |
+|---|---|---|---|---|
+| Nav (Header) | server shell | `layout/nav.tsx` | Replaces SCAFFOLD-1 stub. Fetches `navigation` global, renders skip-link + logo + Container, hands data to NavClient client island. `role="banner"` landmark. | STATIC-1 |
+| NavClient | client island | `layout/nav-client.tsx` | All interactive nav surface: hand-built Disclosure-pattern desktop dropdowns (Services 19 items + Resources 6 items), Radix Dialog mobile drawer with accordion sections + focus trap + scroll lock + Escape, pathname-aware locale switcher, Calendly CTA wired to canonical CE intro popup URL. | STATIC-1 |
+| Footer | server | `layout/footer.tsx` | Replaces SCAFFOLD-1 stub. Fetches `footer` global. 4 columns + HubSpot newsletter via C6 HubSpotFormEmbed + legal links row + copyright with `{year}` token substituted at render. Dark-navy brand-tertiary surface. `role="contentinfo"` landmark. | STATIC-1 |
+| BlogCard | server | `cards/blog-card.tsx` | Used by blogHub + 6 category hubs + compareHub. Image + category Tag + h3-wrapped Link title + excerpt + date + author byline. Single anchor per card on the title. | STATIC-1 |
+| ResourceCard | server | `cards/resource-card.tsx` | Used by videosHub + toolsHub + downloadsHub + eventsHub. Image + type label (Video / Tool / Download / Event) + h3-wrapped Link title + excerpt + event date (when applicable). | STATIC-1 |
+| CollectionCard | server | `cards/collection-card.tsx` | Used by servicesHub + technologyHub + customerStoriesHub + reviewsHub. Image + subline (companyName / position) + h3-wrapped Link title + arrow icon + excerpt. | STATIC-1 |
+
+### Blog family (`site/src/components/blog/` + `templates/blog-hub/`) — design Jul 2026
+
+| Component | Type | File | Purpose |
+|---|---|---|---|
+| BlogHubTemplate | server | `templates/blog-hub/index.tsx` | Shared shell for all 7 blog-family listing pages: hero (eyebrow/H1/lead/search) → topic pills → featured → grid → pagination → long-form + FAQ. CollectionPage + BreadcrumbList + ItemList + FAQPage JSON-LD. |
+| ArticleCard | server | `blog/article-card.tsx` | 3 variants (default/feature/compact), single-anchor, hover lift (§2), 16:9 object-cover thumbs, degrade-clean byline. |
+| FeaturedBlock | server | `blog/featured-block.tsx` | 1 large + 4 compact; logic in `lib/blog/featured.ts` (auto-fill to 5, suppress <8). |
+| CategoryPill / AuthorByline | server | `blog/category-pill.tsx`, `blog/author-byline.tsx` | Shared atoms (spec §0), `self-start w-fit` pill, full-name byline with photo→initials fallback. |
+| TopicPills / BlogSearchForm | server | `blog/topic-pills.tsx`, `blog/search-form.tsx` | §4 markup-only for Phase 1: pills = real `<a>` to topic hubs; search = real `<form method=get>`. |
+| LongFormBand / BlogFaqAccordion | server | `blog/long-form-band.tsx`, `blog/faq-accordion.tsx` | 720px reading column + `<details>` FAQ, topic hubs only. |
+| BlogPagination / SectionLabel / BlogBand | server | `blog/pagination.tsx`, `blog/section-label.tsx`, `blog/container.tsx` | Numbered 42px tiles; lime `<h2>` section labels; BlogBand imports header's own `CHROME_CONTENT_BAND`/`CHROME_H_PAD` for edge alignment. |
+| ArticleBody / TableOfContents | server / **client** | `blog/article-body.tsx`, `blog/table-of-contents.tsx` | Anchored-heading prose (18px/29px, per-element font, gap-based rhythm); H2-only auto-generated floating TOC (sticky offset bound to header vars, scroll-tracking, active-item auto-scroll). TOC is the one client component. |
+
+### Calculators (`site/src/components/templates/{price-comparison,hiring-cost}-calculator/`) — Jul 2026
+
+| Component | Type | File | Purpose |
+|---|---|---|---|
+| PriceComparisonCalculator | client | `templates/price-comparison-calculator/calculator.tsx` | In-house vs CE by region/seniority/headcount; state in URL query (shareable). Model + rates in `lib/calculators/price-comparison.ts` (rates from Sanity). |
+| HiringCostCalculator | client | `templates/hiring-cost-calculator/calculator.tsx` | CE cost + saving by company/talent region + currency; model recovered empirically in `lib/calculators/hiring-cost.ts` (50-dev clamp). |
+
 ## Site Routes (`site/src/app/`)
 
 | Route | File | Type | Purpose | Phase |
 |---|---|---|---|---|
 | `/` | page.tsx | static | homePage placeholder; TEMPLATE-HOME fills folds | SCAFFOLD-1 |
-| `/uk` | uk/page.tsx | static | UK locale home placeholder | SCAFFOLD-1 |
+| `/uk` | uk/page.tsx | static | UK locale home placeholder; wraps content in `<main id="main">` (STATIC-1 Step 6 fix) | SCAFFOLD-1 + STATIC-1 |
+| `/[category]/[slug]` | `[category]/[slug]/page.tsx` | dynamic (static-generated × 74) | TEMPLATE-BLOG default locale — `generateStaticParams` returns 74 (cat,slug) pairs; `generateMetadata` returns title/description/canonical/3-hreflang/OG; renders `<BlogTemplate locale="en-US">` wrapped in `<main id="main">` (STATIC-1 Step 6 fix) | TEMPLATE-BLOG + STATIC-1 |
+| `/uk/[category]/[slug]` | `uk/[category]/[slug]/page.tsx` | dynamic (static-generated × 74) | TEMPLATE-BLOG UK mirror — single-document strategy; locale `'en-GB'`; same 74 (cat,slug) pairs as default; wrapped in `<main id="main">` (STATIC-1 Step 6 fix) | TEMPLATE-BLOG + STATIC-1 |
+| `/team/[slug]` | `team/[slug]/page.tsx` | dynamic (static-generated × 28) | TEMPLATE-TEAM_MEMBER default locale — `generateStaticParams` returns 28 slugs; full Tier-1 metadata + Person JSON-LD + author blog-posts side query | TEMPLATE-TEAM_MEMBER |
+| `/uk/team/[slug]` | `uk/team/[slug]/page.tsx` | dynamic (static-generated × 28) | TEMPLATE-TEAM_MEMBER UK mirror — same 28 docs; locale `'en-GB'` | TEMPLATE-TEAM_MEMBER |
+| `/reviews/[slug]` | `reviews/[slug]/page.tsx` | dynamic (static-generated × 11) | TEMPLATE-REVIEW default locale — 11 published review docs; Review JSON-LD + related reviews side query | TEMPLATE-REVIEW |
+| `/uk/reviews/[slug]` | `uk/reviews/[slug]/page.tsx` | dynamic (static-generated × 11) | TEMPLATE-REVIEW UK mirror — same 11 docs; locale `'en-GB'` | TEMPLATE-REVIEW |
+| `/videos/[slug]` | `videos/[slug]/page.tsx` | dynamic (static-generated × 32) | TEMPLATE-VIDEO default locale — 32 `video` docs; VideoObject + BreadcrumbList JSON-LD; eager embed + backup-image poster | TEMPLATE-VIDEO |
+| `/uk/videos/[slug]` | `uk/videos/[slug]/page.tsx` | dynamic (static-generated × 32) | TEMPLATE-VIDEO UK mirror — same 32 docs; locale `'en-GB'` | TEMPLATE-VIDEO |
+| `/downloads/[slug]` | `downloads/[slug]/page.tsx` | dynamic (static-generated × 5) | TEMPLATE-DOWNLOAD default locale — 5 `download` docs; gated-asset layout + FaqList | TEMPLATE-DOWNLOAD |
+| `/uk/downloads/[slug]` | `uk/downloads/[slug]/page.tsx` | dynamic (static-generated × 5) | TEMPLATE-DOWNLOAD UK mirror — same 5 docs; locale `'en-GB'` | TEMPLATE-DOWNLOAD |
+| `/tools/[slug]` | `tools/[slug]/page.tsx` | dynamic (static-generated × 2) | TEMPLATE-TOOL default locale — 2 `tool` docs; calculator/tool layout + Loom embeds | TEMPLATE-TOOL |
+| `/uk/tools/[slug]` | `uk/tools/[slug]/page.tsx` | dynamic (static-generated × 2) | TEMPLATE-TOOL UK mirror — same 2 docs; locale `'en-GB'` | TEMPLATE-TOOL |
+| `/book-a-call/[slug]` | `book-a-call/[slug]/page.tsx` | dynamic (static-generated × 6) | TEMPLATE-BOOK_A_CALL default locale — 6 `bookACall` docs; self-loading Calendly inline scheduler (`calendly-inline-embed.tsx`) | TEMPLATE-BOOK_A_CALL |
+| `/uk/book-a-call/[slug]` | `uk/book-a-call/[slug]/page.tsx` | dynamic (static-generated × 6) | TEMPLATE-BOOK_A_CALL UK mirror — same 6 docs; locale `'en-GB'` | TEMPLATE-BOOK_A_CALL |
+| `/compare/[slug]` | `compare/[slug]/page.tsx` | dynamic (static-generated × 30) | TEMPLATE-COMPARE default locale — 30 `compareBlog` docs. **Pre-launch redirect collision with legacy `/compare → /alternatives` (Tech Debt #55).** | TEMPLATE-COMPARE |
+| `/uk/compare/[slug]` | `uk/compare/[slug]/page.tsx` | dynamic (static-generated × 30) | TEMPLATE-COMPARE UK mirror — same 30 docs; locale `'en-GB'` | TEMPLATE-COMPARE |
 | `/uk/[...slug]` | uk/[...slug]/page.tsx | dynamic | catch-all 404 placeholder until TEMPLATE-* defines explicit routes | SCAFFOLD-1 |
-| `/sitemap.xml` | sitemap.ts | file convention | homepage + UK homepage stub (CONTENT-1 expands) | SCAFFOLD-1 |
-| `/robots.txt` | robots.ts | file convention | Disallow: /download-thank-you/ | SCAFFOLD-1 |
+| `/not-found` | not-found.tsx | file convention | STATIC-1 404 page rendering `notFoundPage` singleton via Next.js App Router convention. Returns HTTP 404 + auto-injected + explicit `robots: noindex, nofollow` | STATIC-1 |
+| `/blog` | blog/page.tsx | dynamic | STATIC-1 blog hub (74 posts → 7 pages). `generateMetadata` via `buildHubMetadata('blogHub')`; renders `renderHub(resolveHubRoute('blogHub'))` | STATIC-1 |
+| `/staff-augmentation` | staff-augmentation/page.tsx | dynamic | STATIC-1 staff-augmentation blog category hub | STATIC-1 |
+| `/nearshoring-offshoring` | nearshoring-offshoring/page.tsx | dynamic | STATIC-1 nearshoring + offshoring blog category hub | STATIC-1 |
+| `/scaling-teams` | scaling-teams/page.tsx | dynamic | STATIC-1 scaling-teams blog category hub | STATIC-1 |
+| `/hiring-tips` | hiring-tips/page.tsx | dynamic | STATIC-1 hiring-tips blog category hub | STATIC-1 |
+| `/managing-engineers` | managing-engineers/page.tsx | dynamic | STATIC-1 managing-engineers blog category hub | STATIC-1 |
+| `/ai-in-software-development` | ai-in-software-development/page.tsx | dynamic | STATIC-1 AI in software development blog category hub | STATIC-1 |
+| `/videos` | videos/page.tsx | dynamic | STATIC-1 video library resource hub (ResourceCard surface) | STATIC-1 |
+| `/tools` | tools/page.tsx | dynamic | STATIC-1 tools + quizzes resource hub | STATIC-1 |
+| `/downloads` | downloads/page.tsx | dynamic | STATIC-1 free-downloads resource hub (filters `comingSoon != true`) | STATIC-1 |
+| `/events` | events/page.tsx | dynamic | STATIC-1 events + webinars resource hub | STATIC-1 |
+| `/services` | services/page.tsx | dynamic | STATIC-1 services collection-index hub (CollectionCard) | STATIC-1 |
+| `/technology` | technology/page.tsx | dynamic | STATIC-1 technology collection-index hub (filters `listItemOnly != true`) | STATIC-1 |
+| `/customer-stories` | customer-stories/page.tsx | dynamic | STATIC-1 customer-stories hub. `/our-work` 308s here. STATIC-1 Step 4 fixed an inherited regex-redirect that swallowed the bare hub root (`:slug*` → `:slug+`; Tech Debt #37) | STATIC-1 |
+| `/reviews` | reviews/page.tsx | dynamic | STATIC-1 reviews hub | STATIC-1 |
+| `/compare` | compare/page.tsx | dynamic | STATIC-1 compare hub. `/alternatives` 308s here | STATIC-1 |
+| `/pricing` | — | redirect | STATIC-1 Step 5 — 308 to `/services` in `lockedRules` (locked Open Decision #1; restore real route when a future cycle adds a `pricingPage` schema) | STATIC-1 |
+| `/sitemap.xml` | sitemap.ts | file convention | 2 static + 16 default-locale hub + 148 blog × 2 locales + 56 team × 2 locales + 22 review × 2 locales = **244 entries** via `URL_BUILDERS` (`blogPost` + `teamMember` + `review`) + `buildHubSitemapEntries`. UK hub entries dropped at Step 7 (Gap 1 — UK hub routes deferred). | SCAFFOLD-1 + TEMPLATE-BLOG + TEMPLATE-TEAM_MEMBER + TEMPLATE-REVIEW + STATIC-1 |
+| `/robots.txt` | robots.ts | file convention | Env-gated: prod (`VERCEL_ENV === 'production'`) → `Allow: /` + sitemap; non-prod → `Disallow: /` | SCAFFOLD-1 |
+| `/demo` | demo/page.tsx | static (production-guarded) | DESIGN-1 Step 2 — kitchen-sink primitive showcase; renders all 22 primitives + ~200+ mutation cases on one page; **NOT included in production builds** | DESIGN-1 Step 2 |
 
 ## API Routes
 
 | Route | Method | File | Purpose | Phase |
 |---|---|---|---|---|
-| `/api/draft-mode/enable` | GET | site/src/app/api/draft-mode/enable/route.ts | Validate Sanity preview-url-secret + same-origin check + draftMode().enable() | SCAFFOLD-1 |
-| `/api/draft-mode/disable` | GET | site/src/app/api/draft-mode/disable/route.ts | draftMode().disable() | SCAFFOLD-1 |
+| `/api/draft-mode/enable` | GET | site/src/app/api/draft-mode/enable/route.ts | 6-step security-ordered handler (CMA F-2 v1.3): Origin/Referer allow-list (fail-closed + F8 literal-`null` guard + BvR #34 v2.2 NODE_ENV-gated dev expansion via `safeUrlOrigin(request.url)`) → Origin/Referer check (with BvR #35 v2.2 null-origin escape hatch via `hasSanityPreviewSignature(url, origin, referer)` 3-param helper gating null/null on Sanity's 3-query-param signature) → preview-url-secret validation (F-6 try/catch + F7 no-leak) → redirectTo same-origin check (defense-in-depth per BvR #36 v2.2 — library API doesn't expose off-origin `redirectTo`; Tech Debt #20) → `draftMode().enable()` → redirect. Module-scope `previewValidationClient` helper (F-7 + F-12 + F12 v2.1 + M7 v2.2). | SCAFFOLD-1 + DESIGN-1 Brief B §8.5 (HALT 2 + HALT 3) |
+| `/api/draft-mode/disable` | POST | site/src/app/api/draft-mode/disable/route.ts | Dual Origin AND Referer allow-list check (CMA F-3 Option A v1.3) + F8 v2.1 literal-`null` guard + F13 v2.1 explicit booleans + F11 v2.1 Referer-stripping edge-case comment (Tech Debt #18 for TEMPLATE-*) + BvR #34 v2.2 NODE_ENV-gated dev expansion (mirrored from enable route) → `draftMode().disable()`. GET→POST conversion per CMA F-1 v1.3 (button-click fetch, not iframe navigation). Disable has no preview-url secret; the dual-check IS the CSRF barrier. | SCAFFOLD-1 + DESIGN-1 Brief B §8.6 (HALT 2 + HALT 3) |
 
 ## Scripts
 
 | Script | Purpose | Output | Phase |
 |---|---|---|---|
+| scripts/audit/static-2/extract-chrome.ts | Playwright-driven live-site chrome audit. Captures header + 3 mega-menus + footer from cloudemployee.io. GeoTargetly bypass + `__name` shim. 5-strategy icon extraction. Strategy 6 for Resources featured-card detection. | audit-output/static-2/{navigation,footer,scroll-behavior,slug-match-report,how-it-works-photo-comparison,assets-manifest,static-2-brief-deltas,static-3-brief-deltas}.json + assets/ | STATIC-2 |
+| scripts/audit/static-2/probe-panel-shape.ts | Diagnostic probe of mega-menu DOM structure. Captures anchorOuterHtml + pseudo-element styles + sibling sweep + icon-class sweep + Resources card-shape sweep. One-off; informs Strategy 6 design. | audit-output/static-2/panel-shape-probe.json | STATIC-2 |
+| scripts/static/seed-globals-v2.ts | STATIC-2 reseed. Resolves 25 references by slug (3 hand-curated customerStory via Decision A + 3 hand-curated blogPost via Decision B + 19 service/technology). Patches taglines (19 docs). Uploads 4 HIW inline images. createOrReplace on navigation + footer with v2 structure + legacy preservation + DELTA-6 /alternatives rewrite. Includes `announcementBar` default (STATIC-3). | navigation + footer Sanity globals; service/technology tagline patches | STATIC-2 / STATIC-3 |
+| scripts/static/patch-announcement-bar.ts | STATIC-3 additive patch. Sets `navigation.announcementBar` only (no full reseed). Jake-run with `SANITY_MIGRATION_WRITE_TOKEN`. | navigation global patch | STATIC-3 |
+| scripts/static/verify-static-2.ts | Phase-close gate. 6 GROQ-based checks: navigation new fields populated, footer new + legacy populated, 25 refs resolve, ≥19 taglines, /alternatives used (DELTA-6). Exit 1 on any fail. | stdout pass/fail per check | STATIC-2 |
 | scripts/webflow-inventory.js | Webflow API full inventory | audit-output/ce-inventory.json | MYGRATR-0 |
 | scripts/firecrawl-sitemap.js | Full site crawl via Firecrawl | audit-output/ce-sitemap.json | MYGRATR-0 |
 | scripts/run-migrations.js | Applies Supabase SQL migrations | Supabase schema | MYGRATR-0 |
@@ -249,6 +424,44 @@ Grouped in `studio/schemas/structure.ts` into six Studio nav sections.
 | scripts/content/cleanup-technology-null-image-fields.ts | DEV-6 Op B. 101 technology docs; atomic per-doc patch covering 1–2 fields (thumbnail always; techLogo on 2 hardcoded _ids). Per-doc literal-null assertion + scope-membership consistency check. Audit row: technology-null-image-fields-unset. | 101 patches + 1 row | CONTENT-1D-CLEANUP |
 | scripts/content/cleanup-technology-null-folds-featured-image.ts | DEV-6 Op C. Path-patch primitive (`folds[_key=="..."].featuredImage`). Walks each doc's folds[], collects _keys for null-featuredImage entries, validates _key is non-empty string, issues atomic patch per doc. 100 docs patched. Audit row: technology-null-folds-featured-image-unset. | 100 path-patches + 1 row | CONTENT-1D-CLEANUP |
 | scripts/content/cleanup-customerstory-null-image-fields.ts | DEV-6 Op D. 17 customerStory docs; atomic per-doc patch covering 1–3 fields (companyProductImage on 5, thumbnail on 10, openGraphImage on 17). EXPLICITLY out of scope: companyLogo (Travel Tech Client deferred). Audit row: customer-story-null-image-fields-unset. | 17 patches + 1 row | CONTENT-1D-CLEANUP |
+| scripts/design/preflight-migrations-check.ts | Step 0 pre-flight: assert `migrations.status = content_complete` before any DESIGN-1 work | stdout | DESIGN-1 Step 0 |
+| scripts/design/refresh-content-migrations-rows.ts | Step 0a: refresh `migrations.metadata.content_phase.content_migrations_rows` from stale 38 to actual 42 (REST-based; direct Postgres broken per Tech Debt #12) | Supabase metadata patch | DESIGN-1 Step 0a |
+| scripts/design/verify-token-scope.mjs | Step 0c: probe Sanity token via `create()` + cleanup; only `statusCode: 403` or `401` proves read-only | stdout | DESIGN-1 Step 0c |
+| scripts/design/diagnostic-1-type-source.mjs / diagnostic-2-navy-contexts / diagnostic-3-gap-probes / diagnostic-4 | Step 1 diagnostic probes (type-source classification, navy-context coverage, namespace gap probes, colour-aliasing diagnostic) | `audit-output/design-1/diagnostic-*.json` | DESIGN-1 Step 1 |
+| scripts/design/extract-design-tokens.mjs | Step 1: extract design tokens from live CE source at 1440×900 + 768 + 375 breakpoints | TOKENS.md draft | DESIGN-1 Step 1 |
+| scripts/design/extract-gsap-timings.ts | Step 1: GSAP runtime instrumentation shim (best-effort per F10/F11/F12 caveats) | `audit-output/design-1/gsap-{home,about,technology}.json` | DESIGN-1 Step 1 |
+| scripts/design/measure-third-party-weight.mjs | Pre-Step-2 (DEV-6): measure third-party JS weight from CE live site (Node-built-in https + Accept-Encoding gzip; counts wire bytes) | `audit-output/design-1/third-party-weight.json` | DESIGN-1 DEV-6 |
+| scripts/design/probe-{21 probes}.mjs | Step 2: Per-primitive CE-source pattern probes — `accordion-chevron`, `accordion-marquee-styles`, `blockquote-mobile`, `blockquote-styles`, `button-styles`, `card-styles`, `checkbox-radio-textarea`, `container-styles`, `divider-styles`, `eyebrow-styles`, `heading-styles`, `hubspot-embed`, `hubspot-mounted-dom`, `icon-inventory`, `image-quality`, `image-styles`, `input-styles`, `link-tag-styles`, `richtext-styles`, `text-styles`, `video-embeds`. Outputs consumed by per-primitive source comments. | `audit-output/design-1/{name}-probe.json` | DESIGN-1 Step 2 |
+| scripts/design/build-icon-sprite.mjs / emit-icon-sprite.mjs / refetch-full-svgs.mjs / check-probe-doc-cleanup.mjs | Step 2: Icon sprite generation pipeline (build source-of-truth at `_icons/sprite.svg`, emit to `public/icons/sprite.svg`, refetch full SVGs from CDN, post-build cleanup) | `site/public/icons/sprite.svg` | DESIGN-1 Step 2 |
+| scripts/design/verify-sanity-image-builder.mjs | Step 2: verify `@sanity/image-url` builder produces correct CDN URLs for E1 Image primitive | stdout | DESIGN-1 Step 2 |
+| scripts/design/generate-ui-strings.mjs | Step 6: byte-idempotent generator — reads `tools/eslint/ui-strings.json` (canonical 14-key SoT) and emits `site/src/lib/ui-strings.ts` (do-not-edit TS const). Re-run is byte-idempotent on unchanged JSON input. | `site/src/lib/ui-strings.ts` | DESIGN-1 Step 6 |
+| scripts/design/probe-ui-strings-reality.mjs | Step 6 §6.0a probe: one-shot seed-list provenance script — walks codebase JSX for visible chrome strings, emits inventory used to seed `tools/eslint/ui-strings.json`. Archived after one-shot use. | `audit-output/design-1/ui-strings-reality.json` | DESIGN-1 Step 6 |
+| scripts/template-blog/probe-batch.ts | HALT 1 Probes 0–10 orchestrator (meta-fields, visual-reference, content-types, route-conflict, locale-state, etc.) | `audit-output/template-blog/probe-*.md` | TEMPLATE-BLOG |
+| scripts/template-blog/capture-blogs.ts | HALT 1 Probe 1b — Playwright capture of 3 sample blog URLs on live CE (3 breakpoints each) | `audit-output/screenshots-template-blog/{complex,sparse}/{mobile,tablet,desktop}.png` | TEMPLATE-BLOG |
+| scripts/template-blog/select-capture-targets.ts | HALT 1 Probe 1b — target slug selection helper | stdout | TEMPLATE-BLOG |
+| scripts/template-blog/find-thumb-missing.ts | HALT 1 audit — thumbnail-image presence check across blogPost corpus | stdout | TEMPLATE-BLOG |
+| scripts/template-blog/probe-content-block-types.ts | HALT 2 audit artifact — enumerate distinct `_type` values inside `blogPost.content[]` (surfaced the video gap, then the table gap at HALT 3) | stdout | TEMPLATE-BLOG |
+| scripts/template-blog/probe-video-references.ts | HALT 2 audit artifact — Vimeo embed block enumeration across blogPost corpus (CONTENT-1E evidence) | stdout | TEMPLATE-BLOG |
+| scripts/template-blog/probe-video-block-context.ts | HALT 2 audit artifact — per-video-block context drill (raw JSON of surrounding blocks) | stdout | TEMPLATE-BLOG |
+| scripts/template-blog/probe-spot-check-urls.ts | HALT 3 pre-flight — variation-axis URL selection (6 axes × 14 URLs greedy coverage); writes `audit-output/template-blog/spot-check-urls.md` | markdown table | TEMPLATE-BLOG |
+| scripts/template-blog/probe-spot-check-corpus.ts | HALT 3 pre-flight — corpus-shape verification (category count + TL;DR shape) | stdout | TEMPLATE-BLOG |
+| scripts/template-blog/probe-rich-text-gaps.ts | HALT 3 pre-flight — corpus-wide table + blockquote + callout shape analysis (surfaced Tech Debt #25 expanded scope) | stdout | TEMPLATE-BLOG |
+| scripts/template-blog/probe-rich-text-doc-drill.ts | HALT 3 pre-flight — per-doc `content[]` dump for onboarding-latam table-loss evidence | stdout | TEMPLATE-BLOG |
+| scripts/content/probe-w-embed-sweep.ts | Step 1 read-only sweep probe across 5 doc types. Surfaces every `<div data-rt-embed-type>` + `<figure class="w-richtext-figure-type-video">` instance with classification (table / iframe / script / style-only / other). | `audit-output/content-1e/w-embed-sweep-inventory.json` | CONTENT-1E |
+| scripts/content/migrate-w-embed-recovery.ts | Step 4 migrator. HARD GATE comment top (Studio deploy must precede). Dedup-aware pre-flight (classifies sweep targets as existing / dedupedToCanonical / orphan; halt on orphan). Halt-on-first-failure per-doc guards. Atomic `.patch.set({ [field]: newPortableText }).commit()`. Pre-patch snapshot per doc (Override 2). | Sanity patches + `content_migrations` row `w-embed-recovery` + snapshot files | CONTENT-1E |
+| scripts/content/verify-content-1e.ts | Throws-on-failure verifier. Exports `verifyContent1E()`. 5 hard-gate checks: schema deployed (round-trip a `videoEmbed` block), `_type` frequencies match sweep (deduped-aware arithmetic), `migrations.status` unchanged at `content_complete`, `w-embed-recovery` row healthy, no regression on prior-phase rows. | (export) | CONTENT-1E |
+| scripts/content/run-verify-content-1e.ts | CLI entrypoint. Calls `verifyContent1E()` without try/catch. | stdout; exits 0 / 1 | CONTENT-1E |
+| scripts/content/patch-content-1e-parity-score.ts | One-shot Supabase row patch (commit 43fd606). Corrects the `w-embed-recovery` row's `parity_score` 89.77 → 100 (denominator was sweep-total instead of eligible-after-dedup) and appends a dedup-semantics note to `error_log`. Idempotent re-runs (no-op when already corrected). Companion fix in `migrate-w-embed-recovery.ts` switches `parityBaselineCount` to eligible count for future re-runs. | Supabase row update | CONTENT-1E |
+| scripts/static/seed-globals.ts | Step 1 seeder. `createOrReplace` on the 3 Sanity globals (`navigation`, `footer`, `siteSettings`). Locked decisions threaded through (Embedding relabel, 19-item Services dropdown, 6-item Resources dropdown mirroring footer column 4). Visible `normalize()` helper strips em/en dashes from every string. | 3 Sanity docs | STATIC-1 |
+| scripts/static/seed-hubs.ts | Step 1 seeder. `createOrReplace` on the 16 hub singletons + `notFoundPage`. Reads `audit-output/pages/<slug>/content.json` for 14 hubs; uses Jake-authored copy for `videosHub` + `staffAugmentationHub` (no Webflow source). Eyebrow + topicsHeader populated. | 17 Sanity docs | STATIC-1 |
+| scripts/static/patch-hub-metadescriptions.ts | Step 1 follow-up. `.patch().set()` (NOT createOrReplace) on `videosHub` + `staffAugmentationHub` `metaDescription` (148 + 147 chars; clears the 140-160 Studio publish-warning floor). | Sanity patches | STATIC-1 |
+| scripts/static/seed-default-og-image.ts | Step 1 follow-up. Sources CE Webflow homepage og:image (`usthumb.png`, 1470×796 PNG); validates PNG signature; uploads to Sanity as asset; patches `siteSettings.defaultOgImage` with the asset ref. Idempotent (re-runs upload a new asset + update the ref). | Sanity asset + patch | STATIC-1 |
+| scripts/static/axe-not-found.ts | Step 2 gate. Playwright + axe-core scan of `/this-does-not-exist`. WCAG 2.1 AA ruleset; exits non-zero on any violation. | stdout + exit code | STATIC-1 |
+| scripts/static/axe-hub.ts | Step 4 + Step 6 gate. Playwright + axe-core sweep across hub URLs (default: all 16; takes path args for a subset). | stdout + exit code | STATIC-1 |
+| scripts/static/probe-nav-interactive.ts | Step 5 keyboard contract probe. Dropdown ArrowDown opens + Escape closes + focus returns to trigger; drawer Enter opens + Escape closes. | stdout + exit code | STATIC-1 |
+| scripts/static/sweep-routes.ts | Step 6 gate. 11-route Playwright sweep + browser-console capture. Confirms `role="banner"` + `role="contentinfo"` + `<main id="main">` + skip link on every route. Filters expected third-party noise. | stdout + exit code | STATIC-1 |
+| scripts/static/validate-json-ld.ts | Step 6 gate. JSDOM-parse every `<script type="application/ld+json">` on /services, a blog post, and the 404. Confirms expected schema.org types (CollectionPage + BreadcrumbList on hubs, BlogPosting + BreadcrumbList on posts, none on 404). | stdout + exit code | STATIC-1 |
+| scripts/static/verify-static-1.ts | Phase-close gate. Combines every Step 1-6 check into a single pass/fail script. Pre-requisite: dev server running on localhost:3000. Exits 0 on full pass. | stdout + exit code | STATIC-1 Step 7 |
 
 ## Lib Files
 
@@ -259,16 +472,33 @@ Grouped in `studio/schemas/structure.ts` into six Studio nav sections.
 | src/lib/env.ts | env (parsed Zod schema), ensureWebflow/Firecrawl/Anthropic/Hubspot/Ahrefs/Sanity/SupabaseDb runtime guards | Validated env loader — single source of env access | SCHEMA-1 |
 | src/lib/supabase.ts | createServerClient() | Supabase admin client (service role; bypasses RLS) | SCHEMA-1 |
 | src/lib/pipeline/state-machine.ts | MigrationStatus (canonical string-literal union), assertValidTransition(), validNextStatuses() | Migration pipeline state machine | SCHEMA-1 |
-| site/src/lib/env.ts | env (Zod-validated), site-scoped env loader with NEXT_PUBLIC_VERCEL_URL fallback | Validated env access for the Next.js app | SCAFFOLD-1 |
+| site/src/lib/env.ts | env (Zod-validated), site-scoped env loader with NEXT_PUBLIC_VERCEL_URL fallback. DESIGN-1 Brief B §8.1 tightened 3 vars (D14): `NEXT_PUBLIC_SITE_URL` `.catch()` fallback stripped → `z.string().url()`; `NEXT_PUBLIC_SANITY_STUDIO_URL` NEW (`.url().optional()` + conditional `.refine()` enforcing presence in non-development per F5 v2.1); `SANITY_API_READ_TOKEN` `.optional().default('')` → `z.string().min(1)`. | Validated env access for the Next.js app | SCAFFOLD-1 (extended DESIGN-1 Step 8) |
 | site/src/lib/locale.ts | LOCALES, Locale, getLocaleFromPath, buildLocalePath, generateCanonical, generateHreflang | Locale routing + canonical/hreflang single source of truth | SCAFFOLD-1 |
-| site/src/lib/sanity/client.ts | sanityClient (published + CDN), previewClient (drafts, authenticated) | Sanity clients for the Next.js app | SCAFFOLD-1 |
+| site/src/lib/sanity/client.ts | sanityClient (single client per CMA-C2 + D4; DESIGN-1 Brief B §8.3 collapsed SCAFFOLD-1's two-client baseline — `previewClient` export removed; draft perspective requested via per-fetch options). Stega gating per F1/F2/F4/F15 v2.1/I5 v2.2: explicit opt-in branch (`SANITY_STEGA_ENABLED=='1' && VERCEL_ENV!='production'`) + Vercel preview branch (NODE_ENV clause dropped per F2) + raw-env safety check (console.warn on prod+stega co-occurrence per I5 v2.2) + `stega.enabled` gated on `!!env.NEXT_PUBLIC_SANITY_STUDIO_URL` (F4 v2.1). `useCdn` gated on `!stegaEnabled` per F-9 v1.3. | Sanity client for the Next.js app | SCAFFOLD-1 (extended DESIGN-1 Step 8) |
 | site/src/lib/sanity/queries.ts | getSiteSettings | GROQ query stubs (CONTENT-1 expands) | SCAFFOLD-1 |
-| site/src/lib/sanity/live.ts | sanityFetch, SanityLive | defineLive factory for live revalidation | SCAFFOLD-1 |
+| site/src/lib/sanity/live.ts | sanityFetch, SanityLive | `defineLive({ client: sanityClient, serverToken: env.SANITY_API_READ_TOKEN })` factory for live revalidation. DESIGN-1 Brief B §8.2 added the viewer-scoped `serverToken` slot per CMA-C2 + D5 — retasks `SANITY_API_READ_TOKEN` from SCAFFOLD-1's `previewClient` token role to the `serverToken` slot. | SCAFFOLD-1 (extended DESIGN-1 Step 8) |
 | site/src/lib/redirects/generated-redirects.ts | crawlRedirects | Auto-generated from ce-canonical-urls.json | SCAFFOLD-1 |
 | site/src/lib/redirects/regex-redirects.ts | regexRedirects | Auto-generated from ce-regex-redirects.json | SCAFFOLD-1 |
 | site/src/lib/redirects/webflow-redirects.ts | webflowRedirects | Auto-generated from webflow-redirects.csv | SCAFFOLD-1 |
 | src/lib/content/sanity-write-client.ts | sanityWriteClient | `@sanity/client` write client for migration scripts. CONTENT-1D: switched to `SANITY_MIGRATION_WRITE_TOKEN` (least-privilege, single-dataset); module-load assertion throws if migration token missing OR if `SANITY_API_READ_TOKEN` also present (path-alias collision guard, F14). | CONTENT-1A (extended CONTENT-1D) |
 | src/lib/content/webflow-read-client.ts | getCollectionItems(collectionId), WebflowItem type | Paginated Webflow REST v2 reader (offset+limit) | CONTENT-1A |
+| site/src/lib/seo/serialize-json-ld.ts | serializeJsonLd | XSS-safe JSON-LD serializer (CMA F4 v1.3 pattern). Escapes `<` / `>` / `&` (Unicode escapes) + U+2028 / U+2029 (JS-only line terminators). Used by all JSON-LD emission sites; locked in CONVENTIONS.md §"JSON-LD XSS-Safe Serialization". | TEMPLATE-BLOG |
+| site/src/lib/sanity/image.ts | urlFor(source) | Sanity image-url builder for non-React contexts (generateMetadata, JSON-LD, OG fallbacks). E1 Image primitive uses its own builder internally for srcset; this is the imperative-call counterpart. | DESIGN-1 Step 2 / TEMPLATE-BLOG |
+| site/src/lib/sanity/queries/blog-post.ts | BLOG_POST_QUERY, BLOG_POST_META_QUERY, RELATED_BLOG_POSTS_QUERY, BLOG_POST_PARAMS_QUERY, fetchBlogPost, fetchBlogPostMeta, fetchRelatedBlogPosts, fetchBlogPostParams | Parameterized GROQ queries + Zod parse boundary for blogPost type. Pattern-establishing for the 12 future TEMPLATE-* query modules. | TEMPLATE-BLOG |
+| site/src/lib/sanity/queries/team-member.ts | TEAM_MEMBER_QUERY, TEAM_MEMBER_META_QUERY, AUTHOR_BLOG_POSTS_QUERY, TEAM_MEMBER_PARAMS_QUERY, fetchTeamMember, fetchTeamMemberMeta, fetchAuthorBlogPosts, fetchTeamMemberParams | Parameterized GROQ + Zod for teamMember detail + author blog-post side query + static params | TEMPLATE-TEAM_MEMBER |
+| site/src/lib/sanity/queries/review.ts | REVIEW_QUERY, REVIEW_META_QUERY, RELATED_REVIEWS_QUERY, REVIEW_PARAMS_QUERY, fetchReview, fetchReviewMeta, fetchRelatedReviews, fetchReviewParams | Parameterized GROQ + Zod for review detail + related reviews side query + static params | TEMPLATE-REVIEW |
+| site/src/lib/sanity/queries/service.ts | SERVICE_QUERY, SERVICE_META_QUERY, SERVICE_PARAMS_QUERY, fetchService, fetchServiceMeta, fetchAllServiceSlugs | Parameterized GROQ + Zod for service detail (`folds`, `associatedTechnologies`, `faqs`) + meta + static params | Phase 2A |
+| site/src/lib/sanity/queries/technology.ts | TECHNOLOGY_QUERY, TECHNOLOGY_META_QUERY, TECHNOLOGY_PARAMS_QUERY, fetchTechnology, fetchTechnologyMeta, fetchAllTechnologySlugs | Parameterized GROQ + Zod for technology detail + meta + static params (listItemOnly deliberately routed, sitemap-excluded) | Phase 2A |
+| site/src/lib/sanity/queries/shared-faqs.ts | SHARED_SERVICE_FAQS_QUERY, fetchSharedServiceFaqs | Fetches the `sharedServiceFaqs` singleton (three faqItem groups) for the two-layer FAQ model on service/technology detail pages | Phase 2A |
+| site/src/lib/sanity/queries/catalogue-hub.ts | SERVICES_HUB_DATA_QUERY, TECHNOLOGY_HUB_DATA_QUERY, fetchServicesHubData, fetchTechnologyHubData (+ Zod schemas) | One round-trip per hub returning the hub singleton (hero/meta/FAQs) + full child list with grouping fields (`type`, `aiOffering`, `location`, `order`) | Phase 2B |
+| site/src/lib/catalogue/content.ts | CatalogueContent + mapServiceToContent, mapTechnologyToContent | Sanity doc -> CatalogueDetail transform (folds -> sections, associatedTechnologies -> tech coverage, two-layer FAQs). Server-only. | Phase 2A |
+| site/src/lib/catalogue/hub-content.ts | ServicesHubContent, TechnologyHubContent + mapServicesHubData, mapTechnologyHubData | Sanity hub data -> hub-template content. Data-driven service grouping; fixed brand furniture kept in template. Server-only. | Phase 2B |
+| site/src/lib/review/display-name.ts | getReviewCompanyName, slugToDisplayName | H1/breadcrumb company label derivation (metaTitle prefix or slug humanization) | TEMPLATE-REVIEW |
+| site/src/types/sanity/shared.ts | SanityImageSchema, PortableTextSchema (narrowed to TypedObject[]), FaqItemSchema, LocaleFieldSchema + types | Site-bound shared read-model Zod schemas. Read-model vs Studio write-model split per CONVENTIONS.md §"Read-Model Zod Co-Location". | TEMPLATE-BLOG (HALT 1) |
+| site/src/types/sanity/documents/blog-post.ts | BlogPostSchema, BlogPostMetaSchema, RelatedBlogPostSchema, BlogPostAuthorSchema, BlogPostCategorySchema, BlogPostTagSchema + types | Read-model Zod for blogPost full + meta + related-post + dereferenced projections. Nullable adjustments at TB18 (author / date) match migrated data state. | TEMPLATE-BLOG (HALT 1) |
+| site/src/types/sanity/documents/team-member.ts | TeamMemberSchema, TeamMemberMetaSchema, AuthorBlogPostSchema + types | Read-model Zod for teamMember detail + meta + author-post side query | TEMPLATE-TEAM_MEMBER |
+| site/src/types/sanity/documents/review.ts | ReviewSchema, ReviewMetaSchema, RelatedReviewSchema + types | Read-model Zod for review detail + meta + related-review side query | TEMPLATE-REVIEW |
+| site/src/components/ui/_utils/parse-sanity-image-ref.ts | parseSanityImageRef | Server-import-safe helper extracting `{width, height}` from Sanity asset `_ref` strings (`image-{hash}-{W}x{H}-{format}`). Extracted from E1 Image at HALT 2 (BvR #38) so server consumers can call without crossing the `'use client'` boundary. | TEMPLATE-BLOG (BvR #38) |
 | src/lib/content/migration-tracker.ts | recordMigration({ collectionSlug, source, migrated, status, errorLog, parityBaselineCount }) | Upsert into content_migrations keyed by (org_id, migration_id, collection_slug). `parityBaselineCount` (CONTENT-1C) makes parity_score measure on the deduplicated set; vacuous success (denominator=0, migrated=0, no errors) yields 100. | CONTENT-1A (extended CONTENT-1C) |
 | src/lib/content/ce-collection-ids.ts | CE_COLLECTION_IDS (29-key as-const map: 10 CONTENT-1A + 8 CONTENT-1B + 11 CONTENT-1C). CE_BLOG_COLLECTIONS (typed iteration array for the 7 blog source collections). | CE-specific Webflow collection IDs in scope for CONTENT-1A/1B/1C | CONTENT-1A (extended CONTENT-1B + 1C) |
 | src/lib/content/migration-helpers.ts | toPortableText (async; two-pass JSDOM walk uploading inline `<img>` to real Sanity assets via `Promise.allSettled`; null guard at entry; `<figure>` rule skips iframe-in-figure), extractUrl, uploadImage, toRefs (validates `/^[a-f0-9]{24}$/i` and uses full Webflow ID as `_key`), extractOption, webflowSlug, fetchOptionIdMap (CONTENT-1C lift), resolveOption (CONTENT-1C lift), decodeHtmlEntities (CONTENT-1C), `deleteByIdStrict(client, id, expectedType)` (CONTENT-1D — `_id`-only deletion with `_type` validation before delete) | Shared helpers for every CONTENT-1B+ migrator | CONTENT-1B (extended CONTENT-1C, CONTENT-1D) |
@@ -276,11 +506,35 @@ Grouped in `studio/schemas/structure.ts` into six Studio nav sections.
 | src/lib/content/meta-scraper.ts | scrapeMeta(browser, url), withBrowser(fn), ScrapedMeta | Playwright-backed live-page meta extractor; `waitUntil: 'domcontentloaded'`, 20s per-page timeout, custom UA | CONTENT-1D |
 | src/lib/content/meta-normaliser.ts | normaliseMeta({rawTitle, rawDescription}), truncateAtWord(s, max), NormaliseResult (titleWarnings/descriptionWarnings/warnings split) | Brand-suffix strip + length compliance + word-boundary truncation with whitespace-prefix fallback (F17). Hard rule: never pad/fabricate metaDescription. | CONTENT-1D |
 | src/lib/content/meta-backfill-runner.ts | runMetaBackfill(opts), FieldPolicy enum, PreScrapeDecision, SanityDocLite | Shared runner enforcing every CONTENT-1D structural protection (F1 abort gate / F4 monotonic needsReview / F5 metaTitle-never-empty / F6 never-touch structural / F7 hook-before-URL / F8 truncation assertion / F13 1.5s delay / F21 split provenance) + hard-failure vs soft-warning row-status separation. | CONTENT-1D |
+| site/src/lib/ui-strings.ts | UI_STRINGS const (49 keys post-STATIC-1) | Generated chrome-strings map (do-not-edit; regenerate via `npm run generate-ui-strings`). Enforced by `react/jsx-no-literals` (upstream) + `local/no-conditional-strings-in-jsx` (project-local) per CONVENTIONS.md §UI_STRINGS Rule. STATIC-1 Step 6 added 19 chrome keys (nav.* + footer.* + hub.*). | DESIGN-1 Step 6 (extended STATIC-1) |
+| site/src/lib/url.ts | toInternalHref(rawHref) | URL normalization helper. Strips known CE hosts (`www.cloudemployee.io`, `cloudemployee.io`, `NEXT_PUBLIC_SITE_URL`) and returns bare pathname so `next/link` routes Sanity-stored URLs as internal navs. Direct `process.env.NEXT_PUBLIC_SITE_URL` read (Tech Debt #22 bridge — client components can't import `@/lib/env`). Used by Header, Footer, 404 CTA, hub cards. | STATIC-1 Step 2 |
+| site/src/lib/sanity/queries/navigation.ts | NavigationSchema (Zod) + types + fetchNavigation | Fetches `navigation` global via `sanityFetch`. Zod parse at boundary. `hasDropdown(link)` predicate. | STATIC-1 Step 5 |
+| site/src/lib/sanity/queries/footer.ts | FooterSchema (Zod) + types + fetchFooter + resolveCopyright | Fetches `footer` global via `sanityFetch`. `resolveCopyright(text)` substitutes `{year}` with `new Date().getFullYear()` so the copyright string auto-updates without re-seeding. | STATIC-1 Step 3 |
+| site/src/lib/sanity/queries/not-found-page.ts | NotFoundPageSchema (Zod) + types + fetchNotFoundPage + findCtaSection | Fetches `notFoundPage` singleton. `findCtaSection(page)` returns the first `ctaSection` from the `sections[]` polymorphic array. | STATIC-1 Step 2 |
+| site/src/lib/sanity/queries/hubs.ts | HUB_CONFIG (16-row table: shape, childType, childSort, childFilter, categorySlug, cardKind, basePath, breadcrumbName, underBlog), HubSingletonSchema + HubChildItemSchema (Zod), fetchHubSingleton, fetchHubChildren, fetchHubChildrenCount, fetchSiteDefaultOgImage, getChildHref / getChildTitle / getChildImage helpers | One generic Sanity helper for all 16 hubs. Adding a hub is one row in `HUB_CONFIG`; no fetcher duplication. Sort orders locked per Amendment #3. | STATIC-1 Step 4 |
+| site/src/lib/hubs/pagination.ts | HUB_PAGE_SIZE (12), parsePageParam, buildPagination, buildPageNumbers | URL-driven pagination: `?page=N` search param, page 1 has no suffix in canonical, page 2+ self-canonical. `notFound()` on invalid input or out-of-range. | STATIC-1 Step 4 |
+| site/src/lib/hubs/render-hub.tsx | renderHub({ hub, hubType, items, featured, pagination }) | Shared hub render helper. Breadcrumbs → hero → featured (if any) → topicsHeader (blog hubs) or sr-only h2 (collection hubs, Step 6 heading-order fix) → main paginated grid → PaginationControl (prev/next + numbered badges). Inline `<script type="application/ld+json">` for CollectionPage + BreadcrumbList (via `serializeJsonLd`). React 19 hoists `<link rel="prev"/"next">` to head. | STATIC-1 Step 4 (+ Step 6 fix) |
+| site/src/lib/hubs/metadata.ts | buildHubMetadata(hubType, searchParams) | Shared metadata builder. Returns `Metadata` with title, description, alternates (canonical with `?page=N` suffix on page 2+; hreflang languages), openGraph (with image cascade hub.openGraphImage → siteSettings.defaultOgImage → omit), twitter. | STATIC-1 Step 4 |
+| site/src/lib/hubs/render-route.ts | resolveHubRoute(hubType, searchParams) | Orchestrator: fetches hub singleton + computes pagination + fetches page slice. `notFound()` on missing singleton or invalid page. | STATIC-1 Step 4 |
 
 ## npm Scripts
 
+### Launch-parity + design (Jul 2026)
+
 | Command | Runs |
 |---|---|
+| `npm run launch:capture-live` | Record what LIVE does for all 6,937 corpus URLs → `data/webflow/live-behaviour.json` (concurrency 2, retries, refuses partial baseline) |
+| `npm run launch:verify-parity` | THE LAUNCH GATE — replay corpus vs target, compare by status class + destination-resolves; reads `parity-exceptions.json`. Run against a `npm start` production server |
+| `npm run launch:verify-noindex` | Assert every non-canonical host serves `Disallow: /` |
+| `npm run launch:verify-hubspot-forms` | Portal ID exposed + every form resolves + Sanity funnel order matches HubSpot redirect chain |
+| `npm run content:capture-hubs` / `content:verify-hubs` | Capture hub lead + body + FAQs from live (dry-run default, `--apply`); verifier asserts every captured word is on the live page |
+| `npm run content:capture-marketing` | Capture the marketing + post-conversion pages (incl. `calendlyUrl`) into their singletons |
+| `npm run content:seed-blog-hero` | Seed §7 blog hero copy; MOVES the long lead into the long-form band (idempotent) |
+| `npm run content:seed-calculator-rates` | Seed the 6-row price-comparison rate card from live |
+| `npm run verify:hiring-cost` | Re-check the hiring-cost model against the live widget (900 figures) |
+| `npm run redirects:job-roles` | Generate one-per-slug `/live-job-role/*` redirects from Webflow's export (NOT a catch-all) |
+| `npm run content:retire-orphans` | Retire docs deleted from Webflow (dry-run default, `--apply`; ledger in audit-output) |
+
 | `npm run audit:run` | Steps 00 → 3e (URL reconciliation through template custom code) |
 | `npm run audit:chunk2` | Steps 4 → 9 (interactions, scripts, forms, classifier, manifest, DB write) |
 | `npm run audit:chunk3` | LLM refresh for Steps 4, 7, 3e, 8, 9 (requires ANTHROPIC_API_KEY) |
@@ -337,6 +591,21 @@ Grouped in `studio/schemas/structure.ts` into six Studio nav sections.
 | `npm run content:cleanup-technology-null-image-fields` | CONTENT-1D-CLEANUP DEV-6 Op B — unset thumbnail on 101 + techLogo on 2 technology docs (atomic per-doc) |
 | `npm run content:cleanup-technology-null-folds-featured-image` | CONTENT-1D-CLEANUP DEV-6 Op C — path-patch unset `folds[_key="..."].featuredImage` on 100 technology docs |
 | `npm run content:cleanup-customerstory-null-image-fields` | CONTENT-1D-CLEANUP DEV-6 Op D — unset companyProductImage / thumbnail / openGraphImage on customerStory docs (atomic per-doc; companyLogo OUT OF SCOPE) |
+| `npm run generate-ui-strings` | DESIGN-1 Step 6: regenerate `site/src/lib/ui-strings.ts` from `tools/eslint/ui-strings.json` (byte-idempotent on unchanged input). 49 keys at STATIC-1 close. |
+| `npm run static:seed-globals` | STATIC-1 Step 1: seed `navigation` + `footer` + `siteSettings` Sanity globals via `createOrReplace` |
+| `npm run static:seed-hubs` | STATIC-1 Step 1: seed 16 hub singletons + `notFoundPage` via `createOrReplace` |
+| `npm run static:verify` | STATIC-1 Step 7 phase-close gate: re-runs every check from Steps 1-6 against the dev server; exits 0 on full pass |
+
+## ESLint Custom Tooling (`tools/eslint/`)
+
+DESIGN-1 Step 6 introduced a project-local ESLint plugin under `tools/eslint/` to supplement upstream `react/jsx-no-literals` for the UI_STRINGS chrome-string discipline. Plugin namespace is `local/`. Test harness uses `Linter.verify` directly (not `RuleTester`) because ESLint 9 `RuleTester` silently no-ops on plugin-namespaced rules (BvR #26, logged for HALT 3 consolidation).
+
+| File | Purpose | Phase |
+|---|---|---|
+| `tools/eslint/ui-strings.json` | Canonical SoT — 14 chrome-string keys + `_meta` provenance block. Consumed by `scripts/design/generate-ui-strings.mjs` to emit `site/src/lib/ui-strings.ts`. | DESIGN-1 Step 6 |
+| `tools/eslint/plugin-local.js` | Plugin wrapper — exposes project-local rules under `local/` namespace for `site/eslint.config.mjs` registration | DESIGN-1 Step 6 |
+| `tools/eslint/rules/no-conditional-strings-in-jsx.js` | Project-local rule (~65 lines) — covers the upstream `ConditionalExpression` branch gap left by `react/jsx-no-literals` (surfaced in Brief B §6.4) | DESIGN-1 Step 6 |
+| `tools/eslint/__tests__/ui-strings.test.mjs` | 8-fixture `Linter.verify` AST-coverage harness — F7a regression-catch for upstream gap; F7b verifies custom rule. Plugin-namespace silent failure on ESLint 9 `RuleTester` (BvR #26) motivated the `Linter.verify` direct approach. | DESIGN-1 Step 6 |
 
 ## Audit Output Files (populated by AUDIT-1)
 

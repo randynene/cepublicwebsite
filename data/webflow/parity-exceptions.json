@@ -1,0 +1,133 @@
+{
+  "$comment": [
+    "Places where the new site DELIBERATELY behaves differently from the live Webflow site.",
+    "",
+    "The parity gate exists to catch unintended divergence, and an intended one still shows up",
+    "as a failure. Left unmanaged, the gate accumulates known-red entries, people learn to",
+    "ignore the red, and it stops catching the unintended ones — which is the only thing it was",
+    "built for. So every deliberate divergence is recorded here, with who decided it and why.",
+    "",
+    "This is an allowlist, not a mute button. The gate still probes these URLs and still reports",
+    "what it finds; it just reports them under 'expected' instead of failing the run. If one of",
+    "them starts behaving differently from what `expect` says here, it fails again.",
+    "",
+    "Adding an entry is a product decision, not a way to make a red test go green."
+  ],
+  "exceptions": [
+    {
+      "paths": [
+        "/sourcing",
+        "/embedding",
+        "/retention",
+        "/uk/sourcing",
+        "/uk/embedding",
+        "/uk/retention"
+      ],
+      "expect": "permanent",
+      "decidedBy": "Jake",
+      "decidedAt": "2026-07-13",
+      "reason": "Live serves these 200. We are not rebuilding them: they are the three chapters of the source-embed-retain story that /how-it-works already tells. Redirected rather than dropped because they rank on page one of Google (positions 8.3 / 8.9 / 8.5, 4,373 combined impressions) and a 404 would bin that. Zero backlinks, so a 301 to the page covering the same subject is sufficient."
+    },
+    {
+      "paths": [
+        "/embed",
+        "/retain",
+        "/source",
+        "/sourced",
+        "/uk/embed",
+        "/uk/retain",
+        "/uk/source",
+        "/uk/sourced"
+      ],
+      "expect": "permanent",
+      "decidedBy": "Jake",
+      "decidedAt": "2026-07-13",
+      "reason": "Webflow redirects these to /embedding, /retention and /sourcing, which we are retiring. They now go straight to /how-it-works instead of chaining through a page that no longer exists — the generator collapses the destination (DROPPED_PAGE_TARGETS in extract-redirects.ts). The gate flags them because their final destination differs from live's; that difference IS the decision."
+    },
+    {
+      "paths": [
+        "/scale-this-week",
+        "/uk/scale-this-week"
+      ],
+      "expect": "permanent",
+      "decidedBy": "Jake",
+      "decidedAt": "2026-07-13",
+      "reason": "Live serves this 200. A booking CTA we are not rebuilding. 321 impressions at position 19, no backlinks, so a 301 into the start-hiring funnel preserves what little equity it holds."
+    },
+    {
+      "paths": [
+        "/compare",
+        "/uk/compare"
+      ],
+      "expect": "permanent",
+      "decidedBy": "Jake",
+      "decidedAt": "2026-07-22",
+      "reason": "Live serves the /compare hub root 200. /compare and /alternatives are two hubs over the SAME 27 compareBlog docs; they compete for the same 'Cloud Employee vs X' intent and /alternatives ranks better (Search Console ~9.1 vs ~25.9 for /compare). We consolidate onto the stronger URL: /alternatives is the rebuilt dark/lime hub and the /compare hub root 301s into it. Exact-path only - the /compare/{slug} comparison articles keep their URLs and are unaffected. Pre-launch check outstanding: confirm the /compare root carries no meaningful standalone backlinks before cutover (reversible if it does)."
+    },
+    {
+      "paths": [
+        "/compare/cloud-employee-vs-arc-dev"
+      ],
+      "expect": "permanent",
+      "decidedBy": "Jake",
+      "decidedAt": "2026-07-13",
+      "reason": "Live 301s this to the /compare hub even though the page still exists in Webflow and Sanity — an accidental Webflow redirect shadowing a real page, on THEIR side. Mirrored for launch parity. Revisit with Seb post-launch: publishing it is probably what was intended, but that is a deliberate change to make after cutover, not during it."
+    },
+    {
+      "paths": [
+        "/uk/compare/arc-dev-alternatives-for-startups-2026-comparison-guide",
+        "/uk/compare/arc-dev-contract-cancellation-exit-terms",
+        "/uk/compare/arc-dev-pricing-vs-cloud-employee-true-cost",
+        "/uk/compare/arc-dev-to-dedicated-team-migration-guide",
+        "/uk/compare/arc-dev-vetting-process-vs-cloud-employees-cto-led-technical-assessment",
+        "/uk/compare/arc-dev-vs-toptal-vs-cloud-employee-which-model-fits-your-runway",
+        "/uk/compare/cloud-employee-no-hidden-fees-transparency",
+        "/uk/compare/switching-from-arc-dev-to-a-dedicated-development-team",
+        "/uk/compare/the-hidden-costs-of-arc-dev-screening-time-failed-hires-and-context-switching",
+        "/uk/compare/toptal-vs-upwork"
+      ],
+      "expect": "ok",
+      "decidedBy": "Jake",
+      "decidedAt": "2026-07-14",
+      "reason": "Live 404s these; we serve them 200. Deliberate: the compare articles exist in the CMS and are published in the US locale, but Webflow never published the UK mirrors. Jake asked for them to be published. This ADDS ten pages rather than losing any, so it carries no migration risk - it is new inventory, and the gate flags it only because it differs from live."
+    },
+    {
+      "paths": [
+        "/customer-stories/cleanlink",
+        "/customer-stories/sqr"
+      ],
+      "expect": "permanent",
+      "decidedBy": "Claude, flagged to Jake",
+      "decidedAt": "2026-07-14",
+      "reason": "Live 404s the PLURAL form; the real pages live at /customer-story/<slug> and are 200 on live. We redirect plural to singular, so a wrong-plural URL lands on the right page instead of a 404. Strictly better than live and loses nothing: these URLs cannot be indexed, because live 404s them."
+    },
+    {
+      "paths": [
+        "/favicon.ico"
+      ],
+      "expect": "ok",
+      "decidedBy": "Claude",
+      "decidedAt": "2026-07-14",
+      "reason": "We serve a favicon; the live site does not. Not a page, carries no SEO weight, and is in the corpus only because it appeared in a crawl."
+    },
+    {
+      "paths": [
+        "/haqt6iy0yx2enjczmzi2odmxywjlzdyynjcwntfmytex/a"
+      ],
+      "expect": "notfound",
+      "decidedBy": "Claude",
+      "decidedAt": "2026-07-14",
+      "reason": "A Webflow-internal hash URL that leaked into the crawl (same class as Tech Debt #9). It is not a page anyone links to or can find; live serves it 200 only because Webflow will serve any hash path it minted. Nothing to rebuild."
+    },
+    {
+      "paths": [
+        "/404",
+        "/uk/404"
+      ],
+      "expect": "notfound",
+      "decidedBy": "Claude",
+      "decidedAt": "2026-07-14",
+      "reason": "Live serves /404 with HTTP 200. That is a Webflow artifact: it hosts the 404 template at a real URL, so requesting it directly returns a page that SAYS 'not found' with a status that says 'found'. That is a soft 404, and Google can index it. We return a genuine 404 for /404, and our real not-found page (styled, from the notFoundPage singleton) is served with a 404 status on every unknown URL, which is what actually matters. Deliberately better than live rather than bug-compatible with it."
+    }
+  ]
+}

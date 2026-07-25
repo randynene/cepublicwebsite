@@ -32,6 +32,8 @@ const COLLECTION_INDEX_NAMES = [
 
 const CALCULATOR_NAMES = ['hiringCostCalculatorPage', 'priceComparisonCalculatorPage']
 
+const SHARED_CONTENT_NAMES = ['sharedServiceFaqs']
+
 const STATIC_PAGE_NAMES = [
   'homePage',
   'aboutUsPage',
@@ -45,7 +47,14 @@ const STATIC_PAGE_NAMES = [
   'workWithShawneePage',
   'startHiringPage',
   'notFoundPage',
+  'generalTermsPage',
+  'ourWorkPage',
+  'alternativesHub',
+  'pricingPage',
+  'referralsPage',
   'privacyPolicyPage',
+  'fractionalCtoPage',
+  'hireEngineersPage',
 ]
 
 const GROUPED_SINGLETON_NAMES = new Set([
@@ -53,6 +62,7 @@ const GROUPED_SINGLETON_NAMES = new Set([
   ...RESOURCE_HUB_NAMES,
   ...COLLECTION_INDEX_NAMES,
   ...CALCULATOR_NAMES,
+  ...SHARED_CONTENT_NAMES,
   ...STATIC_PAGE_NAMES,
   ...GLOBAL_TYPE_NAMES,
 ])
@@ -89,6 +99,10 @@ export const deskStructure: StructureResolver = (S) => {
       S.listItem()
         .title('Calculator Pages')
         .child(S.list().title('Calculator Pages').items(CALCULATOR_NAMES.map(singletonItem))),
+      // Shared content blocks
+      S.listItem()
+        .title('Shared Content')
+        .child(S.list().title('Shared Content').items(SHARED_CONTENT_NAMES.map(singletonItem))),
       // Globals
       S.listItem()
         .title('Site Globals')

@@ -1,6 +1,6 @@
 import { defineField, defineType } from 'sanity'
 
-import { metaSourceFields, sourceTrackingFieldsCarryover } from '../_shared'
+import { metaSourceFields, retiredField, sourceTrackingFieldsCarryover } from '../_shared'
 
 interface BookACallDoc {
   firstName?: string
@@ -37,6 +37,7 @@ export default defineType({
       },
       validation: (Rule) => Rule.required(),
     }),
+    retiredField(),
     defineField({
       name: 'calendlyEmbed',
       title: 'Calendly embed',

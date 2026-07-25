@@ -14,6 +14,14 @@ Cross-cutting rules that apply to every collection (§7.13 of
 - Every Webflow RichText field converts to a Sanity Portable Text array
   via `@sanity/block-tools` (§7.5).
 
+**CONTENT-1E note (May 2026):** The deserializer (Step 3) was extended
+to recover Webflow RichText embed wrappers — `<figure
+class="w-richtext-figure-type-video">` emits `videoEmbed` blocks;
+`<div data-rt-embed-type='true'>` wrappers containing `<table>` emit
+`table` blocks; same wrappers containing `<iframe>` (LinkedIn case)
+emit `videoEmbed` blocks. For Customer-2 migrations, ensure schema
+includes both block types before running the deserializer.
+
 Status: v1.0 — initial draft written alongside the schema files in
 SCHEMA-1.
 

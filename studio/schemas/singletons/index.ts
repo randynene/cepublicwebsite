@@ -33,11 +33,28 @@ import scaleThisWeekPage from './scale-this-week-page'
 import workWithShawneePage from './work-with-shawnee-page'
 import startHiringPage from './start-hiring-page'
 import notFoundPage from './not-found-page'
+import generalTermsPage from './general-terms-page'
+import ourWorkPage from './our-work-page'
+import bookACallPage from './book-a-call-page'
+import bookACallConfirmedPage from './book-a-call-confirmed-page'
+import bookACallThankYouPage from './book-a-call-thank-you-page'
+import thankYouPage from './thank-you-page'
+import thankYouCultureMatchPage from './thank-you-culture-match-page'
+import thankYouForYourMessagePage from './thank-you-for-your-message-page'
+import thankYouNowBookACallPage from './thank-you-now-book-a-call-page'
+import alternativesHub from './alternatives-page'
+import pricingPage from './pricing-page'
+import referralsPage from './referrals-page'
 import privacyPolicyPage from './privacy-policy-page'
+import fractionalCtoPage from './fractional-cto-page'
+import hireEngineersPage from './hire-engineers-page'
 
 // Tier 3 calculator pages (§5) — 2
 import hiringCostCalculatorPage from './hiring-cost-calculator-page'
 import priceComparisonCalculatorPage from './price-comparison-calculator-page'
+
+// Shared content blocks reused across many detail pages
+import sharedServiceFaqs from './shared-service-faqs'
 
 export const singletonTypes = [
   // Blog hubs
@@ -72,10 +89,26 @@ export const singletonTypes = [
   workWithShawneePage,
   startHiringPage,
   notFoundPage,
+  generalTermsPage,
+  ourWorkPage,
+  bookACallPage,
+  bookACallConfirmedPage,
+  bookACallThankYouPage,
+  thankYouPage,
+  thankYouCultureMatchPage,
+  thankYouForYourMessagePage,
+  thankYouNowBookACallPage,
+  alternativesHub,
+  pricingPage,
+  referralsPage,
   privacyPolicyPage,
+  fractionalCtoPage,
+  hireEngineersPage,
   // Tier 3
   hiringCostCalculatorPage,
   priceComparisonCalculatorPage,
+  // Shared content
+  sharedServiceFaqs,
 ]
 
 // Names used by structure config + singleton seed script.

@@ -1,0 +1,49 @@
+{
+  "count": 11,
+  "redirects": [
+    {
+      "pattern": "/media/1222466/dev-1.webp?width=818&height=378",
+      "target": "/"
+    },
+    {
+      "pattern": "/media/1222470/dev-4.webp?width=914&height=684",
+      "target": "/"
+    },
+    {
+      "pattern": "/media/1222471/dev-5.jpg?width=864&height=423",
+      "target": "/"
+    },
+    {
+      "pattern": "/resources/(.*)",
+      "target": "/blog/%1"
+    },
+    {
+      "pattern": "/customer-stories/(.*)",
+      "target": "/customer-story/%1"
+    },
+    {
+      "pattern": "/uk/customer-stories/(.*)",
+      "target": "/uk/customer-story/%1"
+    },
+    {
+      "pattern": "/ph/resources/(.*)",
+      "target": "/ph/blog/%1"
+    },
+    {
+      "pattern": "/ph/customer-stories/(.*)",
+      "target": "/ph/customer-story/%1"
+    },
+    {
+      "pattern": "/uk/resources/(.*)",
+      "target": "/uk/blog/%1"
+    },
+    {
+      "pattern": "/developers/(.*)",
+      "target": "/technology"
+    },
+    {
+      "pattern": "/tools/price-comparison-calculator(.*)",
+      "target": "/pricing"
+    }
+  ]
+}

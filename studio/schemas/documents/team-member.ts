@@ -1,13 +1,6 @@
 import { defineField, defineType } from 'sanity'
 
-import {
-  imageField,
-  localeField,
-  metaFields,
-  metaSourceFields,
-  slugField,
-  sourceTrackingFieldsCarryover,
-} from '../_shared'
+import { imageField, localeField, metaFields, metaSourceFields, retiredField, slugField, sourceTrackingFieldsCarryover } from '../_shared'
 
 export default defineType({
   name: 'teamMember',
@@ -49,6 +42,15 @@ export default defineType({
     ...metaSourceFields(),
     ...sourceTrackingFieldsCarryover(),
     localeField(),
+    retiredField(),
+    defineField({
+      name: 'ukOnly',
+      title: 'UK only',
+      type: 'boolean',
+      description:
+        'Show this person on /uk/team/... only. The US page 404s. Set when Webflow has the person published in the UK locale but removed from the US one - Webflow publishes per-locale, and "retired" would hide them from both.',
+      initialValue: false,
+    }),
   ],
   preview: { select: { title: 'name', subtitle: 'position', media: 'teamMemberImage' } },
 })

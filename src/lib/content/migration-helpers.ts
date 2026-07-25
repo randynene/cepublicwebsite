@@ -35,6 +35,60 @@ const defaultSchema = Schema.compile({
               name: 'image',
               fields: [{ type: 'string', name: 'alt' }],
             },
+            // CONTENT-1E: register videoEmbed + table so the deserializer
+            // can emit them from Webflow `<figure class="w-richtext-figure-
+            // type-video">` and `<div data-rt-embed-type='true'><table>`
+            // wrappers. Shape mirrors studio/schemas/objects/portable-text.ts.
+            {
+              type: 'object',
+              name: 'videoEmbed',
+              fields: [
+                { type: 'url', name: 'url' },
+                { type: 'string', name: 'caption' },
+              ],
+            },
+            {
+              type: 'object',
+              name: 'table',
+              fields: [
+                {
+                  type: 'array',
+                  name: 'headerRows',
+                  of: [
+                    {
+                      type: 'object',
+                      name: 'tableHeaderRow',
+                      fields: [
+                        {
+                          type: 'array',
+                          name: 'cells',
+                          of: [{ type: 'string' }],
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: 'array',
+                  name: 'bodyRows',
+                  of: [
+                    {
+                      type: 'object',
+                      name: 'tableBodyRow',
+                      fields: [
+                        {
+                          type: 'array',
+                          name: 'cells',
+                          of: [{ type: 'string' }],
+                        },
+                      ],
+                    },
+                  ],
+                },
+                { type: 'string', name: 'caption' },
+                { type: 'boolean', name: 'boldFirstColumn' },
+              ],
+            },
           ],
         },
       ],
@@ -81,14 +135,33 @@ async function uploadAssetFromUrl(url: string): Promise<string | null> {
 // Async because it uploads inline images. Two-pass:
 //   Pass 1 — JSDOM-parse the HTML, extract every `<img>` src, upload each
 //            via `Promise.allSettled` (broken images don't abort the doc).
-//   Pass 2 — deserialize with `htmlToBlocks`. Custom rule emits image
-//            blocks for `<img>` and `<figure><img>...</figure>`; iframe-in-
-//            figure (Vimeo embeds) is skipped (no `<img>` child).
+//   Pass 2 — deserialize with `htmlToBlocks`. Custom rule emits:
+//              - image blocks for `<img>` and `<figure><img>...</figure>`
+//              - videoEmbed blocks for
+//                  `<figure class="w-richtext-figure-type-video">` (Webflow
+//                  RichText video) and `<div data-rt-embed-type><iframe>`
+//                  (custom-embed iframes incl. LinkedIn)
+//              - table blocks for `<div data-rt-embed-type><table>` (Webflow
+//                  RichText Embed component)
+//
+// CONTENT-1E note (selector correction): Webflow's RichText API returns
+//   `<div data-rt-embed-type='true'>` wrappers for custom-embed content.
+//   The `w-embed` CSS class only exists on the published Webflow site
+//   (post-render), not in the CMS HTML — original CONTENT-1C diagnosis
+//   used the wrong selector. See PHASE_HISTORY CONTENT-1E entry.
 //
 // Null guard at entry — `null`, `undefined`, or `""` returns `[]`. Protects
 // every call site including nullable customerStory fields and FAQ answers.
-export async function toPortableText(html: unknown): Promise<unknown[]> {
+//
+// `opts.webflowId` — when provided, used to build deterministic `_key`s for
+// videoEmbed/table blocks: `${type}-${webflowId}-${position-among-same-type}`.
+// Required for idempotent re-migration (CONTENT-1E migrator passes it).
+export async function toPortableText(
+  html: unknown,
+  opts: { webflowId?: string } = {},
+): Promise<unknown[]> {
   if (!html || typeof html !== 'string' || html.trim() === '') return []
+  const webflowId = opts.webflowId
 
   // Pass 1 — extract and upload inline images.
   const srcToAssetRef = new Map<string, string>()
@@ -122,7 +195,12 @@ export async function toPortableText(html: unknown): Promise<unknown[]> {
     )
   }
 
-  // Pass 2 — deserialize with image rules.
+  // Per-type position counters for deterministic _keys on CONTENT-1E blocks.
+  // Captured inside the deserializer rule closure below.
+  let videoEmbedCount = 0
+  let tableCount = 0
+
+  // Pass 2 — deserialize with image + videoEmbed + table rules.
   try {
     return htmlToBlocks(html, blockContentType, {
       parseHtml,
@@ -132,6 +210,110 @@ export async function toPortableText(html: unknown): Promise<unknown[]> {
             const node = el as Element
             if (!node || typeof node.tagName !== 'string') return undefined
             const tag = node.tagName.toUpperCase()
+
+            // ---------------------------------------------------------------
+            // CONTENT-1E Rule A — Webflow RichText video figure.
+            // Shape: <figure class="w-richtext-figure-type-video">
+            //          <div><iframe src="..." ...>
+            //          [<figcaption>...]
+            // Skip empty/unparseable iframe → fall through to default (which
+            // for figure with no img also returns undefined).
+            // ---------------------------------------------------------------
+            if (
+              tag === 'FIGURE' &&
+              node.classList?.contains('w-richtext-figure-type-video')
+            ) {
+              const iframe = node.querySelector('iframe')
+              const rawSrc = iframe?.getAttribute('src')?.trim()
+              if (!rawSrc) return undefined
+              const url = decodeHtmlEntities(rawSrc)
+              const captionEl = node.querySelector('figcaption')
+              const caption = captionEl?.textContent?.trim() || undefined
+              const out: { _type: 'videoEmbed'; [k: string]: unknown } = {
+                _type: 'videoEmbed',
+                url,
+                ...(caption ? { caption } : {}),
+              }
+              if (webflowId) out._key = `videoEmbed-${webflowId}-${videoEmbedCount}`
+              videoEmbedCount++
+              return block(out)
+            }
+
+            // ---------------------------------------------------------------
+            // CONTENT-1E Rule B + C — Webflow RichText Embed wrapper.
+            // Shape: <div data-rt-embed-type='true'>...inner HTML...</div>
+            // Three sub-cases, evaluated in priority order:
+            //   B1. Contains <table> → emit table block.
+            //   B2. Contains <iframe> (no table) → emit videoEmbed block.
+            //   C.  Otherwise → warn + undefined (defensive; sweep showed 0).
+            // ---------------------------------------------------------------
+            if (tag === 'DIV' && node.hasAttribute('data-rt-embed-type')) {
+              const table = node.querySelector('table')
+              if (table) {
+                // Normalize: header detection is row-based, not thead-based.
+                // 7 of 153 sampled tables put <th> cells inside <tbody> with
+                // no <thead> wrapper. Any <tr> whose direct cells are all
+                // <th> is treated as a header row.
+                const trs = Array.from(table.querySelectorAll('tr'))
+                const headerRows: Array<{ _type: string; _key: string; cells: string[] }> = []
+                const bodyRows: Array<{ _type: string; _key: string; cells: string[] }> = []
+                trs.forEach((tr, rowIdx) => {
+                  const cellEls = Array.from(tr.children) as Element[]
+                  if (cellEls.length === 0) return
+                  const isHeader =
+                    cellEls.length > 0 &&
+                    cellEls.every((c) => c.tagName.toUpperCase() === 'TH')
+                  const cells = cellEls.map((c) => (c.textContent ?? '').trim())
+                  const row = {
+                    _key: `r${rowIdx}`,
+                    cells,
+                  }
+                  if (isHeader) {
+                    headerRows.push({ _type: 'tableHeaderRow', ...row })
+                  } else {
+                    bodyRows.push({ _type: 'tableBodyRow', ...row })
+                  }
+                })
+                const classAttr = table.getAttribute('class') ?? ''
+                const boldFirstColumn = classAttr.split(/\s+/).includes('bold-col-one')
+                const captionEl = table.querySelector('caption')
+                const caption = captionEl?.textContent?.trim() || undefined
+                const out: { _type: 'table'; [k: string]: unknown } = {
+                  _type: 'table',
+                  headerRows,
+                  bodyRows,
+                  ...(boldFirstColumn ? { boldFirstColumn: true } : {}),
+                  ...(caption ? { caption } : {}),
+                }
+                if (webflowId) out._key = `table-${webflowId}-${tableCount}`
+                tableCount++
+                return block(out)
+              }
+
+              const iframe = node.querySelector('iframe')
+              if (iframe) {
+                const rawSrc = iframe.getAttribute('src')?.trim()
+                if (!rawSrc) return undefined
+                const url = decodeHtmlEntities(rawSrc)
+                const titleAttr = iframe.getAttribute('title')?.trim() || undefined
+                const out: { _type: 'videoEmbed'; [k: string]: unknown } = {
+                  _type: 'videoEmbed',
+                  url,
+                  ...(titleAttr ? { caption: titleAttr } : {}),
+                }
+                if (webflowId) out._key = `videoEmbed-${webflowId}-${videoEmbedCount}`
+                videoEmbedCount++
+                return block(out)
+              }
+
+              // Defensive catch-all — sweep showed 0 instances, but if a new
+              // shape lands (script/style-only/other), surface it loudly
+              // rather than silently flatten to text.
+              console.warn(
+                `[toPortableText] Unrecognized div[data-rt-embed-type] (no table/iframe). HTML: ${node.outerHTML.slice(0, 200)}`,
+              )
+              return undefined
+            }
 
             if (tag === 'FIGURE') {
               const img = node.querySelector('img')
@@ -390,4 +572,43 @@ export async function deleteByIdStrict(
     '(no label)'
   console.log(`Deleting ${id} (_type=${expectedType}, label="${label}")`)
   await client.delete(id)
+}
+
+// Phase 0.1 — incremental re-migration.
+//
+// Every CONTENT-1 migrator writes with `createOrReplace` across the whole
+// collection. That was correct for a one-shot migration into an empty dataset.
+// It is NOT correct now: the dataset has three months of Studio edits in it, and
+// a full re-run silently discards them.
+//
+// `--only-missing` narrows a migrator to Webflow items whose slug is not yet in
+// Sanity, so an existing document is never rewritten. Use it whenever the intent
+// is "pick up what's new" rather than "rebuild the collection from source".
+//
+// Two things it deliberately does not do:
+//   - It does not resurrect retired documents. A retired doc is absent from
+//     Webflow (that is why it was retired), so it can never appear in `items`.
+//   - It does not protect against ID churn. Where Webflow has recreated items
+//     under fresh IDs, their slugs still exist in Sanity, so they are correctly
+//     skipped as "not missing" - but a FULL run of the same migrator would write
+//     them under new _ids and duplicate them. Check `npm run content:diag-drift`
+//     for ID_CHURN before running any migrator without this flag.
+export function onlyMissingRequested(): boolean {
+  return process.argv.includes('--only-missing')
+}
+
+export async function filterToMissingBySlug<T extends { fieldData: Record<string, unknown> }>(
+  items: T[],
+  sanityType: string,
+): Promise<T[]> {
+  const rows = await sanityWriteClient.fetch<Array<{ slug: string | null }>>(
+    `*[_type == $type && defined(slug.current)]{ "slug": slug.current }`,
+    { type: sanityType },
+  )
+  const existing = new Set(rows.map((r) => r.slug).filter((s): s is string => !!s))
+
+  return items.filter((item) => {
+    const slug = webflowSlug(item as { slug?: string | null; fieldData: Record<string, unknown> })
+    return slug !== null && !existing.has(slug)
+  })
 }

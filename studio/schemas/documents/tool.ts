@@ -1,6 +1,6 @@
 import { defineField, defineType } from 'sanity'
 
-import { imageField, localeField, slugField } from '../_shared'
+import { imageField, localeField, retiredField, slugField } from '../_shared'
 
 export default defineType({
   name: 'tool',
@@ -77,6 +77,8 @@ export default defineType({
     defineField({ name: 'featured', title: 'Featured', type: 'boolean', initialValue: false }),
 
     localeField(),
+
+    retiredField(),
   ],
   preview: { select: { title: 'name', subtitle: 'subHeader', media: 'thumbnail' } },
 })

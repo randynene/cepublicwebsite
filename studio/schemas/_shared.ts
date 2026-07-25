@@ -156,6 +156,33 @@ export function metaFields(opts: { og?: boolean } = {}): FieldDefinition[] {
   return fields
 }
 
+// Phase 0.1 — retired (unpublished) documents.
+//
+// The CONTENT-1 migration ran against a 2026-04 Webflow snapshot. Since then
+// 35 items were deleted or unpublished upstream; Webflow now 301s their URLs to
+// the parent hub (or 404s them). Sanity still holds the documents, so without a
+// marker the new site would resurrect 35 pages the customer deliberately took
+// down, and advertise them in the sitemap.
+//
+// `retired: true` means: do not route, do not list, do not put in the sitemap.
+// The document survives so an accidental upstream deletion can be reversed in
+// Studio with one toggle. The legacy 301 keeps serving the URL either way.
+//
+// Every query that lists or routes documents MUST filter on `!(retired == true)`.
+// Use the RETIRED_FILTER constant in site/src/lib/sanity/queries/_filters.ts so
+// the predicate is written once. `!retired` alone is WRONG: it is false for docs
+// where the field is undefined, which is every pre-existing document.
+export function retiredField(): FieldDefinition {
+  return defineField({
+    name: 'retired',
+    title: 'Retired',
+    type: 'boolean',
+    description:
+      'Hide this document from the live site. It stops being routed, listed and included in the sitemap, but the content is kept. Used for pages removed from the old Webflow site.',
+    initialValue: false,
+  })
+}
+
 export function slugField(source: string | ((doc: Record<string, unknown>) => string)): FieldDefinition {
   return defineField({
     name: 'slug',
@@ -169,17 +196,38 @@ export function slugField(source: string | ((doc: Record<string, unknown>) => st
   })
 }
 
+// Image field helper.
+//
+// Opts (additive across phases):
+//   - required: the WHOLE image field is required (asset must be set)
+//   - altRequired: the `alt` subfield is required (STATIC-2 §2.1 §2 — every
+//     NEW image field requires `alt: string` with Rule.required()).
+//     Pattern reusable for customer-2 chrome work: chrome image fields
+//     should always have required alt for a11y; document images may be
+//     more permissive.
+//
+// Note: `altRequired: true` enforces alt-on-the-image. To enforce alt-when-
+// asset-is-set conditionally (e.g. for a discriminated icon shape where the
+// asset branch is optional but its alt is required), use `Rule.custom()` at
+// the parent-object level instead — this helper covers the simpler case.
 export function imageField(
   name: string,
   title: string,
-  opts: { required?: boolean } = {},
+  opts: { required?: boolean; altRequired?: boolean } = {},
 ): FieldDefinition {
   return defineField({
     name,
     title,
     type: 'image',
     options: { hotspot: true },
-    fields: [{ name: 'alt', type: 'string', title: 'Alt text' }],
+    fields: [
+      {
+        name: 'alt',
+        type: 'string',
+        title: 'Alt text',
+        validation: opts.altRequired ? (Rule) => Rule.required() : undefined,
+      },
+    ],
     validation: opts.required ? (Rule) => Rule.required() : undefined,
   })
 }

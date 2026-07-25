@@ -5,6 +5,8 @@
 import { ensureSanity, ensureWebflow } from '@/lib/env'
 import { CE_COLLECTION_IDS } from '@/lib/content/ce-collection-ids'
 import {
+  filterToMissingBySlug,
+  onlyMissingRequested,
   toPortableText,
   webflowSlug,
 } from '@/lib/content/migration-helpers'
@@ -16,7 +18,11 @@ ensureSanity()
 ensureWebflow()
 
 async function migrateBookACall(): Promise<void> {
-  const items = await getCollectionItems(CE_COLLECTION_IDS.bookACall)
+  const all = await getCollectionItems(CE_COLLECTION_IDS.bookACall)
+  const items = onlyMissingRequested() ? await filterToMissingBySlug(all, 'bookACall') : all
+  if (onlyMissingRequested()) {
+    console.log(`--only-missing: ${items.length} of ${all.length} item(s) not yet in Sanity.`)
+  }
   let migrated = 0
   const errors: string[] = []
 

@@ -61,6 +61,13 @@ export interface RunOptions {
   policy: FieldPolicy
   collectionSlug: string
   preScrapeHook?: (doc: SanityDocLite) => PreScrapeDecision
+  /**
+   * Restrict the run to these slugs. Without it every document of the type is
+   * re-scraped, which is what CONTENT-1D wanted (a cold dataset) but is wrong
+   * now: it would re-scrape 28 team members to backfill 1, and overwrite meta
+   * that has since been edited in Studio. Pass the slugs you actually need.
+   */
+  onlySlugs?: string[]
 }
 
 type DescriptionPathUsed =
@@ -86,9 +93,22 @@ function projectionFor(policy: FieldPolicy): string {
 
 async function fetchInScopeDocs(opts: RunOptions): Promise<SanityDocLite[]> {
   const projection = projectionFor(opts.policy)
+
+  // Retired documents are excluded. The runner works by scraping the live page
+  // for each doc, and a retired doc is retired precisely because its live page
+  // is gone: scraping it returns a 404 or the hub it redirects to, which would
+  // either hard-fail the run or write the hub's meta onto the document.
+  const filters = [
+    '_type == $type',
+    '!(_id match "smoke-test-*")',
+    'defined(slug.current)',
+    '!(retired == true)',
+  ]
+  if (opts.onlySlugs) filters.push('slug.current in $onlySlugs')
+
   return sanityWriteClient.fetch<SanityDocLite[]>(
-    `*[_type == $type && !(_id match "smoke-test-*") && defined(slug.current)] | order(_id asc) {${projection}}`,
-    { type: opts.type },
+    `*[${filters.join(' && ')}] | order(_id asc) {${projection}}`,
+    { type: opts.type, ...(opts.onlySlugs ? { onlySlugs: opts.onlySlugs } : {}) },
   )
 }
 
@@ -178,6 +198,18 @@ function shouldFlagForReview(
   }
   if (descriptionPath === 'snippetForMeta-copy') return true // truncation may cut mid-sentence
   return false
+}
+
+/**
+ * Read `--slug <value>` occurrences off the command line, for scoping a backfill
+ * to specific documents. Returns undefined when none are given, which the runner
+ * reads as "the whole collection".
+ */
+export function slugsFromArgv(argv: string[] = process.argv): string[] | undefined {
+  const slugs = argv
+    .map((arg, i) => (arg === '--slug' ? argv[i + 1] : undefined))
+    .filter((s): s is string => !!s && !s.startsWith('--'))
+  return slugs.length > 0 ? slugs : undefined
 }
 
 export async function runMetaBackfill(opts: RunOptions): Promise<void> {

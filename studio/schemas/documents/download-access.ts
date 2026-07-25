@@ -1,6 +1,6 @@
 import { defineField, defineType } from 'sanity'
 
-import { slugField } from '../_shared'
+import { retiredField, slugField } from '../_shared'
 
 export default defineType({
   name: 'downloadAccess',
@@ -15,6 +15,7 @@ export default defineType({
       validation: (Rule) => Rule.required().max(160),
     }),
     slugField('name'),
+    retiredField(),
     defineField({
       name: 'downloadFileLink',
       title: 'Download file link',

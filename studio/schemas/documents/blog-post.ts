@@ -1,12 +1,6 @@
 import { defineField, defineType } from 'sanity'
 
-import {
-  imageField,
-  localeField,
-  metaFields,
-  slugField,
-  sourceTrackingFields,
-} from '../_shared'
+import { imageField, localeField, metaFields, retiredField, slugField, sourceTrackingFields } from '../_shared'
 
 export default defineType({
   name: 'blogPost',
@@ -81,6 +75,7 @@ export default defineType({
     ...metaFields(),
     ...sourceTrackingFields(),
     localeField(),
+    retiredField(),
   ],
   preview: {
     select: { title: 'title', subtitle: 'category.name', media: 'thumbnailImage' },

@@ -1058,7 +1058,7 @@ Complete list of every route on the new site, mapped to its Sanity source.
 | `/services/[slug]` | service | Services | 23 |
 | `/technology/[slug]` | technology | Technology Pages | 101 |
 | `/team/[slug]` | teamMember | Team Members | 28 |
-| `/reviews/[slug]` | review | Reviews | 26 |
+| `/reviews/[slug]` | review | Reviews | 11 |
 | `/videos/[slug]` | video | Videos | 32 |
 | `/download/[slug]` | download | Downloads | 5 |
 | `/download-thank-you/[slug]` | downloadAccess (noindex) | > Downloads Access Pages | 5 |

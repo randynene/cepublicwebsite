@@ -1,6 +1,6 @@
 import { defineField, defineType } from 'sanity'
 
-import { slugField } from '../_shared'
+import { retiredField, slugField } from '../_shared'
 
 export default defineType({
   name: 'tag',
@@ -14,6 +14,7 @@ export default defineType({
       validation: (Rule) => Rule.required().max(100),
     }),
     slugField('name'),
+    retiredField(),
     defineField({
       name: 'category',
       title: 'Category',

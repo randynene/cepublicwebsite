@@ -1,5 +1,1756 @@
 # PHASE_HISTORY.md
 
+## MYGRATR-TEMPLATE-REVIEW — Review detail page CLOSED (Jul 2026)
+
+Pattern-apply build on `feat/design-1`, third detail template. Fidelity reference: **Team Member reconciliation** (`Review.html` export, dark/lime D2 tokens). **Routes:** `/reviews/[slug]` (default) + `/uk/reviews/[slug]` (UK mirror). **Step 0 probes:** **11 published** `review` docs (not 26 — stale count from CONTENT-1B migration; **0 drafts**; 15 of the original 26 were **deleted** in CONTENT-1D drift cleanup via `cleanup-drift-docs.ts`, not sitting as unpublished drafts). All 11 routable; core fields populated; `thumbnailImage` 8/11. **Four-file structure:** `site/src/lib/sanity/queries/review.ts`, `site/src/types/sanity/documents/review.ts`, `site/src/components/templates/review/index.tsx` (hero card + related grid), `site/src/components/templates/review/json-ld.tsx` (`Review` + `BreadcrumbList`; fixed 5-star rating visible in UI). **Company H1:** `site/src/lib/review/display-name.ts` — metaTitle prefix when not generic hub title, else slug humanization (Tech Debt #52). **Omitted by design:** case study link (export shows it; no `customerStory` ref on schema). **SEO Tier-1:** twitter card, OG from thumbnail/member/company logo, sitemap `URL_BUILDERS.review` (+22 URLs → **244** total), `validate-json-ld.ts` Review checks on `/reviews/salmon-software`. **PRE-LAUNCH blocker (Tech Debt #51):** legacy Webflow redirects send `/reviews/cameron-pearson`, `/reviews/emsl`, `/reviews/mercato` → `/reviews` hub — 3 of 11 detail pages unreachable until redirect table fixed at LAUNCH. **Infra (same push):** SanityLive `refreshOnFocus`/`refreshOnReconnect` scoped to draft mode in `layout.tsx` (`d876add`) — published pages no longer emit `BAILOUT_TO_CLIENT_SIDE_RENDERING`. **Commits:** `d22613f` (template stack), `d876add` (SanityLive). `migrations.status` unchanged at `content_complete`.
+
+## MYGRATR-TEMPLATE-TEAM_MEMBER — Team member detail page CLOSED (Jul 2026)
+
+Pattern-apply build on `feat/design-1`, second detail template after TEMPLATE-BLOG. **Routes:** `/team/[slug]` (default) + `/uk/team/[slug]` (UK mirror) — 28 members × 2 locales = 56 static paths; `/team` index 301 to `/about-us` unchanged (no team listing). **Reconciliation (Jul 2026):** template updated to match `Team Member.html` export — now the fidelity reference for simple detail templates (Review detail followed same discipline). **Step 0 probes:** 28 published `teamMember` docs confirmed; fill rates — image/about/expertise/time 28/28, linkedin 26/28, bookACall 5/28; `blogPost.author→teamMember` ref exists (39/74 posts), so Articles section built with empty-state. **Four-file structure:** `site/src/lib/sanity/queries/team-member.ts` (full + meta + author-posts + params queries + Zod boundary), `site/src/types/sanity/documents/team-member.ts`, `site/src/components/templates/team-member/index.tsx` (dark/lime layout from screenshot structure), `site/src/components/templates/team-member/json-ld.tsx` (`Person` + `BreadcrumbList`; `worksFor` from `siteSettings`). **SEO Tier-1:** twitter card included (blog omission not copied); OG falls back to cropped `teamMemberImage` then `/og-default.png`; sitemap `URL_BUILDERS.teamMember` adds 56 URLs (222 total with blog + hubs); `validate-json-ld.ts` extended for `Person` field checks. **Build:** `npm run build` clean (232 pages). **Data gaps (not fabricated):** all 28 `teamMemberImage.alt` null (Tech Debt #50); `timeAtCloudEmployee` stores bare numbers ("11", "3 ") — template appends "year/s" label. **Commits:** `dfb4078` query+types, `d0eb9bf` template+ui-strings, `04c210f` routes+json-ld+sitemap+validator. `migrations.status` unchanged at `content_complete`.
+
+## Context sync — Jul 2026 (post STATIC-3, pre next build track)
+
+**STATIC-3 complete and committed** on `feat/design-1`: header, Services + Resources mega-menus, footer rebuild, announcement bar, chrome-band alignment. `migrations.status` unchanged at `content_complete`.
+
+**Built-but-stale discovery (hubs + 404):** STATIC-1's 16 hub routes and `not-found.tsx` remain the live code path — real routes, Sanity singletons, pagination, `CollectionPage` + `BreadcrumbList` JSON-LD, build-clean for those pages. They still render the generic STATIC-1 `renderHub` card grid, not the D3 dark/lime hub designs (design artifacts exist for 5 index pages; 6 blog-category hubs inherit blog-card pattern; videos/tools/downloads/events/compare use the generic collection/resource pattern). Reconciliation is a later D3/D5 pass, not a greenfield build. Tech Debt #43.
+
+**Hub content gaps (verified against schema + seed + queries):** Live-site hub intro copy, body/Key-Topics blocks, and FAQs were never migrated. `introContent` exists in hub schema but was left empty at seed and is neither queried nor rendered; `featuredArticles` / `featuredItems` empty; no `faqs` field on `defineBlogHub` / `defineCollectionHub`. Fourteen of sixteen hubs have wrong `heroDescription` (STATIC-1 seed used `metaDescription` as hero text; only `videosHub` + `staffAugmentationHub` have proper authored copy). Tech Debt #44, #45.
+
+**SEO infrastructure audit + gates:** Read-only audit confirmed TEMPLATE-BLOG SEO scaffolding (metadata helpers, JSON-LD, sitemap, robots) and surfaced launch blockers. Gates now on disk: `docs/seo/SEO_GEO_PER_TEMPLATE_CHECKLIST.md` + `docs/seo/SEO_GEO_SITEWIDE_GAP_FIX_BRIEF.md`. Tier 1 items include mega-menu deep links absent from initial HTML, missing sitewide Organization/WebSite JSON-LD, static `<html lang="en">` on UK routes. Tech Debt #47.
+
+**Other flags logged:** `/legals/privacy-policy` route fails `npm run build` (Zod null vs undefined on empty Sanity fields); uncommitted on disk. `navigation.howItWorksMegaMenu` data unused after STATIC-3 plain-link demotion (#48).
+
+## MYGRATR-STATIC-3 — Chrome Visual Rebuild CLOSED (Steps 5-6, Jul 2026)
+
+STATIC-3 phase close on `feat/design-1`. Steps 3/4 (mega-menus) were closed earlier; this entry covers Steps 5-6.
+
+**Step 5 — Footer rebuild** (`ab85d72` + follow-on commits): deleted monolithic `footer.tsx`; modular `site/src/components/layout/footer/` reads STATIC-2 `footer` global. Layout maps `sections[0/1]` to Footer.html flat eyebrows (Roles / Technologies / Company / Resources), not Studio section pills. `topCtaBlock`, HubSpot subscribe (`FooterSubscribeForm` export shell + `HubSpotFormEmbed`), `bottomBar` with `RegionSelector` (pathname-aware US/UK logic from STATIC-1). **Alignment pass:** `chrome-band.tsx` introduces `CHROME_CONTENT_BAND` (1152px) shared by header + footer; header uses `CHROME_HEADER_ROW` (logo left, nav cluster centre, CTA right, `gap-4` link spacing).
+
+**Announcement bar** (Header.html frame 01): additive `navigation.announcementBar` on `studio/schemas/globals/navigation.ts` (`enabled`, `badgeLabel`, `message`, `linkLabel`, `linkUrl` plain string for internal paths). Studio deployed (`sanity deploy` → `mygratr-cloudemployee.sanity.studio`). Render at `site/src/components/layout/announcement-bar.tsx`; wired in `nav.tsx` `StickyChrome` wrapper. `enabled: false` → null render + `--announcement-bar-height: 0`. Enabled height 32px (`--announcement-bar-active-height`); body `padding-top` uses calc + sticky wrapper negative margin to prevent double-offset gap. Seed: `scripts/static/patch-announcement-bar.ts` + `seed-globals-v2.ts` default (`enabled: true`, message per export, `linkUrl: /pricing`).
+
+**Step 6 — Verification artifacts:** `scripts/static/validate-json-ld.ts` flattens `@graph` wrappers + expects `SiteNavigationElement` on hub/blog/404 probes. tsc clean.
+
+**Brief-vs-reality / data gaps (not blockers):** Footer export uses flat eyebrows not "Our Expertise" pills; `topCtaBlock` has no `description` in schema; subscribe relies on HubSpot mount (export-matching placeholder until ready); announcement `linkUrl` seeded to `/pricing` (calculator merge path — Seb may retarget in Studio); Services mega-menu `viewAllLink` + pill-style data gaps from Step 3/4 remain.
+
+**Data state:** `migrations.status` unchanged at `content_complete`. Navigation global patched in production with `announcementBar` via Jake-run patch script.
+
+## MYGRATR-STATIC-3 — Mega-Menu Renderers (Steps 3/4 close, Jul 2026)
+
+STATIC-3 Step 3/4 closed the mega-menu content layer against `docs/design/raw-html/Header.html`. **Services** (`site/src/components/layout/mega-menus/services.tsx`) renders frame 03: 300px/1fr grid, Staff Augmentation highlighted card on `#16223A`, leading-arrow section pills, real techLogo images, bottom AI Services / Product Builds row with top divider. **Resources** (`resources.tsx`) renders frame 04: 240px/1fr/1fr grid, plain Resources heading + four left nav pills (Material Symbols icons), Blogs column with outline View-all pill + thumbnail cards, Customer Stories column with solid-lime View-all + green-gradient story cards + `nav.readFullStory` UI string. Shared parts at `mega-menus/_parts.tsx`; shell at `_shell.tsx` gained `border-border-subtle` + `rounded-[20px]`. **Nav wiring** (`nav-client.tsx`): only Services + Resources are mega-menu triggers; How It Works renders as a plain link despite legacy `dropdownType: how-it-works-mega` in Sanity (`howItWorksMegaMenu` data preserved but unused). Mobile drawer (frame 06): `#070D18` background, lightweight section-name lists (no full desktop grid), lime active label, no `{category} list` link. **Primitive**: `MegaMenuPillLabel.leadingArrow` additive opt-in. **Flagged, not fixed**: Sanity `sectionLabelStyle` values (pill-dark/gradient/navy) do not match export's uniform outline pill (`transparent + #32435F border`); `servicesMegaMenu.leftColumn.viewAllLink` null in Sanity. tsc + lint clean. `migrations.status` unchanged at `content_complete`. Footer Step 5 remains.
+
+## MYGRATR-D3 - Entire Screenshot-Driven / Existing-Site Category Complete (Jun 2026)
+
+Pricing and Legal designed in Claude Design (no code shipped - design artifacts only), closing the entire screenshot-driven / existing-site design category. The full set now done: chrome (Header, Footer, 404), all content-detail templates (incl. Service/Technology on the 5-fold modular system), all 5 hub/index pages (2 card types), plus Pricing and Legal.
+
+Remaining D3 is the Figma-driven bespoke batch ONLY: Home, How It Works, Fractional CTO, Managed Pods, Referral, Locations. Engineering Sign-up + About stay blocked on Seb; Event deferred pending a screenshot. `migrations.status` unchanged at `content_complete` - D3 is design work, not a state transition.
+
+## MYGRATR-D3 - Screenshot-Driven Detail + Index Templates Designed (Jun 2026)
+
+D3 design run completed the entire screenshot-driven template category in Claude Design (no code shipped this milestone - design artifacts only). Scope landed: chrome (Header, Footer, 404); all content-detail templates (Team Member, Review, Video, Download + Thank You, Tool, Book a Call, Compare, Customer Story); Service detail + Technology detail (both on the shared 5-fold modular system, matching the `service`/`technology` schemas which both drive body content through the same `folds` array of `fold` objects); and all 5 hub/index pages (Blog, Reviews, Customer Stories, Services, Technology).
+
+The bulk of the work was carried by a small set of reusable atoms rather than per-page bespoke design: 2 card types (BlogCard + CollectionCard) cover all 5 index/hub pages, 5 fold types cover the Service/Technology modular bodies, and 1 accordion (the D2 shape-edit) covers FAQ surfaces across templates. This atom-first approach is the reason a large template count closed in a single design run.
+
+Remaining D3: Pricing, Legal, then the Figma-driven bespoke batch (Home, How It Works, Fractional CTO, Managed Pods, Referral, Locations). Engineering Sign-up + About are blocked on Seb. Event is deferred pending a screenshot. `migrations.status` unchanged at `content_complete` - D3 is design work, not a state transition.
+
+## MYGRATR-D2 — Token Re-Extract (Jun 2026)
+
+D2 of the design restart (`docs/DESIGN_EXECUTION_ROADMAP.md`), against the LOCKED `docs/design/VISUAL_LANGUAGE_SPEC.md`. Replaced the teal-era tokens in `site/src/app/tokens.css` with the new visual language: dual-mode semantic colour tokens (Dark is the live `@theme` skin, Light via a `[data-theme="light"]` override block), canonical dark ground `#070D18` (the two-navies resolved to bg/primary), lime accent `#D4FF3C` with the §1c opacity scale + §6 contrast/pairing rules captured as comments; the LIVE Inter Semi Bold type scale (H1 67 / H2 58 / new H3 46 with paired line-height/tracking/weight via Tailwind v4 `--text-*--*`), Source Serif 4 Italic accent; §5 inferred spacing/radius/shadow flagged inferred-pending-Figma. Fonts swapped Poppins → Inter + Source Serif 4 Italic in `layout.tsx`; `globals.css` body re-grounded on the dark tokens (`color-scheme: dark`). **DEV-1**: old token names (brand-primary/secondary/tertiary, surface-base/elevated, text-default) kept as remapped aliases so all ~30 primitives re-skin with zero edits; D4 migrates components onto the semantic names then deletes the aliases. **D2 absorbed two D4 items on Jake's direction** (boundary recorded honestly): (1) the lime-contrast pass — no white text on lime (button, tag, mega pill, checkbox glyph, header skip-link, HubSpot submit, hub pagination, service-card CTA) plus the `bg-text-default` dark-surface regressions the text-default flip exposed (tooltip, dialog + mobile-drawer scrims, video backgrounds, mega pill-dark); (2) the Accordion shape-edit — thin plus glyph (no black circle) + continuous dark ground with dividers, per the new FAQ reference. Verified after every edit batch: tsc clean, `npm run build` clean (174 routes), lint unchanged (pre-existing Tech Debt #36 only). Remaining D4 carryover recorded in the `tokens.css` DEV-1 block. `migrations.status` unchanged at `content_complete` — D2 does not transition state. **Not committed here**: `nav.tsx` + `nav-client.tsx` carry pre-existing STATIC-3 floating-pill work; the 2 nav contrast fixes ride with STATIC-3.
+
+## MYGRATR-STATIC-2 — Chrome Schema Extensions + Reseed (May 2026)
+
+### Phase context
+
+Schema + content phase between STATIC-1 (chrome shipped) and STATIC-3 (visual rebuild). STATIC-1 shipped a structurally-correct, SEO-clean chrome layer but the schema didn't support CE's live-site mega-menu shapes (Services hybrid CMS-driven references with name + tagline + icon, How It Works image cards, Resources featured posts + stories on dark-green bg, footer top CTA + section grouping + Talent Locations + restructured Subscribe). STATIC-2 extends the schema additively (no removals; legacy fields preserved for STATIC-1 render regression safety), captures CE's live chrome content via a fresh audit script, and reseeds Sanity with the v2 structure. STATIC-3 then rebuilds the visual layer on top.
+
+`migrations.status` unchanged at `content_complete` throughout — STATIC-2 is schema + content work, not a state-machine transition. Brief was `docs/briefs/active/MYGRATR-STATIC-2-BRIEF.md`, revised through v1 → v1.1 (DELTA-B applied) → v1.2 (phase-close reconciliation); moved to archive at this commit.
+
+### Commits + step-by-step
+
+- **`0586eaf` feat(static): STATIC-2 Step 1, live-site chrome audit script.** `scripts/audit/static-2/extract-chrome.ts` (~2100 lines) + companion diagnostic `probe-panel-shape.ts`. Playwright launches Chromium with GeoTargetly bypass (en-US Accept-Language header + script-route stub via `context.route(/geotargetly\.com/, ...)`) and a `__name` shim via `context.addInitScript` — tsx/esbuild's named-function transpilation injects `__name(fn, "name")` wrappers that travel with `fn.toString()` into `page.evaluate` callbacks, where the browser has no `__name` global → `ReferenceError`. The shim is the durable fix: `(window).__name = (fn) => fn`. Webflow nav structure: nav-link anchor → `.w-dropdown-toggle` ancestor (within 5 levels) → sibling `.w-dropdown-list` panel; both tagged with `data-mygratr-toggle/panel` for deterministic re-query. 5-strategy icon extraction (img-src / svg-use / inline-svg / background-image / Material font via fontFamily AND `.md-icon` class-name fallback). Strategy 6 added for Resources featured cards via `.resources-item-link` overlay anchors (empty textContent, aria-label only) wrapping `.resources-item` containers — discovered via the `panel-shape-probe.json` diagnostic. Label-blocklist filter (`/^(learn more|view all|...)$/i`) applied at `captureServicesMega` + `captureResourcesMega` item-extraction sites with Sanity-doc collision check confirming 0 real-doc collisions before applying. 4 STATIC-2 brief-vs-reality deltas surfaced + filed in `static-2-brief-deltas.json`: A (footer CTA labeled "Book A Call" not "Start building your team"), B (service mega-menu items render text-only on live site — DELTA-1 `service.thumbnail` backfill dropped from scope mid-phase), C (customer-story URL singular `/customer-story/<slug>` not plural), D (blog cards span multiple URL namespaces: `/nearshoring-offshoring/`, `/hiring-tips/`, `/scaling-teams/`). 1 STATIC-3 delta filed in `static-3-brief-deltas.json` (floating-pill scroll-triggered, not steady-state). Outputs: 7 structured JSON + asset downloads (23 assets total: 4 HIW photos + 6 Resources blog/story thumbs + 13 footer entries deduped to 5 sha256-unique files). AVIF extension added to `extFromUrl` allowlist (live site serves blog thumbnails + customer-story logos as AVIF). 4 phase-close tasks queued from this step: `__name` shim pattern in CAPABILITY_LOG, DELTA-5 ("Our Clients" → `/our-work`) in CHANGELOG + CONVENTIONS, DELTA-B 7 brief edits, customer-2 methodology insight.
+
+- **`26b06f0` feat(static): STATIC-2 Step 2, schema extensions + Zod types.** 7 files. Studio: `studio/schemas/_shared.ts` extended `imageField()` helper with `altRequired?: boolean` opt (Customer-2-reusable for chrome image fields that always need a11y alt). `studio/schemas/globals/navigation.ts` rewrite: `primaryLinks[].dropdownType` discriminator enum (`none | services-mega | how-it-works-mega | resources-mega`) + `servicesMegaMenu` (hybrid CMS-driven — leftColumn with `highlightedItems` max-2 + `items` reference arrays both unioning `[service, technology]`; rightColumnTop; rightColumnBottom.sections max-2 — schema stores ONLY structural template, name/tagline/icon dereference at render time) + `howItWorksMegaMenu` (3 cards + bottom panel, each inline `image` field with `altRequired: true, required: true` per Option B locked at STATIC-2-DELTA-2/4) + `resourcesMegaMenu` (left column items with discriminated icon shape `{source: 'material-font'|'asset', name, asset, alt}` validated via `Rule.custom()` — `material-font` requires `name` ligature, `asset` requires `asset + alt`; middle column blogPost ref array max-3; right column customerStory ref array max-3). `studio/schemas/globals/footer.ts` rewrite: `topCtaBlock` (heading + statRow + primaryCta + secondaryCta) + `sections[]` (sectionLabel + 5-variant `sectionLabelStyle` + columns with `headingHasArrow` + `headingUrl` + links + optional `bottomPillLinks`) + `talentLocations` + `subscribe` + `bottomBar` (with `regionSelector` and `hreflang`-aware options). `service.tagline` + `technology.tagline` (optional, max 80 chars; brief-spec descriptions). All legacy fields (`primaryLinks[].dropdownItems`, `cmsDriven`, `cmsCollection`, `localeDropdown`; footer `newsletterFormId`, `copyrightText`, `columns`, `legalLinks`) preserved with `⚠️ Legacy field — populated by STATIC-2 reseed but no longer rendered. Will be removed in a future cleanup phase.` description markers for STATIC-1 render regression safety. Site Zod: read-model types co-located with queries at `site/src/lib/sanity/queries/{navigation,footer}.ts` (extended in place with `nullable.optional` on every new field per TB18 read-model tolerance; reference unions; pill-style + dropdownType enums; type-aware icon `select()` projection in GROQ per DELTA-7: service → null icon, technology → techLogo). Brief assumed Zod types should live in `site/src/types/sanity/{globals,documents}/...` but those paths don't exist in the codebase — actual pattern is co-located queries. Service + technology Zod types deferred to TEMPLATE-SERVICE / TEMPLATE-TECHNOLOGY phases (Step 4 reseed writes via raw `@sanity/client.patch()`; site doesn't parse during STATIC-2). Studio deployed via `npx sanity deploy` (16.8s build, pinned `deployment.appId = d5ohi4btklbv9gr4ew7da04j` so no prompt). Pre-deploy backup created at `audit-output/static-2/pre-reseed-backup.tar.gz` (943K, 422 docs across 53 doc types, `--no-drafts --no-assets`). Studio verification manually confirmed by Jake post-deploy: all new field groups render in Studio forms (navigation 3 mega-menus + footer 5 new groups + service/technology tagline with description). Screenshots deferred to phase close (Sanity SSO auth blocker; manual verification = the actual gate).
+
+- **(no commit)** Step 3 — Studio data backup verification. Pre-existing Step 2.7 backup verified: file integrity confirmed via 2nd-doc extraction (service `iOS Developers` parses cleanly, `tagline` absent — correct pre-STATIC-2 rollback target). 422 docs / 53 doc types: 101 technology + 23 service + 74 blogPost + 17 customerStory + 32 video + 30 compareBlog + 28 teamMember + 22 tag + ... Restore command documented at `audit-output/static-2/restore-instructions.md`: `cd studio && npx sanity dataset import ../audit-output/static-2/pre-reseed-backup.tar.gz production --replace` (rollback overwrites data, NOT schema — schema rollback requires `git revert 26b06f0` + `sanity deploy`).
+
+- **`0ee2548` feat(static): STATIC-2 Step 4, seed globals + tagline patches.** 4 files. `scripts/static/seed-globals-v2.ts` (~700 lines) reads 5 audit JSON inputs + asset files, resolves references by slug (fail-loudly on misses — all 25 resolved: 19 service+technology items via mega-menu URL → slug → `_id`; 3 customerStory by Decision A; 3 blogPost by Decision B), patches `tagline` on matched docs via `.patch().set({tagline})` (19 patched, 1 skipped — empty captured tagline), uploads 4 HIW inline images via `sanityWriteClient.assets.upload()` (2 net new assets — 2 deduped by Sanity content-hash; Sanity-idempotent), `createOrReplace` navigation + footer with v2 structure + legacy fields preserved (regression-safety). Locked decisions threaded: Decision A (3 hand-curated customerStory refs — Salmon Software / Willo® / Event Connections — exact-slug match, fail-loudly), Decision B (3 hand-curated blogPost refs spanning `/nearshoring-offshoring/`, `/hiring-tips/`, `/scaling-teams/` namespaces per DELTA-D), Decision C (footer primary CTA = "Book A Call" → `/book-a-call` per DELTA-A live-capture; brief's "Start building your team" superseded). DELTA-6 (`/compare` → `/alternatives` rewrite at the link.url layer for both new sections + legacy columns) confirmed in post-write GROQ verify. Footer `copyrightText` sanitized via `sanitizeCopyright()` (audit regex over-grabbed trailing junk: `"...All rights reserved.General TermsPrivacy PolicySitemapRegionUnited StatesUnited Kingdom"` → `"© {year} Cloud Employee. All rights reserved."`). Author-voice rule preserved (`normalize()` strips em/en dashes, applied to every string written). 1 Zod query bug surfaced + fixed in same commit: `featuredStories[]->{ "headline": coalesce(customerStoryTitle, companyName) }` — initial assumption used non-existent `headline` field. Tagline samples: Software Engineers → "Scalable product-builders on demand", Fractional CTOs → "Startup-savvy technical leadership", TypeScript Developers → "Typed safety meets modern JavaScript". Post-write GROQ verify: 25 references resolve (0 broken), all new fields populated, legacy fields preserved, `/alternatives` present + `/compare` absent. 1 known data-quality issue: HIW bottomPanel image is the live black-arrow.png affordance (capture heuristic picked wrong image during Step 1) — uploaded faithful to audit; Seb edits in Studio when convenient. Customer-2 audit refinement candidate filed.
+
+- **(this commit)** Step 5 — Cross-cutting verification + phase close. Site `npm run build` passes (after 2 GROQ projection fixes: the `featuredStories.headline` coalesce fix from Step 4, and a 2nd fix here — drop explicit `hotspot, crop` from image projections because customerStory.companyLogo asset returns `hotspot: null` / `crop: null` from GROQ when not set on the upload, which broke the Zod parse against the strict `SanityImageSource`-compatible image schema; new projection `image{asset, alt}` lets Sanity decide field presence per asset). Studio + site tsc pass. STATIC-1 regression spot-check via local dev curl on `/blog` + `/services` + `/this-does-not-exist`: STATIC-1 Header renders against legacy `primaryLinks[].dropdownItems` + `ctaButton` reads + the new 6-link primaryLinks order ("Services / Our Clients / How It Works / Resources / Pricing / About Us") + Calendly CTA "Schedule a Call"; STATIC-1 Footer renders against legacy `columns[]` + `legalLinks[]` + `newsletterFormId` + `copyrightText` reads (4 columns: Full-time Staff Augmentation 8 + Technology 7 + About 5 + Resources 6); 404 page renders with `noindex`. `scripts/static/verify-static-2.ts` gate runs 6 checks all PASS. **Tech Debt #34 closed** (footer social icons schema gap — confirmed intentionally omitted from live site, no schema field needed; resolution: intentionally-omitted). UI_STRINGS audit at `audit-output/static-2/ui-strings-audit.md` documents the CMS-driven vs static split (default-to-CMS applied to "View all" / "Subscribe" labels; "Region:" prefix deferred to STATIC-3 UI_STRINGS).
+
+### Locked decisions threaded through
+
+- **DELTA-1 dropped mid-phase.** Brief v1 scoped `service.thumbnail` backfill from live mega-menu icons. Step 1 panel-shape probe confirmed live service mega-menu items are pure text divs (`<div class="h6-nav">name</div><div class="small-p grey">tagline</div>`) — NO icons. Reference screenshot (`docs/design/static-3-reference/mega-menu-services.png`) also confirms text-only items. Scope dropped at v1.1 brief revision; Services mega-menu renders text-only matching live site; `service.thumbnail` stays null on all 23 docs. Schema field preserved for future editorial use.
+- **DELTA-2/4 Option B locked.** Sanity singletons `sourcingPage` / `embeddingPage` / `retentionPage` / `howItWorksPage` are empty stubs (no `heroImage` to dereference); HIW mega-menu uses inline `image` fields per `howItWorksMegaMenu.cards[].image` and `bottomPanel.image`. Singleton-deref (Option A) deferred to a future schema iteration if customer-2 has populated singletons.
+- **DELTA-5: "Our Clients" → `/our-work`.** Audit-captured primary nav 2nd link points to `/our-work` (not `/customer-stories` as brief §5 guessed; not `/our-clients`). Live-faithful seed.
+- **DELTA-6: `/alternatives` not `/compare`.** Live site footer captures `/compare` for "CE vs. Alternatives" but STATIC-1 footer seed already had this URL; STATIC-2 rewrites to `/alternatives` (HUB_CONFIG canonical, matches Webflow `hrefLang="x-default"` declaration). Both `/compare` + `/alternatives` return 200 on live site; canonical alignment matters for SEO link-equity consistency.
+- **DELTA-7 type-aware icon projection.** Services mega-menu items resolve icon differently per type: `service → null` (no icons per DELTA-B), `technology → techLogo`. Implemented via GROQ `select(_type == 'service' => null, _type == 'technology' => techLogo, null)`.
+
+### Customer-2 reusable IP
+
+Filed to CAPABILITY_LOG (this commit):
+
+1. **Playwright + tsx `__name` shim.** tsx/esbuild emits `__name(fn, "name")` for named arrows + function declarations inside `page.evaluate` callbacks; shim via `context.addInitScript(() => { window.__name = (fn) => fn })` on the BrowserContext before any page is created. One-line global no-op.
+2. **Plan-mode requires DOM-level confirmation for image-related work.** Brief authoring inferred service mega-menu icons from screenshot visual; live DOM probe showed text-only items. Lesson: schema sections that depend on image presence need a DOM probe at plan-mode entry, not a screenshot inference.
+3. **Discriminated icon shape (`material-font | asset`).** Schema models tagged-union via single object + `Rule.custom()` conditional validation. Caller reads `source` to pick the branch. Supports editorial flexibility (toggle between Material font + uploaded asset per item).
+4. **Audit-driven brief refinement pattern.** Probe → drop assumptions → file deltas as JSON artifacts in `audit-output/<phase>/` → defer brief edits to phase close (v1 → v1.1 → v1.2). Keeps code execution unblocked while preserving the paper trail for phase-close brief updates.
+
+### Tech debt
+
+- **Closed:** #34 (footer social icons — intentionally omitted from live site).
+- **Filed:** HIW bottomPanel image capture heuristic refinement (Customer-2 candidate — should skip UI-affordance assets like arrow/chevron PNGs when detecting hero-style content panel photos).
+- **Carried:** legacy field cleanup (deferred to a future schema-cleanup phase per brief §1).
+
+### Data state on close
+
+- `migrations.status` = `content_complete` (unchanged)
+- navigation global: 6 primaryLinks, 3 mega-menus populated, 19 mega-menu refs + 6 featuredPosts/featuredStories refs all resolve
+- footer global: 5 new groups + 4 legacy fields populated
+- 19 service + technology docs have `tagline`
+- 422 → 424 image assets in Sanity (+2 net new HIW photos; 2 deduped by content-hash)
+
+---
+
+## MYGRATR-STATIC-1 — Site Chrome: Header, Footer, 16 Hubs, 404 (May 2026)
+
+### Phase context
+
+Foundational chrome phase. Header + Footer + 16 hub routes + 404 page shipped end-to-end against the existing `content_complete` Sanity dataset. Strategically reordered earlier in the queue than original plan (originally scheduled after TEMPLATE-CUSTOMER_STORY) because every template phase that follows renders inside this chrome — building templates against placeholder chrome means re-verifying everything twice. `migrations.status` stayed `content_complete` throughout — STATIC-1 is chrome work, not a state-machine transition. Sanity ops were write-once in Step 1 (seed) then strictly read-only for Steps 2-7.
+
+Pattern-establishing for the chrome layer; subsequent UK-locale work and TEMPLATE-* phases inherit the patterns locked here. Brief was `docs/briefs/active/MYGRATR-STATIC-1-BRIEF.md` (move to archive at phase close).
+
+### 7-step execution summary
+
+**Step 1 — Sanity seed (commit `8fcd293`)**: 20 docs via `createOrReplace` using `SANITY_MIGRATION_WRITE_TOKEN`. 3 globals (`navigation`, `footer`, `siteSettings`) + 16 hub singletons (7 blog-hub + 4 resource-hub + 5 collection-index) + `notFoundPage`. 14 hubs pull `h1` + `metaDescription` from `audit-output/pages/<slug>/content.json`; `videosHub` + `staffAugmentationHub` use Jake-authored copy locked at plan-mode close (no Webflow source for those two). Visible `normalize()` helper at the top of each seed script strips em + en dashes from every string before write — enforces the persistent author-voice rule even on copy lifted from external sources.
+
+**Step 1 follow-ups (commit `d488dc9`)**: `videosHub` + `staffAugmentationHub` `metaDescription` patched to 148/147 chars (cleared the 140-160 Studio publish-warning floor); `siteSettings.defaultOgImage` sourced from CE Webflow `og:image` (canonical homepage `usthumb.png`, 1470×796 PNG, valid signature), uploaded to Sanity as `image-33d40e77adf86c0867bc3b2e531421123295108e-1470x796-png`, patched. Reused not invented — no synthesis.
+
+**Step 2 — 404 page (commit `d488dc9`)**: `site/src/app/not-found.tsx` renders the `notFoundPage` singleton via Next.js App Router convention. Explicit `metadata.robots = { index: false, follow: false }` alongside Next's auto-injected `noindex` meta. New `site/src/lib/url.ts` `toInternalHref()` strips known CE hosts → bare pathname; used immediately by the 404 CTA, reused by Footer + Header. Schema reconciliation done inline: the brief asked for `primaryCta.label/link` but the actual `ctaSection` schema is `buttonText`/`buttonLink` — seeded data already matched the schema, render used schema field names. One-line export added: `buttonVariants` from `site/src/components/ui/button/index.tsx` so `<Link>` can reuse Button styling without `<button>` inside `<a>` (invalid HTML).
+
+**Step 3 — Site Footer (commit `028eab2`)**: 21-line SCAFFOLD-1 stub replaced. Server component reading the seeded `footer` global. 4 columns (Full-time Staff Augmentation 8 links / Technology 9 / About 6 / Resources 6 — counts match CE_SITE_TRUTH), HubSpot newsletter via the existing C6 `HubSpotFormEmbed` primitive (form GUID `deac2450-b51b-4630-b9e2-47017a13da15`, portal `22809822`), legal links + copyright with `{year}` token substituted at render time via `resolveCopyright()`. Brand-tertiary (navy `#223c6c`) bg, `text-text-on-dark` foreground, brand-secondary hover. DESIGN-1 A2 Link primitive intentionally drops nav-context tones — Footer uses `next/link` directly with footer-specific classes; same pattern Header adopts in Step 5.
+
+**Step 4 — 16 hub routes (commit `fd65151`)**: Largest step. Shared infrastructure under `site/src/lib/hubs/`: `pagination.ts` (`parsePageParam` + `buildPagination` + `buildPageNumbers`, `notFound()` on invalid input or out-of-range), `render-hub.tsx` (hero + featured + paginated grid + prev/next + inline `<script type="application/ld+json">` × 2), `metadata.ts` (one `buildHubMetadata` for all 16 routes; OG image cascade: hub.openGraphImage → siteSettings.defaultOgImage → omit), `render-route.ts` (`resolveHubRoute` orchestrator). `site/src/lib/sanity/queries/hubs.ts` holds the `HUB_CONFIG` table — adding a hub is one row, no fetcher duplication. Each of the 16 hub `page.tsx` files is 23 lines. 3 fresh card components at `site/src/components/cards/{blog,resource,collection}-card.tsx` plus a `_shared.tsx` with excerpt + date + label helpers; **title-as-link semantics locked**: `<h3><Link>title</Link></h3>` single anchor, image + body decorative, category Tags rendered with no `href`. Proof-hub mid-gate ran on `/blog` (largest dataset, 74 posts → 7 pages); caught two issues before bulk-building the other 15 routes: ZodError on `featuredItems` (fixed by `.nullable()` on both `featuredArticles` and `featuredItems` since the union is shape-driven) + a color-contrast violation on disabled pagination placeholders (fixed by rendering nothing when there's no prev/next target). Sitemap extended with 16 default-locale + 16 UK hub entries × 3 hreflang alternates = 32 hub entries + 96 alternates (the UK entries were removed at Step 7 close — see Gap 1 below). One manual edit at `site/src/lib/redirects/regex-redirects.ts`: `/customer-stories/:slug*` and `/uk/customer-stories/:slug*` → `:slug+` because the zero-or-more form swallowed the bare hub root and redirected it to the legacy `/customer-story` singular path. Tech Debt #37 logs the generator-side fix.
+
+**Step 5 — Header + /pricing redirect (commit `5096a2a`)**: 28-line SCAFFOLD-1 stub replaced. Server shell at `site/src/components/layout/nav.tsx` (skip link + logo + Container) + single client island `nav-client.tsx` for all interactive concerns. Desktop dropdowns are **hand-built** using the WAI-ARIA Disclosure pattern, NOT Radix DropdownMenu — Radix uses `role=menu/menuitem` semantics for application commands, semantically wrong for site navigation. Mobile drawer uses **Radix Dialog** for its proven focus-trap + scroll-lock + Escape plumbing. Locale switcher is pathname-aware via `usePathname()`. Calendly CTA opens the canonical CE intro popup URL `https://calendly.com/d/cwwf-6k5-2qy/intro-call-cloud-employee` (provenance: `audit-output/pages/contact/content.json` — same URL the `/contact` page embeds). Click behaviour: trigger always opens (Escape / click-outside / 150ms hover-leave close) — avoids the mouseenter-then-click toggle race. `/pricing → /services` 308 added to `next.config.ts` `lockedRules` (locked Open Decision #1). **Two latent Tech Debt #22 bridge fixes pulled forward**: `site/src/lib/url.ts` and `site/src/components/ui/hubspot-form-embed/index.tsx` swapped `import { env }` for direct `process.env.NEXT_PUBLIC_*` reads (`env.ts` validates `SANITY_API_READ_TOKEN` as `z.string().min(1)`, which crashes client hydration because that secret is stripped from the client bundle). Bug was latent since Step 3 — invisible because Steps 1-4 didn't require working client hydration; Step 5 needed it for dropdowns and drawer, surfaced the issue. Icon set fallback: sprite has no `chevron-down` or `x`; used `chevron-right` with CSS rotation + `close` for drawer dismiss.
+
+**Step 6 — Cross-cutting verification (commit `bf40f9a`)**: Two new probe scripts under `scripts/static/`: `sweep-routes.ts` (Playwright across 11 representative URLs, console-error capture, banner + footer + #main + skip-link assertion) and `validate-json-ld.ts` (JSDOM-parses `<script type="application/ld+json">` on `/services`, a real blog post, and the 404; confirms expected schema.org types). axe-core sweep zero violations across 6 routes including TEMPLATE-BLOG. Lighthouse desktop on `/blog` + `/services` + a blog post (404 refused by Lighthouse — non-200): Perf 82-99 ✅, A11y 95-96 → 96-100 after a heading-order fix (collection hubs lack `topicsHeader`, so renderHub now emits a sr-only `<h2>` bridging `<h1>` and card `<h3>`), SEO 66-69 (single failing audit: `is-crawlable`, env-gated `robots.txt Disallow:/` in non-prod, flips to `Allow:/` and 100 in prod), Best Practices 50-54 (all Tech Debt #29-#32 — Clara widget contrast, third-party cookies, LinkedIn deprecated APIs, third-party console 404s — deferred to SCAFFOLD-AUDIT). 4 routes wrapped in `<main id="main">` so the skip-link target exists everywhere (`/`, `/uk`, default + UK TEMPLATE-BLOG). 19 chrome strings converted to UI_STRINGS keys (49 keys total at `tools/eslint/ui-strings.json`; STATIC-1 jsx-no-literals lint errors went 18 → 0). 2 SCAFFOLD-1 placeholders had em dashes scrubbed.
+
+**Step 7 — Phase close (this commit)**: Gap 1 fix in `site/src/app/sitemap.ts` — 16 `/uk/<hub>` entries dropped along with all hreflang alternates on hub URLs. Sitemap 182 → 166 entries (2 static + 16 default-locale hub + 148 blog post). `scripts/static/verify-static-1.ts` ships as the single-command phase-close gate — re-runs every check from Steps 1-6 and exits 0 on full pass. Context-file updates per Tier 3 discipline. Final commit pushed to `origin/feat/design-1`.
+
+### Files shipped (counts per category)
+
+| Category | Count | Where |
+|---|---|---|
+| New scripts | 7 | `scripts/static/seed-globals.ts`, `seed-hubs.ts`, `patch-hub-metadescriptions.ts`, `seed-default-og-image.ts`, `axe-not-found.ts`, `axe-hub.ts`, `probe-nav-interactive.ts`, `sweep-routes.ts`, `validate-json-ld.ts`, `verify-static-1.ts` (10 total; 3 npm script entries added) |
+| Replaced stubs | 2 | `site/src/components/layout/nav.tsx`, `site/src/components/layout/footer.tsx` |
+| New hub helpers | 4 | `site/src/lib/hubs/pagination.ts`, `render-hub.tsx`, `metadata.ts`, `render-route.ts` |
+| New Sanity queries | 4 | `site/src/lib/sanity/queries/{navigation,footer,hubs,not-found-page}.ts` |
+| New URL helper | 1 | `site/src/lib/url.ts` (`toInternalHref()`) |
+| New cards | 4 | `site/src/components/cards/{blog-card,resource-card,collection-card,_shared}.tsx` |
+| New routes | 17 | 16 hub `page.tsx` + 1 `not-found.tsx` |
+| Modified routes | 4 | `app/page.tsx`, `app/uk/page.tsx`, `app/[category]/[slug]/page.tsx`, `app/uk/[category]/[slug]/page.tsx` (Step 6 `<main id="main">` wraps) |
+| Modified design system | 2 | `site/src/components/ui/button/index.tsx` (1-line `export buttonVariants`), `site/src/components/ui/hubspot-form-embed/index.tsx` (Tech Debt #22 bridge) |
+| Modified config | 2 | `site/next.config.ts` (/pricing redirect), `site/src/app/sitemap.ts` (Step 4 add, Step 7 UK drop) |
+| Modified redirect tables | 1 | `site/src/lib/redirects/regex-redirects.ts` (2 manual `:slug+` edits; see Tech Debt #37) |
+| UI_STRINGS additions | 19 keys | `tools/eslint/ui-strings.json` 30 → 49 keys; `site/src/lib/ui-strings.ts` regenerated |
+| Persistent memory | 1 | `feedback_no_em_dashes.md` (Jake-locked author-voice rule, persistent across phases) |
+
+### Locked decisions
+
+1. **Embedding relabel**: CE source has two primary nav links both labelled "How It Works"; one to `/embedding` is relabelled to "Embedding". Zero URL change, zero SEO impact.
+2. **2 dropdowns not 3**: brief assumed Services + How It Works + Resources dropdowns; actual CE source has only Services (19 items) + Resources (6 items, mirroring footer column 4 per Open Decision #2). "How It Works" is a flat link.
+3. **Hub URL pattern `/<category>`** not `/blog/<category>` (Amendment #1). Matches schema `defineBlogHub({ route: '/staff-augmentation' })` and Webflow audit-output URL structure.
+4. **`/pricing → /services` 308** in `lockedRules`. `/pricing` has no schema or singleton; CE source has the link in nav + footer; cleanest fix until a dedicated `pricingPage` schema-extension cycle ships (Open Decision #1).
+5. **Sort orders** per Amendment #3 table (`HUB_CONFIG.childSort`): blog & compare by `date desc`; service/technology/customerStory/review by `order asc`; tool/download by `featured desc, name asc`; event by `dateTime desc`. `technology` filters `listItemOnly != true`. `download` filters `comingSoon != true`.
+6. **Title-as-link card semantics**: `<h3><Link>title</Link></h3>` single anchor per card. Image and body are decorative-clickable via card-level hover styling but NOT separately linked. Tags use decorative `<span>` (no href). No nested anchors. No JS-driven whole-card click.
+7. **Pagination URL convention**: `?page=N` search param (not `/page/N` route segment). Page 1 canonical has no suffix; page 2+ self-canonical includes `?page=N`.
+8. **URL normalization**: every Sanity-stored fully-qualified CE URL passes through `toInternalHref()` from `@/lib/url` before reaching `next/link` so internal navs stay client-side. Same helper used by Footer, Header dropdowns + drawer, and card components.
+9. **Desktop dropdowns hand-built** (WAI-ARIA Disclosure pattern with `aria-haspopup="true"` + `aria-expanded` + `aria-controls`), NOT Radix DropdownMenu. Mobile drawer uses Radix Dialog. Rationale: Radix DropdownMenu uses `role=menu/menuitem` semantics for application commands; site navigation needs proper `<nav><ul><li><a>` structure.
+10. **UK sitemap learning** (Step 7 Gap 1): future briefs that seed multi-locale sitemap entries must first confirm routes exist for every locale being seeded. Step 4 brief seeded 32 hub entries (default + UK) but only built default-locale routes; the 16 UK URLs all 404'd until Step 7 dropped them from sitemap.
+
+### Gates passed
+
+| Step | Gate | Result |
+|---|---|---|
+| 1 | 20 Sanity docs seeded with content; zero em/en dash residue across all seeded text | PASS |
+| 2 | `/this-does-not-exist` returns HTTP 404, renders title + heroDescription + CTA, `<meta name="robots" content="noindex">` present; axe-core 0 violations | PASS |
+| 3 | Footer: 4 columns with correct headings and link counts (8/9/6/6); `{year}` token substituted; HubSpot form GUID + script + mount point present; role=contentinfo + 5 ARIA labels; axe-core 0 violations | PASS |
+| 4 | 16/16 hubs HTTP 200; /our-work, /alternatives 308; ?page=99/abc/-1 → 404; ?page=2 → 200; /blog has 7 pages; /technology applies listItemOnly filter; 16 CollectionPage + 16 BreadcrumbList JSON-LD; 32 sitemap entries (later 16 at Step 7); axe-core 0 violations on 4 sampled hubs | PASS |
+| 5 | /pricing 308 → /services; Header on every page; 7 primary links rendered; Services 19 + Resources 6 dropdown items; CTA + locale switcher; mobile hamburger + drawer (Enter opens, Escape closes); skip link present; axe-core 0 violations on /, /blog, /services | PASS |
+| 6 | 11-route sweep zero console errors; axe-core 0 violations on 6 routes incl. TEMPLATE-BLOG; sitemap shape correct; JSON-LD shape valid; Lighthouse Perf ≥75, A11y ≥96, SEO 100-in-prod, BP deferred; build + tsc clean; STATIC-1 lint errors 18 → 0 | PASS |
+| 7 (close) | `verify-static-1.ts` runs all of the above as a single script; sitemap = 166 entries (16 default-locale hub, 0 UK, 0 hreflang); all 6 checks pass | PASS |
+
+### Deltas vs brief
+
+- **Brief §2.3 / Amendment #1 — hub URL pattern**: brief assumed `/blog/<category>` for the 6 blog category hubs; actual schema + Webflow source URLs use `/<category>`. Corrected at plan-mode before code; documented inline in `HUB_CONFIG`.
+- **Brief §2.1 / Amendment #5 — dropdown count**: brief assumed 3 dropdowns; CE source has 2 (Services + Resources). Flat "How It Works" + "Embedding" links.
+- **Brief §6.5 / Amendment #2 — 404 schema shape**: brief assumed `{ title, description, ctaLabel, ctaLink }`; actual `defineStaticPage` factory uses `sections[]` with at least one `ctaSection`. Seeded data matches the schema.
+- **Brief §2.1 / Amendment #6 — hub schema richness**: hubs additionally have `eyebrow` + `featuredArticles`/`featuredItems` + `introContent` + `topicsHeader` (blog only). Seeded `eyebrow` + `topicsHeader` where natural; `featuredArticles`/`featuredItems` + `introContent` left empty for Seb to curate in Studio.
+- **Open Decision #1 — /pricing**: 301 to /services. Documented inline.
+- **Open Decision #2 — Resources dropdown items**: mirror footer column 4. Documented in seed script.
+- **Brief §6 Gap 1 (Step 7 close) — UK hub sitemap entries dropped**: Step 4 brief seeded both locales but only built default-locale routes. See "UK sitemap learning" in locked decisions and Tech Debt #38.
+
+### Tech debt added
+
+- **#34** Footer social icons schema gap (QA-1).
+- **#35** `siteSettings.defaultOgImage` seeded from CE Webflow `usthumb.png` — curation note, not a real debt (Seb can replace via Studio).
+- **#36** 10 pre-existing DESIGN-1 lint errors surfaced by Step 6 build sanity (SCAFFOLD-AUDIT batch).
+- **#37** Regex-redirects generator emits `:slug*` for every `(.*)` translation; manual `:slug+` edits at `regex-redirects.ts` for `/customer-stories` and `/uk/customer-stories` are fragile across `npm run redirects:extract` regeneration. Fix at generator level (SCAFFOLD-AUDIT batch).
+- **#38** UK hub routes deferred (see Gap 1 + learning above).
+
+### Brief-vs-reality discipline (Pattern 13 sub-examples observed)
+
+- BvR (plan-mode): brief assumed `/blog/<category>` hub URLs but the schema route was `/<category>` — caught at plan mode by reading the actual schema factory, not the brief description.
+- BvR (Step 4 mid-gate): Zod schema for hub singleton assumed `featuredArticles` would only exist on blog hubs; GROQ projects both `featuredArticles` and `featuredItems` so the non-applicable field comes back as `null`, not missing. Fixed at mid-gate before bulk-building 15 more routes.
+- BvR (Step 4 mid-gate): color-contrast violation on disabled prev/next pagination placeholders. axe-core flagged a span using `text-text-default/40` (40% opacity) that was intentionally aria-hidden. Fixed by not rendering disabled placeholders at all.
+- BvR (Step 5): Playwright `.click()` on the hamburger button didn't open the Radix Dialog drawer because Radix uses `onPointerDown` which Playwright's synthetic pointer events don't always dispatch. Keyboard Enter worked. Real-browser mouse clicks work normally. Switched the interactive probe to keyboard-driven assertions, documented inline.
+- BvR (Step 5): The brief's `primaryCta.label`/`primaryCta.link` field names didn't match the actual `ctaSection` schema (`buttonText`/`buttonLink`); seeded data already matched the schema, so the render used schema field names directly.
+- BvR (Step 5): latent Tech Debt #22 client-bundle env validation crash. Invisible since Step 3 (Footer's HubSpotFormEmbed imported `env.ts` which validates `SANITY_API_READ_TOKEN` as `z.string().min(1)`, but the secret is stripped from the client bundle). Steps 1-4 didn't require working client hydration so the ZodError was silent. Surfaced when Step 5 needed working dropdowns + drawer.
+- BvR (Step 6): heading-order skip from `<h1>` to card `<h3>` on collection hubs that don't have `topicsHeader`. Lighthouse caught it; axe-core didn't.
+- BvR (Step 6 → Step 7 — Gap 1): sitemap had 32 hub entries but only 16 routes existed. Caught by the 11-route sweep in Step 6. Locked as the UK sitemap learning above.
+
+### Notes for the next phase
+
+- The Template Phase Runbook (next session) should codify the proof-hub-mid-gate pattern from Step 4 as the default for any phase that bulk-generates more than 3-4 similar routes / components. Building 1, verifying, then bulk-building the rest caught two issues that would have propagated × 15 had Step 4 just generated all 16 hub routes up front.
+- The "tech debt pulled forward" pattern (env split bridge fixes from Tech Debt #22) is worth noting: latent issues from earlier phases that don't visibly break anything can surface unexpectedly in a later phase that exercises a different code path. Tier 3 verification (sweep all routes + capture console + test interactive contracts) catches them.
+- `verify-static-1.ts` is the template for future phase-close gates. Self-contained TypeScript script consuming the dev server, runs every previously-verified check, exits 0 on success — single command to run before committing phase close.
+
+---
+
+## MYGRATR-CONTENT-1E — Webflow w-embed Recovery (May 2026)
+
+### Phase context
+
+Post-phase content patch resolving Tech Debt #25 (logged at TEMPLATE-BLOG
+HALT 2/3 close). CONTENT-1C migration used `@sanity/block-tools.htmlToBlocks`,
+which flattens content inside Webflow's RichText custom-embed wrappers; this
+phase recovers the lost content as structured Sanity types. `migrations.status`
+stayed `content_complete` throughout (post-phase patch invariant — Sanity-side
+data fix only; no state-machine transition). Pattern-applying, not
+pattern-establishing — reuses CONTENT-1A → CONTENT-1D-CLEANUP migrator
+infrastructure.
+
+### Scope variance — planned vs actual
+
+| Aspect | Plan estimate | Actual | Ratio |
+|---|---|---|---|
+| Affected docs | 10–30 | 88 (sweep) / 79 (patched) | ~3–8× |
+| Embeds | not estimated | 167 (sweep) / 149 (recovered) | — |
+| Doc types | 5 in scope | 3 carried embeds (blogPost, compareBlog, customerStory) — technology + service confirmed zero | narrower |
+| Time | 7.5h | ~10–12h | ~1.4× |
+
+The 3-8× doc-count overshoot did NOT translate proportionally to
+time because:
+- Two of the five doc types (technology, service) were zero-embed,
+  reducing field-level migrator complexity.
+- All embeds concentrated in a single Webflow field per type
+  (`content` / `hiringNeedsTable`) — no per-field branching needed.
+- 9 of 88 sweep docs were deduped-to-canonical (CONTENT-1C dedup
+  invariant), reducing patch count from 88 → 79 actually-patched.
+
+### Commit chain
+
+| Commit | Description |
+|---|---|
+| _t.b.d._ | `feat(scripts): CONTENT-1E w-embed sweep probe` |
+| _t.b.d._ | `feat(schema): CONTENT-1E videoEmbed + table portable-text types` |
+| _t.b.d._ | `feat(content): CONTENT-1E w-embed recovery migrator` |
+| _t.b.d._ | `feat(site): CONTENT-1E PortableText videoEmbed + table renderers + verifier + context sync` |
+
+### Critical selector correction — Checkpoint 1 discovery
+
+The plan (CONTENT-1E_OPTIMIZED_MOON.md), CLAUDE.md Tech Debt #25, and
+the original TEMPLATE-BLOG HALT 3 diagnostic at
+`audit-output/template-blog/rich-text-gap-analysis.md` all asserted the
+embed wrapper was `<div class="w-embed">`. **This was wrong.**
+
+The Webflow RichText API returns `<div data-rt-embed-type='true'>`
+(single-quote form) as the wrapper attribute. The `w-embed` CSS class
+only exists on the published Webflow site (post-render); CMS HTML never
+carries it. Checkpoint 1's probe run against this selector found ZERO
+table embeds across the entire corpus — surfacing the misdiagnosis
+before any schema or migrator work landed. Probe re-authored with the
+corrected selector immediately surfaced the actual 167 embeds.
+
+This correction propagated through every subsequent artifact: deserializer
+rule selector, sweep inventory, migrator design, verifier checks, and
+CONVENTIONS.md.
+
+### Architecture decisions (locked at planning, all held through execution)
+
+1. **Option B — full content[] rebuild via `.set({ content })`.** Migrator
+   rebuilds the entire PortableText array per doc, not field-level merge.
+   Constraint: manual Studio edits to `content[]` will be overwritten on
+   re-run; locked in new CONVENTIONS section "Post-Phase Content Mirror
+   Constraint".
+2. **Option α — `brand-tertiary` token for table header bg.** No new
+   design tokens; renderer uses existing CE navy (`#223c6c`).
+3. **Approach B — LinkedIn handled by `parseVideoUrl` extension.**
+   Schema stays as planned (`url` + `caption` only); provider-detection
+   lives in the renderer. No separate `iframeEmbed` block type. LinkedIn
+   embeds render via VideoEmbed eager mode (no autoplay — LinkedIn doesn't
+   support autoplay query).
+
+### Files created
+
+- `scripts/content/probe-w-embed-sweep.ts` — Step 1 read-only sweep
+  probe; emits `audit-output/content-1e/w-embed-sweep-inventory.json`
+  with per-embed classification (table / iframe / script / style-only /
+  other).
+- `scripts/content/migrate-w-embed-recovery.ts` — Step 4 migrator with
+  HARD GATE comment + dedup-aware pre-flight (`classifySweepTargets()`
+  → `{existing, dedupedToCanonical, orphan}`) + halt-on-first-failure
+  per-doc guards + pre-patch snapshot to
+  `audit-output/content-1e/pre-patch-snapshots/`.
+- `scripts/content/verify-content-1e.ts` + `run-verify-content-1e.ts` —
+  Step 6 verifier (5 hard-gate checks: schema round-trip, _type
+  frequencies, migrations.status invariant, w-embed-recovery row exists
+  + healthy, no regression on prior phases).
+- `audit-output/content-1e/w-embed-sweep-inventory.json` — sweep
+  inventory (gitignored).
+- `audit-output/content-1e/pre-patch-snapshots/*.json` — 79 per-doc
+  rollback snapshots (gitignored).
+- `audit-output/content-1e/render-coverage-check.md` — Checkpoint 4
+  variation-coverage URL list (gitignored).
+
+### Files modified
+
+- `studio/schemas/objects/portable-text.ts` (+2 `defineArrayMember`
+  entries: `videoEmbed` + `table`; deployed to production Studio at
+  Checkpoint 2 via `sanity deploy`).
+- `src/lib/content/migration-helpers.ts` (block-tools `defaultSchema`
+  registration + 3 new deserializer rule branches; `webflowId` opt-param
+  on `toPortableText`; deterministic `_key` counters).
+- `site/src/components/ui/video-embed/index.tsx` (`parseVideoUrl`
+  extended for LinkedIn; `buildEmbedUrl` branches per provider;
+  `LINKEDIN_ALLOW` constant; LinkedIn iframes ignore autoplay).
+- `site/src/components/ui/portable-text/index.tsx` (+2 type handlers:
+  videoEmbed eager-mode iframe; table with `bold-col-one` →
+  `boldFirstColumn` + responsive horizontal-scroll wrapper +
+  brand-tertiary header bg).
+- `CLAUDE.md` (Tech Debt #25 → RESOLVED + selector-correction note +
+  phase table row).
+- `CONVENTIONS.md` (new section "Post-Phase Content Mirror Constraint"
+  + Section 4 phase row).
+- `CHANGELOG.md` (top entry).
+- `docs/FEATURE_MAP.md` (CONTENT-1E entry).
+- `docs/context/REGISTRY.md` (probe, migrator, verifier, schema types).
+- `docs/CAPABILITY_LOG.md` (Pattern 13 Layer 4 6th sub-example).
+
+### Sanity-side production state (post-migrator)
+
+- 142 `table` blocks across blogPost+compareBlog `content` and
+  customerStory `hiringNeedsTable`.
+- 7 `videoEmbed` blocks across blogPost `content`.
+- 46 of ~74 blogPosts carry ≥1 table; 4 carry ≥1 videoEmbed.
+- 27 of 30 compareBlogs carry ≥1 table; 0 carry videoEmbed.
+- 3 of 18 customerStories carry ≥1 table (`hiringNeedsTable` field).
+- Sweep totals (167 = 153 tables + 14 iframes) minus deduped
+  (18 = 11 table + 7 video, all from 9 multi-collection blog mirrors) =
+  149 expected = 149 actual. ✅
+
+### Dedup discovery during migrator run
+
+First-run halt on `blogPost-68f668fffa9f57187c396b32` ("Sanity doc not
+found") surfaced 9 multi-collection blog mirrors that CONTENT-1C
+deduplicated against slug-canonical siblings — these IDs exist in
+Webflow but were never created in Sanity. The migrator was extended
+with `classifySweepTargets()` pre-flight:
+
+- **existing** (79): patch normally
+- **dedupedToCanonical** (9): canonical sibling exists at same slug;
+  skip with audit log, content covered by canonical's own patch
+- **orphan** (0): hard halt (would indicate true content loss)
+
+All 9 deduped mirrors share prefix `68f668...` (the staff-augmentation
+sub-collection); they're byte-identical copies of the canonical content
+in `blogs-and-guides`. CONTENT-1C dedup is consistent and correct.
+
+### Pattern 13 Layer 4 — 6th sub-example
+
+Plan locked from prior-phase diagnostics may carry forward incorrect
+technical assumptions. Checkpoint 1 probe execution is the validation
+layer that surfaces these before they propagate downstream.
+
+The 6th sub-example extends the TEMPLATE-BLOG 5-example matrix
+(status≠hydration · diagnosis≠Pattern13-exempt · HTTP200≠script-executed ·
+probes-need-probing · build-time-env). Documented in CAPABILITY_LOG.md.
+
+### Tech Debt
+
+- Tech Debt #25 RESOLVED (this phase).
+- No new tech debt entries introduced.
+
+### Verifier hard-gate checks (verify-content-1e.ts)
+
+1. Schema deployed — round-trip a `videoEmbed` block (create/read/delete
+   smoke-test doc; throws if Studio rejects unknown type).
+2. Sitewide `_type` frequencies match sweep expectations (deduped-aware
+   arithmetic).
+3. `migrations.status` unchanged at `content_complete` (post-phase patch
+   invariant).
+4. `content_migrations` row exists for `w-embed-recovery` with
+   `status='complete'` + `parity_score >= 95`.
+5. No regression on CONTENT-1A → CONTENT-1D-CLEANUP rows (floor check:
+   ≥ 36 prior rows + all at `status='complete'`).
+
+---
+
+## MYGRATR-TEMPLATE-BLOG — Pattern-establishing first detail-page template (May 2026)
+
+### Phase context
+
+First TEMPLATE-* phase in the MYGRATR pipeline; pattern-establishing
+for the 12 subsequent template types (TEAM_MEMBER, REVIEW, VIDEO,
+SERVICE, TECHNOLOGY, COMPARE, CUSTOMER_STORY, TOOL, BOOK_A_CALL,
+DOWNLOAD, STATIC, HOME). `migrations.status` unchanged at
+`content_complete` — TEMPLATE-* phases do not transition state
+machine; that resumes at QA-1 / LAUNCH. Brief locked at v1.3 across
+internal + external CMA passes prior to execution. 3 HALTs structured:
+recon/probes (HALT 1), visual integration (HALT 2), SEO + close
+(HALT 3).
+
+### Commit chain
+
+| Commit | HALT | Description |
+|--------|------|-------------|
+| `bed2972` | HALT 1 | recon, probes (10 incl. video-references variants), GROQ + Zod modules, route plumbing, debug-shell template |
+| `6073865` | HALT 2 | Finsweet Attributes `type="module"` — BvR #45 (SCAFFOLD-1 escape surfaced) |
+| `c454d77` | HALT 2 | E1 Image `'use client'` + inline `NEXT_PUBLIC` env reads + `@sanity/image-url` named import — BvR #37 + #38 + #39 + #44 |
+| `930c2a3` | HALT 2 | B3 PortableText body→lead + inline image rounded-lg — BvR #42 + #43 |
+| `b96a394` | HALT 2 | Visual integration [Path A] — 7 files, +591/-34 |
+| pending #1 | HALT 3 | `serializeJsonLd` helper + per-blog JSON-LD object builders |
+| pending #2 | HALT 3 | Emit BlogPosting + BreadcrumbList + (conditional) FAQPage on both locales |
+| pending #3 | HALT 3 | sitemap.ts blog-row expansion — 74 docs × 2 locales = 148 entries |
+| pending #4 | HALT 3 | B3 PortableText h5/h6 handlers — BvR #46 |
+| pending #5 | HALT 3 | HALT 3 close — link-text fixes + context-files sync + brief archive |
+
+### Files created
+
+| Path | Role |
+|------|------|
+| `site/src/app/[category]/[slug]/page.tsx` | Default-locale route — `generateStaticParams` + `generateMetadata` + page component |
+| `site/src/app/uk/[category]/[slug]/page.tsx` | UK-locale mirror route |
+| `site/src/lib/sanity/queries/blog-post.ts` | GROQ queries + Zod read-model parsing helpers |
+| `site/src/types/sanity/documents/blog-post.ts` | Read-model Zod schemas for BlogPost / BlogPostMeta / RelatedBlogPost / BlogPostAuthor / BlogPostCategory / BlogPostTag |
+| `site/src/types/sanity/shared.ts` | Shared read-model Zod (SanityImage, PortableText, FaqItem) |
+| `site/src/components/templates/blog/index.tsx` | Blog post template — 277 lines, all primitives composed |
+| `site/src/components/templates/blog/json-ld.tsx` | JSON-LD builders for BlogPosting + BreadcrumbList + FAQPage |
+| `site/src/components/shared/breadcrumbs.tsx` | Shared breadcrumbs primitive (reusable for other templates) |
+| `site/src/components/ui/_utils/parse-sanity-image-ref.ts` | Image-ref dimensions helper (extracted for server-component consumers) |
+| `site/src/lib/seo/serialize-json-ld.ts` | XSS-safe JSON-LD serializer (shared helper for all templates) |
+| `scripts/template-blog/probe-batch.ts` | Probe 0–10 orchestrator |
+| `scripts/template-blog/capture-blogs.ts` | Probe 1b Playwright capture (live CE) |
+| `scripts/template-blog/select-capture-targets.ts` | Probe 1b target selection |
+| `scripts/template-blog/find-thumb-missing.ts` | Thumbnail audit |
+| `scripts/template-blog/probe-content-block-types.ts` | _type frequency probe (surfaced video gap, then table gap) |
+| `scripts/template-blog/probe-video-references.ts` | Video block enumeration (Tech Debt #25 evidence) |
+| `scripts/template-blog/probe-video-block-context.ts` | Video block context drill |
+| `scripts/template-blog/probe-spot-check-urls.ts` | Variation-axis URL selection probe |
+| `scripts/template-blog/probe-spot-check-corpus.ts` | Corpus-shape verification probe |
+| `scripts/template-blog/probe-rich-text-gaps.ts` | Rich-text gap analysis (tables + h5/h6 latent) |
+| `scripts/template-blog/probe-rich-text-doc-drill.ts` | Per-doc content[] drill |
+
+### Files modified
+
+| Path | Change |
+|------|--------|
+| `site/next.config.ts` | `images.qualities: [75, 80]` (Next 16 strict-listing requirement) — BvR #39 |
+| `site/src/app/sitemap.ts` | `URL_BUILDERS` dispatch + blogPost path builder + Sanity fetch + 148 blog row emission |
+| `site/src/components/ui/image/index.tsx` | `'use client'` + inline `NEXT_PUBLIC_*` env reads + `createImageUrlBuilder` named import + `parseSanityImageRef` extraction — BvR #37 + #44 + #38 |
+| `site/src/components/ui/portable-text/index.tsx` | Inline-image `rounded-lg`, body `Text size="lead"`, listItem `text-body-lead`, h5/h6 handlers — BvR #42 + #43 + #46 |
+| `site/src/components/third-party-scripts.tsx` | `type="module"` on Finsweet Attributes `<Script>` — BvR #45 (SCAFFOLD-1 escape) |
+| `site/src/types/sanity/shared.ts` | `PortableTextSchema` narrowed to `TypedObject[]` for direct template handoff — BvR #40 |
+| `tools/eslint/ui-strings.json` | `+blogPost.readArticle`, `+blogPost.viewOnLinkedin`, `-blogPost.readMoreLink` (descriptive-text fix per Lighthouse `link-text`) |
+| `site/src/lib/ui-strings.ts` | Generated from above SoT |
+
+### BvR ledger (Brief-vs-Reality findings — 10 surfaced; 1 reframed)
+
+| # | Finding | Resolution |
+|---|---------|------------|
+| 37 | E1 Image hits Sanity-loader closure across RSC→client boundary | Marked `'use client'` + inline `NEXT_PUBLIC_*` env reads (env.ts would drag server-only validation into client bundle) |
+| 38 | `parseSanityImageRef` needed by B3 PortableText (server component) but lives inside client-marked E1 | Extracted to `_utils/parse-sanity-image-ref.ts` (server-import-safe) |
+| 39 | Next 16 requires explicit `images.qualities` listing | `[75, 80]` matching E1 default + Lighthouse-style q=75 |
+| 40 | `PortableTextSchema` typed as `z.array(z.unknown())` forced `as unknown as` casts at template handoff | Narrowed inferred type to `TypedObject[]` via `as unknown as z.ZodType<TypedObject[]>` |
+| 41 | layout.tsx Option A proposed for script-tag warning + reverted | Load-bearing zero — kept history clean; deferred SCAFFOLD-1 work; warning remains chronic (Tech Debt #23) |
+| 42 | B3 PortableText inline image without rounded corners visually inconsistent with hero (rounded-lg) | Inline image wrapped in `overflow-hidden rounded-lg` container inside the `<figure>` |
+| 43 | B3 PortableText body 16px too small vs CE live 18px lead body | Sitewide `<Text size="lead">` for `normal` style + `text-body-lead` on list items |
+| 44 | `@sanity/image-url` default export deprecated (browser console warning on every page) | Switched to named export `createImageUrlBuilder` |
+| 45 | Finsweet Attributes v2 ships as ESM; loaded via `<Script>` (classic script) throws `Cannot use import statement outside a module` | Added `type="module"` attribute (SCAFFOLD-1 escape — Webflow Finsweet v1→v2 contract change) |
+| 46 | B3 PortableText handles `h2/h3/h4` + `blockquote`; corpus has 51 h5 + 18 h6 instances falling through to `unknownBlockStyle` | Added `h5`/`h6` handlers mapping to `<Heading as="h5"|"h6">` (both visually 24px per design-system Decision Q3) |
+| 47 | (cancelled) `robots.txt` hardcoded sitewide-block — REFRAMED as test-methodology issue | robots.ts already env-driven correctly per F7 v1.5; Lighthouse-against-local needs `VERCEL_ENV=production npm run build` at BUILD time. Documented in `audit-output/template-blog/lighthouse-methodology.md`. Slot #47 reused for next genuine finding. |
+
+### Tech Debt opened
+
+| # | Source | Scope |
+|---|--------|-------|
+| 21 | HALT 2 / BvR #45 | Finsweet `@2` ESM contract change + cosmetic preload credentials-mode mismatch addendum (browser yellow warning post-fix) — review at SCAFFOLD-AUDIT |
+| 22 | HALT 2 / BvR #37 | `env.ts` split into `env-client.ts` / `env-server.ts` for primitive-safe public-vars import (current inline-`process.env` reads in E1 Image are a bridge) |
+| 23 | HALT 2 / BvR #41 | Script-tag warning chronic since SCAFFOLD-1 + Next 16 + React 19; investigate in SCAFFOLD-AUDIT |
+| 24 | HALT 2 | Sitewide Header + Footer components (SCAFFOLD-1 shell gap; template renders without nav chrome) |
+| 25 | HALT 2 + 3 | CONTENT-1E: Webflow w-embed recovery. Migration tool blind to `<div class="w-embed">` wrappers — confirmed loss patterns: videos (flattened/absent) + tables (flattened to single paragraph). Recovery requires re-scrape + `videoEmbed` + `table` schema types + B3 renderers. Sweep audit corpus for all `w-embed` shapes before designing schema additions. ~10–30 docs affected. Runs BEFORE TEMPLATE-CUSTOMER_STORY |
+| 26 | HALT 2 | V1 per-page Finsweet modules (cmsfilter, modal, a11y) not currently loaded by Next.js scaffold — feature-parity gap for TECHNOLOGY/SERVICE/HOME filtering UX. Investigate at SCAFFOLD-AUDIT or pre-LAUNCH sweep |
+| 27 | HALT 2 | Sanity image preload tuning (perf hint) — post-LAUNCH |
+| 28 | HALT 3 BvR #46 | h5/h6 finding's surfacing context preserved for diagnostic trail — closed-on-commit at HALT 3 alongside the fix; reference `audit-output/template-blog/rich-text-gap-analysis.md` |
+| 29 | HALT 3 Lighthouse | SCAFFOLD-AUDIT: Third-party script performance budget. Lighthouse Performance 79 (target 90) traced to 770ms TBT from sitewide third-party script load (GTM + GA4 + LinkedIn Insight + HubSpot + Hotjar + Facebook Pixel + Calendly + GSAP + Swiper + Finsweet). Fix: lazy-load + script audit + necessity review per template phase |
+| 30 | HALT 3 Lighthouse | SCAFFOLD-AUDIT: Third-party cookie hygiene. 13 third-party cookies set sitewide from marketing pixels; Best Practices score impact. Review per CSP + consent management strategy at SCAFFOLD-AUDIT phase |
+| 31 | HALT 3 Lighthouse | SCAFFOLD-AUDIT: ClaraChatBot widget WCAG AA contrast violation on chat-launcher pill (`cb-pill-text`, 2.51:1 vs 4.5:1 required). Vendor-side issue, surfaced sitewide. Options: CSS override (fragile, breaks on vendor updates), vendor support request, or widget replacement. Review in SCAFFOLD-AUDIT phase |
+| 32 | HALT 3 Lighthouse | TEMPLATE-* image strategy: blog hero aspect-ratio mismatch. `thumbnailImage` source is 1200×628 (ratio 1.91:1, matches OG spec). Hero container forces `aspect-[16/9]` (ratio 1.78), resulting in clean object-cover crop but Lighthouse `image-aspect-ratio` audit warning (1-point Best Practices weight). Three resolution options documented in `audit-output/template-blog/lighthouse-checkpoint-c.md`. Defer to SCAFFOLD-AUDIT or a dedicated image-strategy review when TEMPLATE-* phase patterns reveal whether 16:9 should be enforced template-side or whether Sanity images should be re-cropped at source |
+
+### Acceptance gate (per Brief §13)
+
+- **§12.3 Tests 1–9: ALL PASS** (status codes 200/200/404/404/404 · canonical+3 hreflang · BlogPosting+BreadcrumbList+FAQPage JSON-LD · sitemap 132 staff-augmentation matches · Lighthouse SEO 100 + A11y 96)
+- **Visual fidelity ≥ 90%** — Jake browser-verified on 3 sample URLs at HALT 2 review; Path A approved, Path B (v0.dev) not invoked
+- **UI_STRINGS lint clean** — `npm run lint` passes; 25 keys in canonical SoT
+- **Lighthouse §12.6** — SEO 100 (target ≥95, overshot by 5) · A11y 96 (target ≥95) · Performance 79 (Tech Debt #29) · Best Practices 54 (Tech Debt #30/#31/#32). Performance & BP gaps documented as SCAFFOLD-AUDIT scope, not optimization-attempted in this phase per Brief §13 #6
+- **JSON-LD validation §12.4** — manual schema.org eyeball at HALT 3 Checkpoint A confirmed (BlogPosting required fields complete, entity-linking via `author.sameAs`, BreadcrumbList 3-level hierarchy with absolute URLs, FAQPage 6 questions with plaintext answers)
+
+### Pattern 13 Layer 4 sharpening — 5 sub-examples surfaced this phase
+
+1. **Status-code probes ≠ hydration probes** — curl-200 doesn't exercise React hydration (BvR #41 era)
+2. **Diagnosis itself needs Pattern 13** — layout.tsx false-fix proposed, reverted at execution (BvR #41 reset)
+3. **HTTP 200 ≠ script executed** — Finsweet ESM silent failure under classic script tag throws on parse but doesn't degrade response status (BvR #45)
+4. **Diagnostic probes themselves need probing** — grep case-sensitivity false-positive on `hrefLang` vs `hreflang` almost halted §12.3 Test 6 (HALT 2 self-correction)
+5. **Build-time-generated routes need build-time env vars** — Next.js `MetadataRoute.*` (robots.ts, sitemap.ts) bake env at `npm run build`, not at `npm run start`; Lighthouse false-fail at C2 until corrected. New CONVENTIONS entry locks the pattern
+
+Collectively the load-bearing CAPABILITY_LOG entry for the phase.
+
+### Browser fidelity sign-off (HALT 2)
+
+Jake browser-verified all 3 sample URLs at ≥90% fidelity vs live CE:
+- `/nearshoring-offshoring/7-benefits-of-outsourcing-web-development-for-startups` (complex variant — TL;DR + FAQ + author + inline images)
+- `/managing-engineers/how-peer-forums-are-changing-remote-work-at-cloud-employee` (sparse variant — no TL;DR + no FAQ + null author + inline images)
+- `/uk/nearshoring-offshoring/7-benefits-of-outsourcing-web-development-for-startups` (UK mirror)
+
+Path A approved with video-deferral noted (Tech Debt #25). No Path B
+(v0.dev) fallback invoked.
+
+### Artifacts retained on disk
+
+- `audit-output/template-blog/halt-1-summary.md` — HALT 1 close summary
+- `audit-output/template-blog/halt-2-smoke.md` — HALT 2 close smoke report
+- `audit-output/template-blog/halt-3-backlog.md` — HALT 3 entry-state backlog (created at HALT 2 close)
+- `audit-output/template-blog/spot-check-urls.md` — variation-axis URL sampling for browser review
+- `audit-output/template-blog/rich-text-gap-analysis.md` — table + h5/h6 + video gap probe report
+- `audit-output/template-blog/lighthouse-sample.json` — pre-fix Lighthouse run (SEO 61)
+- `audit-output/template-blog/lighthouse-sample-vercel-env.json` — post-fix Lighthouse run (SEO 100)
+- `audit-output/template-blog/lighthouse-checkpoint-c.md` — pre-fix diagnosis snapshot (Tech Debt #32 references it)
+- `audit-output/template-blog/lighthouse-methodology.md` — `VERCEL_ENV` at build-time testing-methodology note
+- `audit-output/template-blog/probe-*.md` — Probes 0 through 10 artifacts
+- Brief archived to `docs/briefs/archive/MYGRATR-TEMPLATE-BLOG_BRIEF_v1.3.md`
+
+### Data state at close
+
+- 74 blogPost docs in Sanity production (unchanged — TEMPLATE-* phases do not touch CMS data)
+- 158 static pages built (74 default-locale + 74 UK-mirror blog + 1 default home + 1 UK home + 8 demo/storybook supporting routes)
+- Sitemap emits 150 entries (1 default home + 1 UK home + 74 blog × 2 locales = 150)
+- 0 schema migrations applied
+- `migrations.status` unchanged at `content_complete`
+
+---
+
+## MYGRATR-DESIGN-1 Brief B Step 8 — Visual Editing wiring + draft-mode route hardening (May 2026)
+
+### Phase context
+
+Step-8-milestone partial entry on an open DESIGN-1 phase. `migrations.status`
+remained `content_complete` throughout — DESIGN-1 explicitly does not
+transition state per brief §0 (no `design_running` / `design_complete` in
+`pipeline/state-machine.ts`; DESIGN-1 operates against the
+`content_complete` baseline). Brief B v2.2 split DESIGN-1 Step 6 + Step 8
+across 3 HALTs: HALT 1 (Step 6 — UI_STRINGS lint rule + canonical SoT,
+closed at `5726e38` — see prior entry), HALT 2 (Step 8 §8.1–§8.6
+infrastructure), HALT 3 (Step 8 §8.7 smoke test + §8.8 CONVENTIONS
+Entries 2-5 + capability-log consolidation + Brief B close). This entry
+covers HALTs 2 + 3 — Brief B Step 8 in full. Steps 7, 9, 10, 11 of
+DESIGN-1 remain pending; Step 8 closed before Step 7 due to phase-2
+reordering (Step 7 per-template reference docs do not block Step 8
+Visual Editing wiring) — do not assume sequential closure.
+
+2 commits closed Step 8 this session:
+- `b941c5a` — feat(design-1): brief B step 8 infrastructure — env schema + single-client collapse + defineLive serverToken + draft-mode hardening (GET enable / POST disable per CMA F-1 v1.3) (HALT 2 closed)
+- `72ea7bf` — feat(design-1): brief B step 8 close — HALT 3
+
+### What Was Built
+
+**Single-client architecture (collapsed from SCAFFOLD-1 two-client baseline)
+— CMA-C2 + D4.** SCAFFOLD-1 shipped two Sanity clients (`sanityClient` +
+`previewClient`) on the assumption that Visual Editing required a
+distinct draft-perspective client. DESIGN-1 §8.3 collapses this to a
+single `sanityClient` export at `site/src/lib/sanity/client.ts`. Draft
+perspective is now requested via per-fetch options (`{ perspective:
+'previewDrafts' }` when `draftMode().isEnabled` evaluates true at fetch
+time) rather than via a separate client export. Stega gating rewritten
+per CMA F-4 v1.3 + F1 + F2 + F4 + F15 v2.1 + I5 v2.2:
+- Branch A: `SANITY_STEGA_ENABLED == '1' && VERCEL_ENV != 'production'`
+  (explicit opt-in).
+- Branch B: `VERCEL_ENV == 'preview'` (the `NODE_ENV === 'development'`
+  clause was dropped per F2 — it was always false on Vercel preview, which
+  silently broke out-of-the-box Visual Editing).
+- Raw-env safety check (F1): independent fire if `prod + stega` co-occur;
+  `console.warn` (NOT throw — preserves availability), force
+  `stegaEnabled = false`. Severity downgrade per I5 v2.2 — module-scope
+  cold-start traffic + Sentry/Datadog/PagerDuty fatal mapping → alert-
+  storm risk vs warn = visible without paging.
+- `stega.enabled` gated on `!!env.NEXT_PUBLIC_SANITY_STUDIO_URL` per F4
+  v2.1 §8.1.5 probe (createClient throws on `studioUrl: undefined`;
+  confirmed empirically).
+- `useCdn` gated on `!stegaEnabled` per F-9 v1.3.
+
+**`defineLive` with viewer-scoped `serverToken` — D5.** `site/src/lib/
+sanity/live.ts` extended to call `defineLive({ client: sanityClient,
+serverToken: env.SANITY_API_READ_TOKEN })`. The `SANITY_API_READ_TOKEN`
+env var is retasked from SCAFFOLD-1's `previewClient` token role to the
+viewer-scoped `serverToken` slot per CMA-C2 — same env var, new
+architectural position. `<SanityLive />` (consumed in the root layout)
+renders unconditionally so that live-revalidating fetches keep flowing
+on the published site too; `<VisualEditing />` renders only when
+`(await draftMode()).isEnabled`.
+
+**Six-step security order on `/api/draft-mode/enable` (GET) — CMA F-2
+v1.3.** `site/src/app/api/draft-mode/enable/route.ts` (241 lines). Order
+is invariant — never reorder:
+
+- **STEP 1** — Build Origin/Referer allow-list from `[NEXT_PUBLIC_SITE_URL,
+  NEXT_PUBLIC_SANITY_STUDIO_URL]`. Each entry passes through `new URL().origin`
+  inside try/catch (F-1 fail-closed-on-malformed-env). F8 v2.1 literal-`"null"`
+  + empty-string guard rejects the literal string `"null"` (sandboxed iframes
+  send `Origin: null` as a literal string — must not enter the allow-list).
+  **BvR #34 v2.2 dev-only expansion** appends `safeUrlOrigin(request.url)` to
+  `allowedOrigins` when `NODE_ENV === 'development'`; production untouched.
+- **STEP 2** — Origin/Referer check. Reads `request.headers.get('origin')` and
+  parses `request.headers.get('referer')` via `safeUrlOrigin`. The caller
+  origin is `origin ?? refererOrigin`. **BvR #35 v2.2** null-origin escape
+  hatch accepts `callerOrigin === null` ONLY when the request bears Sanity's
+  canonical 3-query-param signature (`sanity-preview-secret` +
+  `sanity-preview-perspective` + `sanity-preview-pathname`), checked via
+  the file-local `hasSanityPreviewSignature` helper. The signature is
+  forgeable — it is NOT a security boundary; STEP 3 secret validation is
+  the actual auth gate.
+- **STEP 3** — Preview-url secret validation. `validatePreviewUrl(client,
+  request.url)` from `@sanity/preview-url-secret`. Wrapped in try/catch
+  (F-6 v1.3); the exception path returns 500 WITHOUT enabling draft mode
+  (F6 v2.1). The `previewValidationClient` is constructed module-scope
+  (F-7 + F-12 v1.3 + F-12 v2.1 + M7 v2.2 optional chaining for the env-
+  missing diagnostic). The catch-block ID-binding is named `err` but MUST
+  NEVER be logged / serialized / forwarded — Authorization header values
+  may be captured inside `validatePreviewUrl`'s internal HTTP-call traces
+  (F7 v2.1 prohibition comment).
+- **STEP 4** — `redirectTo` same-origin check. `new URL(validation.redirectTo
+  ?? '/', base)` where `base = new URL(NEXT_PUBLIC_SITE_URL)`. If
+  `target.origin !== base.origin` → 400. STEP 4 is **defense-in-depth**:
+  per BvR #36 v2.2, `@sanity/preview-url-secret` does not currently expose
+  an off-origin `validation.redirectTo` value (the library reads
+  `sanity-preview-pathname` and parses it as same-origin), so STEP 4
+  cannot be exercised end-to-end through the real library API. Never
+  reorder ahead of STEP 5 — Set-Cookie-on-400 would be the open-redirect-
+  into-session-fixation chain F-2 v1.3 specifically guards against.
+- **STEP 5** — `(await draftMode()).enable()`. Last operation before
+  redirect; never moved earlier in the chain.
+- **STEP 6** — Same-origin redirect to validated target. Next.js issues 307.
+
+**Dual Origin+Referer check on `/api/draft-mode/disable` (POST) — CMA F-3
+v1.3 Option A.** `site/src/app/api/draft-mode/disable/route.ts` (75
+lines). GET → POST conversion: POST is appropriate for button-click
+fetch (not iframe navigation). Both `Origin` AND `Referer` must match
+(NOT OR). Disable has no preview-url secret — the dual-check IS the CSRF
+barrier. Mirrors F8 v2.1 literal-`"null"` guard + F13 v2.1 explicit
+booleans + F14 v2.1 optional-Studio-URL inline + BvR #34 v2.2 dev
+expansion from the enable route. F11 v2.1 acknowledged trade-off
+captured as Tech Debt #18 for TEMPLATE-* (disable-button page must set
+`Referrer-Policy: strict-origin-when-cross-origin` or stricter, else
+browsers stripping Referer cannot exit draft mode via the UI).
+
+**Strict zod env schema — CMA F-1 + F-6 v1.3 + F5 v2.1 + F12 v2.1 + M7
+v2.2.** `site/src/lib/env.ts` (47 lines) tightens three vars:
+- `NEXT_PUBLIC_SITE_URL`: strip SCAFFOLD-1 `.catch()` fallback →
+  `z.string().url()`. URL semantics enforced at validation time, not at
+  runtime first-use.
+- `NEXT_PUBLIC_SANITY_STUDIO_URL`: NEW — `z.string().url().optional()`
+  with conditional `.refine()` enforcing presence in non-development
+  (F5 v2.1; required in production + preview, optional in dev).
+- `SANITY_API_READ_TOKEN`: `.optional().default('')` →
+  `z.string().min(1)`. Empty-string token was a SCAFFOLD-1 hold-over;
+  D14 requires a real token at validation time.
+
+**`previewValidationClient` module-scope helper.** Extracted as a named
+module-scope const in `enable/route.ts` (F-7 v1.3 + F-12 v1.3). Module-
+scope avoids per-request re-instantiation overhead. F12 v2.1 defensive
+throw if `env?.SANITY_API_READ_TOKEN` is missing (circular-import edge).
+M7 v2.2: optional chaining (`env?.X`) required — without `?.`, a native
+TypeError fires BEFORE the if-check and masks the authored diagnostic
+Error.
+
+**3 brief-vs-reality findings discovered + resolved during §8.7 manual
+smoke testing (HALT 3 BLOCK 3a).** Each ran the full Pattern 13 audit
+lens before resolution:
+
+- **BvR #34** — `NEXT_PUBLIC_SITE_URL` canonical-vs-serving-origin
+  split. The env var holds the canonical/hreflang URL (e.g.
+  `https://staging.jakevibes.dev`), which differs from the local
+  serving origin (`http://localhost:3000`). Sanity Presentation's
+  iframe-initiated enable navigation sends Referer = serving origin,
+  so STEP 2 returned 403 in dev despite correct production config.
+  Resolution: NODE_ENV-gated dev-only expansion of `allowedOrigins`
+  with `safeUrlOrigin(request.url)`. Code fix over env override
+  (env override leaks localhost into canonical URLs, masking SEO bugs).
+- **BvR #35** — Sanity Presentation strips BOTH Origin and Referer on
+  the enable navigation (observed 2026-05-12 via §6 trigger #11
+  diagnostic logging). F-1 v1.3's "Origin OR Referer must match"
+  fallback assumed iframe nav carries at least one header; Sanity's
+  Referrer-Policy stance (no-referrer or strict-origin equivalent)
+  strips both. D6 v1.3 reframe applied: the preview-url-secret IS
+  Sanity's documented auth signal — STEP 3 secret validation is the
+  real auth barrier; STEP 2 is supplementary CSRF defense. Resolution:
+  null-origin escape hatch via `hasSanityPreviewSignature(url, origin,
+  referer)` 3-param helper that gates the null/null path on the
+  presence of Sanity's canonical 3-query-param signature. The signature
+  is forgeable — it is a cheap pre-filter, not an auth boundary.
+- **BvR #36** — STEP 4 same-origin defense-in-depth not exercisable
+  end-to-end via `@sanity/preview-url-secret` library API. The library
+  reads `sanity-preview-pathname` (a query param) and parses it as
+  same-origin; it does not expose an off-origin `validation.redirectTo`
+  path. STEP 4 is structurally correct but cannot be reached through
+  the real library API. Resolution: documented coverage gap (Tech Debt
+  #20); STEP 4 retained as defense-in-depth against future library
+  regressions where `redirectTo` could become externally controllable.
+
+**Pattern 13 sharpened twice during BvR resolution.** Pattern 13
+originated at v2.1 lock ("defensive code added in response to findings
+needs its own audit lens"). Brief B v2.2 §8.7 manual smoke surfaced two
+sharpening layers:
+- **Layer 2 (BvR #35 sharpening)** — defensive *tests* share the same
+  authoring blindspot as the finding they respond to. Brief B v2.2 §8.7
+  curl tests against the allow-list construction were authored under
+  the same Origin-OR-Referer assumption that the production code
+  reflected; they did not surface the Sanity null/null case because
+  they didn't probe the real-client request shape first.
+- **Layer 3 (BvR #36 sharpening)** — defensive tests against 3rd-party
+  libraries need library-behavior probes before assertion design. STEP
+  4 was tested via curl assuming `redirectTo` could be a full URL; the
+  library's actual contract (query-param-driven, same-origin-parsed)
+  was never empirically verified. The probe artifact under
+  `audit-output/design-1/` is the auditable evidence the discipline was
+  followed.
+
+**§8.7 integration test coverage — 9 of 10 curl tests PASS.** Manual
+round-trip PASS verified against real Sanity Presentation flow. Test
+matrix (per Brief B v2.2 §8.7):
+- (a) STEP 2 disallowed-origin reject — PASS
+- (b) STEP 3 secret missing/invalid reject — PASS
+- (c) STEP 4 off-origin redirectTo reject — **NOT EXERCISABLE** via
+  real library API (BvR #36; Tech Debt #20)
+- (d.1)–(d.4) disable route dual-check matrix — PASS (4/4)
+- (d.5a) enable route literal-`"null"` origin reject — PASS
+- (d.5b) disable route literal-`"null"` origin reject — PASS
+- (e) STEP 3 catch-block 500-path Set-Cookie absent — PASS
+
+Smoke test artifact: `audit-output/design-1/visual-editing-smoke-test.md`
+(gitignored per D15).
+
+**4 CONVENTIONS.md entries shipped at §8.8.** Entry 3 — "Draft-Mode
+Route Hardening (MYGRATR-DESIGN-1 Brief B Step 8 supersedes SCAFFOLD-1
+baseline)" — full rewrite of the existing section, documenting the
+6-step security order + dual-check disable + helpers + customer 2
+transfer notes. Entries 2 / 4 / 5 — "Sanity Fetch Pattern", "Env Schema
+Strictness", "Visual Editing Method Probe Discipline" — new sections
+at end of file. All four entries are working references for TEMPLATE-*
+authors.
+
+**18 productisation patterns consolidated to `docs/CAPABILITY_LOG.md`
+at HALT 3 BLOCK 3.** DESIGN-1 H2 extended per C1–C4:
+- "Visual Editing infrastructure" sub-section — 8 patterns (single-
+  client architecture; six-step security order; F8 literal-`"null"`
+  guard + Pattern 13 (a) verification; BvR #34 dev expansion; BvR #35
+  null-origin escape hatch; BvR #36 defense-in-depth posture; Env
+  Schema Strictness Zod refinements; Sanity Presentation single-route
+  wiring).
+- "ESLint rule adoption methodology — Brief B Step 6 productisation IP"
+  sub-section — 6 patterns (two-gate verification; narrow custom-rule
+  supplement; placeholder-as-split-template; coverage finding F8;
+  canonical SoT + generated-TS file; BvR #26 ESLint 9 RuleTester
+  plugin-namespace silent no-op).
+- "Pattern 13 — Defensive code, tests, and probes need their own audit
+  lens" sub-section — 4 sharpening layers (v2.1 original; BvR #35
+  sharpening; BvR #36 sharpening; manual smoke test as first
+  verification gate).
+- "Customer-2 reusability assessment" extended with all Step 8
+  patterns slotted into the running matrix.
+
+### Files Created
+
+```
+audit-output/design-1/visual-editing-method-probe.md       (NEW; gitignored — §8.4 GET-vs-POST method probe artifact per D15)
+audit-output/design-1/visual-editing-smoke-test.md          (NEW; gitignored — §8.7 manual round-trip + 10-test integration matrix per D15)
+```
+
+### Files Modified
+
+```
+site/src/lib/env.ts                                         (47 lines; +30/-2 across HALT 2 — §8.1 D14 strictness for 3 vars)
+site/src/lib/sanity/client.ts                               (96 lines; HALT 2 rewrite +107/-15 — single-client collapse, stega gating per F2/F4/F15/I5)
+site/src/lib/sanity/live.ts                                 (17 lines; +9/-1 at HALT 2 — defineLive serverToken)
+site/src/app/api/draft-mode/enable/route.ts                 (241 lines; +153 at HALT 2 + +88/-13 at HALT 3 — 6-step handler + BvR #34/#35 + previewValidationClient)
+site/src/app/api/draft-mode/disable/route.ts                (75 lines; +58 at HALT 2 + +13 at HALT 3 — GET → POST + dual-check + BvR #34 dev expansion)
+CONVENTIONS.md                                              (HALT 2 — Sanity Client Pattern rewrite; HALT 3 — Entry 3 rewrite + Entries 2/4/5 NEW; +346 lines cumulative across HALTs)
+docs/context/REGISTRY.md                                    (+4 lines at HALT 2 — API routes table updated for enable + disable)
+docs/CAPABILITY_LOG.md                                      (+243 lines at HALT 3 — DESIGN-1 H2 extended per C1–C4)
+CLAUDE.md                                                   (+25 lines at HALT 3 — Current Phase, phase table, design system state, Tech Debt #18/#19/#20, footer)
+```
+
+### HALTs Landed (2 of 3 for Brief B — HALT 1 closed in prior entry)
+
+- **HALT 2 — Step 8 §8.1–§8.6 infrastructure.** Mandatory probes all
+  PASS (§8.0 next-sanity exports; §8.0a Step 2 draft-read; §8.0a Step
+  3 previewSecret-read; §8.1.5 createClient stega-with-undefined-
+  studioUrl; §8.3.0 pre-refactor symbol/path grep; §8.3.N post-
+  refactor symbol/path grep). REGISTRY.md API routes table updated.
+  CONVENTIONS "Sanity Client Pattern" rewritten as single-client.
+  Entries 2-5 deferred to §8.8 at HALT 3 per Brief B v2.2 + user
+  clarification. HALT 2 closed at commit `b941c5a`.
+- **HALT 3 — Step 8 §8.7 smoke + §8.8 CONVENTIONS + capability-log
+  consolidation + Brief B close.** §8.7 manual round-trip PASS + 9/10
+  integration tests PASS (test (c) not exercisable per BvR #36).
+  Three BvR findings discovered + resolved with Pattern 13 audit lens
+  + 2 Pattern 13 sharpening layers added. CONVENTIONS Entry 3 rewrite
+  + Entries 2/4/5 NEW. docs/CAPABILITY_LOG.md DESIGN-1 H2 extended
+  per C1–C4 (18 patterns added). CLAUDE.md phase status + Tech Debt
+  #18/#19/#20. `tsc --noEmit` clean. `npm run lint` returns 25
+  problems (unchanged pre-existing baseline from HALT 1). `npm run
+  build` clean. HALT 3 closed at commit `72ea7bf`.
+
+### Patterns Established
+
+CONVENTIONS.md gained 4 sections at Step 8 close:
+- **Entry 3 (rewrite)** — Draft-Mode Route Hardening (supersedes
+  SCAFFOLD-1 baseline). 6-step enable order + dual-check disable +
+  helpers (`safeUrlOrigin`, `hasSanityPreviewSignature`) + layout
+  integration + studio side + customer 2 transfer notes.
+- **Entry 2 (new)** — Sanity Fetch Pattern. Single client at
+  `site/src/lib/sanity/client.ts` + `defineLive` wrapper at
+  `site/src/lib/sanity/live.ts` + layout integration + what this
+  pattern is NOT + customer 2 transfer.
+- **Entry 4 (new)** — Env Schema Strictness. Required strings
+  `.min(1)` not `.string()`; URLs `.url()` not `.string()`;
+  conditional required-in-prod / optional-in-dev `.refine()`;
+  optional-with-default; customer 2 transfer; anti-pattern.
+- **Entry 5 (new)** — Visual Editing Method Probe Discipline. Why
+  this pattern exists; the probe pattern; what goes in the artifact;
+  counter-pattern; customer 2 transfer.
+
+`docs/CAPABILITY_LOG.md` DESIGN-1 H2 was extended with 18 patterns
+across 3 sub-sections (Visual Editing infrastructure — 8; ESLint rule
+adoption methodology — 6; Pattern 13 sharpening — 4) plus the
+"Customer-2 reusability assessment" matrix extended with Step 8
+entries. This consolidates both Step 6 deferred IP (3 patterns staged
+at HALT 1) and Step 8 IP (the remaining 15) per Brief B v2.2 §8.8
+two-phase capability log protocol.
+
+### Tech Debt Logged
+
+3 entries added to CLAUDE.md Known Tech Debt table at HALT 3:
+- **#18 DESIGN-1 Brief B Step 8 F11 v2.1** — Disable UI must set
+  `Referrer-Policy: strict-origin-when-cross-origin` (or stricter) at
+  TEMPLATE-* time. Without it, browsers stripping the Referer header
+  (Referrer-Policy: no-referrer, privacy extensions, sandboxed
+  iframes) cannot exit draft mode via the UI — fallback is manual
+  cookie deletion. Fix in MYGRATR-TEMPLATE-*.
+- **#19 DESIGN-1 Brief B Step 8 BvR #35 follow-up** — Brief B v2.2
+  §8.7 manual round-trip smoke test as specified did not surface the
+  null-Origin/null-Referer case. Customer 2 brief authoring + future
+  Mygratr phase briefs should include explicit DEBUG-logging probe
+  step BEFORE the integration tests fire, to capture real-client
+  request shape against the allow-list construction. The probe
+  artifact under `audit-output/design-1/` is the auditable evidence
+  the discipline was followed. Fix in Customer 2 brief authoring +
+  future Mygratr phase briefs.
+- **#20 DESIGN-1 Brief B Step 8 BvR #36** — STEP 4 same-origin check
+  is defense-in-depth; no end-to-end integration test exists due to
+  `@sanity/preview-url-secret` API constraints (library reads
+  `sanity-preview-pathname`, not `redirectTo` query param). Optional
+  future work: synthetic unit test or library upgrade-monitoring. Fix
+  in future testing-infra phase.
+
+The pre-existing 25-problem lint baseline from HALT 1 is unchanged
+(9 errors + 16 warnings, all outside Brief B scope) — flagged for
+DESIGN-1 Step 11 final tech debt rollup.
+
+### Discoveries / Surprises
+
+- **Sanity Presentation strips Origin AND Referer on enable nav
+  (BvR #35) — D6 v1.3 reframe applied.** Discovered 2026-05-12 via
+  §6 trigger #11 diagnostic logging during manual round-trip smoke
+  test. Brief B v1.3 + v2.0–v2.2 all assumed Origin OR Referer would
+  survive Sanity's Presentation iframe nav. Sanity's Referrer-Policy
+  stance (no-referrer or strict-origin equivalent) strips both. The
+  resolution rests on D6 v1.3's reframe: the preview-url-secret IS
+  Sanity's documented auth signal; STEP 3 is the real auth gate; STEP
+  2 is supplementary CSRF defense. The null-origin escape hatch via
+  `hasSanityPreviewSignature` gates the null/null path on Sanity's
+  3-query-param signature presence — forgeable, but a cheap pre-
+  filter limiting the escape hatch to requests structurally matching
+  Sanity's protocol. The 3-param helper signature (`url`, `origin`,
+  `referer`) was deliberate: Pattern 13 audit demanded the helper
+  prove it cannot be called accidentally on non-null/non-null
+  callers (the `callerOrigin === null` gate at the call site is the
+  documented entry condition; the helper itself accepts the 3 inputs
+  to keep its scope inspectable).
+- **`NEXT_PUBLIC_SITE_URL` canonical-vs-serving-origin split (BvR
+  #34) — code fix over env override.** Local dev surfaces the split
+  (canonical = `https://staging.jakevibes.dev`, serving =
+  `http://localhost:3000`). Two resolution paths considered: (1) env
+  override (set `NEXT_PUBLIC_SITE_URL=http://localhost:3000` in
+  `.env.local`); (2) code fix (NODE_ENV-gated dev expansion of
+  `allowedOrigins`). Code fix won — env override leaks localhost
+  into canonical/hreflang URLs in dev, masking SEO bugs and forcing
+  every customer's brief to inherit the same env-quirk workaround.
+  Code fix keeps `NEXT_PUBLIC_SITE_URL` as the single canonical
+  concept; the dev branch in the enable route is the only place the
+  serving-vs-canonical split is handled. Pattern 13 audit confirmed
+  reachability, side-effect scope, bypass surface (production
+  NODE_ENV override is not a real attack — Vercel doesn't honour it),
+  failure mode (try/catch + null check), and customer transfer
+  (every TEMPLATE-* customer inherits the split — reusable as-is).
+- **STEP 4 not exercisable end-to-end via library API (BvR #36).**
+  `@sanity/preview-url-secret` reads `sanity-preview-pathname` (a
+  query param) and parses it as same-origin internally; it does not
+  expose an off-origin `validation.redirectTo` path. STEP 4 was
+  authored as a guard against open-redirect-into-session-fixation
+  per F-2 v1.3, but the real library API never produces an off-
+  origin `redirectTo`. STEP 4 retained as defense-in-depth against
+  future library regressions; no synthetic unit test added in this
+  phase (Tech Debt #20 captures the optional future work).
+- **Pattern 13 sharpened twice in a single HALT (v2.2 → 4 layers).**
+  Originally a single-layer rule at v2.1 ("defensive guards added in
+  response to findings need their own audit lens"). BvR #35
+  surfaced Layer 2 (defensive *tests* share the authoring blindspot
+  of the finding they respond to); BvR #36 surfaced Layer 3 (3rd-
+  party library tests need library-behavior probes before assertion
+  design). Manual smoke test as FIRST verification gate added as
+  Layer 4 — the v2.2 brief's §8.7 ordered integration tests before
+  manual smoke; for customer 2 this inverts (smoke first, then
+  curl). All 4 layers documented in `docs/CAPABILITY_LOG.md` Pattern
+  13 sub-section.
+- **CMA D6 v1.3 reframe is the load-bearing decision for BvR #35
+  resolution.** D6 was authored at brief lock as "preview-url-secret
+  is Sanity's documented auth signal, not Origin/Referer". At brief
+  lock the framing felt theoretical — Origin/Referer was still the
+  visible auth surface. BvR #35 made D6 operational: STEP 2 became
+  supplementary CSRF defense; STEP 3 became the actual auth gate;
+  the null-origin escape hatch is the architectural cost of honouring
+  D6's framing against Sanity's protocol reality.
+
+### Final Repo State (Brief B HALT 3 close)
+
+- `migrations.status` = `content_complete` (unchanged; DESIGN-1 does
+  not transition).
+- 30 stories on disk (unchanged from Brief A / HALT 1).
+- 22 primitives + Icon foundation (unchanged from Brief A Step 2).
+- 14 UI_STRINGS keys (unchanged from HALT 1) at
+  `tools/eslint/ui-strings.json` → `site/src/lib/ui-strings.ts`.
+- Single-client architecture live at `site/src/lib/sanity/client.ts`
+  (96 lines); SCAFFOLD-1 `previewClient` export removed.
+- `defineLive` with viewer-scoped `serverToken` at
+  `site/src/lib/sanity/live.ts` (17 lines).
+- `/api/draft-mode/enable` GET handler at 241 lines — 6-step security-
+  ordered handler with BvR #34 dev expansion + BvR #35 null-origin
+  escape hatch + module-scope `previewValidationClient`.
+- `/api/draft-mode/disable` POST handler at 75 lines — dual Origin+
+  Referer check with BvR #34 dev expansion.
+- Strict zod env schema at `site/src/lib/env.ts` (47 lines) — `.url()`
+  / `.min(1)` / conditional required-in-prod refinement.
+- `tsc --noEmit` clean. `npm run lint` returns 25 problems (unchanged
+  pre-existing baseline from HALT 1; all outside Brief B scope —
+  flagged for DESIGN-1 Step 11 rollup). `npm run build` clean.
+- `npm run build-storybook` exits 0 (unchanged from Brief A — Step 8
+  did not touch Storybook).
+- CONVENTIONS.md gained 4 sections (Entry 3 rewrite + Entries 2/4/5
+  NEW) cumulating ~346 lines.
+- `docs/CAPABILITY_LOG.md` DESIGN-1 H2 extended by 243 lines — 18
+  productisation patterns + Customer-2 reusability matrix Step 8
+  additions.
+- Tech Debt #18 / #19 / #20 added to CLAUDE.md Known Tech Debt table.
+- §8.7 smoke test artifact at
+  `audit-output/design-1/visual-editing-smoke-test.md` (gitignored
+  per D15) — 9 of 10 curl tests PASS + manual round-trip PASS.
+- §8.4 method probe artifact at
+  `audit-output/design-1/visual-editing-method-probe.md` (gitignored
+  per D15).
+- Branch `feat/design-1` at `72ea7bf` (HALT 3 close), pushed to
+  `origin/feat/design-1`.
+
+---
+
+## MYGRATR-DESIGN-1 Step 6 — UI_STRINGS lint rule + canonical SoT (Brief B HALT 1 close, May 2026)
+
+### Phase context
+
+Step-6-milestone partial entry on an open DESIGN-1 phase. `migrations.status`
+remained `content_complete` throughout — DESIGN-1 explicitly does not
+transition state per brief §0 (no `design_running` / `design_complete` in
+`pipeline/state-machine.ts`; DESIGN-1 operates against the
+`content_complete` baseline). Brief B v1.3 splits DESIGN-1 Step 6 + Step 8
+across 3 HALTs: HALT 1 (after Step 6 — ESLint rule + canonical SoT),
+HALT 2 (after Step 8a-8e Visual Editing infrastructure), HALT 3 (after
+Step 8 smoke test + Brief B close + capability-log consolidation). This
+entry covers HALT 1 only. Steps 7, 8, 9, 10, 11 of DESIGN-1 remain
+pending. HALTs 2 + 3 of Brief B remain ahead — this entry will be
+extended in place as Step 8 lands and Brief B closes.
+
+1 commit closed Step 6 / Brief B HALT 1 this session:
+- `5726e38` — feat(design-1): brief B step 6 — UI_STRINGS lint rule + canonical SoT files (HALT 1 closed)
+
+### What Was Built
+
+**Two-rule chrome-string architecture.** Brief B Step 6 establishes
+`UI_STRINGS` as the canonical chrome-string map enforced by two ESLint
+rules running together in `site/eslint.config.mjs`:
+
+1. **Upstream `react/jsx-no-literals`** (from
+   `eslint-plugin-react@7.37.5`, already a transitive dep via
+   `eslint-config-next` — SA-1 finding at brief v1.2 corrected the
+   non-existent `eslint-plugin-jsx-no-literals` reference in the v2.0
+   parent brief). Config: `noStrings: true` + `allowedStrings` (the
+   exemption list) + `ignoreProps: true` (props-only strings stay
+   inline). Covers most JSX text contexts including JSXText nodes,
+   string literals inside JSXExpressionContainer, and template literals
+   without expressions.
+
+2. **Project-local `local/no-conditional-strings-in-jsx`** (~65 lines
+   at `tools/eslint/rules/no-conditional-strings-in-jsx.js`). Plugin
+   wrapper at `tools/eslint/plugin-local.js` exposes the rule under the
+   `local/` namespace. This rule was added because Brief B §6.4
+   fixture-verification surfaced an AST-coverage gap in
+   `react/jsx-no-literals`: the upstream rule skips
+   `ConditionalExpression` branches that hold literal strings (e.g.
+   `{cond ? 'A' : 'B'}` inside JSX). The custom rule walks JSX subtrees,
+   finds `ConditionalExpression` nodes whose consequent or alternate is
+   a string literal, and reports. F8 of the cross-model audit (v1.3)
+   pre-§6.4 gate-verified this gap with a fixture before custom-rule
+   work began.
+
+The two rules together cover the JSX chrome-string surface that
+TEMPLATE-* authors will hit. Custom rule scope is intentionally narrow
+(`ConditionalExpression` only) — not a generalised replacement.
+
+**Canonical SoT + byte-idempotent generator.** Chrome strings live in
+`tools/eslint/ui-strings.json` as a 14-key flat map with a top-level
+`_meta` provenance block (`reconciled_at`, `seed_provenance`, brief
+reference). Generator at `scripts/design/generate-ui-strings.mjs` reads
+the JSON and emits `site/src/lib/ui-strings.ts` as a do-not-edit TS
+const. Re-running the generator on unchanged JSON input is byte-
+idempotent on the output (F10 from v1.3 audit). `package.json` gained
+`npm run generate-ui-strings`. The `_meta.reconciled_at` timestamp is
+only touched on content change, not every re-run — F10 idempotency
+discipline.
+
+**9 exemption file patterns** registered in `site/eslint.config.mjs`
+override the rule for paths where chrome-string discipline doesn't
+apply: (1) Storybook stories Pair-rule per folder
+(`site/src/components/ui/**/stories.tsx`), (2) Storybook flat-file
+Tier-1 stories (`site/src/components/tier-1/*.stories.tsx`), (3)
+ESLint tests (`tools/eslint/__tests__/**`), (4) Demo route
+(`site/src/app/demo/**`), (5)-(7) Next.js framework templates
+(`layout.tsx`, `not-found.tsx`, `error.tsx` patterns), (8) Vendor SDK
+init blocks, (9) The generated `site/src/lib/ui-strings.ts` itself.
+BvR #24 corrected D3 exemption glob mismatch with Brief A Pair-rule;
+BvR #25 added `storybook-static/**` to `globalIgnores`.
+
+**AST coverage harness.** `tools/eslint/__tests__/ui-strings.test.mjs`
+is an 8-fixture coverage harness. Fixtures F1-F6 cover canonical
+positive + negative cases for `react/jsx-no-literals` (allowed strings
+pass; raw chrome strings fail). F7a is the regression-catch fixture
+for the upstream `ConditionalExpression` branch gap — it must FAIL the
+upstream rule alone (proving the gap exists) and PASS the
+upstream + custom-rule pair (proving the gap is covered). F7b is a
+positive fixture for the custom rule's targeted AST shape. F8 is the
+gate-verification fixture from v1.3 F8 audit. Harness uses
+`Linter.verify` directly rather than ESLint 9's `RuleTester` —
+`RuleTester` silently no-ops on plugin-namespaced rules (rule registers
+but assertions never fire). Logged as BvR #26 for HALT 3.
+
+**§6.3 codebase fixes.** Brief B §6.3 mandated cleaning up pre-existing
+chrome-string violations before lint enforcement went live:
+
+- `site/src/app/page.tsx` + `site/src/app/uk/page.tsx`: 4 lines that
+  hold visible chrome strings on the SCAFFOLD-1 home-page stubs (which
+  TEMPLATE-HOME will replace at template-phase time) received targeted
+  `// eslint-disable-next-line react/jsx-no-literals` comments with an
+  inline `// TEMPLATE-HOME` reference so the disables show up in TODO
+  greps when TEMPLATE-HOME work begins.
+- `site/src/components/ui/hubspot-form-embed/index.tsx`: 3 strings
+  migrated from inline literals to `UI_STRINGS` references. The
+  `form.loading` string is a simple lookup. The `form.error.loadFailed`
+  string interpolates a HubSpot form-ID into an error message — solved
+  with the **placeholder-as-split-template** pattern (one of the 3
+  productisation IP patterns staged for HALT 3): the SoT entry stores
+  the string with a `{formId}` placeholder, and the consumer splits
+  on that placeholder at render time, rendering surrounding text via
+  `UI_STRINGS` and the variable via plain JSX child. Keeps the
+  canonical map free of runtime templating while satisfying the
+  `react/jsx-no-literals` rule.
+- 2 new UI_STRINGS keys: `form.loading`, `form.error.loadFailed`.
+  Total key count after §6.3: 14.
+
+**CONVENTIONS.md** received a new 212-line "UI_STRINGS Rule
+(post-DESIGN-1 Brief B)" section covering: both rules and their
+combined coverage, a 5-path violation triage tree (rename / migrate to
+SoT / add to exemption / re-extract for i18n / disable inline with
+justification), the exemption table, the naming convention table
+(domain-dot-suffix keys; consistent prefix scoping), test
+infrastructure pointers, and generator discipline. This section is
+the working reference for TEMPLATE-* authors.
+
+### Files Created
+
+```
+tools/eslint/ui-strings.json                      (NEW; 30 lines — 14 keys + _meta provenance)
+tools/eslint/rules/no-conditional-strings-in-jsx.js  (NEW; 87 lines — project-local custom rule)
+tools/eslint/plugin-local.js                      (NEW; 19 lines — plugin wrapper, local/ namespace)
+tools/eslint/__tests__/ui-strings.test.mjs        (NEW; 169 lines — 8-fixture Linter.verify harness)
+scripts/design/generate-ui-strings.mjs            (NEW; 86 lines — byte-idempotent JSON → TS generator)
+scripts/design/probe-ui-strings-reality.mjs       (NEW; 287 lines — §6.0a one-shot seed-list provenance probe)
+site/src/lib/ui-strings.ts                        (NEW; 21 lines — generated, do-not-edit)
+```
+
+### Files Modified
+
+```
+CONVENTIONS.md                                    (+212 lines: "UI_STRINGS Rule (post-DESIGN-1 Brief B)" section)
+package.json                                      (+1 line: generate-ui-strings npm script)
+site/eslint.config.mjs                            (+62 lines: rule registration, 9 exemption globs, plugin import)
+site/src/app/page.tsx                             (+2 lines: 2 SCAFFOLD-1 comment-disables with TEMPLATE-HOME reference)
+site/src/app/uk/page.tsx                          (+2 lines: 2 SCAFFOLD-1 comment-disables with TEMPLATE-HOME reference)
+site/src/components/ui/hubspot-form-embed/index.tsx  (+15 / -5 lines: 3 strings → UI_STRINGS via placeholder-as-split-template)
+audit-output/design-1/capability-log-draft.md     (gitignored running draft; BvR #23-#26 + 3 productisation IP patterns staged for HALT 3)
+```
+
+### HALTs Landed (1 of 3 for Brief B)
+
+- **HALT 1 — UI_STRINGS lint rule + canonical SoT + AST coverage
+  harness + §6.3 codebase fixes.** Eyeballed the rule-enforcement state
+  on disk via the 8-fixture harness (F1-F8 all pass). `tsc --noEmit`
+  clean. `npm run lint` returns 25 problems, all pre-existing rules
+  outside Brief B scope (see Final Repo State below for breakdown).
+  Zero `react/jsx-no-literals` or `local/no-conditional-strings-in-jsx`
+  violations — both rules are running cleanly across the codebase
+  after the §6.3 fixes. HALT 1 closed at commit `5726e38`.
+
+### Patterns Established
+
+CONVENTIONS.md gained the 212-line "UI_STRINGS Rule (post-DESIGN-1
+Brief B)" section as the working reference for TEMPLATE-* authors —
+both rules, 5-path violation triage, exemption table, naming
+convention table, test infrastructure, generator discipline.
+
+**Capability log consolidation defers to HALT 3** per Brief B v1.3
+protocol. HALT 1 logs Brief-vs-Reality findings + productisation IP
+candidates to the gitignored
+`audit-output/design-1/capability-log-draft.md` running draft. At
+HALT 3 (Brief B close), the consolidated capability IP from both
+Step 6 (this) and Step 8 (Visual Editing wiring) lands in
+`docs/CAPABILITY_LOG.md` in a single commit. This mirrors Brief A's
+two-phase consolidation pattern (Step 4 close + Brief A close).
+
+3 productisation IP patterns staged for HALT 3 from Step 6:
+1. **Placeholder-as-split-template** — handles runtime interpolation
+   into chrome strings without dynamic templating in the canonical SoT
+   map. Consumer splits on a `{placeholder}` token at render time;
+   each split fragment renders as either a `UI_STRINGS` lookup or a
+   plain JSX child holding the runtime variable.
+2. **Two-gate ESLint rule verification** — fixture-verify the
+   upstream-rule AST-coverage gap BEFORE writing a custom rule (Brief
+   B v1.3 F8 added this gate explicitly). Without the gate, the custom
+   rule risks duplicating upstream coverage rather than supplementing
+   it.
+3. **Narrow custom-rule supplement** — custom rules should target the
+   smallest AST shape that closes the upstream gap, not the broadest
+   plausible scope. Brief B's `local/no-conditional-strings-in-jsx`
+   targets only `ConditionalExpression` literal-string branches; it
+   does not duplicate the broader chrome-string coverage that
+   `react/jsx-no-literals` already provides.
+
+### Tech Debt Logged
+
+No new Tech Debt entries at HALT 1 (capability log + Known Tech Debt
+table both consolidate at HALT 3 / Step 11 respectively per protocol).
+
+The pre-existing 25-problem lint baseline (9 errors + 16 warnings,
+all outside Brief B scope) is flagged for HALT 3 tech debt rollup —
+specifically:
+- 5 `react/no-unescaped-entities` in `site/src/app/demo/_demo-client.tsx`
+  (DESIGN-1 Step 2 demo route; production-guarded)
+- 2 `react-hooks/set-state-in-effect` in `site/src/components/ui/hubspot-form-embed/index.tsx`
+  (SCAFFOLD-1 HubSpot mount pattern)
+- 2 `@typescript-eslint/no-empty-object-type` in `input` + `textarea`
+  primitives (DESIGN-1 Step 2 — empty `Props extends X {}` shapes)
+- 16 warnings (mixed; flagged en bloc for HALT 3 triage)
+
+These have not been touched by Brief B Step 6 — they were the noise
+floor before Step 6 began and remain the noise floor after.
+
+### Discoveries / Surprises
+
+- **Upstream `ConditionalExpression` branch gap — architectural rationale
+  for the custom rule.** Brief B v1.0 / v1.1 / v1.2 assumed
+  `react/jsx-no-literals` would cover all JSX literal-string contexts.
+  Brief B §6.4 fixture-verification surfaced the gap: the upstream rule
+  skips literal strings appearing as `consequent` or `alternate` of a
+  `ConditionalExpression` inside a JSXExpressionContainer. This isn't
+  documented in `eslint-plugin-react`'s rule docs — it surfaced only
+  via fixture-driven AST traversal. The narrow custom-rule supplement
+  was the cheapest fix (vs. fork-and-patch upstream or migrate to a
+  different rule pack). Cross-model audit (v1.3) added the F8 gate-
+  verification fixture to lock the gap-discovery discipline in for
+  future custom-rule decisions.
+- **Placeholder-as-split-template pattern (productisation IP staged for
+  HALT 3).** Solved the `{formId}` interpolation problem in
+  `hubspot-form-embed` without polluting the canonical map with
+  templating logic. Generalisable: any chrome string with a runtime
+  variable can use this pattern. Trade-off: the consumer carries
+  slightly more rendering complexity (one `.split()` call + a
+  `.map()`); the canonical SoT stays a flat string-to-string map.
+- **ESLint 9 `RuleTester` plugin-namespace silent failure (BvR #26).**
+  Discovered when the initial test harness used `RuleTester` and all
+  assertions appeared to pass — including assertions on rule shapes
+  that hadn't been implemented yet. Probe via `RuleTester.run('local/
+  no-conditional-strings-in-jsx', rule, { valid: [], invalid: [...] })`
+  showed that ESLint 9 silently skips plugin-namespaced rules in
+  `RuleTester` (the rule registers via plugin wiring, but the test
+  runner's rule lookup uses unqualified names). Fix: switched the
+  entire harness to `Linter.verify` direct construction. Logged for
+  HALT 3 productisation IP — the lesson is that ESLint 9 testing for
+  custom plugin-namespaced rules requires `Linter.verify`, not
+  `RuleTester`.
+- **`react/jsx-no-literals` is a transitive dep — no new direct
+  dependency needed.** Brief B v2.0 + v1.0 / v1.1 referenced a
+  non-existent `eslint-plugin-jsx-no-literals` package (SA-1 audit
+  finding at v1.2). The rule actually ships in `eslint-plugin-react`,
+  which is already a transitive dep via `eslint-config-next`. Net dep
+  change for Brief B Step 6: zero. Confirmed via
+  `npm ls eslint-plugin-react`.
+
+### Final Repo State (Brief B HALT 1 close)
+
+- `migrations.status` = `content_complete` (unchanged; DESIGN-1 does
+  not transition).
+- 30 stories on disk (unchanged from Brief A). 22 primitives + Icon
+  foundation (Brief A Step 2-derived inventory) all carry chrome-string
+  discipline going forward.
+- 14 UI_STRINGS keys live at `tools/eslint/ui-strings.json` →
+  `site/src/lib/ui-strings.ts`. Generator byte-idempotent on unchanged
+  input.
+- Two-rule ESLint enforcement live in `site/eslint.config.mjs`.
+  Zero violations of either Brief B rule across the repo.
+- `tsc --noEmit` clean.
+- `npm run lint` returns 25 problems (9 errors + 16 warnings), all
+  pre-existing rules outside Brief B scope — flagged for HALT 3
+  tech debt rollup.
+- `npm run build-storybook` exits 0 (unchanged from Brief A — Step 6
+  did not touch Storybook).
+- CONVENTIONS.md "UI_STRINGS Rule (post-DESIGN-1 Brief B)" section
+  live (212 lines).
+- 8-fixture AST-coverage harness at
+  `tools/eslint/__tests__/ui-strings.test.mjs` running clean
+  (`node --experimental-strip-types tools/eslint/__tests__/ui-strings.test.mjs`).
+- Capability-log running draft at
+  `audit-output/design-1/capability-log-draft.md` (gitignored)
+  preserved with BvR #23-#26 + 3 productisation IP patterns staged
+  for HALT 3 consolidation. NOT consolidated into
+  `docs/CAPABILITY_LOG.md` at HALT 1 per Brief B v1.3 protocol.
+- Branch `feat/design-1` ahead of `origin/feat/design-1` by 1 commit
+  (`5726e38`) after HALT 1 close — will be +1 after this context-
+  refresh commit lands.
+
+---
+
+## MYGRATR-DESIGN-1 Step 4 + Step 5 — Brief A close (May 2026)
+
+### Phase context
+
+Brief-A-milestone partial entry on an open DESIGN-1 phase. `migrations.status`
+remained `content_complete` throughout — DESIGN-1 explicitly does not
+transition state per brief §0 (no `design_running` / `design_complete` in
+`pipeline/state-machine.ts`; DESIGN-1 operates against the
+`content_complete` baseline). Steps 6, 7, 8, 9, 10, 11 of DESIGN-1 remain
+pending; this entry will be extended in place as those steps land.
+
+7 commits closed Brief A this session:
+- `bf2d6b6` — docs(design-1): brief A v1.2 (audit-patched from v1.1; v1.1 removed; superseded)
+- `bd54c68` — feat(design-1): brief A §4.0-§4.3 — Storybook scaffold + config + 30 stories (uncommitted at §4.4 deploy time)
+- `268520e` — fix(design-1): brief A §4.4 — expose NEXT_PUBLIC_* env vars to Storybook bundle (HALT 1 bug fix)
+- `cde66ca` — feat(design-1): brief A step 4 close — §4.5 verifier + §4.6 CONVENTIONS.md + deploy runbook (HALT 1 closed)
+- `e18bd3a` — chore(design-1): brief A step 4 capability log consolidation (Storybook setup → docs/CAPABILITY_LOG.md)
+- `620a3b5` — feat(design-1): brief A step 5 close — V0 prompt template + 3 worked examples (HALT 2 closed)
+- `64ef3fc` — chore(design-1): brief A close — capability log consolidation (v0.dev prompt template → docs/CAPABILITY_LOG.md)
+
+### What Was Built
+
+**Storybook scaffold** at `site/.storybook/{main.ts, preview.tsx}` running
+`@storybook/nextjs@10.3.6` (webpack5 force per Brief A v1.2 D2 lock —
+`nextjs-vite` deferred until `storybookjs/storybook#34688` closes).
+30 stories shipped:
+
+| Group | Primitives | Stories | Path |
+|---|---|---|---|
+| A Foundation | 6 | 6 | `site/src/components/ui/{button,link,tag,card,accordion,marquee}/stories.tsx` |
+| B Typography | 3 | 3 | `site/src/components/ui/{heading,text,portable-text}/stories.tsx` |
+| C Forms | 7 | 7 | `site/src/components/ui/{input,textarea,select,checkbox,radio-group,form-field,hubspot-form-embed}/stories.tsx` |
+| D Overlays | 4 | 4 | `site/src/components/ui/{dialog,tooltip,dropdown-menu,toast}/stories.tsx` |
+| E Media + Layout | 4 | 4 | `site/src/components/ui/{image,video-embed,container,divider}/stories.tsx` |
+| Icon | 1 | 1 | `site/src/components/ui/icon/stories.tsx` |
+| **Tier-1** | 5 | 5 | `site/src/components/tier-1/{home-hero-scale-in, nav-sticky-transition-global, section-fade-reveal-global, service-card-grid-hover-reveal, testimonial-swiper-global}.stories.tsx` |
+| **Total** | **25 + 5** | **30** | |
+
+Tier-1 stories ship as scaffold-stage primitive-composition previews per
+Hard Rule #7 — primitives from each spec's §3 Tech stack composed with
+§6-shaped mock data + visible `<ScaffoldNote>` panel. NO library wiring
+(no `gsap`, no `swiper` init, no working `ScrollTrigger`, no autoplay).
+
+**Vercel deploy** — separate Vercel project at
+`https://mygratr-cloud-employee-storybook.vercel.app`. Framework Preset:
+`Other` (NOT Next.js — would invoke `next build` instead of
+`storybook build`). Root Directory: `site`. Build Command:
+`npm run build-storybook`. Output Directory: `storybook-static`.
+Standard Deployment Protection enabled.
+
+**v0.dev prompt template** — canonical `docs/V0_PROMPT_TEMPLATE.md`
+(406 lines, 6-section format from v2.0 brief §Step 5: Design system
+constraints / Primitive components available / Visual reference /
+Sanity data shape / Constraints / Output format). Sections 1, 2, 5, 6
+paste-as-is per template; Sections 3, 4 per-template fill-in. Storybook
+URL cross-referenced in Section 2 as live primitive-shape reference.
+
+**3 worked examples** at `docs/templates/_examples/`:
+
+| Example | Lines | Doc type | URL pattern |
+|---|---|---|---|
+| `v0-prompt-blog.md` | 168 | `blogPost` (74 docs) | detail page `/blog/{slug}` |
+| `v0-prompt-team-member.md` | 166 | `teamMember` (28 docs) | detail page `/team/{slug}` |
+| `v0-prompt-review.md` | 224 | `review` (26 docs) | listing page `/reviews` |
+
+REVIEW example carries forward both schema-vs-reality findings from
+`docs/design/components/testimonial-swiper-global.md` per Brief A v1.2
+§5.2 mandate.
+
+**HALT 1 env-vars bug + fix.** First Vercel deploy at §4.4 surfaced
+`TypeError: Cannot read properties of undefined (reading 'cn')` on 3
+Tier-1 stories (Image primitive importers) and `ReferenceError:
+Cannot access '__WEBPACK_DEFAULT_EXPORT__' before initialization` on
+the Image primitive's own story. Probe via bundle inspection at
+`storybook-static/image-stories.*.iframe.bundle.js` revealed root cause:
+`@storybook/nextjs` does NOT auto-pass-through `NEXT_PUBLIC_*` env vars
+to its webpack DefinePlugin. `process.env` inlined as
+`{NODE_ENV, NODE_PATH, STORYBOOK, PUBLIC_URL}` only — Sanity vars
+resolved to undefined, Zod's `schema.parse()` threw at module evaluation,
+cascade halted module evaluation mid-way producing two distinct surface
+symptoms. Fix: `env: (config) => ({...config, NEXT_PUBLIC_SANITY_PROJECT_ID:
+process.env.NEXT_PUBLIC_SANITY_PROJECT_ID ?? '', NEXT_PUBLIC_SANITY_DATASET:
+process.env.NEXT_PUBLIC_SANITY_DATASET ?? '' })` config function added to
+`.storybook/main.ts`. Both surfaces resolved.
+
+**Productisation IP capture.** 19 numbered patterns landed in
+`docs/CAPABILITY_LOG.md` (13 Storybook setup at Step 4 close + 6 v0.dev
+prompt template at Step 5 close) plus 19 new Customer-2 reusability
+assessment matrix rows. CONVENTIONS.md gained 72-line "Storybook Story
+Pattern" section. Customer-2 deploy runbook at
+`docs/design/storybook-deploy.md` (157 lines) captures the Vercel
+project setup checklist.
+
+### Files Created
+
+```
+site/.storybook/main.ts                                                    (NEW; 22 lines including env config)
+site/.storybook/preview.tsx                                                (NEW; 26 lines, imports globals.css)
+site/src/components/ui/{primitive}/stories.tsx                             (NEW; ×25 across all primitive folders)
+site/src/components/tier-1/{slug}.stories.tsx                              (NEW; ×5 Tier-1 scaffold-stage)
+docs/V0_PROMPT_TEMPLATE.md                                                 (NEW; 406 lines, 6-section format)
+docs/templates/_examples/v0-prompt-blog.md                                 (NEW; 168 lines)
+docs/templates/_examples/v0-prompt-team-member.md                          (NEW; 166 lines)
+docs/templates/_examples/v0-prompt-review.md                               (NEW; 224 lines)
+docs/design/storybook-deploy.md                                            (NEW; 157 lines, customer-2 runbook)
+```
+
+### Files Modified
+
+```
+site/.gitignore                       (Storybook init: *storybook.log + storybook-static)
+site/eslint.config.mjs                (Storybook init: eslint-plugin-storybook flat-config integration)
+site/package.json                     (added storybook + build-storybook scripts; 7 devDeps incl. prop-types §4.0 workaround)
+site/package-lock.json                (mechanical lockfile for new Storybook 10.3.6 deps)
+CONVENTIONS.md                        (+72 lines: Storybook Story Pattern section before Section 4 Phase History)
+docs/CAPABILITY_LOG.md                (+275 / -3 lines Step 4 consolidation; +119 / -3 lines Step 5 consolidation; total +394 / -6 across 19 patterns + 19 customer-2 reusability rows)
+audit-output/design-1/capability-log-draft.md  (gitignored running draft; +9 BvR findings + DEV-2 update + Tech Debt entry across Brief A)
+```
+
+### HALTs Landed (2 of 2)
+
+- **HALT 1 — Storybook scaffold + 30 stories + Vercel deploy + env-vars bug fix.** Eyeballed the deployed Storybook on Vercel; spot-checked 3 stories (Primitives/Image Default + Tier-1/home-hero-scale-in Default + Primitives/Tag Default no-regression) post-fix. All 3 rendered cleanly. HALT 1 closed at commit `cde66ca` (Step 4 close commit covering §4.5 verifier + §4.6 CONVENTIONS.md + deploy runbook). 1 round of HALT-1-bug-fix iterations: bug surfaced; probed via bundle inspection; root cause identified (env throw cascade); fix landed at commit `268520e`; re-verified.
+- **HALT 2 — v0.dev prompt template + 3 worked examples.** Read the 4 surfaced files (964 lines total). 2 clarification edits requested + applied: (1) Section 3 placeholder block replaced with self-explaining REFERENCE-doc workflow (no roadmap-leaky "TBD-pending-Step-7" references); (2) Section 4 schema placeholder renamed to `PLACEHOLDER_REPLACE_ME_Schema` to prevent accidental copy-paste. HALT 2 closed at commit `620a3b5`.
+
+### Patterns Established
+
+19 productisation IP patterns across Brief A (consolidated in
+`docs/CAPABILITY_LOG.md`):
+
+**Storybook setup (13 patterns at Step 4 close):**
+1. Storybook 10 install workarounds (prop-types + `-y --no-dev` + `--builder webpack5`)
+2. ESLint flat-config + eslint-plugin-storybook integration
+3. Framework auto-mocks for next/{image,link,font} — no decorators needed
+4. `globals.css` over `tokens.css` for Tailwind v4 utility availability
+5. `NEXT_PUBLIC_*` env config function — required for any schema-validated env module
+6. Build-time exit-0 is necessary but not sufficient — runtime spot-check required
+7. Pair-rule per folder — mechanical count beats logical count
+8. Render-only stories preferred over `args` + `argTypes`
+9. Mock data discipline — Hard Rule #1 exception scoped to story files
+10. Tier-1 scaffold-stage rule — primitive-composition preview, not working impl
+11. Vercel separate-project deploy + Standard Protection
+12. Build-infrastructure-before-deploy commit cadence (CI/CD-aware ordering)
+13. Brief-vs-reality finding velocity — 9 instances at Brief A indicate brief-drafter mental-model gaps
+
+**v0.dev prompt template (6 patterns at Step 5 close):**
+1. 6-section format with paste-as-is vs fill-in split
+2. Self-explaining placeholder discipline (HALT 2 lesson)
+3. Worked-example-as-clarification pattern
+4. Schema-vs-reality findings carried into example bodies
+5. Storybook URL as Section 2 cross-reference
+6. Per-doc-type variation surfaced in worked examples (canonical stays universal)
+
+CONVENTIONS.md gained "Storybook Story Pattern" section (72 lines) —
+covers Pair-rule, primitive + Tier-1 story shapes (incl. Hard Rule #7
+scaffold-stage rule), mock-data discipline, render-only-over-args lock,
+env-vars gotcha (BvR #8) + canonical fix shape, Pair-rule mechanical
+check + BvR #6 count reconciliation.
+
+### Tech Debt Logged
+
+1 new Tech Debt entry at Brief A close — to add to CLAUDE.md's Known
+Tech Debt table at Step 11 DESIGN-1 final close (NOT this partial
+refresh):
+
+| # (TBD at Step 11) | Source | Description | Defer to |
+|---|---|---|---|
+| (next) | DESIGN-1 Brief A | Storybook adapter migration from `@storybook/nextjs` (webpack) to `@storybook/nextjs-vite` when [storybookjs/storybook#34688](https://github.com/storybookjs/storybook/issues/34688) closes (`ServerInsertedHTMLContext` export missing in dev mode for Storybook 10 + Next 16 + React 19 + Vite 8 + nextjs-vite framework; production builds unaffected, dev mode unusable) | post-DESIGN-1 / customer-2 onboarding |
+
+The 2 prior decision-needed Step 3 entries (testimonial F2 →
+TEMPLATE-REVIEW; service-card-grid F1 → TEMPLATE-SERVICE) remain
+pending Step 11 rollup as previously logged.
+
+### Discoveries / Surprises
+
+- **HALT 1 env-vars bug — single root, two surface symptoms.** Tier-1 stories failed with `TypeError: Cannot read properties of undefined (reading 'cn')` at render time; Image primitive's own story failed with `ReferenceError: Cannot access '__WEBPACK_DEFAULT_EXPORT__' before initialization` at processCSFFile. Both cascaded from `src/lib/env.ts`'s Zod parse throwing at module evaluation when `process.env.NEXT_PUBLIC_SANITY_PROJECT_ID` resolved to undefined. The cn-TypeError was the proximate symptom for stories that consumed Image at render; the TDZ was the proximate symptom for Image's own story (the throw halted module evaluation before `const __WEBPACK_DEFAULT_EXPORT__ = {...}` could initialise, and Storybook's CSF processor read the registered `default` getter against the still-uninitialised const). Bundle inspection at `storybook-static/image-stories.2091d001.iframe.bundle.js` revealed both the env-throw site and the cn cascade pattern.
+- **Pair-rule mechanical count beats logical count (BvR #6).** Brief literal said "23 stories" (22 logical primitives + Icon foundation). Pair-rule applies per-folder, and C4 Checkbox + C4b RadioGroup ship as separate folders → 24 + Icon = 25 primitive stories. Total Brief A: 25 + 5 Tier-1 = 30 stories, not 28. Mechanical check `find site/src/components/ui -mindepth 2 -name stories.tsx | wc -l` returns the exact integer.
+- **Zero fresh BvR findings at Step 5 validates Step 4 Pattern 13.** Brief A surfaced 9 BvR findings during Steps 2/4 (mostly framework gotchas + brief-drafter mental-model gaps). Step 5 (v0.dev template authoring + HALT 2 with 2 clarification edits) produced ZERO new findings. Validates the BvR-velocity-as-brief-quality-metric pattern: Brief A's discipline lessons landed by Step 5 because the brief-drafter learned them by Step 4. Calibration data point for Brief B: low BvR count = lessons landed; high BvR count = new mental-model gaps to harvest.
+- **Brief-drafter mental-model gaps cluster.** Across 9 Brief A BvR findings, three cross-cutting gaps emerged that customer-2 brief checklist should bring forward: (a) non-interactive CLI flags (`-y`, `--no-dev`, equivalent) for automation-executed steps; (b) CI/CD-aware commit ordering (commit before deploy, not after); (c) build-vs-runtime correctness for any schema-validated module load. All three invisible until they break, all three cheap to plan around if anticipated.
+- **`@storybook/nextjs` framework name suggests parity that doesn't hold.** `next/image` + `next/link` + `next/font` are auto-mocked by the framework (good). But `NEXT_PUBLIC_*` env vars are NOT auto-passed-through to the webpack DefinePlugin (gotcha). Customer-2 capability take-away: when a framework-named adapter ships, audit which Next.js conventions actually inherit and which require explicit config — don't assume parity.
+
+### Final Repo State (Brief A close)
+
+- `migrations.status` = `content_complete` (unchanged; DESIGN-1 does not transition).
+- 30 stories on disk (25 primitive + 5 Tier-1 scaffold-stage). `npx tsc --noEmit` clean. `npm run build-storybook` exits 0.
+- Storybook live on Vercel at `https://mygratr-cloud-employee-storybook.vercel.app` with Standard Deployment Protection.
+- `docs/V0_PROMPT_TEMPLATE.md` + 3 worked examples on disk; HALT 2 clarifications applied.
+- CONVENTIONS.md "Storybook Story Pattern" section live.
+- `docs/CAPABILITY_LOG.md` extended with 19 productisation IP patterns + 19 customer-2 reusability matrix rows. Brief A officially closed in the file's phase context.
+- Customer-2 deploy runbook at `docs/design/storybook-deploy.md` shipped.
+- Capability-log running draft at `audit-output/design-1/capability-log-draft.md` (gitignored) preserved as seed for Brief B/C.
+- Branch `feat/design-1` even with `origin/feat/design-1` after Brief A close commits (will be +1 after this context-refresh commit lands).
+
+---
+
+## MYGRATR-DESIGN-1 Step 3 — Tier-1 audit + 5 complex-component specs (May 2026)
+
+### Phase context
+
+Step-3-milestone partial entry on an open DESIGN-1 phase. `migrations.status`
+remained `content_complete` throughout — DESIGN-1 explicitly does not
+transition state per brief §0. Steps 4–11 of DESIGN-1 remain pending;
+this entry will be extended in place as those steps land.
+
+5 commits closed Step 3:
+- `e54b818` — docs(design-1): step 3a — Tier-1 component inventory locked at HALT 1 (5 components)
+- `e82d987` — docs(design-1): step 3b — engage L3 fallback (#5 down-classified to Low; 3b target = #4)
+- `00b14f0` — docs(design-1): step 3b — testimonial-swiper-global spec (8-section format-locked at HALT 2)
+- `126acac` — docs(design-1): step 3c+3d — Tier-1 specs for #2 / #3 / #5 / #1 (4 specs; HALT 3 closed)
+- `c895033` — docs(design-1): step 3 close — Path A propagation (HALT 4)
+
+### What Was Built
+
+**Tier-1 inventory** at `docs/design/TIER_1_INVENTORY.md` v1.0 — 5 components locked (1 High + 3 Medium + 1 Low) within the brief estimate range of 5–10:
+
+| # | Component | Scope | Live URL | Complexity | Tech stack |
+|---|---|---|---|---|---|
+| 1 | Section fade-reveal cascade | GLOBAL (14 templates) | sitewide | High | GSAP attribute-selector orchestration |
+| 2 | Hero scale-in animation | HOME | `/` | Medium | GSAP fromTo (single-property) |
+| 3 | Sticky nav transition | GLOBAL | sitewide | Medium | GSAP ScrollTrigger + plain JS handler |
+| 4 | Testimonial Swiper carousel | GLOBAL (HOME, /reviews, /services) | various | Medium | Swiper 11 |
+| 5 | Service card-grid hover-reveal | SERVICE landing | `/services` | Low (down-classified at HALT 1 L3) | CSS-only |
+
+**5 × 8-section specs** at `docs/design/components/{slug}.md`:
+
+| Spec | Lines | Schema-vs-reality findings |
+|---|---|---|
+| `section-fade-reveal-global.md` | 216 | 3 (1 resolved at HALT 3 via Path A; 2 template-fallback) |
+| `nav-sticky-transition-global.md` | 198 | 2 (1 template-fallback; 1 N/A render-discipline note) |
+| `testimonial-swiper-global.md` | 180 | 2 (1 schema-relax → STATIC-1/SCHEMA-2; 1 decision-needed → TEMPLATE-REVIEW) |
+| `service-card-grid-hover-reveal.md` | 165 | 2 (1 decision-needed → TEMPLATE-SERVICE; 1 template-fallback) |
+| `home-hero-scale-in.md` | 135 | 0 |
+
+**Capture-asset directory tree skeleton** at `docs/design/components/_assets/{slug}/{screenshots,recordings}/` — 5 component dirs × 2 leaf dirs = 10 leaf dirs (empty at HALT 4; populated during TEMPLATE-* phases).
+
+**Capability-log-draft additions** at `audit-output/design-1/capability-log-draft.md` (gitignored) — +32 lines, 6 productisation-IP entries under new "Step 3 — Tier-1 audit + complex-component specs" section. Consolidated into canonical `docs/CAPABILITY_LOG.md` at this Step 11 partial refresh per Jake's direction (don't wait for Step 9).
+
+### Files Created
+
+```
+docs/design/TIER_1_INVENTORY.md                                            (NEW)
+docs/design/components/section-fade-reveal-global.md                       (NEW; 3d stress-test)
+docs/design/components/home-hero-scale-in.md                               (NEW; 3c batch)
+docs/design/components/nav-sticky-transition-global.md                     (NEW; 3c batch)
+docs/design/components/service-card-grid-hover-reveal.md                   (NEW; 3c batch)
+docs/design/components/testimonial-swiper-global.md                        (NEW; 3b first-spec)
+docs/design/components/_assets/{section-fade-reveal-global,
+  home-hero-scale-in, nav-sticky-transition-global,
+  testimonial-swiper-global, service-card-grid-hover-reveal}/
+  {screenshots,recordings}/                                                (10 leaf dirs)
+```
+
+### Files Modified
+
+```
+docs/briefs/active/MYGRATR-DESIGN-1-STEP-3_BRIEF_v1.1.md                   (committed at 7ec77f4 by Jake)
+audit-output/design-1/capability-log-draft.md                              (gitignored; +32 lines)
+```
+
+### HALTs Landed (4 of 4)
+
+- **HALT 1 — Tier-1 inventory eyeball.** 4 lock decisions captured: L1 globals stay as Tier-1 (not Step-4 utility lane); L2 3d stress-test = #1 section-fade-reveal (evidence > working hypothesis); L3 #5 accepted as Medium-pending-DevTools-verification with #4 fallback; L4 #1 stays as Tier-1 (not utility). Inventory: 5 components.
+- **HALT 2 — first-spec format-lock.** 6 format locks captured on `testimonial-swiper-global.md`: 8 mandatory sections, §4 Timing provenance per-spec adapting to tech stack, §3 Tech stack lists ALL primitives (no cap), §6 Data binding requires field paths AND GROQ query shape, Schema-vs-reality findings as separate trailing section with enum-tagged resolution direction, TBD-pending-capture pattern OK at first-spec. **Finding-1 correction landed:** testimonial spec F1 (5-star rating) revised from `decision-needed` to `schema-relax` (add `review.rating: number` in STATIC-1/SCHEMA-2; hardcoded fallback would be CE-specific scope bleed against productisation IP).
+- **HALT 3 — stress-test format finalisation.** Path A mechanical trigger approved for §6 GROQ-mandate edge case: spec may declare "N/A — render utility" ONLY when component does not touch Sanity data anywhere. Removes per-author judgment ambiguity. `section-fade-reveal-global.md` qualifies cleanly (orchestration utility, no data).
+- **HALT 4 — Step 3 final close.** 3 decisions captured: (1) Option B for capability-log-draft.md commit-config (stays gitignored — brief-vs-reality finding: structural rule wins over brief literal); (2) both decision-needed findings deferred with explicit phase pins (testimonial F2 → TEMPLATE-REVIEW; service-card-grid F1 → TEMPLATE-SERVICE), log as Tech Debt at Step 11 DESIGN-1 close; (3) commit message edits applied (drop the audit-output line; add capability-log-draft existence pointer line for Step 9 consolidation).
+
+### Patterns Established
+
+5 new patterns captured (see CONVENTIONS.md updates + CAPABILITY_LOG.md Step 3 section):
+
+1. **Tier-1 Component Spec Pattern** — 8-section mandatory format; per-component spec at `docs/design/components/{slug}.md`. Verifier asserts file structure at Step 10.
+2. **5 §4 Timing Provenance Shapes** named explicitly: library-mediated, GSAP-clean, GSAP-mixed, CSS-only, GSAP-attribute-selector orchestration. Per-spec authoring picks the matching shape; copy-paste boilerplate destroys the section's purpose.
+3. **Render-Utility Classification** — third component category alongside primitive (Step 2) and Tier-1 component (Step 3). Tier-1 specs that orchestrate without composing primitives and without touching Sanity data. Live outside `site/src/components/ui/`.
+4. **Path A Mechanical Trigger** for §6 GROQ-mandate — "does this component touch Sanity data? if yes → GROQ + field paths required; if no → N/A — render utility allowed." Removes ambiguity.
+5. **Brief-vs-reality finding** — parallel discipline to schema-vs-reality. When brief literal conflicts with structural rule (gitignore, framework convention, etc.), structural wins. Surfaced at HALT 4 via the audit-output/ gitignore vs brief 3f.d "git add capability-log-draft.md" tension.
+
+### Tech Debt Logged
+
+2 Tech Debt entries to add at Step 11 DESIGN-1 close (NOT this partial refresh — the Step 11 tech-debt rollup happens at end-of-DESIGN-1):
+
+| # (TBD at Step 11) | Source | Description | Defer to |
+|---|---|---|---|
+| (next) | DESIGN-1 Step 3 | Sibling `.swiper.testimonies` variant on `/reviews` (prev/next arrows + dynamicBullets + no autoplay; distinct from `.swiper.company-testimonies` autoplay variant) — same-component-prop-driven vs separate spec | TEMPLATE-REVIEW |
+| (next+1) | DESIGN-1 Step 3 | `service.folds[0].subhead` description-preview projection accuracy — confirm CE editorial puts preview-quality copy in fold 0 vs adding `service.descriptionPreview: text` field | TEMPLATE-SERVICE |
+
+### Discoveries / Surprises
+
+- **Brief speculation vs probe truth.** v1.1 brief candidate list named "TECHNOLOGY filter grid" as a Tier-1 candidate. Live-site probe on `/technology` confirmed **no filter UI exists** — alphabetical 150-card list, no chips/dropdowns/search/tabs. Lesson: brief candidate categories are hypotheses to verify, not facts to spec from. Same probe-first dismissal protocol from Step 2 HALT 10 applied at inventory-walk time.
+- **Audit-walk Explore agent over-listed.** Agent surfaced 10 candidates; critical review removed 5 (TECHNOLOGY filter grid speculative; FAQ/SERVICE/COMPARE accordions just A5 primitive use; team-bio "toggle" actually a page link to `/team/[name]`; Hotjar/Clara/GeoTargetly third-party scripts; Calendly third-party iframe). Agents over-list because they don't apply the Tier-1-mechanism vs primitive-use distinction. Budget time for "candidate refinement" between agent walk and inventory lock.
+- **HOME hero scale-in is Medium, not High.** gsap-home.json shows `gsap.fromTo('img.hero-img.align-top', { scale: 1.2 }, { scale: 1, duration: 1.5, ease: 'power2.out' })` — single property, single timeline, single element. Initially flagged as High by the audit-walk agent based on "hero" framing; actual GSAP capture shows contained single-fromTo. Per HALT 1 lock L2, evidence wins over working hypothesis (v1.1 audit patch A2 — role not identity). Stress-test target shifted to #1 section-fade-reveal-global which is the true highest-complexity surface.
+- **#5 service-card-grid down-classified at HALT 1 L3 probe.** DevTools-equivalent CSS inspection on `/services` confirmed pure CSS hover transitions: `transform: translateY(-16px)` + box-shadow + padding-left grow + arrow icon swap. No JS state machine; no library; no multi-stage timeline. Per brief criteria ("Low — interactive but mostly CSS / single-axis transitions"), this is Low not Medium. L3 fallback engaged: 3b first-spec target shifted from #5 to #4 testimonial-swiper-global. #5 stays in Tier-1 inventory at Low complexity.
+- **Library-mediated components stress-tested format cleanly.** Testimonial Swiper carousel (3b first-spec) tested the §4 Timing provenance section's adaptability to non-GSAP tech stacks. Provenance paragraph cleanly states "Library-mediated, not GSAP-driven. Shim does not capture Swiper internals — structural gap, not F10/F11/F12 failure." This is the productisation pattern: provenance adapts to tech stack rather than copy-pasting GSAP language.
+- **Brief-vs-reality finding emerged at HALT 4.** Brief 3f.d literal instruction (`git add audit-output/design-1/capability-log-draft.md`) conflicts with `audit-output/` gitignore rule per CLAUDE.md. Resolution: structural rule wins. Same logic as schema-vs-reality. New productisation pattern named.
+
+### Final Repo State (Step 3 close)
+
+- `migrations.status` = `content_complete` (unchanged; DESIGN-1 does not transition).
+- 5 Tier-1 component specs committed under `docs/design/components/`. tsc + build clean.
+- TIER_1_INVENTORY.md locked at v1.0 with 5 components.
+- Capture-asset directory tree skeleton ready (empty; populated during TEMPLATE-*).
+- 2 decision-needed findings deferred with phase pins (TEMPLATE-REVIEW, TEMPLATE-SERVICE) — log as Tech Debt at Step 11.
+- Capability-log running draft at `audit-output/design-1/capability-log-draft.md` (gitignored) extended with Step 3 productisation IP. Consolidated into `docs/CAPABILITY_LOG.md` at this partial refresh per Jake's direction.
+- Branch `feat/design-1` 11 commits ahead of `origin/feat/design-1` after Step 3 close commits (will be 12 after this post-Step-3 refresh commit). Not pushed.
+
+---
+
+## MYGRATR-DESIGN-1 Step 2 — 22 primitives + Icon system + HALT 10 accordion correction (May 2026)
+
+### Phase context
+
+Step-2-milestone partial entry on an open DESIGN-1 phase. `migrations.status`
+remained `content_complete` throughout — DESIGN-1 explicitly does not
+transition state per brief §0 (no `design_running` / `design_complete` in
+`pipeline/state-machine.ts`; DESIGN-1 operates against the
+`content_complete` state without transitioning out of it). Steps 3–11 of
+DESIGN-1 remain pending; this entry will be extended in place as those
+steps land.
+
+Two commits closed the Step-2 milestone:
+- `e761a76` — feat(design-1): Step 2 — 22 primitive components + Icon system
+- `4c0514f` — fix(design-1): A5 Accordion — restore CE plus/× icon pattern (HALT 10)
+
+### What Was Built
+
+**22 brand-inventory primitives** under `site/src/components/ui/{name}/index.tsx`
+(folder-per-primitive per v2.0 supersession of v1.5's flat shape):
+
+| Category | Primitives |
+|---|---|
+| A — Foundation | A1 Button, A2 Link, A3 Tag, A4 Card, A5 Accordion, A6 Marquee |
+| B — Typography | B1 Heading, B2 Text, B3 PortableText |
+| C — Forms | C1 Input, C2 Textarea, C3 Select, C4a Checkbox, C4b RadioGroup, C5 FormField, C6 HubSpotFormEmbed |
+| D — Overlays | D1 Dialog, D2 Tooltip, D3 DropdownMenu, D4 Toast |
+| E — Media + Layout | E1 Image, E2 VideoEmbed, E3 Container, E4 Divider |
+
+**Icon foundation primitive** at `site/src/components/ui/icon/index.tsx` —
+sprite-served from `/icons/sprite.svg` with typed `IconName` union of 9
+CE-derived glyphs (`menu`, `copy-link`, `linkedin`, `linkedin-filled`,
+`x-twitter`, `facebook`, `chevron-right`, `close`, `more-vertical`).
+Probe-driven from a candidate pool of 70+ via `probe-icon-inventory.mjs`
++ `icon-classification.json`. Sprite source-of-truth at
+`site/src/components/ui/_icons/sprite.svg`; copied to public asset path
+via `scripts/design/emit-icon-sprite.mjs`.
+
+**21 probe scripts** at `scripts/design/probe-*.mjs` capturing CE-source
+patterns: `accordion-chevron`, `accordion-marquee-styles`,
+`blockquote-mobile`, `blockquote-styles`, `button-styles`, `card-styles`,
+`checkbox-radio-textarea`, `container-styles`, `divider-styles`,
+`eyebrow-styles`, `heading-styles`, `hubspot-embed`, `hubspot-mounted-dom`,
+`icon-inventory`, `image-quality`, `image-styles`, `input-styles`,
+`link-tag-styles`, `richtext-styles`, `text-styles`, `video-embeds`. Each
+emits a JSON file under `audit-output/design-1/` consumed by the
+corresponding primitive's source comment for probe-driven decisions.
+
+**1 Sanity image-builder verify script** at
+`scripts/design/verify-sanity-image-builder.mjs`.
+
+**`docs/design/COMPONENTS.md`** (806 lines) — single-source primitive
+inventory for Step 4 template authors. Front-matter covers layout-root
+providers, react-hook-form integration patterns, Sanity-data shapes,
+PortableText handoffs, icon sprite reference, token quick-lookup. One
+table row per primitive with path, type, deps, variants, migration
+improvement, usage notes. Per-primitive source comments document
+probe-driven decisions and capability-log items.
+
+**`/demo` kitchen-sink route** at `site/src/app/demo/page.tsx` —
+production-guarded, dev-only visual reference. Renders all 22 primitives
++ ~200+ mutation test cases on one page. Confirmed at HALT 10 visual
+eyeball. NOT included in production builds.
+
+**`docs/CAPABILITY_LOG.md` (NEW)** — root-level capability log doc per
+brief §Step 9. Token-system architecture entry (consolidates Step 0+1
+running draft from `audit-output/design-1/capability-log-draft.md`) +
+10 categorical primitive patterns harvested from Step 2 + 4
+HALT-discipline patterns captured at HALT 10. Steps 3–8 sections
+present as `TBD` placeholders for future extension.
+
+### Files Created
+
+```
+docs/CAPABILITY_LOG.md                                          (NEW)
+docs/design/COMPONENTS.md                                       (806 lines)
+docs/design/TOKENS.md                                           (Step 1 carryover; amended)
+site/src/components/ui/_icons/icon-names.ts                     (typed IconName union)
+site/src/components/ui/_icons/sprite.svg                        (source-of-truth)
+site/src/components/ui/_utils/cn.ts                             (clsx + tailwind-merge)
+site/src/components/ui/{22 primitives}/index.tsx                (folder-per-primitive; 25 source files counting C4 split into Checkbox + RadioGroup)
+site/src/components/ui/icon/index.tsx                           (Icon foundation)
+site/public/icons/sprite.svg                                    (emitted from source)
+site/src/app/demo/page.tsx                                      (kitchen-sink)
+scripts/design/build-icon-sprite.mjs
+scripts/design/emit-icon-sprite.mjs
+scripts/design/refetch-full-svgs.mjs
+scripts/design/check-probe-doc-cleanup.mjs
+scripts/design/verify-sanity-image-builder.mjs
+scripts/design/probe-{21 probes}.mjs
+audit-output/design-1/{probe outputs}.json
+audit-output/design-1/icon-classification.json
+audit-output/design-1/icon-inventory.json
+```
+
+### Files Modified
+
+```
+site/src/app/tokens.css                                         (DEV-13/14/20/24 amendments)
+site/src/app/layout.tsx                                         (TooltipProvider + ToastProvider mount)
+site/src/lib/env.ts                                             (DEV-23 amendment)
+site/src/components/ui/accordion/index.tsx                      (HALT 10 — chevron → plus/× pattern; commit 4c0514f)
+```
+
+### Patterns Established
+
+10 categorical primitive patterns + 4 HALT-discipline patterns documented
+in `docs/CAPABILITY_LOG.md`. Summary:
+
+**Primitive patterns (1–10):** hand-built atop @radix-ui (no shadcn);
+CVA-standardised variant API; no-className-variants rule; SVG sprite
+for icons; GSAP banned from primitives; probe-first discipline (Hard
+Rule #2); per-primitive folder structure; inline source-comment as
+primitive-level spec; layout-root provider mount; form integration
+split (register-based vs Controller-based via FormField smart wrapper).
+
+**HALT-discipline patterns (11–14):** probe-first dismissal protocol
+(burden of proof on dismissal, not adoption); HALT 10 visual eyeball
+as last-line defense; browser cache trap during HALT 10; demo route
+width misalignment is a layout-context observation, not a primitive
+bug.
+
+### Tech Debt Logged
+
+None new. #16 (`customerStory.companyLogo` required-field violation)
+and #17 (10 doc types not yet scanned for migrator-pattern null
+literals) carried forward.
+
+### Discoveries / Surprises
+
+- **The accordion HALT 10 catch.** Original HALT 2 batch shipped
+  A5 Accordion with `chevron-right` rotation, framed in the source
+  comment as "migration improvement over CE's plus/minus toggle
+  (likely Webflow component template artifact)". HALT 10 visual
+  eyeball + a probe of /services and /technology raw HTML confirmed
+  CE's pattern is **plus → × in 24px black circle**, custom-named
+  classes (`faq-btn`, `line-1`, `line-2`, `toogle-top`) — sitewide,
+  intentional brand design, not a Webflow artifact. The original
+  framing was speculation, not evidence; the dismissal was wrong.
+  **DEV-12 retroactive correction** captures this: Hard Rule #2
+  visual fidelity overrides "modern convention" assumptions when a
+  custom-named class (not `w-*`) signals intentional brand design.
+  Fix landed in commit `4c0514f`: literal hex `bg-[#0e100f]` on a
+  24×24 rounded-full span containing two `h-px w-3 bg-surface-elevated`
+  spans (one default-horizontal, one `rotate-90`-vertical), with
+  `group-data-[state=open]:rotate-45` on the parent to morph + into ×.
+  Inline cubic-bezier easing `(.165,.84,.44,1)` matches CE's
+  `.faq-btn` transition exactly. No sprite addition; no token
+  addition (no near-black token exists; `brand-tertiary` is navy
+  `#223c6c`, `text-default` is `#212121`, neither matches CE's
+  `#0e100f`; literal hex was the right call for one-off use).
+- **The marquee placeholder-logo non-bug.** /demo route renders
+  marquee with placeholder text instead of customer logos. This is
+  acceptable for HALT 10 / kitchen-sink demo purposes — the demo
+  validates primitive behaviour (scroll, pause-on-hover, item
+  rendering), not brand-asset fidelity. Real customer logo SVGs
+  are a Step 4 (template-level) concern. Added to Step 4 prep
+  checklist: logo SVG asset gathering required before HOME /
+  customer-facing template builds.
+- **Demo accordion width.** Demo accordion appears wider than CE's
+  FAQ section because the demo renders inside the full kitchen-sink
+  Container. CE wraps FAQs in a narrower section column. This is
+  correct primitive behaviour — width is parent-controlled. Step 4
+  templates will wrap accordions in `Container width='narrow'` or
+  a max-width-constrained section per CE's measured FAQ-column
+  widths.
+
+### Final Repo State (Step 2 milestone)
+
+- `migrations.status` = `content_complete` (unchanged; DESIGN-1 does
+  not transition).
+- `migrations.metadata.content_phase.content_migrations_rows` = 42
+  (refreshed from 38 at Step 0a per brief I5).
+- 22 primitives + Icon foundation = 23 components live under
+  `site/src/components/ui/`. tsc + build clean.
+- `docs/CAPABILITY_LOG.md` exists at `docs/` (path per brief §Step 9
+  line 2097). Token-system + primitive-pattern + HALT-discipline
+  sections complete; Steps 3/4/5/6/8 sections marked TBD.
+- DESIGN-1 verifier (`tools/qa/verify-design-1.ts`) NOT YET written —
+  Step 10 deliverable. Manual checks for Step 2 scope are tsc + build
+  clean (verified) + HALT 10 visual eyeball (confirmed).
+
+---
+
 ## MYGRATR-CONTENT-1D-CLEANUP — Migrator-pattern null-image-field unsets (May 2026)
 
 ### Brief Deviation DEV-6

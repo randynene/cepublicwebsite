@@ -1,6 +1,6 @@
 import { defineField, defineType } from 'sanity'
 
-import { imageField, localeField, slugField } from '../_shared'
+import { imageField, localeField, retiredField, slugField } from '../_shared'
 
 export default defineType({
   name: 'download',
@@ -116,6 +116,8 @@ export default defineType({
     }),
 
     localeField(),
+
+    retiredField(),
   ],
   preview: { select: { title: 'name', subtitle: 'title' } },
 })

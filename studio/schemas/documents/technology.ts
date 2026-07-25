@@ -1,13 +1,6 @@
 import { defineField, defineType } from 'sanity'
 
-import {
-  imageField,
-  localeField,
-  metaFields,
-  metaSourceFields,
-  slugField,
-  sourceTrackingFields,
-} from '../_shared'
+import { imageField, localeField, metaFields, metaSourceFields, retiredField, slugField, sourceTrackingFields } from '../_shared'
 
 export default defineType({
   name: 'technology',
@@ -27,6 +20,13 @@ export default defineType({
       title: 'Short label',
       type: 'string',
       validation: (Rule) => Rule.max(100),
+    }),
+    defineField({
+      name: 'tagline',
+      title: 'Tagline',
+      type: 'string',
+      description: 'Short tagline used by Services mega-menu "By Technology" column.',
+      validation: (Rule) => Rule.max(80),
     }),
     imageField('techLogo', 'Technology logo'),
     defineField({
@@ -51,15 +51,16 @@ export default defineType({
 
     defineField({
       name: 'faqs',
-      title: 'FAQs',
+      title: 'FAQs (page override)',
       type: 'array',
       of: [{ type: 'faqItem' }],
-      description: 'Replaces the raw JSON-LD faq-schema-2 PlainText field. JSON-LD is generated server-side from this array.',
-      validation: (Rule) => Rule.max(6),
+      description:
+        'Optional. Leave EMPTY to use the shared Service Model FAQ group (matches the live site). Add items here only to give THIS page its own unique FAQs, which then replace the shared block for this page. FAQPage JSON-LD is generated server-side from whichever set renders.',
     }),
 
     ...sourceTrackingFields(),
     localeField(),
+    retiredField(),
   ],
   preview: { select: { title: 'technologyName', subtitle: 'shortLabel', media: 'techLogo' } },
 })

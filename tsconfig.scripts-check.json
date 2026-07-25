@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "dist-check",
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
+    "noEmit": true,
+    "ignoreDeprecations": "6.0"
+  },
+  "include": ["scripts/audit/static-2/**/*.ts", "scripts/static/seed-globals-v2.ts", "scripts/static/verify-static-2.ts", "src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "studio", "site"]
+}
