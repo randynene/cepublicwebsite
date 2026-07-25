@@ -1,6 +1,6 @@
 # Sanity editability — consolidated execution plan
 
-**Status:** Executing (WP-01 + WP-02 in progress)  
+**Status:** Executing — WP-01/02 merged (#22); WP-03 (this PR)
 **Date:** 2026-07-25  
 **Goal:** Seb can edit *everything meaningful* on the main marketing pages via Sanity Studio → Publish → staging updates.  
 **Source of truth site:** https://staging.jakevibes.dev  
@@ -99,12 +99,12 @@ Jake to confirm once; defaults in **bold**:
 **Problem:** Entire “Build your profile” join form is code-owned; testimonial video has play UI but no `videoUrl`.
 
 **Do**
-- [ ] Decide D2: real HubSpot form vs editable demo
-- [ ] If demo: move all join-form copy into `forDevelopersPage` schema + render from Sanity
-- [ ] If real: add HubSpot form id / portal wiring + submit
-- [ ] Add `tests.videoUrl` (or equivalent) + wire player
-- [ ] Wire ghost hero CTA href (or remove inert CTA)
-- [ ] Presentation smoke
+- [x] Decide D2: real HubSpot form vs editable demo — **editable demo** (copy in Sanity; submit stays done-state)
+- [x] If demo: move all join-form copy into `forDevelopersPage` schema + render from Sanity
+- [ ] If real: add HubSpot form id / portal wiring + submit — deferred (full CRM later)
+- [x] Add `tests.videoUrl` (or equivalent) + wire player
+- [x] Wire ghost hero CTA href (or remove inert CTA) — `ctaGhostHref` default `/how-it-works`; primary/final `#join`
+- [ ] Presentation smoke — **needs re-seed + Studio deploy after merge**
 
 ---
 

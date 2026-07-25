@@ -10,8 +10,8 @@
 //
 // The values below are the EXACT strings the frozen export rendered - they are
 // the defaults / static fallback when the Sanity doc is absent. The "build your
-// profile" form (JoinForm) is a live React component and keeps its own copy in
-// JOIN_CONTENT; it is code-owned and not wired to Sanity.
+// profile" form (JoinForm) is a live React component; its copy is editable via
+// forDevelopersPage.join (JOIN_CONTENT is the static fallback).
 //
 // Author voice: no em/en dashes - hyphens only.
 
@@ -56,7 +56,11 @@ export interface FeHero {
   titleAccent: string
   sub: string
   ctaPrimary: string
+  /** Path or #anchor for the primary CTA. Default #join. */
+  ctaPrimaryHref?: string
   ctaGhost: string
+  /** Path or #anchor for the secondary CTA. Default /how-it-works. */
+  ctaGhostHref?: string
   trust: string[]
   card: FeHeroCard
 }
@@ -159,6 +163,8 @@ export interface FeTests {
   videoPill: string
   videoLabel: string
   videoImage?: string
+  /** YouTube / Vimeo / Loom. Empty = decorative poster only. */
+  videoUrl?: string
   quotes: FeQuote[]
 }
 export interface FeFinal {
@@ -166,12 +172,14 @@ export interface FeFinal {
   titleAccent: string
   p: string
   cta: string
+  /** Path or #anchor for the final CTA. Default #join. */
+  ctaHref?: string
   trust: string[]
 }
 
-// ── The "build your profile" form content (code-owned; JoinForm reads it) ──
-// Kept verbatim from the original page; NOT wired to Sanity (the form is a live
-// interactive React component). The transform always splices this from code.
+// ── The "build your profile" form content (Sanity join + static fallback) ──
+// JoinForm reads content.join. Seeded into forDevelopersPage.join; this object
+// is the offline / empty-doc fallback. Submit stays a demo done-state (D2).
 export const JOIN_CONTENT = {
   eyebrow: 'Build your profile',
   titleLead: 'Two minutes.',
@@ -274,7 +282,9 @@ export const FOR_ENGINEERS_CONTENT: ForEngineersContent = {
     titleAccent: 'wherever you are',
     sub: 'We match you with companies that fit your work style',
     ctaPrimary: 'Join the network',
+    ctaPrimaryHref: '#join',
     ctaGhost: 'How it works',
+    ctaGhostHref: '/how-it-works',
     trust: ['4.8 on Glassdoor · 200+ reviews', 'Real employment + healthcare', '97% stay 2+ years'],
     card: {
       name: 'Your profile',
@@ -377,6 +387,7 @@ export const FOR_ENGINEERS_CONTENT: ForEngineersContent = {
     videoPill: 'Snr. Front-End Engineer - Dani',
     videoLabel: 'What Cloud Employee did for me',
     videoImage: '',
+    videoUrl: '',
     // PLACEHOLDER quotes - see note above. Do not ship as real testimonials.
     quotes: [
       {
@@ -404,6 +415,7 @@ export const FOR_ENGINEERS_CONTENT: ForEngineersContent = {
     titleAccent: 'Get matched.',
     p: "Build your profile once. It takes a few minutes, it's free, and there's no obligation.",
     cta: 'Join the network',
+    ctaHref: '#join',
     trust: ['300+ teams built', '97% stay 2+ years', 'No lock-ins'],
   },
   join: JOIN_CONTENT,

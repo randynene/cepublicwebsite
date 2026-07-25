@@ -11,9 +11,9 @@ import { imageField, metaFields } from '../_shared'
 // page stays pixel-identical. The site-side transform is a blunt cast (like
 // homePage / fractionalCtoPage), so field names MUST match the content paths.
 //
-// NOT in this schema (deliberately, code-owned): the multi-step "build your
-// profile" form (JoinForm) - it is a live interactive React component and keeps
-// its copy in JOIN_CONTENT.
+// JOIN FORM: the multi-step "build your profile" form stays a React component
+// (demo submit → done state; no HubSpot yet per D2). Its copy lives in `join`
+// so Seb can edit labels/options in Studio. JOIN_CONTENT is the static fallback.
 //
 // IMAGES: 10 optional image slots (hero card, the 2 video-call stills, 3 benefit
 // photos, the testimonial video poster, 3 quote-card photos). Empty = keep the
@@ -111,7 +111,21 @@ const heroSection = defineField({
     defineField({ name: 'titleAccent', title: 'Heading (accent)', type: 'string' }),
     defineField({ name: 'sub', title: 'Sub paragraph', type: 'text', rows: 2 }),
     defineField({ name: 'ctaPrimary', title: 'Primary CTA', type: 'string' }),
+    defineField({
+      name: 'ctaPrimaryHref',
+      title: 'Primary CTA link',
+      type: 'string',
+      description: 'Path or #anchor. Default #join (scrolls to the profile form).',
+      initialValue: '#join',
+    }),
     defineField({ name: 'ctaGhost', title: 'Secondary CTA', type: 'string' }),
+    defineField({
+      name: 'ctaGhostHref',
+      title: 'Secondary CTA link',
+      type: 'string',
+      description: 'Path or #anchor. Default #how (the process section).',
+      initialValue: '#how',
+    }),
     defineField({ name: 'trust', title: 'Trust chips', ...stringArray }),
     defineField({
       name: 'card',
@@ -263,6 +277,13 @@ const testsSection = defineField({
     defineField({ name: 'videoLabel', title: 'Video label', type: 'string' }),
     imageField('videoImage', 'Video poster'),
     defineField({
+      name: 'videoUrl',
+      title: 'Video URL',
+      type: 'url',
+      description: 'YouTube / Vimeo / Loom. Leave empty to keep the decorative poster.',
+      validation: (R) => R.uri({ scheme: ['http', 'https'] }),
+    }),
+    defineField({
       name: 'quotes',
       title: 'Quote cards (placeholder copy)',
       type: 'array',
@@ -281,7 +302,101 @@ const finalSection = defineField({
     defineField({ name: 'titleAccent', title: 'Heading (accent)', type: 'string' }),
     defineField({ name: 'p', title: 'Paragraph', type: 'text', rows: 2 }),
     defineField({ name: 'cta', title: 'CTA', type: 'string' }),
+    defineField({
+      name: 'ctaHref',
+      title: 'CTA link',
+      type: 'string',
+      description: 'Path or #anchor. Default #join.',
+      initialValue: '#join',
+    }),
     defineField({ name: 'trust', title: 'Trust chips', ...stringArray }),
+  ],
+})
+
+const joinStepMember = defineArrayMember({
+  type: 'object',
+  name: 'feJoinStep',
+  fields: [
+    defineField({ name: 'label', title: 'Step label', type: 'string' }),
+    defineField({ name: 'q', title: 'Question', type: 'string' }),
+  ],
+  preview: { select: { title: 'label', subtitle: 'q' } },
+})
+
+const joinSection = defineField({
+  name: 'join',
+  title: 'Build your profile (join form)',
+  type: 'object',
+  options: { collapsible: true, collapsed: true },
+  description:
+    'Editable copy for the multi-step join form. Submit stays a demo (done state) until HubSpot wiring.',
+  fields: [
+    defineField({ name: 'eyebrow', title: 'Eyebrow', type: 'string' }),
+    defineField({ name: 'titleLead', title: 'Heading (lead)', type: 'string' }),
+    defineField({ name: 'titleAccent', title: 'Heading (accent)', type: 'string' }),
+    defineField({ name: 'lead', title: 'Lead paragraph', type: 'text', rows: 3 }),
+    defineField({ name: 'continue', title: 'Continue button', type: 'string' }),
+    defineField({ name: 'joinCta', title: 'Final join button', type: 'string' }),
+    defineField({ name: 'back', title: 'Back label', type: 'string' }),
+    defineField({ name: 'steps', title: 'Steps', type: 'array', of: [joinStepMember] }),
+    defineField({
+      name: 'fields',
+      title: 'Field labels & options',
+      type: 'object',
+      fields: [
+        defineField({ name: 'locLabel', title: 'Location label', type: 'string' }),
+        defineField({ name: 'locPlaceholder', title: 'Location placeholder', type: 'string' }),
+        defineField({ name: 'roleLabel', title: 'Role label', type: 'string' }),
+        defineField({ name: 'roleDefault', title: 'Role default', type: 'string' }),
+        defineField({ name: 'roles', title: 'Roles', ...stringArray }),
+        defineField({ name: 'yrsLabel', title: 'Years label', type: 'string' }),
+        defineField({ name: 'yrsDefault', title: 'Years default', type: 'string' }),
+        defineField({ name: 'yrs', title: 'Years options', ...stringArray }),
+        defineField({ name: 'skillsLabel', title: 'Skills label', type: 'string' }),
+        defineField({ name: 'skills', title: 'Skill chips', ...stringArray }),
+        defineField({ name: 'skillPlaceholder', title: 'Skill placeholder', type: 'string' }),
+        defineField({ name: 'skillVocab', title: 'Skill autocomplete vocab', ...stringArray }),
+        defineField({ name: 'styleLabel', title: 'Work style label', type: 'string' }),
+        defineField({ name: 'styles', title: 'Work styles', ...stringArray }),
+        defineField({ name: 'rateHelp', title: 'Rate help', type: 'text', rows: 2 }),
+        defineField({ name: 'rateLabel', title: 'Rate label', type: 'string' }),
+        defineField({ name: 'ratePlaceholder', title: 'Rate placeholder', type: 'string' }),
+        defineField({ name: 'availLabel', title: 'Availability label', type: 'string' }),
+        defineField({ name: 'availDefault', title: 'Availability default', type: 'string' }),
+        defineField({ name: 'avail', title: 'Availability options', ...stringArray }),
+        defineField({ name: 'nameLabel', title: 'Name label', type: 'string' }),
+        defineField({ name: 'namePlaceholder', title: 'Name placeholder', type: 'string' }),
+        defineField({ name: 'emailLabel', title: 'Email label', type: 'string' }),
+        defineField({ name: 'emailPlaceholder', title: 'Email placeholder', type: 'string' }),
+        defineField({ name: 'workLabel', title: 'Work link label', type: 'string' }),
+        defineField({ name: 'workHint', title: 'Work link hint', type: 'string' }),
+        defineField({ name: 'workPlaceholder', title: 'Work link placeholder', type: 'string' }),
+      ],
+    }),
+    defineField({
+      name: 'done',
+      title: 'Done state',
+      type: 'object',
+      fields: [
+        defineField({ name: 'h', title: 'Heading', type: 'string' }),
+        defineField({ name: 'p', title: 'Body', type: 'text', rows: 2 }),
+      ],
+    }),
+    defineField({
+      name: 'preview',
+      title: 'Live preview card',
+      type: 'object',
+      fields: [
+        defineField({ name: 'pl', title: 'Preview label', type: 'string' }),
+        defineField({ name: 'name', title: 'Default name', type: 'string' }),
+        defineField({ name: 'role', title: 'Default role', type: 'string' }),
+        defineField({ name: 'tagsEmpty', title: 'Empty tags', type: 'string' }),
+        defineField({ name: 'label', title: 'How you work label', type: 'string' }),
+        defineField({ name: 'rateEmpty', title: 'Empty rate', type: 'string' }),
+        defineField({ name: 'rateSub', title: 'Rate subtitle', type: 'string' }),
+        defineField({ name: 'foot', title: 'Footer stats', type: 'array', of: [footMember] }),
+      ],
+    }),
   ],
 })
 
@@ -313,6 +428,7 @@ export default defineType({
       benefitsSection,
       missionSection,
       testsSection,
+      joinSection,
       finalSection,
     ].map((f) => ({ ...f, group: 'content' })),
   ],

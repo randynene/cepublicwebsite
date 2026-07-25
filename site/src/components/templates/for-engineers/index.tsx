@@ -18,6 +18,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 
+import { parseVideoUrl } from '@/components/ui/video-embed'
 import type { Locale } from '@/lib/locale'
 
 import { FOR_ENGINEERS_CONTENT, GLYPH, type ForEngineersContent } from './content'
@@ -25,6 +26,33 @@ import { FE2_POST_HTML, FE2_PRE_HTML } from './fe2-body'
 import { FE2_TOKENS_CSS } from './fe2-css'
 import { hydrateFe2 } from './fe2-hydrate'
 import { FE2_UI_CSS } from './fe2-styles'
+
+const VIDEO_POSTER_CLASS = 'fig-asset-8f1066200d444094-72cc5769'
+
+function fe2EmbedSrc(parsed: NonNullable<ReturnType<typeof parseVideoUrl>>): string {
+  if (parsed.provider === 'youtube') {
+    return `https://www.youtube-nocookie.com/embed/${parsed.id}?autoplay=1&rel=0`
+  }
+  if (parsed.provider === 'vimeo') {
+    return `https://player.vimeo.com/video/${parsed.id}?autoplay=1`
+  }
+  if (parsed.provider === 'linkedin') {
+    return `https://www.linkedin.com/embed/feed/update/urn:li:share:${parsed.id}`
+  }
+  return `https://www.loom.com/embed/${parsed.id}?autoplay=1`
+}
+
+/** Navigate or smooth-scroll for Studio-owned CTA hrefs (#join, /path, https://…). */
+function followCtaHref(href: string, reduce: boolean) {
+  const target = href.trim()
+  if (!target) return
+  if (target.startsWith('#')) {
+    const id = target.slice(1)
+    document.getElementById(id)?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+    return
+  }
+  window.location.assign(target)
+}
 
 // --- Icons (SVG path data are props; the lint rule ignores props) ---
 const V = '0 0 24 24'
@@ -385,10 +413,52 @@ export function ForEngineersTemplate({
       spot.addEventListener('mousemove', onMove)
     }
 
-    // ---- pill CTAs scroll to the form ----
+    // ---- pill CTAs follow Studio-owned hrefs (default #join / /how-it-works) ----
+    const primaryHref = content.hero.ctaPrimaryHref || '#join'
+    const ghostHref = content.hero.ctaGhostHref || '/how-it-works'
+    const finalHref = content.final.ctaHref || '#join'
     const ctas = [...root.querySelectorAll<HTMLElement>('[data-fe2-cta]')]
-    const onCta = () => document.getElementById('join')?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
-    ctas.forEach((el) => el.addEventListener('click', onCta))
+    // First data-fe2-cta = hero primary; last = final CTA (frozen HTML order).
+    const onPrimary = () => followCtaHref(primaryHref, reduce)
+    const onFinal = () => followCtaHref(finalHref, reduce)
+    const heroPrimary = ctas[0]
+    const finalCta = ctas.length > 1 ? ctas[ctas.length - 1] : null
+    heroPrimary?.addEventListener('click', onPrimary)
+    if (finalCta && finalCta !== heroPrimary) finalCta.addEventListener('click', onFinal)
+
+    // Ghost CTA is the sibling flex row after the hero primary (no data attr in export).
+    const ghostEl = heroPrimary?.nextElementSibling as HTMLElement | null
+    const onGhost = () => followCtaHref(ghostHref, reduce)
+    if (ghostEl) {
+      ghostEl.style.cursor = 'pointer'
+      ghostEl.setAttribute('role', 'link')
+      ghostEl.addEventListener('click', onGhost)
+    }
+
+    // ---- testimonial video: play real embed when tests.videoUrl is set ----
+    const videoUrl = (content.tests.videoUrl || '').trim()
+    const parsedVideo = videoUrl ? parseVideoUrl(videoUrl) : null
+    const poster = root.querySelector<HTMLElement>(`.${VIDEO_POSTER_CLASS}`)
+    // Climb to the rounded video tile that holds the poster + play chrome.
+    const videoTile = poster?.closest<HTMLElement>('div[style*="border-radius:16px"]') ?? poster?.parentElement
+    let onVideo: (() => void) | null = null
+    if (videoTile && parsedVideo) {
+      videoTile.style.cursor = 'pointer'
+      onVideo = () => {
+        if (videoTile.querySelector('iframe')) return
+        const iframe = document.createElement('iframe')
+        iframe.src = fe2EmbedSrc(parsedVideo)
+        iframe.title = content.tests.videoLabel || 'Engineer testimonial'
+        iframe.allow =
+          'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
+        iframe.allowFullscreen = true
+        iframe.style.cssText =
+          'position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:16px;z-index:5'
+        videoTile.style.position = 'relative'
+        videoTile.appendChild(iframe)
+      }
+      videoTile.addEventListener('click', onVideo)
+    }
 
     // ---- responsive scaler: pixel-match at 1920, scale down below ----
     // Uses CSS `zoom` (not `transform: scale`): zoom shrinks the real layout box,
@@ -417,10 +487,19 @@ export function ForEngineersTemplate({
         spot.removeEventListener('mouseleave', onLeave)
         spot.removeEventListener('mousemove', onMove)
       }
-      ctas.forEach((el) => el.removeEventListener('click', onCta))
+      heroPrimary?.removeEventListener('click', onPrimary)
+      if (finalCta && finalCta !== heroPrimary) finalCta.removeEventListener('click', onFinal)
+      ghostEl?.removeEventListener('click', onGhost)
+      if (videoTile && onVideo) videoTile.removeEventListener('click', onVideo)
       window.removeEventListener('resize', fit)
     }
-  }, [])
+  }, [
+    content.hero.ctaPrimaryHref,
+    content.hero.ctaGhostHref,
+    content.final.ctaHref,
+    content.tests.videoUrl,
+    content.tests.videoLabel,
+  ])
 
   return (
     <main id="main" className="fe2" ref={mainRef}>

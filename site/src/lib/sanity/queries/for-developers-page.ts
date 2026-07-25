@@ -4,7 +4,12 @@ import { stegaClean } from '@sanity/client/stega'
 import { z } from 'zod'
 
 import { sanityFetch } from '@/lib/sanity/live'
-import { FOR_ENGINEERS_CONTENT, JOIN_CONTENT, type ForEngineersContent } from '@/components/templates/for-engineers/content'
+import {
+  FOR_ENGINEERS_CONTENT,
+  JOIN_CONTENT,
+  type FeJoin,
+  type ForEngineersContent,
+} from '@/components/templates/for-engineers/content'
 
 // forDevelopersPage singleton fetch (routes /for-developers + /uk).
 //
@@ -12,9 +17,9 @@ import { FOR_ENGINEERS_CONTENT, JOIN_CONTENT, type ForEngineersContent } from '@
 // object; every image URL is embedded into a CSS background-image value, so the
 // 10 image slots are projected as plain asset URLs and stega-cleaned in the
 // transform (stega characters would corrupt a url("...") value). Editable text
-// keeps its stega encoding so Presentation click-to-edit works. The multi-step
-// form (join) is code-owned and always spliced from JOIN_CONTENT. page.tsx falls
-// back to the static FOR_ENGINEERS_CONTENT when the doc is null.
+// keeps its stega encoding so Presentation click-to-edit works. Join-form copy
+// comes from Sanity when seeded (JOIN_CONTENT fallback). page.tsx falls back to
+// the static FOR_ENGINEERS_CONTENT when the doc is null.
 
 const FOR_DEVELOPERS_QUERY = /* groq */ `
 *[_id == "forDevelopersPage"][0]{
@@ -23,7 +28,7 @@ const FOR_DEVELOPERS_QUERY = /* groq */ `
   metaTitle,
   metaDescription,
   hero{
-    eyebrow, titleLead, titleAccent, sub, ctaPrimary, ctaGhost, trust,
+    eyebrow, titleLead, titleAccent, sub, ctaPrimary, ctaPrimaryHref, ctaGhost, ctaGhostHref, trust,
     card{ name, role, matched, workLabel, tags, foot[]{ n, l }, "image": image.asset->url }
   },
   problem{
@@ -46,10 +51,24 @@ const FOR_DEVELOPERS_QUERY = /* groq */ `
   },
   mission{ eyebrow, titleLead, titleAccent, p },
   tests{
-    eyebrow, titleLead, titleAccent, videoPill, videoLabel, "videoImage": videoImage.asset->url,
+    eyebrow, titleLead, titleAccent, videoPill, videoLabel, videoUrl, "videoImage": videoImage.asset->url,
     quotes[]{ name, role, quote, "image": image.asset->url }
   },
-  final{ titleLead, titleAccent, p, cta, trust }
+  join{
+    eyebrow, titleLead, titleAccent, lead, continue, joinCta, back,
+    steps[]{ label, q },
+    fields{
+      locLabel, locPlaceholder, roleLabel, roleDefault, roles,
+      yrsLabel, yrsDefault, yrs, skillsLabel, skills, skillPlaceholder, skillVocab,
+      styleLabel, styles, rateHelp, rateLabel, ratePlaceholder,
+      availLabel, availDefault, avail,
+      nameLabel, namePlaceholder, emailLabel, emailPlaceholder,
+      workLabel, workHint, workPlaceholder
+    },
+    done{ h, p },
+    preview{ pl, name, role, tagsEmpty, label, rateEmpty, rateSub, foot[]{ n, l } }
+  },
+  final{ titleLead, titleAccent, p, cta, ctaHref, trust }
 }
 `
 
@@ -69,7 +88,9 @@ export const ForDevelopersPageSchema = z.object({
       titleAccent: nzs,
       sub: nzs,
       ctaPrimary: nzs,
+      ctaPrimaryHref: nzs,
       ctaGhost: nzs,
+      ctaGhostHref: nzs,
       trust: zStrArr,
       card: z
         .object({
@@ -165,6 +186,7 @@ export const ForDevelopersPageSchema = z.object({
       titleAccent: nzs,
       videoPill: nzs,
       videoLabel: nzs,
+      videoUrl: nzs,
       videoImage: nzs,
       quotes: z
         .array(z.object({ name: nzs, role: nzs, quote: nzs, image: nzs }))
@@ -173,8 +195,67 @@ export const ForDevelopersPageSchema = z.object({
     })
     .nullable()
     .optional(),
+  join: z
+    .object({
+      eyebrow: nzs,
+      titleLead: nzs,
+      titleAccent: nzs,
+      lead: nzs,
+      continue: nzs,
+      joinCta: nzs,
+      back: nzs,
+      steps: z.array(z.object({ label: nzs, q: nzs })).nullable().optional(),
+      fields: z
+        .object({
+          locLabel: nzs,
+          locPlaceholder: nzs,
+          roleLabel: nzs,
+          roleDefault: nzs,
+          roles: zStrArr,
+          yrsLabel: nzs,
+          yrsDefault: nzs,
+          yrs: zStrArr,
+          skillsLabel: nzs,
+          skills: zStrArr,
+          skillPlaceholder: nzs,
+          skillVocab: zStrArr,
+          styleLabel: nzs,
+          styles: zStrArr,
+          rateHelp: nzs,
+          rateLabel: nzs,
+          ratePlaceholder: nzs,
+          availLabel: nzs,
+          availDefault: nzs,
+          avail: zStrArr,
+          nameLabel: nzs,
+          namePlaceholder: nzs,
+          emailLabel: nzs,
+          emailPlaceholder: nzs,
+          workLabel: nzs,
+          workHint: nzs,
+          workPlaceholder: nzs,
+        })
+        .nullable()
+        .optional(),
+      done: z.object({ h: nzs, p: nzs }).nullable().optional(),
+      preview: z
+        .object({
+          pl: nzs,
+          name: nzs,
+          role: nzs,
+          tagsEmpty: nzs,
+          label: nzs,
+          rateEmpty: nzs,
+          rateSub: nzs,
+          foot: z.array(z.object({ n: nzs, l: nzs })).nullable().optional(),
+        })
+        .nullable()
+        .optional(),
+    })
+    .nullable()
+    .optional(),
   final: z
-    .object({ titleLead: nzs, titleAccent: nzs, p: nzs, cta: nzs, trust: zStrArr })
+    .object({ titleLead: nzs, titleAccent: nzs, p: nzs, cta: nzs, ctaHref: nzs, trust: zStrArr })
     .nullable()
     .optional(),
 })
@@ -202,16 +283,95 @@ function cleanUrl(v: string | null | undefined): string | undefined {
   return typeof v === 'string' ? stegaClean(v) : undefined
 }
 
+function strArr(v: (string | null | undefined)[] | null | undefined, fallback: readonly string[]): string[] {
+  const cleaned = (v ?? []).filter((s): s is string => typeof s === 'string' && s.length > 0)
+  return cleaned.length > 0 ? cleaned : [...fallback]
+}
+
+function mapJoin(raw: ForDevelopersPageData['join']): FeJoin {
+  if (!raw?.fields || !raw.steps || raw.steps.length === 0) return JOIN_CONTENT
+  const f = raw.fields
+  const steps = raw.steps
+    .filter((s): s is { label: string; q: string } => Boolean(s?.label && s?.q))
+    .map((s) => ({ label: s.label, q: s.q }))
+  if (steps.length === 0) return JOIN_CONTENT
+
+  return {
+    eyebrow: raw.eyebrow ?? JOIN_CONTENT.eyebrow,
+    titleLead: raw.titleLead ?? JOIN_CONTENT.titleLead,
+    titleAccent: raw.titleAccent ?? JOIN_CONTENT.titleAccent,
+    lead: raw.lead ?? JOIN_CONTENT.lead,
+    continue: raw.continue ?? JOIN_CONTENT.continue,
+    joinCta: raw.joinCta ?? JOIN_CONTENT.joinCta,
+    back: raw.back ?? JOIN_CONTENT.back,
+    steps: steps.length === JOIN_CONTENT.steps.length ? steps : [...JOIN_CONTENT.steps],
+    fields: {
+      locLabel: f.locLabel ?? JOIN_CONTENT.fields.locLabel,
+      locPlaceholder: f.locPlaceholder ?? JOIN_CONTENT.fields.locPlaceholder,
+      roleLabel: f.roleLabel ?? JOIN_CONTENT.fields.roleLabel,
+      roleDefault: f.roleDefault ?? JOIN_CONTENT.fields.roleDefault,
+      roles: strArr(f.roles, JOIN_CONTENT.fields.roles),
+      yrsLabel: f.yrsLabel ?? JOIN_CONTENT.fields.yrsLabel,
+      yrsDefault: f.yrsDefault ?? JOIN_CONTENT.fields.yrsDefault,
+      yrs: strArr(f.yrs, JOIN_CONTENT.fields.yrs),
+      skillsLabel: f.skillsLabel ?? JOIN_CONTENT.fields.skillsLabel,
+      skills: strArr(f.skills, JOIN_CONTENT.fields.skills),
+      skillPlaceholder: f.skillPlaceholder ?? JOIN_CONTENT.fields.skillPlaceholder,
+      skillVocab: strArr(f.skillVocab, JOIN_CONTENT.fields.skillVocab),
+      styleLabel: f.styleLabel ?? JOIN_CONTENT.fields.styleLabel,
+      styles: strArr(f.styles, JOIN_CONTENT.fields.styles),
+      rateHelp: f.rateHelp ?? JOIN_CONTENT.fields.rateHelp,
+      rateLabel: f.rateLabel ?? JOIN_CONTENT.fields.rateLabel,
+      ratePlaceholder: f.ratePlaceholder ?? JOIN_CONTENT.fields.ratePlaceholder,
+      availLabel: f.availLabel ?? JOIN_CONTENT.fields.availLabel,
+      availDefault: f.availDefault ?? JOIN_CONTENT.fields.availDefault,
+      avail: strArr(f.avail, JOIN_CONTENT.fields.avail),
+      nameLabel: f.nameLabel ?? JOIN_CONTENT.fields.nameLabel,
+      namePlaceholder: f.namePlaceholder ?? JOIN_CONTENT.fields.namePlaceholder,
+      emailLabel: f.emailLabel ?? JOIN_CONTENT.fields.emailLabel,
+      emailPlaceholder: f.emailPlaceholder ?? JOIN_CONTENT.fields.emailPlaceholder,
+      workLabel: f.workLabel ?? JOIN_CONTENT.fields.workLabel,
+      workHint: f.workHint ?? JOIN_CONTENT.fields.workHint,
+      workPlaceholder: f.workPlaceholder ?? JOIN_CONTENT.fields.workPlaceholder,
+    },
+    done: {
+      h: raw.done?.h ?? JOIN_CONTENT.done.h,
+      p: raw.done?.p ?? JOIN_CONTENT.done.p,
+    },
+    preview: {
+      pl: raw.preview?.pl ?? JOIN_CONTENT.preview.pl,
+      name: raw.preview?.name ?? JOIN_CONTENT.preview.name,
+      role: raw.preview?.role ?? JOIN_CONTENT.preview.role,
+      tagsEmpty: raw.preview?.tagsEmpty ?? JOIN_CONTENT.preview.tagsEmpty,
+      label: raw.preview?.label ?? JOIN_CONTENT.preview.label,
+      rateEmpty: raw.preview?.rateEmpty ?? JOIN_CONTENT.preview.rateEmpty,
+      rateSub: raw.preview?.rateSub ?? JOIN_CONTENT.preview.rateSub,
+      foot: (() => {
+        const foot = (raw.preview?.foot ?? [])
+          .filter((x): x is { n: string; l: string } => Boolean(x?.n && x?.l))
+          .map((x) => ({ n: x.n, l: x.l }))
+        return foot.length > 0 ? foot : [...JOIN_CONTENT.preview.foot]
+      })(),
+    },
+  } as unknown as FeJoin
+}
+
 // Cast the lenient boundary shape into the template content type. Whole sections
 // fall back to the static content when absent; image URLs are stega-cleaned (a
 // CSS url() value cannot carry stega characters); editable text keeps its stega
-// encoding for Presentation click-to-edit; the code-owned form is always static.
+// encoding for Presentation click-to-edit; join falls back to JOIN_CONTENT.
 export function toForEngineersContent(data: ForDevelopersPageData): ForEngineersContent {
   const c = data as unknown as ForEngineersContent
   const FE = FOR_ENGINEERS_CONTENT
 
   const hero: ForEngineersContent['hero'] = c.hero
-    ? { ...c.hero, card: { ...c.hero.card, image: cleanUrl(c.hero.card?.image) } }
+    ? {
+        ...FE.hero,
+        ...c.hero,
+        ctaPrimaryHref: c.hero.ctaPrimaryHref || FE.hero.ctaPrimaryHref,
+        ctaGhostHref: c.hero.ctaGhostHref || FE.hero.ctaGhostHref,
+        card: { ...FE.hero.card, ...c.hero.card, image: cleanUrl(c.hero.card?.image) },
+      }
     : FE.hero
 
   const how: ForEngineersContent['how'] = c.how
@@ -239,9 +399,18 @@ export function toForEngineersContent(data: ForDevelopersPageData): ForEngineers
     ? {
         ...c.tests,
         videoImage: cleanUrl(c.tests.videoImage),
+        videoUrl: cleanUrl(c.tests.videoUrl) || '',
         quotes: (c.tests.quotes ?? []).map((q) => ({ ...q, image: cleanUrl(q.image) })),
       }
     : FE.tests
+
+  const final: ForEngineersContent['final'] = c.final
+    ? {
+        ...FE.final,
+        ...c.final,
+        ctaHref: c.final.ctaHref || FE.final.ctaHref,
+      }
+    : FE.final
 
   return {
     hero,
@@ -250,8 +419,7 @@ export function toForEngineersContent(data: ForDevelopersPageData): ForEngineers
     benefits,
     mission: c.mission ?? FE.mission,
     tests,
-    final: c.final ?? FE.final,
-    // Code-owned interactive form - never from Sanity.
-    join: JOIN_CONTENT,
+    final,
+    join: mapJoin(data.join),
   }
 }

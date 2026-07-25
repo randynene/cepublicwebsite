@@ -2,15 +2,19 @@ import 'dotenv/config'
 
 import { sanityWriteClient } from '@/lib/content/sanity-write-client'
 
-import { FOR_ENGINEERS_CONTENT as FE, FOR_ENGINEERS_META } from '../../site/src/components/templates/for-engineers/content'
+import {
+  FOR_ENGINEERS_CONTENT as FE,
+  FOR_ENGINEERS_META,
+  JOIN_CONTENT as JC,
+} from '../../site/src/components/templates/for-engineers/content'
 
 // MYGRATR For Developers Sanity wiring - seed the forDevelopersPage singleton.
 //
 // Transcribes the template's static FOR_ENGINEERS_CONTENT 1:1 into the singleton
-// so Seb can edit every headline, card line, benefit, testimonial, and CTA in
-// Studio, and drop real photos into the 10 image slots. The page body is a
-// tokenised Figma export hydrated from this doc; field names match the content
-// paths exactly, so the site-side transform is a blunt cast.
+// so Seb can edit every headline, card line, benefit, testimonial, CTA, and
+// join-form copy in Studio, and drop real photos into the 10 image slots. The
+// page body is a tokenised Figma export hydrated from this doc; field names
+// match the content paths exactly, so the site-side transform is a blunt cast.
 //
 // IMAGE SLOTS: left EMPTY here (hero card, 2 video-call stills, 3 benefit photos,
 // the testimonial video poster, 3 quote-card photos). Empty keeps the baked Figma
@@ -18,10 +22,9 @@ import { FOR_ENGINEERS_CONTENT as FE, FOR_ENGINEERS_META } from '../../site/src/
 //
 // TESTIMONIALS: the three quotes (Kenneth / Jen / Lance) are PLACEHOLDER copy
 // carried from the frozen export - not real engineer testimonials. Seb replaces
-// them in Studio before a public relaunch.
+// them in Studio before a public relaunch. tests.videoUrl left empty for Studio.
 //
-// The interactive "build your profile" form (JoinForm) is NOT seeded - it is a
-// code-owned React component with its own copy (JOIN_CONTENT).
+// JOIN FORM: seeded from JOIN_CONTENT (D2 demo - editable copy, no HubSpot yet).
 //
 // Idempotent: deterministic array _keys + createOrReplace on _id
 // "forDevelopersPage" => clean overwrite each run.
@@ -73,7 +76,9 @@ function buildDoc() {
     titleAccent: FE.hero.titleAccent,
     sub: FE.hero.sub,
     ctaPrimary: FE.hero.ctaPrimary,
+    ctaPrimaryHref: FE.hero.ctaPrimaryHref ?? '#join',
     ctaGhost: FE.hero.ctaGhost,
+    ctaGhostHref: FE.hero.ctaGhostHref ?? '/how-it-works',
     trust: [...FE.hero.trust],
     card: {
       name: FE.hero.card.name,
@@ -159,11 +164,68 @@ function buildDoc() {
     titleAccent: FE.tests.titleAccent,
     videoPill: FE.tests.videoPill,
     videoLabel: FE.tests.videoLabel,
-    // videoImage left empty.
+    // videoImage / videoUrl left empty - Seb pastes a real URL in Studio.
     quotes: keyed(
       FE.tests.quotes.map((q) => ({ name: q.name, role: q.role, quote: q.quote })),
       'quote',
     ),
+  }
+
+  const join = {
+    eyebrow: JC.eyebrow,
+    titleLead: JC.titleLead,
+    titleAccent: JC.titleAccent,
+    lead: JC.lead,
+    continue: JC.continue,
+    joinCta: JC.joinCta,
+    back: JC.back,
+    steps: keyed(
+      JC.steps.map((s) => ({ label: s.label, q: s.q })),
+      'join-step',
+    ),
+    fields: {
+      locLabel: JC.fields.locLabel,
+      locPlaceholder: JC.fields.locPlaceholder,
+      roleLabel: JC.fields.roleLabel,
+      roleDefault: JC.fields.roleDefault,
+      roles: [...JC.fields.roles],
+      yrsLabel: JC.fields.yrsLabel,
+      yrsDefault: JC.fields.yrsDefault,
+      yrs: [...JC.fields.yrs],
+      skillsLabel: JC.fields.skillsLabel,
+      skills: [...JC.fields.skills],
+      skillPlaceholder: JC.fields.skillPlaceholder,
+      skillVocab: [...JC.fields.skillVocab],
+      styleLabel: JC.fields.styleLabel,
+      styles: [...JC.fields.styles],
+      rateHelp: JC.fields.rateHelp,
+      rateLabel: JC.fields.rateLabel,
+      ratePlaceholder: JC.fields.ratePlaceholder,
+      availLabel: JC.fields.availLabel,
+      availDefault: JC.fields.availDefault,
+      avail: [...JC.fields.avail],
+      nameLabel: JC.fields.nameLabel,
+      namePlaceholder: JC.fields.namePlaceholder,
+      emailLabel: JC.fields.emailLabel,
+      emailPlaceholder: JC.fields.emailPlaceholder,
+      workLabel: JC.fields.workLabel,
+      workHint: JC.fields.workHint,
+      workPlaceholder: JC.fields.workPlaceholder,
+    },
+    done: { h: JC.done.h, p: JC.done.p },
+    preview: {
+      pl: JC.preview.pl,
+      name: JC.preview.name,
+      role: JC.preview.role,
+      tagsEmpty: JC.preview.tagsEmpty,
+      label: JC.preview.label,
+      rateEmpty: JC.preview.rateEmpty,
+      rateSub: JC.preview.rateSub,
+      foot: keyed(
+        JC.preview.foot.map((f) => ({ n: f.n, l: f.l })),
+        'join-foot',
+      ),
+    },
   }
 
   const final = {
@@ -171,6 +233,7 @@ function buildDoc() {
     titleAccent: FE.final.titleAccent,
     p: FE.final.p,
     cta: FE.final.cta,
+    ctaHref: FE.final.ctaHref ?? '#join',
     trust: [...FE.final.trust],
   }
 
@@ -186,6 +249,7 @@ function buildDoc() {
     benefits,
     mission,
     tests,
+    join,
     final,
   }
 
