@@ -35,7 +35,9 @@ type Target = {
 // no prose), so it uses the HUB_CONFIG machinery instead. Capturing it as a static
 // page produced an empty page, which is what surfaced the mistake.
 const TARGETS: Target[] = [
-  { key: 'about-us', id: 'aboutUsPage', path: '/about-us' },
+  // 'about-us' removed 25 Jul 2026 (WP-04): aboutUsPage is now a BESPOKE singleton
+  // wired to the /about-us template (seed-about-us-page.ts). Re-running generic
+  // capture would clobber team/values/reviews chrome with flat rich-text sections.
   { key: 'contact', id: 'contactPage', path: '/contact' },
   { key: 'for-developers', id: 'forDevelopersPage', path: '/for-developers' },
   { key: 'work-with-shawnee', id: 'workWithShawneePage', path: '/work-with-shawnee' },

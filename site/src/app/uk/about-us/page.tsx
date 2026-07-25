@@ -1,21 +1,26 @@
 import type { Metadata } from 'next'
 
-import {
-  buildStaticPageMetadata,
-  renderStaticPage,
-} from '@/lib/static-page/render-route'
+import { AboutUsTemplate } from '@/components/templates/about-us'
+import { ABOUT_US_CONTENT, ABOUT_US_META } from '@/components/templates/about-us/content'
+import { generateCanonical, generateHreflang } from '@/lib/locale'
+import { fetchAboutUsPage, toAboutUsContent } from '@/lib/sanity/queries/about-us-page'
 
-// /about-us (UK locale)
-//
-// Content captured from the live page into the aboutUsPage singleton
-// (npm run content:capture-marketing). Rendered through the shared static-page
-// template until this page's design lands, at which point it is a template change
-// and not another content migration.
+// /uk/about-us — same aboutUsPage singleton; team grid respects ukOnly.
 
 export async function generateMetadata(): Promise<Metadata> {
-  return buildStaticPageMetadata('aboutUsPage', '/about-us', 'en-GB')
+  const data = await fetchAboutUsPage()
+  return {
+    title: { absolute: data?.metaTitle ?? ABOUT_US_META.title },
+    description: data?.metaDescription ?? ABOUT_US_META.description,
+    alternates: {
+      canonical: generateCanonical('/about-us', 'en-GB'),
+      languages: generateHreflang('/about-us'),
+    },
+  }
 }
 
 export default async function AboutUsUkPage() {
-  return renderStaticPage('aboutUsPage', '/about-us', 'en-GB', 'About Us')
+  const data = await fetchAboutUsPage()
+  const content = data ? toAboutUsContent(data) : ABOUT_US_CONTENT
+  return <AboutUsTemplate locale="en-GB" content={content} />
 }

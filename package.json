@@ -90,6 +90,8 @@
     "static:seed-how-it-works-page": "tsx scripts/static/seed-how-it-works-page.ts",
     "static:seed-pricing-page": "tsx scripts/static/seed-pricing-page.ts",
     "static:seed-for-developers-page": "tsx scripts/static/seed-for-developers-page.ts",
+    "static:seed-about-us-page": "tsx scripts/static/seed-about-us-page.ts",
+    "static:patch-nav-restore-about-us": "tsx scripts/static/patch-nav-restore-about-us.ts",
     "static:verify-fe2-parity": "tsx scripts/static/verify-fe2-parity.ts",
     "content:capture-hubs": "tsx scripts/content/capture-hub-content.ts",
     "content:verify-hubs": "tsx scripts/content/verify-hub-capture.ts",

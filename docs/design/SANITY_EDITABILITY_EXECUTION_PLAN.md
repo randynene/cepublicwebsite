@@ -1,6 +1,6 @@
 # Sanity editability — consolidated execution plan
 
-**Status:** Executing — WP-01/02 merged (#22); WP-03 (this PR)
+**Status:** Executing — WP-01/02/03 merged (#22, #23); WP-04 (this PR)
 **Date:** 2026-07-25  
 **Goal:** Seb can edit *everything meaningful* on the main marketing pages via Sanity Studio → Publish → staging updates.  
 **Source of truth site:** https://staging.jakevibes.dev  
@@ -113,13 +113,13 @@ Jake to confirm once; defaults in **bold**:
 **Problem:** Provisional `StaticPageTemplate` only renders rich text + HubSpot form. Live needs team grid, values, reviews, trusted-by, stats, founder image, mid CTA. `teamMember` / `benefitValue` / `review` docs exist but aren’t mounted.
 
 **Do**
-- [ ] Confirm D3
-- [ ] Extend `aboutUsPage` schema (or bespoke template) for: trusted-by, stats, founder image, team grid source, values grid, reviews, mid CTA
-- [ ] Mount `teamMember` (respect `hideFromTeamAboutPage`), `benefitValue` (values), `review` docs
-- [ ] Extend static/bespoke renderer so structured sections actually render (today non-richText types return null)
-- [ ] Add About Us to primary nav if missing
-- [ ] Capture/seed missing content from live where needed
-- [ ] Full page Presentation smoke
+- [x] Confirm D3 — **match live structure** with Our Work–style bespoke template
+- [x] Extend `aboutUsPage` schema (or bespoke template) for: trusted-by, stats, founder image, team grid source, values grid, reviews, mid CTA
+- [x] Mount `teamMember` (respect `hideFromTeamAboutPage`), `benefitValue` (values), `review` docs
+- [x] Extend static/bespoke renderer so structured sections actually render (today non-richText types return null) — replaced routes with bespoke template
+- [x] Add About Us to primary nav if missing — `npm run static:patch-nav-restore-about-us`
+- [x] Capture/seed missing content from live where needed — `npm run static:seed-about-us-page` (chrome copy; grids from docs)
+- [ ] Full page Presentation smoke — **needs Studio deploy + seed after merge**
 
 ---
 
