@@ -780,7 +780,10 @@ would drop pages Google currently ranks during the migration.
     → Book a call for real shortlist.
   - **Claude Design feed (sitewide placement + kit):**  
     **`docs/design/LEAD_CONVERSION_SYSTEM_UX.md`**  
-    Pricing deep dive/audit: `docs/design/PRICING_LEAD_CONVERSION_UX.md`.
+    Pricing deep dive/audit: `docs/design/PRICING_LEAD_CONVERSION_UX.md`.  
+  - **Execution handoff (new chat):**  
+    **`docs/design/LEAD_CONVERSION_EXECUTION_PLAN.md`** — page matrix, phases A–F,
+    copy-paste starter prompt.
   - AI chat brain lives in Jake’s separate app/DB; site embeds it. Until ready, same
     shell can run scripted questions with the same side brief.
 

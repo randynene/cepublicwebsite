@@ -3,7 +3,8 @@
 > **Feed this whole file into Claude Design.**  
 > Owner: Jake. Status: **Simplified — locked 26 Jul 2026.**  
 > Roadmap: D7 + D8 in `docs/ROADMAP_TO_COMPLETION.md`.  
-> Pricing-module deep dive: `docs/design/PRICING_LEAD_CONVERSION_UX.md`.
+> Pricing-module deep dive: `docs/design/PRICING_LEAD_CONVERSION_UX.md`.  
+> **Execution plan / new-chat handoff:** `docs/design/LEAD_CONVERSION_EXECUTION_PLAN.md`.
 
 ---
 
