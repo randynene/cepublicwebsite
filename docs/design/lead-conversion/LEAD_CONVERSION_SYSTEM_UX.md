@@ -3,8 +3,8 @@
 > **Feed this whole file into Claude Design.**  
 > Owner: Jake. Status: **Simplified - locked 26 Jul 2026.**
 > Roadmap: D7 + D8 in `docs/ROADMAP_TO_COMPLETION.md`.  
-> Pricing-module deep dive: `docs/design/PRICING_LEAD_CONVERSION_UX.md`.  
-> **Execution plan / new-chat handoff:** `docs/design/LEAD_CONVERSION_EXECUTION_PLAN.md`.
+> Pricing-module deep dive: `docs/design/lead-conversion/PRICING_LEAD_CONVERSION_UX.md`.
+> **Execution plan / new-chat handoff:** `docs/design/lead-conversion/LEAD_CONVERSION_EXECUTION_PLAN.md`.
 
 ---
 
@@ -59,7 +59,7 @@ The existing `galaxyfunk/clara-chatbot` product has been audited.
 - Design M1 so a plain `/book-a-call` fallback still works if Calendly JavaScript fails.
 
 The complete architecture decision and technical gates live in
-`docs/design/LEAD_CONVERSION_EXECUTION_PLAN.md` §1a.
+`docs/design/lead-conversion/LEAD_CONVERSION_EXECUTION_PLAN.md` §1a.
 
 ---
 

@@ -8,9 +8,9 @@
 | Doc | Use for |
 |---|---|
 | **This file** | Execution plan - what to place where, in what order, done checks |
-| `docs/design/LEAD_CONVERSION_SYSTEM_UX.md` | **Feed into Claude Design** (visual scope + frames) |
-| `docs/design/PRICING_LEAD_CONVERSION_UX.md` | Pricing M2 deep dive (questions, audit, metrics) |
-| `docs/design/LEAD_CONVERSION_AUDIT_2026-07-26.md` | Independent audit findings, corrections, and remaining gates |
+| `docs/design/lead-conversion/LEAD_CONVERSION_SYSTEM_UX.md` | **Feed into Claude Design** (visual scope + frames) |
+| `docs/design/lead-conversion/PRICING_LEAD_CONVERSION_UX.md` | Pricing M2 deep dive (questions, audit, metrics) |
+| `docs/design/lead-conversion/LEAD_CONVERSION_AUDIT_2026-07-26.md` | Independent audit findings, corrections, and remaining gates |
 | `docs/ROADMAP_TO_COMPLETION.md` | Master launch roadmap (D7 + D8) |
 
 ---
@@ -252,15 +252,15 @@ Still required before DNS flip - see roadmap Phase 7.9:
 
 ```
 Continue Cloud Employee lead conversion execution from:
-docs/design/LEAD_CONVERSION_EXECUTION_PLAN.md
+docs/design/lead-conversion/LEAD_CONVERSION_EXECUTION_PLAN.md
 
 Locked model: M1 Schedule a Call sitewide; M2 chat+brief at interest spikes
 (Pricing first); M4 helper later; M3 start-hiring keep-alive only (no new links).
 Clara decision: CE owns the M2/M4 UI. Clara may be extended as a headless
 backend only after the gates in §1a; do not embed Clara widget.js as M2.
 
-Design brief for Claude Design: docs/design/LEAD_CONVERSION_SYSTEM_UX.md
-Pricing deep dive: docs/design/PRICING_LEAD_CONVERSION_UX.md
+Design brief for Claude Design: docs/design/lead-conversion/LEAD_CONVERSION_SYSTEM_UX.md
+Pricing deep dive: docs/design/lead-conversion/PRICING_LEAD_CONVERSION_UX.md
 Roadmap decisions D7/D8: docs/ROADMAP_TO_COMPLETION.md
 
 Next: [pick one - Phase A design review / Phase B V1 Pricing CTA + Locations hero / Phase C M2 shell]

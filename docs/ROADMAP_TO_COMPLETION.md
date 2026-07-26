@@ -763,7 +763,7 @@ indexed and parity holds; redesign later. They are NOT hidden/noindexed, because
 would drop pages Google currently ranks during the migration.
 
 - **D7 - Lead capture / intent system. CONFIRMED + SIMPLIFIED (26 Jul).**
-  Necessary doors only — see `docs/design/LEAD_CONVERSION_SYSTEM_UX.md`:
+  Necessary doors only — see `docs/design/lead-conversion/LEAD_CONVERSION_SYSTEM_UX.md`:
   - **M1 Schedule a Call** = primary door sitewide
   - **M2 Chat + living brief** = warm path at interest spikes only (Pricing first)
   - **M4 Helper chat** = CE-owned helper later (Clara headless if gates pass)
@@ -782,10 +782,10 @@ would drop pages Google currently ranks during the migration.
     shortlist-style cards (labelled examples)
     → Book a call for real shortlist.
   - **Claude Design feed (sitewide placement + kit):**  
-    **`docs/design/LEAD_CONVERSION_SYSTEM_UX.md`**  
-    Pricing deep dive/audit: `docs/design/PRICING_LEAD_CONVERSION_UX.md`.  
+    **`docs/design/lead-conversion/LEAD_CONVERSION_SYSTEM_UX.md`**
+    Pricing deep dive/audit: `docs/design/lead-conversion/PRICING_LEAD_CONVERSION_UX.md`.
   - **Execution handoff (new chat):**  
-    **`docs/design/LEAD_CONVERSION_EXECUTION_PLAN.md`** — page matrix, phases A–F,
+    **`docs/design/lead-conversion/LEAD_CONVERSION_EXECUTION_PLAN.md`** — page matrix, phases A–F,
     copy-paste starter prompt.
   - The CE site owns the M2 UI shell. Until a backend is ready, the shell can run
     clearly-labelled guided questions with the same side brief.
@@ -797,7 +797,7 @@ would drop pages Google currently ranks during the migration.
   Clara as a headless backend after adding structured brief I/O, signed sessions,
   durable rate limiting, staging CORS, webhook verification, privacy/retention, and
   accessibility gates. Remove the legacy Clara launcher before M4 ships so two chat
-  widgets never compete. Full decision: `docs/design/LEAD_CONVERSION_EXECUTION_PLAN.md` §1a.
+  widgets never compete. Full decision: `docs/design/lead-conversion/LEAD_CONVERSION_EXECUTION_PLAN.md` §1a.
 
 ### 8a. Utopia conversion loop (what “lots of leads” looks like)
 
@@ -819,8 +819,8 @@ HubSpot + human match → 2 real profiles
 ```
 
 Sitewide placement map + Claude Design frame list:
-`docs/design/LEAD_CONVERSION_SYSTEM_UX.md`.  
-Pricing audit / questions / metrics: `docs/design/PRICING_LEAD_CONVERSION_UX.md`.
+`docs/design/lead-conversion/LEAD_CONVERSION_SYSTEM_UX.md`.
+Pricing audit / questions / metrics: `docs/design/lead-conversion/PRICING_LEAD_CONVERSION_UX.md`.
 
 **Rules that protect conversion:**
 1. Never fake that chat/calculator matched real people.

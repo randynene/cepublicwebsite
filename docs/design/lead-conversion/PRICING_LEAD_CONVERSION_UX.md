@@ -4,7 +4,7 @@
 > Related roadmap decisions: D7 (intent lanes), D8 (Pricing conversion) in
 > `docs/ROADMAP_TO_COMPLETION.md`.  
 > **Parent brief (feed this into Claude Design for sitewide placement):**  
-> `docs/design/LEAD_CONVERSION_SYSTEM_UX.md`  
+> `docs/design/lead-conversion/LEAD_CONVERSION_SYSTEM_UX.md`
 > This file is the **Pricing hero module** deep dive (audit, questions, metrics).
 
 ---
