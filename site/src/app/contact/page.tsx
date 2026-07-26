@@ -1,21 +1,28 @@
 import type { Metadata } from 'next'
 
-import {
-  buildStaticPageMetadata,
-  renderStaticPage,
-} from '@/lib/static-page/render-route'
+import { ContactTemplate } from '@/components/templates/contact'
+import { CONTACT_CONTENT, CONTACT_META } from '@/components/templates/contact/content'
+import { generateCanonical, generateHreflang } from '@/lib/locale'
+import { fetchContactPage, toContactContent } from '@/lib/sanity/queries/contact-page'
 
-// /contact
-//
-// Content captured from the live page into the contactPage singleton
-// (npm run content:capture-marketing). Rendered through the shared static-page
-// template until this page's design lands, at which point it is a template change
-// and not another content migration.
+// /contact — bespoke Contact page (WP-05). Hero prose, quick-contact strip,
+// the real HubSpot enquiry form, and the offices grid all come from the
+// contactPage singleton with a static fallback.
 
 export async function generateMetadata(): Promise<Metadata> {
-  return buildStaticPageMetadata('contactPage', '/contact', 'en-US')
+  const data = await fetchContactPage()
+  return {
+    title: { absolute: data?.metaTitle ?? CONTACT_META.title },
+    description: data?.metaDescription ?? CONTACT_META.description,
+    alternates: {
+      canonical: generateCanonical('/contact', 'en-US'),
+      languages: generateHreflang('/contact'),
+    },
+  }
 }
 
 export default async function ContactPage() {
-  return renderStaticPage('contactPage', '/contact', 'en-US', 'Contact')
+  const data = await fetchContactPage()
+  const content = data ? toContactContent(data) : CONTACT_CONTENT
+  return <ContactTemplate locale="en-US" content={content} />
 }

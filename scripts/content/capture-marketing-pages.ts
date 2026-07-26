@@ -38,7 +38,10 @@ const TARGETS: Target[] = [
   // 'about-us' removed 25 Jul 2026 (WP-04): aboutUsPage is now a BESPOKE singleton
   // wired to the /about-us template (seed-about-us-page.ts). Re-running generic
   // capture would clobber team/values/reviews chrome with flat rich-text sections.
-  { key: 'contact', id: 'contactPage', path: '/contact' },
+  // 'contact' removed 25 Jul 2026 (WP-05): contactPage is now a BESPOKE singleton
+  // wired to the /contact template (seed-contact-page.ts). The generic capture
+  // reads prose only, so re-running it would flatten the offices grid and the
+  // quick-contact strip into rich text and drop the HubSpot form id.
   { key: 'for-developers', id: 'forDevelopersPage', path: '/for-developers' },
   { key: 'work-with-shawnee', id: 'workWithShawneePage', path: '/work-with-shawnee' },
   // 'our-work' removed 23 Jul 2026: ourWorkPage is now a BESPOKE singleton wired to

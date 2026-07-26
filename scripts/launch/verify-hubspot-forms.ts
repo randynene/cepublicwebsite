@@ -69,6 +69,15 @@ async function collectUsedForms(): Promise<Used[]> {
   )
   if (newsletter) used.push({ id: newsletter, where: 'footer newsletter' })
 
+  // /contact (WP-05). Same trap as the footer newsletter: the live Webflow page
+  // posts through hubspotonwebflow.com, so the GUID in the live markup belongs
+  // to the bridge and 404s against HubSpot. This asserts the id in Sanity is the
+  // real form, not the bridge's.
+  const contact = await sanityWriteClient.fetch<string | null>(
+    `*[_id == "contactPage"][0].form.hubspotFormId`,
+  )
+  if (contact) used.push({ id: contact, where: '/contact' })
+
   return used
 }
 

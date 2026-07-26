@@ -1,6 +1,6 @@
 # Sanity editability — consolidated execution plan
 
-**Status:** Executing — WP-01/02/03 merged (#22, #23); WP-04 (this PR)
+**Status:** Executing — WP-01/02 (#22), WP-03 (#23), WP-04 (#24) merged; WP-05 (this PR)
 **Date:** 2026-07-25  
 **Goal:** Seb can edit *everything meaningful* on the main marketing pages via Sanity Studio → Publish → staging updates.  
 **Source of truth site:** https://staging.jakevibes.dev  
@@ -57,7 +57,7 @@ Jake to confirm once; defaults in **bold**:
 | D1 | Location / Hire Engineers / Pricing **calculator maths** (rates, multipliers) — keep in code or move to Sanity? | **Keep maths in code**; wire editable *labels* + optional override tables only if Seb needs them |
 | D2 | Interactive stubs (Home ready-to-find, HIW matcher, FCTO/HE “find/match” forms) — make real HubSpot/Calendly flows, or keep as visual demos with editable copy only? | **Editable copy + real CTA destinations**; full multi-step CRM later unless Jake says otherwise |
 | D3 | About Us — rebuild to match live Webflow fidelity (team grid, values, reviews), or new simplified design? | **Match live structure** (team grid + values + reviews) using existing `teamMember` / `benefitValue` / `review` docs |
-| D4 | Contact form — resolve real HubSpot form GUID + seed, or temporary Calendly-only CTA? | **Resolve real form GUID + seed `hubspotFormSection`** |
+| D4 | Contact form — resolve real HubSpot form GUID + seed, or temporary Calendly-only CTA? | **Resolve real form GUID + seed.** RESOLVED in WP-05: `4b883c7d-72c1-4f9c-8196-de68fce303d6`, seeded on the bespoke `contactPage` rather than a generic `hubspotFormSection` |
 | D5 | Decorative icons / glyphs / stega-safe layout offsets — leave hardcoded? | **Yes, leave hardcoded** unless Jake wants icon pickers |
 
 ---
@@ -128,14 +128,29 @@ Jake to confirm once; defaults in **bold**:
 **Problem:** No `hubspotFormSection` seeded; live form is Webflow→HubSpot bridge (GUID not native). Calendly URL null; phones/emails/chat hours missing; offices flattened.
 
 **Do**
-- [ ] Confirm D4
-- [ ] Resolve real HubSpot form GUID for contact
-- [ ] Seed `hubspotFormSection` on `contactPage`
-- [ ] Ensure `NEXT_PUBLIC_HUBSPOT_PORTAL_ID` set on Vercel (match `siteSettings.hubspotPortalId` = `22809822`)
-- [ ] Seed `calendlyUrl` (live intro-call URL) + decide popup vs inline UX
-- [ ] Schema/fields for phones, emails, chat hours, structured offices
-- [ ] Extend `launch:verify-hubspot-forms` to include contact
-- [ ] Smoke: form submit + Calendly
+- [x] Confirm D4 — **real form**, resolved and wired
+- [x] Resolve real HubSpot form GUID for contact — `4b883c7d-72c1-4f9c-8196-de68fce303d6` ("Contact Request (via cloudemployee.io/contact)"). The GUID in the live markup (`fb70845a-…`) is the hubspotonwebflow.com **bridge** id and 404s against HubSpot, exactly like the footer newsletter did. Found by listing the portal's forms over the HubSpot API; its field set (message1 / firstname / lastname / email / how_did_you_hear_about_us_) matches the live form one-for-one.
+- [x] Seed the form id on `contactPage` — `form.hubspotFormId` on the new bespoke singleton (not a generic `hubspotFormSection`, since Contact is now bespoke like About Us)
+- [x] `NEXT_PUBLIC_HUBSPOT_PORTAL_ID` present in `site/.env.local`. **Vercel not verifiable from here** (repo is not `vercel link`ed) — Jake to confirm on Production + Preview
+- [x] Seed `calendlyUrl` + decide popup vs inline — **popup**, matching live. New `CalendlyPopupButton`; falls back to a real link if `widget.js` never loads
+- [x] Schema/fields for phones, emails, chat hours, structured offices — `contactStrip.links[]` (kind/label/value) + `contactStrip.note` + `offices.items[]` (name/address/phone/email)
+- [x] Extend `launch:verify-hubspot-forms` to include contact
+- [x] Smoke: local prod build, `/contact` 200, HubSpot form mounts, Calendly overlay opens on click
+- [ ] Seed + Studio deploy + Presentation smoke — **Jake runs after merge** (see commands below)
+
+**Files:** `studio/schemas/singletons/contact-page.ts`, `studio/sanity.config.ts` (Presentation location), `src/types/sanity/singletons/contact-page.ts`, `site/src/lib/sanity/queries/contact-page.ts`, `site/src/components/templates/contact/{content.ts,index.tsx,calendly-popup-button.tsx}`, `site/src/app/{contact,uk/contact}/page.tsx`, `scripts/static/seed-contact-page.ts`, `scripts/launch/verify-hubspot-forms.ts`, `scripts/content/capture-marketing-pages.ts` (contact target removed)
+
+**After merge, run:**
+```
+npm run static:seed-contact-page
+cd studio && npx sanity deploy
+npm run launch:verify-hubspot-forms
+```
+
+**Finding — the HubSpot form is an IFRAME, so C6's CSS chassis never applies.**
+`HubSpotFormEmbed` carries a full visual override targeting `.hs-input` / `.hs-form-label` etc. Those selectors never match: HubSpot mounts this form inside `<iframe class="hs-form-iframe">`, and inside that frame it applies its own ink-on-white theme (label `#212D3A`, input `#F5F8FA`). Confirmed in the browser — the host document contains no `.hs-input` at all. On the dark card the labels were invisible, so the enquiry panel is **light** by design; the page stays dark. Making it dark instead means switching the form to a raw/unstyled form inside CE's HubSpot account so it mounts inline, which is an external-system change and Jake's or Seb's call, not the agent's. **This applies to the footer newsletter too** — its `FOOTER_SUBSCRIBE_FORM_CLASS` is also dead CSS. Logged for the chrome fidelity pass.
+
+**Note — HubSpot redirects this form to `https://www.cloudemployee.io/thank-you` (absolute, live domain).** Correct after cutover; on staging a real submit leaves for the live site. Changing it is a HubSpot-side edit.
 
 ---
 

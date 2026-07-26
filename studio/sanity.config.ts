@@ -39,6 +39,15 @@ export default defineConfig({
               ],
             }),
           }),
+          contactPage: defineLocations({
+            select: { title: 'title' },
+            resolve: () => ({
+              locations: [
+                { title: 'Contact', href: '/contact' },
+                { title: 'Contact (UK)', href: '/uk/contact' },
+              ],
+            }),
+          }),
         },
       },
       previewUrl: {
