@@ -351,15 +351,28 @@ the Presentation click-to-edit smoke, which needs the `defineLocations` entry (W
  Location pages, catalogue FAQ panels. All are dead clicks today.
 - [ ] Orphan schema cleanup pass (seeded-but-never-rendered fields) — document or delete
 - [ ] `NEXT_PUBLIC_HUBSPOT_PORTAL_ID` verified on Vercel Production + Preview
-- [ ] **Presentation locations map — NOT optional, it gates the whole track.**
-  `studio/sanity.config.ts` declares `defineLocations` for `homePage` and (since
-  WP-05) `contactPage`. Every other singleton opens in Presentation with no idea
-  which URL to preview, so **"editable in Sanity" is not yet the same as "editable
-  in Presentation" for anything shipped in WP-01 through WP-06**. If Seb opens the
-  Studio today he will conclude the work was not done. The dataset holds 49
-  singletons (`npm run static:backup-singletons -- --list`); the in-scope marketing
-  ones each need a 9-line entry on the WP-05 pattern, US + UK href. Do this before
-  handing the Studio to Seb.
+- [x] **Presentation locations map — DONE 26 Jul.** Was gating the whole track:
+  `studio/sanity.config.ts` declared `defineLocations` for `homePage` and
+  `contactPage` only, so every other singleton opened in Presentation with an empty
+  preview pane and Seb would have concluded the work was never done. Now **31 page
+  singletons × US + UK = 61 preview URLs**, driven off a single `PAGE_LOCATIONS`
+  map rather than 31 copy-pasted blocks. Every URL verified 200 against a
+  production build before shipping (a preview URL that 404s is worse than none).
+  Home stays hand-written because it is the only page whose US path is `/`, where
+  the generic `/uk${path}` join would emit `/uk/`.
+
+  **Deliberately excluded, with reasons** (an entry for these would be a lie):
+  `notFoundPage` (renders on any bad URL), `sharedServiceFaqs` (appears on all ~124
+  service + technology pages), `navigation` / `footer` / `siteSettings` (sitewide
+  chrome), `compareHub` (hub root retired via 301 to `/alternatives`),
+  `startHiringPage` (drives `/start-hiring/[step]`, a noindex funnel with no single
+  page).
+
+  **Surfaced by this work — 4 orphan singletons with no route at all:**
+  `retentionPage`, `sourcingPage`, `embeddingPage`, `scaleThisWeekPage`. They exist
+  in the schema and in the dataset but nothing in `site/src/app` renders them. Seb
+  can edit four documents that appear nowhere. Either build the routes or delete
+  the singletons; folding into the orphan-schema cleanup item above.
 - [ ] Sanity CORS already includes `https://staging.jakevibes.dev` (done)
 - [x] **Singleton backup/restore script** — `npm run static:backup-singletons`
   (added 26 Jul). Was a genuine hole: every seed does `createOrReplace` on a fixed
