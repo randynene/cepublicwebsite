@@ -4,7 +4,23 @@
 > it live on staging, ready for a zero-loss crossover. If any other doc disagrees
 > with this file about "what is done", this file wins until launch.
 >
-> Owner: Jake. Author of record: planning brain. Last updated: 22 Jul 2026.
+> Owner: Jake. Author of record: planning brain. Last updated: 25 Jul 2026.
+
+---
+
+## 0a. Plain English — "hardcoded" and "fallback" (Jake glossary)
+
+These words keep coming up. They are NOT "the page is broken."
+
+| Word | What it actually means | Example |
+|---|---|---|
+| **Hardcoded** | Some text, image, or form copy lives in the *code* file, not in Sanity Studio. The page looks fine. Seb cannot change that bit without a developer. | A button label typed in a React file instead of Studio. |
+| **Fallback** | The page *can* read Sanity, but if Sanity is empty or thin, it quietly shows the old code copy instead. Looks fine; hides the fact Studio is not filled. | Home shows a nice hero even when Studio hero fields are blank. |
+| **Form demo** | A form that *looks* real (fields, submit button) but does not send a lead to HubSpot yet — or a CTA that goes to `#` (nowhere). | Hire Engineers / Fractional CTO "match" forms until we wire them. |
+
+**So for Home / How It Works (HIW) / Pricing:** the pages are built and mostly look right. The remaining work is making sure *everything meaningful* is editable in Studio, Sanity is fully filled, and we are not silently relying on code copy. That is Phase 6 + the editability work packages (WP-*), not a rebuild.
+
+**Forms / sales funnel:** that is a separate cutover gate — see Phase 7.9 below. Jake maps the real funnel; we verify every HubSpot form, redirect, and thank-you page works on staging before DNS flip.
 
 ---
 
@@ -382,12 +398,125 @@ Goal: prove the crossover is safe before anyone flips the domain.
       noindex. Verify all 8 steps, the forms, and the redirects behave as live does.
 - 7.8 Confirm no extra indexable service/technology URLs exist beyond live (result of
       the slug dedup in 2.8).
+- 7.9 **HubSpot + full sales-funnel once-over (Jake-owned map + agent verify).**
+      See section 7a below. Cutover blocker: no silent dead forms.
+- 7.10 **Speed + SEO crawl pass (Screaming Frog + Lighthouse + repo gates).**
+      See section 7b below.
 
 **Gate to pass:** parity gate PASS recorded; SEO checklist Tier 1 green on every
-template.
+template; HubSpot funnel map verified (7.9); speed/SEO crawl recorded (7.10).
 **Post-launch (not launch-blocking):** `llms.txt`, robots AI-crawler stance (needs
 Jake decision), `dateModified` freshness. Logged here so they are not forgotten.
 **Marker.io:** already sitewide by now; use it to log SEO nitpicks too.
+
+### 7a. HubSpot + sales-funnel cutover once-over (NEW — Jake priority)
+
+**Why this exists:** a wrong HubSpot form id is the quietest failure on the site.
+The page looks perfect, nothing 404s, and every enquiry is lost. Typecheck / build /
+parity cannot catch it. We already have `npm run launch:verify-hubspot-forms` for
+that reason — this phase makes the *whole funnel* a named cutover gate, not a
+side note.
+
+**Jake does first (business map — one sitting):**
+1. List every path a lead can take on live CE today, in plain English. Example
+   shape (fill in / correct with real CE reality):
+   - Nav / CTA → Book a Call → Calendly → thank-you / confirmed page
+   - Nav / CTA → Start Hiring (multi-step) → HubSpot forms → thank-you
+   - Contact page → HubSpot form and/or Calendly → thank-you
+   - Footer newsletter → HubSpot
+   - Download / gated content → form → download thank-you
+   - For Developers join / Hire Engineers / Fractional CTO match forms (demo vs real?)
+   - Any other HubSpot, Calendly, or chat entry points
+2. For each path: entry URL → form/tool → where the lead lands in HubSpot → thank-you
+   URL → whether the page should be noindex.
+3. Decide which "form demos" must become real HubSpot submits before cutover vs
+   which can stay as CTAs out to Book a Call / Start Hiring.
+
+**Agent / staging verify (after Jake's map):**
+- [ ] `NEXT_PUBLIC_HUBSPOT_PORTAL_ID=22809822` set on Vercel Production + Preview
+      (and `site/.env.local`). Without this, **every** form silently renders empty.
+- [ ] `npm run launch:verify-hubspot-forms` PASS — every form id the site renders
+      resolves on HubSpot (portal `22809822`).
+- [ ] Extend that verifier to cover Contact + any newly wired forms (WP-05).
+- [ ] Manually submit one test lead per funnel path on staging; confirm it appears
+      in HubSpot and the thank-you / next-step redirect matches the map.
+- [ ] Calendly: Book-a-call detail pages + Contact intro-call URL load and book.
+- [ ] Start-hiring: all 8 steps order/progress match HubSpot redirects (already
+      burned us once — see verifier comments).
+- [ ] No primary CTA left as `href="#"` on pages that look like they submit leads.
+- [ ] Thank-you / confirmed pages remain noindex; lead-capture pages behave as live.
+
+**Gate:** Jake signs the funnel map; every path on the map has a green staging test;
+verifier PASS recorded in the cutover folder.
+
+### 7b. Make the site fast + SEO / AEO solid (tools + order)
+
+**Goal in plain English:** Google and AI bots should see the right pages quickly,
+with real content in the first HTML response, correct titles/structured data, and
+no crawl traps. Speed is part of SEO/AEO — slow pages get timed out by AI crawlers
+(often 1–5 seconds).
+
+**We already have in-repo (run these first — free, repeatable):**
+
+| Tool / command | What it proves |
+|---|---|
+| `npm run launch:verify-parity` | Every known live URL behaves the same on the new site (6,937 URLs). |
+| `npm run launch:verify-noindex` | Staging stays noindex; production only indexes when canonical host is set. |
+| `npm run launch:verify-hubspot-forms` | Form ids are real (see 7a). |
+| Tier 1 checklist `docs/seo/SEO_GEO_PER_TEMPLATE_CHECKLIST.md` | Per-template SEO/AEO gate (title, canonical, hreflang, JSON-LD, SSR content, sitemap). |
+| Sitewide gap brief `docs/seo/SEO_GEO_SITEWIDE_GAP_FIX_BRIEF.md` | Launch-gate SEO items vs post-launch polish. |
+
+**Jake / SEO tools to run against staging (then again on production day-1):**
+
+1. **Screaming Frog (Jake already has it) — primary crawl**
+   - Crawl staging (auth if needed) and, when safe, production after cutover.
+   - Export / check: status codes (200/301/404), titles, meta descriptions,
+     canonicals, hreflang, indexability, directive conflicts, orphan pages,
+     redirect chains, duplicate titles/descriptions, missing H1 / multiple H1,
+     image alts, page depth.
+   - Compare against live CE crawl: same indexable URL set (parity), no surprise
+     404s on ranking URLs, no accidental index on thank-you/funnel steps.
+   - Keep a dated export under `audit-output/seo/` (gitignored) as the cutover
+     evidence pack.
+
+2. **Google Lighthouse / PageSpeed Insights — speed + SEO score**
+   - Hard gate from our checklist: **Lighthouse SEO = 100** on key templates.
+   - Performance: aim healthy Core Web Vitals (LCP / INP / CLS). Known debt:
+     third-party script budget (GTM, HubSpot, Hotjar, pixels, Calendly, etc.) —
+     Tech Debt #29/#30. Fix = lazy-load + necessity review, not "add more tags."
+   - Sample set: Home, one Service, one Technology, one Blog, Pricing, one Hub.
+
+3. **Google Search Console (cutover day + week 1)**
+   - Submit new sitemap only on the production host.
+   - URL Inspection on top-20 traffic URLs.
+   - Watch coverage / redirect / soft-404 spikes for 7–14 days.
+
+4. **Optional but useful**
+   - **Ahrefs / Semrush** site audit on production after cutover (Jake may already
+     have Ahrefs — note Tech Debt #4: plan must include cloudemployee.io).
+   - **Rich Results Test** / schema validator on a Service, FAQ hub, Article, Review.
+   - **WebPageTest** or CrUX for real-user speed if Lighthouse lab numbers disagree
+     with feel.
+
+**Speed playbook (what actually makes this Next.js site fast):**
+- Keep primary content **server-rendered** (already the architecture) — bots see text
+  without waiting for JavaScript.
+- Images through the Sanity + `next/image` path (priority on LCP/hero only).
+- Do **not** pile more marketing pixels before cutover; audit and defer what live
+  does not need on every page (SCAFFOLD-AUDIT / Tech Debt #29).
+- Fonts already on Inter + Source Serif 4 — avoid adding more families.
+- Measure before/after any third-party change; HubSpot + GTM are the usual LCP/TBT
+  villains.
+
+**AEO (AI-search) — what matters vs hype:**
+- Tier 1 on-site (SSR content, headings, FAQPage where real FAQs exist, correct
+  JSON-LD, fast HTML) = launch gate — already in `SEO_GEO_PER_TEMPLATE_CHECKLIST.md`.
+- `llms.txt` = cheap post-launch nice-to-have, **not** a ranking lever.
+- Real AI citations also need **off-site** mentions (listicles, reviews, press) —
+  separate post-launch workstream; the site alone cannot win that.
+
+**Gate for 7.10:** Screaming Frog crawl notes filed; Lighthouse SEO 100 on sample
+set; Tier 1 checklist green; known Perf debt listed (not ignored) with owner.
 
 ### PHASE 8 - Staging sign-off + Marker.io full rollout
 Goal: the whole team reviews the finished site on staging via Marker.io.
