@@ -40,14 +40,14 @@ export function AnnouncementBar({
                 {bar.badgeLabel}
               </span>
             ) : null}
-            <p className="truncate text-[13px] font-normal leading-none tracking-[-0.08px] text-text-secondary">
+            <p className="truncate text-[12px] font-normal leading-none tracking-[-0.08px] text-text-secondary sm:text-[13px]">
               {bar.message}
             </p>
           </div>
           {hasLink && linkHref ? (
             <Link
               href={linkHref.href}
-              className="inline-flex shrink-0 items-center gap-1 text-[13px] font-semibold leading-none tracking-[-0.08px] text-brand-primary no-underline transition duration-reveal ease-reveal hover:text-brand-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ring focus-visible:rounded-sm motion-reduce:transition-none"
+              className="inline-flex shrink-0 items-center gap-1 text-[12px] font-semibold leading-none tracking-[-0.08px] text-brand-primary no-underline transition duration-reveal ease-reveal hover:text-brand-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ring focus-visible:rounded-sm motion-reduce:transition-none sm:text-[13px]"
               {...(linkHref.isExternal
                 ? { target: '_blank', rel: 'noopener noreferrer' }
                 : {})}

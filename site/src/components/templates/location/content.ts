@@ -496,15 +496,16 @@ export const EASTERN_EUROPE_CONTENT: LocationContent = {
     ctaPrimary: 'Meet your engineer in 7 days',
     ctaSecondary: 'See the cost calculator',
     trustPills: ['Elite CS education', 'EU & US-morning overlap', 'Rolling monthly, no lock-ins'],
+    // Home-style 3-card stack order: [0] back · [1] middle · [2] front (main).
     cards: [
       {
-        name: 'Petar K.',
-        role: 'Senior Platform Eng · 9 yrs',
+        name: 'Andriy T.',
+        role: 'Senior Data Eng · 10 yrs',
         vettedLabel: 'Vetted by Senior Eng',
-        skills: ['Go', 'Kubernetes', 'AWS'],
-        image: `${EE}/eng-1.jpg`,
-        rotate: 3,
-        flag: '🇵🇱',
+        skills: ['Python', 'Spark', 'Airflow'],
+        image: `${EE}/eng-3.jpg`,
+        rotate: 2.5,
+        flag: '🇺🇦',
       },
       {
         name: 'Ivana D.',
@@ -512,11 +513,21 @@ export const EASTERN_EUROPE_CONTENT: LocationContent = {
         vettedLabel: 'Vetted by Senior Eng',
         skills: ['Java', 'Kafka', 'Spring'],
         image: `${EE}/eng-2.jpg`,
-        rotate: -2,
+        rotate: 3,
         flag: '🇷🇴',
       },
+      {
+        name: 'Petar K.',
+        role: 'Senior Platform Eng · 9 yrs',
+        vettedLabel: 'Vetted by Senior Eng',
+        skills: ['Go', 'Kubernetes', 'AWS'],
+        image: `${EE}/eng-1.jpg`,
+        rotate: -3,
+        flag: '🇵🇱',
+      },
     ],
-    floatingBadges: ['Live pair programming', '7-day shortlist'],
+    // One floating pill keeps the location hero cleaner than the home collage.
+    floatingBadges: ['7-day shortlist'],
   },
   logosLabel: 'Trusted by 300+ engineering teams',
   advantage: {
@@ -550,8 +561,8 @@ export const EASTERN_EUROPE_CONTENT: LocationContent = {
   },
   video: {
     eyebrow: 'Why Eastern Europe',
-    titleLead: 'Why US & EU teams hire in',
-    titleAccent: 'Eastern Europe.',
+    titleLead: 'Why US & EU teams hire for',
+    titleAccent: 'deep-tech strength.',
     intro:
       'Seb on the engineering-education pipeline, the deep-tech strength, and why Eastern Europe is the benchmark for senior systems talent.',
     presenter: 'Grace Tannor · Why Eastern Europe',
@@ -561,7 +572,7 @@ export const EASTERN_EUROPE_CONTENT: LocationContent = {
   onGround: {
     eyebrow: 'Where we are',
     titleLead: 'On the ground across four',
-    titleAccent: 'EE hubs.',
+    titleAccent: 'regional hubs.',
     body: 'We hire and embed senior engineers across Poland, Ukraine, Romania, and Bulgaria. Local recruiters in each market know the engineering communities from the inside.',
     bullets: [
       'Local recruiters and senior-engineer vetting in each market',
@@ -573,8 +584,8 @@ export const EASTERN_EUROPE_CONTENT: LocationContent = {
   },
   primaryHub: {
     eyebrow: 'Where we are on the ground',
-    titleLead: 'Warsaw is our heart in',
-    titleAccent: 'Eastern Europe.',
+    titleLead: 'Warsaw is our',
+    titleAccent: 'biggest hub.',
     bannerEyebrow: 'Our biggest hub · Warsaw',
     bannerTitle: '40+ engineers and growing. Heavy in platform.',
     bannerBody:
@@ -615,14 +626,14 @@ export const EASTERN_EUROPE_CONTENT: LocationContent = {
         skills: ['Python', 'Spark', 'Airflow'],
         years: '10 years experience',
         bio: 'Previously at a global product company. Placed with a US analytics team for 2 years.',
-        image: `${EE}/eng-1.jpg`,
+        image: `${EE}/eng-3.jpg`,
         flag: '🇺🇦',
       },
     ],
   },
   funFact: {
     eyebrow: 'Did you know',
-    body: "Eastern Europe produces some of the world's highest-ranked competitive programmers, and its working day overlaps both your EU teams and your US mornings. Real-time, senior collaboration.",
+    body: "Eastern Europe produces some of the world's highest-ranked competitive programmers, and its working day overlaps both your EU teams and your US mornings.",
     source: 'Sources: IANA Time Zones, ICPC World Finals rankings',
   },
   calculator: {
@@ -638,7 +649,7 @@ export const EASTERN_EUROPE_CONTENT: LocationContent = {
       { id: 'bulgaria', label: 'Bulgaria', mult: 1.02 },
     ],
     comparisonMultiple: 2.1013,
-    savingsSticker: 'Save $78,000/yr',
+    savingsSticker: 'Save $78,001/yr',
     savingsStickerSub: 'vs hiring in the US',
     disclaimer: '*Ranges based on actual placements. Final price confirmed after discovery call.',
   },

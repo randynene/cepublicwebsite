@@ -557,7 +557,7 @@ function FunFact({ content }: { content: LocationContent }) {
         <Eyebrow className="text-center">{funFact.eyebrow}</Eyebrow>
         <p
           data-spot-item
-          className="mx-auto mt-4 max-w-[980px] text-[28px] font-medium leading-[1.35] tracking-[-0.4px] text-white transition-opacity duration-300 motion-safe:opacity-40 lg:text-[34px] lg:leading-[46px]"
+          className="mx-auto mt-4 max-w-[980px] text-[28px] font-medium leading-[1.35] tracking-[-0.4px] text-white transition-opacity duration-300 motion-safe:opacity-80 lg:text-[34px] lg:leading-[46px]"
         >
           {funFact.body}
         </p>
@@ -577,14 +577,8 @@ function Calculator({ content }: { content: LocationContent }) {
         {calculator.titleLead} <span className={ACCENT}>{calculator.titleAccent}</span> {calculator.titleSuffix}
       </h2>
       <div className="relative mt-8">
-        {/* rotated savings sticker overlapping top-right */}
-        <span
-          className="absolute -top-6 right-4 z-10 flex h-[104px] w-[104px] flex-col items-center justify-center rounded-full bg-white text-center text-[#060F1E] shadow-[0_20px_40px_-16px_rgba(0,0,0,.6)]"
-          style={{ transform: 'rotate(-12deg)' }}
-        >
-          <span className="text-[13px] font-extrabold leading-tight">{calculator.savingsSticker}</span>
-          <span className="mt-0.5 text-[9px] font-medium text-[#060F1E]/70">{calculator.savingsStickerSub}</span>
-        </span>
+        {/* Savings sticker is rendered inside LocationCalculator so it always
+            matches the live computed annual figure (no $78,000 vs $78,001 drift). */}
         <LocationCalculator
           regions={calculator.calcRegions}
           roles={calculator.roles}

@@ -121,6 +121,8 @@ const assetCache = new Map<string, string>()
 async function uploadAsset(publicPath: string): Promise<string> {
   const cached = assetCache.get(publicPath)
   if (cached) return cached
+  // publicPath is stored as a site URL ("/location/.../eng-1.jpg"). Strip the
+  // leading slash so path.join does not discard PUBLIC_ROOT (absolute segment).
   const localPath = path.join(PUBLIC_ROOT, publicPath.replace(/^\//, ''))
   const buf = await fs.readFile(localPath)
   const filename = path.basename(publicPath)

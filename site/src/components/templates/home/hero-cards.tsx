@@ -201,8 +201,15 @@ export function HeroCards({
   pills?: readonly string[]
 }) {
   const cards = profiles.slice(0, SLOTS.length)
-  const livePill = pills?.[0] ?? PILL_LIVE_FALLBACK
-  const shortlistPill = pills?.[1] ?? PILL_SHORTLIST_FALLBACK
+  // When the caller passes an explicit pills array (including a 1-pill location
+  // hero), honour it exactly. Only the home page's "omit pills" path uses the
+  // two-pill fallbacks.
+  const resolvedPills =
+    pills !== undefined
+      ? pills.filter((p) => p.trim().length > 0).slice(0, 2)
+      : [PILL_LIVE_FALLBACK, PILL_SHORTLIST_FALLBACK]
+  const primaryPill = resolvedPills[0]
+  const secondaryPill = resolvedPills[1]
 
   return (
     <div className="relative h-[518px] overflow-visible">
@@ -212,26 +219,30 @@ export function HeroCards({
 
       {/* Floating pill: bolt — right side, z:5. Fades+rises in ~250ms after the
        * card stack (hero-pill-reveal, globals.css). */}
-      <span
-        className="hero-pill-reveal absolute z-[5] flex cursor-default items-center gap-[8px] rounded-full text-[12px] font-semibold text-[#060F1E] shadow-[0_8px_24px_rgba(14,27,44,.12)]"
-        style={{ right: -14, top: 250, background: '#F7F9F0', padding: '7px 14px 7px 7px' }}
-      >
-        <span className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-brand-primary text-[11px] text-[#060F1E]">
-          {GLYPH_BOLT}
+      {primaryPill ? (
+        <span
+          className="hero-pill-reveal absolute z-[5] flex cursor-default items-center gap-[8px] rounded-full text-[12px] font-semibold text-[#060F1E] shadow-[0_8px_24px_rgba(14,27,44,.12)]"
+          style={{ right: -14, top: 250, background: '#F7F9F0', padding: '7px 14px 7px 7px' }}
+        >
+          <span className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-brand-primary text-[11px] text-[#060F1E]">
+            {resolvedPills.length === 1 ? GLYPH_CLOCK : GLYPH_BOLT}
+          </span>
+          {primaryPill}
         </span>
-        {livePill}
-      </span>
+      ) : null}
 
       {/* Floating pill: clock — lower-left, z:5 */}
-      <span
-        className="hero-pill-reveal absolute z-[5] flex cursor-default items-center gap-[8px] rounded-full bg-white text-[12px] font-semibold text-[#060F1E] shadow-[0_8px_24px_rgba(14,27,44,.12)]"
-        style={{ left: 236, top: 322, padding: '7px 14px 7px 7px' }}
-      >
-        <span className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-[#E8F7D4] text-[11px] text-[#060F1E]">
-          {GLYPH_CLOCK}
+      {secondaryPill ? (
+        <span
+          className="hero-pill-reveal absolute z-[5] flex cursor-default items-center gap-[8px] rounded-full bg-white text-[12px] font-semibold text-[#060F1E] shadow-[0_8px_24px_rgba(14,27,44,.12)]"
+          style={{ left: 236, top: 322, padding: '7px 14px 7px 7px' }}
+        >
+          <span className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-[#E8F7D4] text-[11px] text-[#060F1E]">
+            {GLYPH_CLOCK}
+          </span>
+          {secondaryPill}
         </span>
-        {shortlistPill}
-      </span>
+      ) : null}
     </div>
   )
 }
