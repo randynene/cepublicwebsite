@@ -121,7 +121,7 @@ const assetCache = new Map<string, string>()
 async function uploadAsset(publicPath: string): Promise<string> {
   const cached = assetCache.get(publicPath)
   if (cached) return cached
-  const localPath = path.join(PUBLIC_ROOT, publicPath)
+  const localPath = path.join(PUBLIC_ROOT, publicPath.replace(/^\//, ''))
   const buf = await fs.readFile(localPath)
   const filename = path.basename(publicPath)
   const asset = await sanityWriteClient.assets.upload('image', buf, {
@@ -236,6 +236,8 @@ async function buildDoc(c: LocationContent) {
         eyebrow: c.eor.eyebrow,
         titleLead: c.eor.titleLead,
         titleAccent: c.eor.titleAccent,
+        ...(c.eor.subhead ? { subhead: c.eor.subhead } : {}),
+        ...(c.eor.intro ? { intro: c.eor.intro } : {}),
         items: keyed(
           c.eor.items.map((it) => ({ title: it.title, body: it.body })),
           'eor',
@@ -249,10 +251,30 @@ async function buildDoc(c: LocationContent) {
         titleLead: c.included.titleLead,
         titleAccent: c.included.titleAccent,
         youLabel: c.included.youLabel,
+        ...(c.included.youSubhead ? { youSubhead: c.included.youSubhead } : {}),
         you: [...c.included.you],
         weLabel: c.included.weLabel,
+        ...(c.included.weSubhead ? { weSubhead: c.included.weSubhead } : {}),
         we: [...c.included.we],
         footnote: c.included.footnote,
+      }
+    : undefined
+
+  const regionsStrip = c.regionsStrip
+    ? {
+        title: c.regionsStrip.title,
+        retentionValue: c.regionsStrip.retentionValue,
+        retentionLabel: c.regionsStrip.retentionLabel,
+        hubs: keyed(
+          await Promise.all(
+            c.regionsStrip.hubs.map(async (h) => ({
+              city: h.city,
+              note: h.note,
+              image: await img(h.image, h.city),
+            })),
+          ),
+          'region-hub',
+        ),
       }
     : undefined
 
@@ -315,6 +337,7 @@ async function buildDoc(c: LocationContent) {
     eyebrow: c.start.eyebrow,
     titleLead: c.start.titleLead,
     titleAccent: c.start.titleAccent,
+    ...(c.start.variant ? { variant: c.start.variant } : {}),
     cards: keyed(
       c.start.cards.map((card) => ({
         eyebrow: card.eyebrow,
@@ -353,6 +376,7 @@ async function buildDoc(c: LocationContent) {
     advantage,
     video,
     ...(onGround ? { onGround } : {}),
+    ...(regionsStrip ? { regionsStrip } : {}),
     ...(eor ? { eor } : {}),
     ...(included ? { included } : {}),
     primaryHub,

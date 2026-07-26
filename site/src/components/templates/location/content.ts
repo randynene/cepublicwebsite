@@ -46,6 +46,8 @@ export interface AdvantageCard {
   eyebrow: string
   title: string
   body: string
+  /** Optional icon override; falls back to positional TIMEZONE_ICONS in the template. */
+  icon?: 'clock' | 'dollar' | 'bolt' | 'globe' | 'chat' | 'users'
 }
 
 export interface HubCard {
@@ -133,6 +135,9 @@ export interface LocationContent {
     eyebrow: string
     titleLead: string
     titleAccent: string
+    /** Optional line above the title (e.g. "Compliantly employed."). */
+    subhead?: string
+    intro?: string
     items: { title: string; body: string }[]
   }
   // PH-only: "What's included" - a lime you-direct / we-handle split list.
@@ -142,9 +147,20 @@ export interface LocationContent {
     titleAccent: string
     youLabel: string
     you: string[]
+    /** Optional subhead under the You label. */
+    youSubhead?: string
     weLabel: string
     we: string[]
+    /** Optional subhead under the We label. */
+    weSubhead?: string
     footnote: string
+  }
+  // PH-only: three-region strip (Makati / Cebu / Clark) with retention callout.
+  regionsStrip?: {
+    title: string
+    hubs: HubCard[]
+    retentionValue: string
+    retentionLabel: string
   }
   primaryHub: {
     eyebrow: string
@@ -185,6 +201,8 @@ export interface LocationContent {
     resultEyebrow?: string
     /** Saving comparison label (default 'vs. hiring in the US'). PH: 'vs. hiring in the UK'. */
     savedPrefix?: string
+    /** Seniority options (default Mid/Senior/Lead). PH is senior-focused only. */
+    seniorityOptions?: { id: string; label: string; mult: number }[]
     savingsSticker: string
     savingsStickerSub: string
     disclaimer: string
@@ -194,6 +212,21 @@ export interface LocationContent {
     titleLead: string
     titleAccent: string
     cards: StartCard[]
+    /** 'quiz' renders LocationStartQuiz instead of the three start cards. */
+    variant?: 'cards' | 'quiz'
+    quiz?: {
+      eyebrow: string
+      title: string
+      subtitle: string
+      stepLabel: string
+      prompt: string
+      hint: string
+      roles: string[]
+      cta: string
+      ctaHref: string
+      selectedPrefix: string
+      emptyStatus: string
+    }
   }
   faq: {
     eyebrow: string
@@ -703,19 +736,19 @@ export const PHILIPPINES_CONTENT: LocationContent = {
     trustPills: ['Works your exact hours', 'English official language', '20+ years tech delivery'],
     cards: [
       {
-        name: 'Josh D.',
-        role: 'Senior Full-Stack · 7 yrs',
+        name: 'Aileen R.',
+        role: 'Senior Mobile · 6 yrs',
         vettedLabel: 'Vetted by Senior Eng',
-        skills: ['React', 'Node.js', 'AWS'],
+        skills: ['React Native', 'Swift'],
         image: `${PH}/eng-1.jpg`,
         rotate: 3,
         flag: '🇵🇭',
       },
       {
-        name: 'Maria L.',
-        role: 'Senior QA Engineer · 8 yrs',
+        name: 'Jericho S.',
+        role: 'Senior Backend · 9 yrs',
         vettedLabel: 'Vetted by Senior Eng',
-        skills: ['Cypress', 'Playwright', 'CI/CD'],
+        skills: ['.NET', 'Azure', 'SQL'],
         image: `${PH}/eng-2.jpg`,
         rotate: -2,
         flag: '🇵🇭',
@@ -732,44 +765,61 @@ export const PHILIPPINES_CONTENT: LocationContent = {
     cards: [
       {
         eyebrow: 'Your working hours',
-        title: '8am to 5pm UK',
-        body: 'In your time zone, every day. Standups, sprints, real-time - not overlap, not handovers.',
+        title: 'UK or AU day shifts',
+        body: 'UK daytime or AU daytime schedules, every day. Standups, sprints, real-time - not overlap, not handovers.',
+        icon: 'clock',
       },
       {
         eyebrow: 'English speaking',
         title: 'Native level',
         body: 'Official language, taught from primary school, used in business by default. #2 in Asia, EF EPI.',
+        icon: 'chat',
       },
       {
         eyebrow: 'Seniority',
         title: '5+ years min',
         body: "We don't place juniors. Every engineer has shipped production at scale, with senior interviews on your stack.",
+        icon: 'bolt',
       },
       {
         eyebrow: 'Retention',
         title: '97% stay 2+ yrs',
         body: "We're built to keep them, not churn them - so you're not re-hiring every six months.",
+        icon: 'users',
       },
     ],
   },
   video: {
     eyebrow: 'Customer story · 90 sec',
-    titleLead: 'How Salmon scaled with',
-    titleAccent: 'our team.',
+    titleLead: '"They feel like part of our team."',
+    titleAccent: '',
     intro:
       'Marcus Kilgour, CTO at Salmon Software, on hiring engineers via Cloud Employee - and why the model has worked.',
-    presenter: 'Salmon Software',
+    presenter: 'Marcus Kilgour · CTO, Salmon Software',
     pullQuote: 'Watch · 90 sec',
     image: `${PH}/video-still.jpg`,
+  },
+  regionsStrip: {
+    title: 'Built on the ground in three regions.',
+    hubs: [
+      { city: 'Makati', note: 'Financial district · Largest concentration', image: `${PH}/hub-a.jpg` },
+      { city: 'Cebu', note: 'Second-largest tech ecosystem', image: `${PH}/hub-b.jpg` },
+      { city: 'Clark', note: 'Government-incentivised tech zone', image: `${PH}/hub-c.jpg` },
+    ],
+    retentionValue: '97% retention',
+    retentionLabel: 'Engineers stay 2+ years',
   },
   eor: {
     eyebrow: 'How we keep your engineer',
     titleLead: 'Yours, for the',
     titleAccent: 'long run.',
+    subhead: 'Compliantly employed.',
+    intro:
+      'The hidden cost of cheap Philippine outsourcing is the churn. We employ engineers compliantly, pay them well, train them, and support them - so they stay with you for years, not months.',
     items: [
       {
         title: 'Employer of Record in the Philippines',
-        body: "We're the legal employer. Local contracts, tax, SSS, PhilHealth, 13th month pay - handled.",
+        body: "We're the legal employer. Local contracts, tax, SSS, PhilHealth, Pag-IBIG, 13th month pay - handled.",
       },
       {
         title: 'L&D budget for every placed engineer',
@@ -791,15 +841,17 @@ export const PHILIPPINES_CONTENT: LocationContent = {
   },
   included: {
     eyebrow: "What's included",
-    titleLead: 'We handle',
+    titleLead: 'You get the engineer. We handle',
     titleAccent: 'everything else.',
     youLabel: 'You',
+    youSubhead: 'Run your team. Ship your product.',
     you: [
       "Direct your engineer's work",
       'Bring them into your standups & Slack',
       'Treat them like a full-time hire',
     ],
     weLabel: 'We',
+    weSubhead: 'The full operational stack.',
     we: [
       "Source and vet the engineer (free if you don't hire)",
       'Employ them locally with full benefits and private healthcare',
@@ -809,7 +861,7 @@ export const PHILIPPINES_CONTENT: LocationContent = {
       'Support their training, performance, and retention long-term',
       'Liability insurance + IP/data protection on every contract',
     ],
-    footnote: 'One monthly fee.',
+    footnote: 'One monthly fee. No setup. No placement fees. 30 days notice on a rolling contract.',
   },
   primaryHub: {
     eyebrow: 'Where we are on the ground',
@@ -827,7 +879,7 @@ export const PHILIPPINES_CONTENT: LocationContent = {
     ],
   },
   engineers: {
-    titleLead: "Engineers we've placed from the",
+    titleLead: 'Engineers working via Cloud Employee in the',
     titleAccent: 'Philippines.',
     intro: "Three real engineers currently embedded with our clients. Anonymised - you'll meet them on a call.",
     profiles: [
@@ -837,7 +889,7 @@ export const PHILIPPINES_CONTENT: LocationContent = {
         skills: ['React', 'Node.js', 'TypeScript', 'AWS'],
         years: '8 years experience',
         bio: 'Previously at a Philippine fintech (GCash-adjacent). Placed with a UK SaaS for 2 years. Works UK hours.',
-        image: `${PH}/eng-2.jpg`,
+        image: `${PH}/eng-3.jpg`,
         flag: '🇵🇭',
       },
       {
@@ -862,13 +914,13 @@ export const PHILIPPINES_CONTENT: LocationContent = {
   },
   funFact: {
     eyebrow: 'Did you know',
-    body: 'Filipino engineers grow up consuming Western media, working with Western teams, and writing in English by default. It is an official language of government, business, and higher education.',
+    body: 'English is one of the official languages of the Philippines - used in school, business, and government. Filipino engineers grow up consuming Western media, working with Western teams, and writing in English by default.',
     source: 'Sources: Philippine Constitution 1987 · EF English Proficiency Index 2025 · IBPAP industry data',
   },
   calculator: {
     eyebrow: 'Pricing calculator',
     titleLead: 'What would a',
-    titleAccent: 'Filipino',
+    titleAccent: 'Philippines',
     titleSuffix: 'engineer cost?',
     currency: '£',
     comparisonMultiple: 3.1842,
@@ -881,15 +933,20 @@ export const PHILIPPINES_CONTENT: LocationContent = {
       { id: 'frontend', label: 'Frontend Engineer', base: 3500 },
       { id: 'data', label: 'Data Engineer', base: 4000 },
     ],
+    seniorityOptions: [
+      { id: 'senior', label: 'Senior (5-8 years)', mult: 1 },
+      { id: 'lead', label: 'Lead / Staff (8+ years)', mult: 1.28 },
+    ],
     calcRegions: [{ id: 'ph', label: 'Philippines (UK/AU hours)', mult: 1 }],
     savingsSticker: 'Save £99,600/yr',
     savingsStickerSub: 'vs a UK hire',
     disclaimer: 'Ranges based on actual placements. Final price confirmed after discovery call.',
   },
   start: {
-    eyebrow: 'Ready to hire from the Philippines?',
-    titleLead: 'Three ways to',
-    titleAccent: 'start',
+    variant: 'quiz',
+    eyebrow: 'Ready to find your engineer?',
+    titleLead: 'See real engineer profiles, rates, and timelines.',
+    titleAccent: 'In 90 seconds.',
     cards: [
       {
         eyebrow: '',
@@ -914,10 +971,23 @@ export const PHILIPPINES_CONTENT: LocationContent = {
         ctaHref: '#chat',
       },
     ],
+    quiz: {
+      eyebrow: 'Ready to find your engineer?',
+      title: 'See real engineer profiles, rates, and timelines.',
+      subtitle: "Four quick questions. See who we'd build your team with.",
+      stepLabel: 'Step 1 of 4 · Takes 90 seconds',
+      prompt: 'What role are you hiring for?',
+      hint: "Pick one to start - you'll see matching engineers at the end.",
+      roles: ['Backend', 'Frontend', 'Full-Stack', 'AI / ML', 'Data', 'DevOps', 'Mobile', 'Something else'],
+      cta: 'Next',
+      ctaHref: '/start-hiring',
+      selectedPrefix: 'Selected: ',
+      emptyStatus: 'Select a role to continue',
+    },
   },
   faq: {
     eyebrow: 'Philippines · FAQ',
-    title: 'Questions CTOs ask about hiring in the Philippines',
+    title: 'Questions UK and Australian CTOs ask about hiring in the Philippines.',
     helpEyebrow: "Can't find your question?",
     helpBody: "Ask our AI chatbot - trained on every sales call we've had.",
     helpCta: 'Open chat',
@@ -938,7 +1008,7 @@ export const PHILIPPINES_CONTENT: LocationContent = {
         number: '03',
         question: 'How does Cloud Employee handle Filipino employment law and compliance?',
         answer:
-          'We are the legal Employer of Record. Local contracts, tax, SSS, PhilHealth, and 13th month pay are all handled by our in-country team - you get a single monthly invoice.',
+          'We are the legal Employer of Record. Local contracts, tax, SSS, PhilHealth, Pag-IBIG, and 13th month pay are all handled by our in-country team - you get a single monthly invoice.',
       },
       {
         number: '04',
@@ -950,13 +1020,13 @@ export const PHILIPPINES_CONTENT: LocationContent = {
         number: '05',
         question: 'Can I visit our engineers in the Philippines?',
         answer:
-          'Yes. Many clients visit their teams or fly engineers out for onboarding. We help arrange it and our local teams host on the ground.',
+          'Yes. We have offices in Makati, Cebu, and Clark, and we regularly host clients on-site to meet their teams in person.',
       },
       {
         number: '06',
-        question: 'Are Philippine engineers experienced with UK and AU companies?',
+        question: 'What about typhoons, power outages, or infrastructure?',
         answer:
-          'Most have already shipped production code for UK, Australian, or US companies. We place senior engineers used to Western tooling, standups, and delivery expectations.',
+          "Our offices run on backup power and redundant fibre, and engineers can switch to office or co-working space at any time. Continuity is part of what you're paying for.",
       },
       {
         number: '07',

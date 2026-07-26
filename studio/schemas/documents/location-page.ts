@@ -229,8 +229,10 @@ const eorSection = defineField({
   options: { collapsible: true, collapsed: true },
   fields: [
     defineField({ name: 'eyebrow', title: 'Eyebrow', type: 'string' }),
+    defineField({ name: 'subhead', title: 'Subhead (e.g. Compliantly employed.)', type: 'string' }),
     defineField({ name: 'titleLead', title: 'Title (lead)', type: 'string' }),
     defineField({ name: 'titleAccent', title: 'Title (accent)', type: 'string' }),
+    defineField({ name: 'intro', title: 'Intro', type: 'text', rows: 3 }),
     defineField({
       name: 'items',
       title: 'Items',
@@ -260,10 +262,26 @@ const includedSection = defineField({
     defineField({ name: 'titleLead', title: 'Title (lead)', type: 'string' }),
     defineField({ name: 'titleAccent', title: 'Title (accent)', type: 'string' }),
     defineField({ name: 'youLabel', title: 'You label', type: 'string' }),
+    defineField({ name: 'youSubhead', title: 'You subhead', type: 'string' }),
     defineField({ name: 'you', title: 'You items', type: 'array', of: [{ type: 'string' }] }),
     defineField({ name: 'weLabel', title: 'We label', type: 'string' }),
+    defineField({ name: 'weSubhead', title: 'We subhead', type: 'string' }),
     defineField({ name: 'we', title: 'We items', type: 'array', of: [{ type: 'string' }] }),
     defineField({ name: 'footnote', title: 'Footnote', type: 'string' }),
+  ],
+})
+
+const regionsStripSection = defineField({
+  name: 'regionsStrip',
+  title: 'Regions strip (Philippines only)',
+  type: 'object',
+  options: { collapsible: true, collapsed: true },
+  description: 'Three hub cards (Makati / Cebu / Clark) plus a retention callout.',
+  fields: [
+    defineField({ name: 'title', title: 'Title', type: 'string' }),
+    defineField({ name: 'hubs', title: 'Hubs', type: 'array', of: [hubCardMember] }),
+    defineField({ name: 'retentionValue', title: 'Retention value', type: 'string' }),
+    defineField({ name: 'retentionLabel', title: 'Retention label', type: 'string' }),
   ],
 })
 
@@ -339,6 +357,19 @@ const startSection = defineField({
     defineField({ name: 'eyebrow', title: 'Eyebrow', type: 'string' }),
     defineField({ name: 'titleLead', title: 'Title (lead)', type: 'string' }),
     defineField({ name: 'titleAccent', title: 'Title (accent)', type: 'string' }),
+    defineField({
+      name: 'variant',
+      title: 'Variant',
+      type: 'string',
+      options: {
+        list: [
+          { title: 'Cards', value: 'cards' },
+          { title: 'Quiz', value: 'quiz' },
+        ],
+        layout: 'radio',
+      },
+      description: 'Quiz renders the role-picker CTA (Philippines). Cards is the default three-way start.',
+    }),
     defineField({ name: 'cards', title: 'Cards', type: 'array', of: [startCardMember] }),
   ],
 })
@@ -386,6 +417,7 @@ export default defineType({
       advantageSection,
       videoSection,
       onGroundSection,
+      regionsStripSection,
       eorSection,
       includedSection,
       primaryHubSection,

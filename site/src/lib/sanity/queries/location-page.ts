@@ -14,9 +14,9 @@ import type { LocationContent } from '@/components/templates/location/content'
 // falls back to the code registry when this returns null.
 //
 // Calculator: only the surrounding COPY comes from Sanity. The numeric config
-// (roles, region multipliers, currency, comparison multiple) stays code-driven
-// per the WIRE-BESPOKE brief, so toLocationContent() splices it in from the
-// code fallback.
+// (roles, region multipliers, currency, comparison multiple, seniority) stays
+// code-driven per the WIRE-BESPOKE brief, so toLocationContent() splices it in
+// from the code fallback. Null/empty image URLs also coalesce from fallback.
 
 // Logo image fragment: URL + intrinsic dimensions (same shape as homePage).
 const LOGO_WH = `"src": image.asset->url, "width": image.asset->metadata.dimensions.width, "height": image.asset->metadata.dimensions.height`
@@ -43,11 +43,15 @@ const LOCATION_PAGE_QUERY = /* groq */ `
   video{ eyebrow, titleLead, titleAccent, intro, presenter, pullQuote, videoUrl, "image": image.asset->url },
   onGround{ eyebrow, titleLead, titleAccent, body, bullets, "image": image.asset->url },
   eor{
-    eyebrow, titleLead, titleAccent,
+    eyebrow, titleLead, titleAccent, subhead, intro,
     items[]{ title, body }
   },
   included{
-    eyebrow, titleLead, titleAccent, youLabel, you, weLabel, we, footnote
+    eyebrow, titleLead, titleAccent, youLabel, you, youSubhead, weLabel, we, weSubhead, footnote
+  },
+  regionsStrip{
+    title, retentionValue, retentionLabel,
+    hubs[]{ city, note, "image": image.asset->url }
   },
   primaryHub{
     eyebrow, titleLead, titleAccent, bannerEyebrow, bannerTitle, bannerBody, "image": image.asset->url,
@@ -64,7 +68,7 @@ const LOCATION_PAGE_QUERY = /* groq */ `
     savingsSticker, savingsStickerSub, disclaimer
   },
   start{
-    eyebrow, titleLead, titleAccent,
+    eyebrow, titleLead, titleAccent, variant,
     cards[]{ eyebrow, title, body, bullets, cta, ctaHref }
   },
   faq{
@@ -179,6 +183,8 @@ export const LocationPageSchema = z.object({
       eyebrow: nzs,
       titleLead: nzs,
       titleAccent: nzs,
+      subhead: nzs,
+      intro: nzs,
       items: z.array(z.object({ title: nzs, body: nzs })).nullable().optional(),
     })
     .nullable()
@@ -190,9 +196,20 @@ export const LocationPageSchema = z.object({
       titleAccent: nzs,
       youLabel: nzs,
       you: zStrArr,
+      youSubhead: nzs,
       weLabel: nzs,
       we: zStrArr,
+      weSubhead: nzs,
       footnote: nzs,
+    })
+    .nullable()
+    .optional(),
+  regionsStrip: z
+    .object({
+      title: nzs,
+      retentionValue: nzs,
+      retentionLabel: nzs,
+      hubs: z.array(zHubCard).nullable().optional(),
     })
     .nullable()
     .optional(),
@@ -239,6 +256,7 @@ export const LocationPageSchema = z.object({
       eyebrow: nzs,
       titleLead: nzs,
       titleAccent: nzs,
+      variant: z.enum(['cards', 'quiz']).nullable().optional(),
       cards: z.array(zStartCard).nullable().optional(),
     })
     .nullable()
@@ -277,30 +295,121 @@ export async function fetchLocationPage(slug: string): Promise<LocationPageData 
   return result.data
 }
 
+function isEmptyImageValue(value: unknown): boolean {
+  return value === null || value === undefined || value === ''
+}
+
+function isImageKey(key: string): boolean {
+  return key === 'image' || key === 'src'
+}
+
+// Deep-merge Sanity data over the code fallback. For any `image` / `src` key
+// (or nested object/array slot) that is null/undefined/empty in Sanity, take
+// the fallback value at the same path. Arrays are merged index-by-index.
+function coalesceImages<T>(sanity: T, fallback: T): T {
+  if (isEmptyImageValue(sanity) && !isEmptyImageValue(fallback)) return fallback
+  if (Array.isArray(sanity) && Array.isArray(fallback)) {
+    const len = Math.max(sanity.length, fallback.length)
+    const out: unknown[] = []
+    for (let i = 0; i < len; i++) {
+      const s = sanity[i]
+      const f = fallback[i]
+      if (s === undefined || s === null) {
+        out.push(f)
+      } else if (f === undefined) {
+        out.push(s)
+      } else {
+        out.push(coalesceImages(s, f))
+      }
+    }
+    return out as T
+  }
+  if (
+    sanity &&
+    fallback &&
+    typeof sanity === 'object' &&
+    typeof fallback === 'object' &&
+    !Array.isArray(sanity) &&
+    !Array.isArray(fallback)
+  ) {
+    const sObj = sanity as Record<string, unknown>
+    const fObj = fallback as Record<string, unknown>
+    const keys = new Set([...Object.keys(sObj), ...Object.keys(fObj)])
+    const out: Record<string, unknown> = {}
+    for (const key of keys) {
+      const sVal = sObj[key]
+      const fVal = fObj[key]
+      if (isImageKey(key) && isEmptyImageValue(sVal) && !isEmptyImageValue(fVal)) {
+        out[key] = fVal
+      } else if (sVal === undefined) {
+        out[key] = fVal
+      } else if (fVal === undefined) {
+        out[key] = sVal
+      } else {
+        out[key] = coalesceImages(sVal, fVal)
+      }
+    }
+    return out as T
+  }
+  return (isEmptyImageValue(sanity) ? fallback : sanity) as T
+}
+
+// Stale-seed detector: v1 seeds stored string paths in image fields; after the
+// v2 imageField upgrade GROQ `image.asset->url` returns null for every photo.
+// When that happens the registry copy is the fidelity target (wrong hero names,
+// missing regions strip, Mid-level calculator, etc. are all on the stale doc).
+function isStaleImageSeed(data: LocationPageData): boolean {
+  const cards = data.hero?.cards
+  if (!cards?.length) return true
+  return cards.every((c) => isEmptyImageValue(c.image))
+}
+
 // Cast the lenient boundary shape into the template's LocationContent type, and
 // splice the calculator's numeric config back in from the code fallback (the
-// registry entry) because calculator logic stays code-driven. Everything else
-// (copy + every dereferenced image URL) comes from Sanity; `region`/`slug` and
-// the logo strip fall back to the code entry if unset.
+// registry entry) because calculator logic stays code-driven. Null/empty image
+// URLs coalesce from the fallback. `region`/`slug` and the logo strip fall back
+// to the code entry if unset.
 export function toLocationContent(data: LocationPageData, fallback: LocationContent): LocationContent {
+  // Broken/missing Sanity image assets → serve the locked registry content so
+  // staging matches docs/raw-html until a fresh image seed lands.
+  if (isStaleImageSeed(data)) {
+    return {
+      ...fallback,
+      region: data.region ?? fallback.region,
+      slug: data.slug ?? fallback.slug,
+    }
+  }
+
   const casted = data as unknown as LocationContent
-  const logos = data.logos?.length ? (casted.logos as LocationContent['logos']) : fallback.logos
+  const merged = coalesceImages(casted, fallback)
+  const logos = data.logos?.length ? merged.logos : fallback.logos
   const logosLabelLines = data.logosLabelLines?.length
     ? (data.logosLabelLines as string[])
     : fallback.logosLabelLines
   return {
-    ...casted,
+    ...merged,
     region: data.region ?? fallback.region,
     slug: data.slug ?? fallback.slug,
     logosLabel: fallback.logosLabel,
     logosLabelLines,
     logos,
+    // PH regions strip + quiz stay available from the registry when Sanity
+    // docs predate those fields.
+    regionsStrip: merged.regionsStrip ?? fallback.regionsStrip,
+    // Quiz config stays code-driven (roles list + CTAs) when Sanity has no quiz.
+    start: {
+      ...merged.start,
+      variant: merged.start?.variant ?? fallback.start.variant,
+      quiz: merged.start?.quiz ?? fallback.start.quiz,
+      cards: merged.start?.cards?.length ? merged.start.cards : fallback.start.cards,
+    },
     calculator: {
-      ...casted.calculator,
+      ...merged.calculator,
       calcRegions: fallback.calculator.calcRegions,
       roles: fallback.calculator.roles,
       currency: fallback.calculator.currency,
       comparisonMultiple: fallback.calculator.comparisonMultiple,
+      seniorityOptions: fallback.calculator.seniorityOptions,
     },
   }
 }

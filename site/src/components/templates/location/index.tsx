@@ -5,6 +5,7 @@ import type { AdvantageCard, EngineerProfile, HubCard, LocationContent, Location
 import type { HomeProfile } from '@/components/templates/home/content'
 import { HeroCards } from '@/components/templates/home/hero-cards'
 import { LocationCalculator } from './calculator'
+import { LocationStartQuiz } from './start-quiz'
 import { LocationVideo } from './video'
 import { Spotlight } from './spotlight'
 
@@ -56,11 +57,31 @@ const iconBase = {
   strokeLinejoin: 'round' as const,
   'aria-hidden': true,
 }
+const TIMEZONE_ICON_MAP: Record<NonNullable<AdvantageCard['icon']>, React.ReactNode> = {
+  clock: <svg key="clock" {...iconBase} className="h-5 w-5"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>,
+  dollar: <svg key="dollar" {...iconBase} className="h-5 w-5"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>,
+  bolt: <svg key="bolt" {...iconBase} className="h-5 w-5"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" /></svg>,
+  globe: <svg key="globe" {...iconBase} className="h-5 w-5"><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18Z" /></svg>,
+  chat: (
+    <svg key="chat" {...iconBase} className="h-5 w-5">
+      <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
+    </svg>
+  ),
+  users: (
+    <svg key="users" {...iconBase} className="h-5 w-5">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="3" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  ),
+}
+
+// Positional fallback for regions that do not set card.icon.
 const TIMEZONE_ICONS: React.ReactNode[] = [
-  <svg key="clock" {...iconBase} className="h-5 w-5"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>,
-  <svg key="dollar" {...iconBase} className="h-5 w-5"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>,
-  <svg key="bolt" {...iconBase} className="h-5 w-5"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" /></svg>,
-  <svg key="globe" {...iconBase} className="h-5 w-5"><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18Z" /></svg>,
+  TIMEZONE_ICON_MAP.clock,
+  TIMEZONE_ICON_MAP.dollar,
+  TIMEZONE_ICON_MAP.bolt,
+  TIMEZONE_ICON_MAP.globe,
 ]
 
 function Eyebrow({ children, className }: { children: string; className?: string }) {
@@ -70,7 +91,13 @@ function Eyebrow({ children, className }: { children: string; className?: string
 function Heading({ lead, accent, size = 'text-[34px] lg:text-[52px]' }: { lead: string; accent: string; size?: string }) {
   return (
     <h2 className={cn(size, 'font-bold leading-[1.05] tracking-[-1.4px] text-white')}>
-      {lead} <span className={ACCENT}>{accent}</span>
+      {lead}
+      {accent ? (
+        <>
+          {' '}
+          <span className={ACCENT}>{accent}</span>
+        </>
+      ) : null}
     </h2>
   )
 }
@@ -224,7 +251,11 @@ function Advantage({ content }: { content: LocationContent }) {
       <p className={cn('mt-4 max-w-[700px] text-[16px]', BODY)}>{advantage.intro}</p>
       <ul className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {advantage.cards.map((c, i) => (
-          <AdvantageTile key={c.title} card={c} icon={TIMEZONE_ICONS[i] ?? TIMEZONE_ICONS[0]} />
+          <AdvantageTile
+            key={c.title}
+            card={c}
+            icon={(c.icon ? TIMEZONE_ICON_MAP[c.icon] : null) ?? TIMEZONE_ICONS[i] ?? TIMEZONE_ICONS[0]}
+          />
         ))}
       </ul>
     </section>
@@ -288,23 +319,64 @@ function OnGround({ content }: { content: LocationContent }) {
 function Eor({ content }: { content: LocationContent }) {
   const { eor } = content
   if (!eor) return null
+  const items = eor.items
+  // Five items: first row of 3, second row of 2 centered (no empty grid hole).
+  const useBalancedFive = items.length === 5
   return (
     <section className={cn(BAND, 'py-[72px]')}>
       <Eyebrow>{eor.eyebrow}</Eyebrow>
       <div className="mt-3">
-        <Heading lead={eor.titleLead} accent={eor.titleAccent} size="text-[30px] lg:text-[40px]" />
-      </div>
-      <ul className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-        {eor.items.map((item) => (
-          <li key={item.title} className={cn(CARD, CARD_HOVER, 'flex flex-col gap-2 p-6')}>
-            <span className="mb-1 flex h-9 w-9 items-center justify-center rounded-full bg-brand-primary/15 text-[13px] text-brand-primary">
-              {GLYPH.check}
+        {eor.subhead ? (
+          <h2 className="text-[30px] font-bold leading-[1.05] tracking-[-1px] text-white lg:text-[40px]">
+            {eor.subhead}
+            <br />
+            <span className={ACCENT}>
+              {eor.titleLead} {eor.titleAccent}
             </span>
-            <h3 className="text-[17px] font-semibold text-white">{item.title}</h3>
-            <p className={cn('text-[14px] leading-[21px]', BODY)}>{item.body}</p>
-          </li>
-        ))}
-      </ul>
+          </h2>
+        ) : (
+          <Heading lead={eor.titleLead} accent={eor.titleAccent} size="text-[30px] lg:text-[40px]" />
+        )}
+      </div>
+      {eor.intro ? <p className={cn('mt-4 max-w-[720px] text-[17px] leading-[27px]', BODY)}>{eor.intro}</p> : null}
+      {useBalancedFive ? (
+        <div className="mt-10 flex flex-col gap-5">
+          <ul className="grid grid-cols-1 gap-5 md:grid-cols-3">
+            {items.slice(0, 3).map((item) => (
+              <li key={item.title} className={cn(CARD, CARD_HOVER, 'flex flex-col gap-2 p-6')}>
+                <span className="mb-1 flex h-9 w-9 items-center justify-center rounded-full bg-brand-primary/15 text-[13px] text-brand-primary">
+                  {GLYPH.check}
+                </span>
+                <h3 className="text-[17px] font-semibold text-white">{item.title}</h3>
+                <p className={cn('text-[14px] leading-[21px]', BODY)}>{item.body}</p>
+              </li>
+            ))}
+          </ul>
+          <ul className="mx-auto grid w-full max-w-[calc((100%-2.5rem)*2/3)] grid-cols-1 gap-5 md:grid-cols-2">
+            {items.slice(3).map((item) => (
+              <li key={item.title} className={cn(CARD, CARD_HOVER, 'flex flex-col gap-2 p-6')}>
+                <span className="mb-1 flex h-9 w-9 items-center justify-center rounded-full bg-brand-primary/15 text-[13px] text-brand-primary">
+                  {GLYPH.check}
+                </span>
+                <h3 className="text-[17px] font-semibold text-white">{item.title}</h3>
+                <p className={cn('text-[14px] leading-[21px]', BODY)}>{item.body}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <ul className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-3">
+          {items.map((item) => (
+            <li key={item.title} className={cn(CARD, CARD_HOVER, 'flex flex-col gap-2 p-6')}>
+              <span className="mb-1 flex h-9 w-9 items-center justify-center rounded-full bg-brand-primary/15 text-[13px] text-brand-primary">
+                {GLYPH.check}
+              </span>
+              <h3 className="text-[17px] font-semibold text-white">{item.title}</h3>
+              <p className={cn('text-[14px] leading-[21px]', BODY)}>{item.body}</p>
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   )
 }
@@ -322,7 +394,12 @@ function Included({ content }: { content: LocationContent }) {
       <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className={cn(CARD, 'p-8')}>
           <p className="text-[11px] font-semibold uppercase tracking-[1.4px] text-brand-primary">{included.youLabel}</p>
-          <ul className="mt-5 flex flex-col gap-4">
+          {included.youSubhead ? (
+            <p className="mt-3 whitespace-pre-line text-[22px] font-semibold leading-[32px] tracking-[-0.6px] text-white">
+              {included.youSubhead.replace(/\. /g, '.\n')}
+            </p>
+          ) : null}
+          <ul className={cn('flex flex-col gap-4', included.youSubhead ? 'mt-7' : 'mt-5')}>
             {included.you.map((b) => (
               <li key={b} className={cn('flex items-start gap-3 text-[16px] font-medium text-white')}>
                 <span aria-hidden="true" className="mt-1 text-brand-primary">{GLYPH.arrow}</span>
@@ -333,7 +410,12 @@ function Included({ content }: { content: LocationContent }) {
         </div>
         <div className="rounded-[20px] bg-brand-primary p-8 text-[#060F1E]">
           <p className="text-[11px] font-semibold uppercase tracking-[1.4px] text-[#060F1E]/70">{included.weLabel}</p>
-          <ul className="mt-5 flex flex-col gap-4">
+          {included.weSubhead ? (
+            <p className="mt-3 text-[22px] font-semibold leading-[32px] tracking-[-0.6px] text-[#060F1E]">
+              {included.weSubhead}
+            </p>
+          ) : null}
+          <ul className={cn('flex flex-col gap-4', included.weSubhead ? 'mt-7' : 'mt-5')}>
             {included.we.map((b) => (
               <li key={b} className="flex items-start gap-3 text-[15px] font-medium">
                 <span aria-hidden="true" className="mt-0.5">{GLYPH.check}</span>
@@ -343,6 +425,38 @@ function Included({ content }: { content: LocationContent }) {
           </ul>
           <p className="mt-6 text-[18px] font-bold">{included.footnote}</p>
         </div>
+      </div>
+    </section>
+  )
+}
+
+// ── Regions strip (PH-only: Makati / Cebu / Clark + retention) ───────────────
+function RegionsStrip({ content }: { content: LocationContent }) {
+  const strip = content.regionsStrip
+  if (!strip) return null
+  const accentMatch = strip.title.match(/^(.*?)\s+(three regions\.)$/i)
+  const titleLead = accentMatch?.[1] ?? strip.title
+  const titleAccent = accentMatch?.[2] ?? ''
+  return (
+    <section className={cn(BAND, 'py-[72px] text-center')}>
+      <div className="mt-3">
+        <Heading lead={titleLead} accent={titleAccent} size="text-[30px] lg:text-[44px]" />
+      </div>
+      <ul className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
+        {strip.hubs.map((hub) => (
+          <li key={hub.city} className="relative h-[240px] overflow-hidden rounded-[20px] border border-[#22314D]">
+            <img src={hub.image} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+            <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#060F1E]/95 via-[#060F1E]/30 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 p-5 text-left">
+              <p className="text-[18px] font-semibold text-white">{hub.city}</p>
+              <p className="text-[13px] text-white/70">{hub.note}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+      <div className="mt-8 inline-flex items-center gap-3 rounded-full border border-[#22314D] bg-[#101B30] px-5 py-3">
+        <span className="text-[17px] font-bold text-white">{strip.retentionValue}</span>
+        <span className="text-[12.5px] text-[#B8C2D1]">{strip.retentionLabel}</span>
       </div>
     </section>
   )
@@ -472,6 +586,7 @@ function Calculator({ content }: { content: LocationContent }) {
         <LocationCalculator
           regions={calculator.calcRegions}
           roles={calculator.roles}
+          seniorityOptions={calculator.seniorityOptions}
           currency={calculator.currency}
           comparisonMultiple={calculator.comparisonMultiple}
           labels={{
@@ -542,6 +657,30 @@ function StartTile({ card, featured }: { card: StartCard; featured?: boolean }) 
 
 function Start({ content }: { content: LocationContent }) {
   const { start } = content
+
+  if (start.variant === 'quiz' && start.quiz) {
+    return (
+      <Spotlight className="py-[72px]">
+        <div className={BAND}>
+          <LocationStartQuiz
+            eyebrow={start.quiz.eyebrow || start.eyebrow}
+            title={start.titleLead}
+            titleAccent={start.titleAccent}
+            subtitle={start.quiz.subtitle}
+            stepLabel={start.quiz.stepLabel}
+            prompt={start.quiz.prompt}
+            hint={start.quiz.hint}
+            roles={start.quiz.roles}
+            cta={start.quiz.cta}
+            ctaHref={start.quiz.ctaHref}
+            selectedPrefix={start.quiz.selectedPrefix}
+            emptyStatus={start.quiz.emptyStatus}
+          />
+        </div>
+      </Spotlight>
+    )
+  }
+
   const [first, ...rest] = start.cards
   return (
     <Spotlight className="py-[72px]">
@@ -605,17 +744,28 @@ function Faq({ content }: { content: LocationContent }) {
 }
 
 export function LocationTemplate({ content }: { content: LocationContent }) {
+  const isPh = Boolean(content.eor)
   return (
     <main id="main" className="overflow-x-hidden">
       <Hero content={content} />
       <LogoStrip content={content} />
       <Advantage content={content} />
       <VideoFeature content={content} />
-      <OnGround content={content} />
-      <Eor content={content} />
-      <Included content={content} />
-      <PrimaryHub content={content} />
-      <Engineers content={content} />
+      {isPh ? (
+        <>
+          <RegionsStrip content={content} />
+          <Eor content={content} />
+          <Included content={content} />
+          <Engineers content={content} />
+          <PrimaryHub content={content} />
+        </>
+      ) : (
+        <>
+          <OnGround content={content} />
+          <PrimaryHub content={content} />
+          <Engineers content={content} />
+        </>
+      )}
       <FunFact content={content} />
       <Calculator content={content} />
       <Start content={content} />

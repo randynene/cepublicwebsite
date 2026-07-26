@@ -93,10 +93,17 @@ export interface CalcRole {
   base: number
 }
 
+export interface CalcSeniorityOption {
+  id: string
+  label: string
+  mult: number
+}
+
 export function LocationCalculator({
   labels,
   regions = REGIONS as unknown as CalcRegionOption[],
   roles = ROLES as unknown as CalcRole[],
+  seniorityOptions = SENIORITY as unknown as CalcSeniorityOption[],
   currency = '$',
   comparisonMultiple = US_ANNUAL_MULTIPLE,
 }: {
@@ -117,24 +124,31 @@ export function LocationCalculator({
   regions?: CalcRegionOption[]
   // Role options in the region's currency (PH is in GBP).
   roles?: CalcRole[]
+  // Seniority options (PH is senior-focused: Senior + Lead only).
+  seniorityOptions?: CalcSeniorityOption[]
   currency?: string
   comparisonMultiple?: number
 }) {
+  const defaultSeniorityId =
+    seniorityOptions.find((s) => s.id === 'senior')?.id ?? seniorityOptions[0]?.id ?? 'senior'
   const [roleId, setRoleId] = useState(roles[0]?.id ?? 'backend')
   const [regionId, setRegionId] = useState(regions[0]?.id ?? 'latam')
-  const [seniorityId, setSeniorityId] = useState('senior')
+  const [seniorityId, setSeniorityId] = useState(defaultSeniorityId)
 
   const view = useMemo(() => {
     const role = roles.find((r) => r.id === roleId) ?? roles[0]
     const region = regions.find((r) => r.id === regionId) ?? regions[0]
-    const sen = SENIORITY.find((s) => s.id === seniorityId) ?? SENIORITY[1]
-    const monthly = role.base * sen.mult * (region?.mult ?? 1)
+    const sen =
+      seniorityOptions.find((s) => s.id === seniorityId) ??
+      seniorityOptions.find((s) => s.id === 'senior') ??
+      seniorityOptions[0]
+    const monthly = role.base * (sen?.mult ?? 1) * (region?.mult ?? 1)
     const ceAnnual = monthly * 12
     // comparisonMultiple is the loaded LOCAL annual cost as a multiple of the CE
     // all-in annual cost (LATAM ~2.315 -> ~$85,200 saved on $5,400/mo).
     const saved = ceAnnual * comparisonMultiple - ceAnnual
     return { monthly: fmtMoney(monthly, currency), saved: fmtMoney(saved, currency) }
-  }, [roleId, regionId, seniorityId, regions, roles, currency, comparisonMultiple])
+  }, [roleId, regionId, seniorityId, regions, roles, seniorityOptions, currency, comparisonMultiple])
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_1fr]">
@@ -142,7 +156,7 @@ export function LocationCalculator({
       <div className="flex flex-col gap-5 rounded-[20px] border border-[#22314D] bg-[#0A1628] p-6 lg:p-8">
         <Field label={labels.roleLabel} value={roleId} onChange={setRoleId} options={roles} />
         <Field label={labels.regionLabel} value={regionId} onChange={setRegionId} options={regions} />
-        <Field label={labels.seniorityLabel} value={seniorityId} onChange={setSeniorityId} options={SENIORITY} />
+        <Field label={labels.seniorityLabel} value={seniorityId} onChange={setSeniorityId} options={seniorityOptions} />
       </div>
 
       {/* Result - lime card */}
