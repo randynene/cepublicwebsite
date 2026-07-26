@@ -4,7 +4,7 @@
 > it live on staging, ready for a zero-loss crossover. If any other doc disagrees
 > with this file about "what is done", this file wins until launch.
 >
-> Owner: Jake. Author of record: planning brain. Last updated: 25 Jul 2026.
+> Owner: Jake. Author of record: planning brain. Last updated: 26 Jul 2026.
 
 ---
 
