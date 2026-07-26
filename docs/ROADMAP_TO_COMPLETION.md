@@ -762,15 +762,14 @@ and indexed on CE. Decision: keep them live with their captured content so they 
 indexed and parity holds; redesign later. They are NOT hidden/noindexed, because that
 would drop pages Google currently ranks during the migration.
 
-- **D7 - Lead capture / intent system. CONFIRMED (26 Jul).** Butter-up first; hard ask
-  only when intent is clear. Lanes:
-  - **Hot** → Schedule a Call / Calendly (default conversion door)
-  - **Warm–hot** → one real multi-step = Start Hiring (HubSpot)
-  - **Curious** → AI chat from Jake's separate app (later; helper lane, not main CTA)
-  - **Browsing** → no form; great content + soft CTAs
-  - **Soft stay-in-touch** → footer newsletter only
-  - **Downloads** → ungate (or mostly ungate); soft “book a call” after
-  - **No** email-gate for pricing quotes; calculator + Book a Call instead
+- **D7 - Lead capture / intent system. CONFIRMED + SIMPLIFIED (26 Jul).**
+  Necessary doors only — see `docs/design/LEAD_CONVERSION_SYSTEM_UX.md`:
+  - **M1 Schedule a Call** = primary door sitewide
+  - **M2 Chat + living brief** = warm path at interest spikes only (Pricing first)
+  - **M4 Helper chat** = sitewide later (Jake’s AI app)
+  - **M3 Start Hiring** = keep URLs/forms working; **do not promote** / no new links
+  - Butter-up first; ungate downloads; no email-gate for pricing quotes
+  - Locations hero should move off `/start-hiring` toward M1 (+ optional M2)
 - **D8 - Pricing conversion. CONFIRMED (26 Jul).** Pricing is the highest-value page.
   - **Ship first (Option A):** after calculator result, primary CTA =
     **“Get a more accurate estimate — book a call”** (pass role/region/seniority into
