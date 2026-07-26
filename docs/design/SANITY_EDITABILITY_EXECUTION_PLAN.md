@@ -300,8 +300,14 @@ the Presentation click-to-edit smoke, which needs the `defineLocations` entry (W
 ### WP-12 · Location pages polish
 **Pages:** LATAM / PH / EE
 
+> **Note (26 Jul):** the three stranded location PRs landed as #29 / #30 / #36
+> (see Appendix C). Those were fidelity and media fixes, not editability work, so
+> this package is still open. One gap they surfaced: the PH start-quiz copy is
+> code-owned, only its `cards | quiz` toggle is in Sanity.
+
 **Do**
 - [ ] Confirm D1 (rates stay in code by default)
+- [ ] Start-quiz copy (`start-quiz.tsx` props: eyebrow, prompt, hint, roles, cta, `selectedPrefix`, `emptyStatus`) into the `locationPage` schema, or record it as deliberately code-owned
 - [ ] Hero CTA href fields + FAQ help href field
 - [ ] Make “VETTED BY SENIOR ENG” editable or UI_STRINGS
 - [ ] Ensure location docs seeded; video URLs filled in Studio
@@ -482,14 +488,44 @@ those two need reconciling rather than merging.
 `main`, or treat them as superseded? Until this is answered, `feat/design-1`
 must not be deleted.
 
-**Related: PRs #5, #6, #7** (LATAM / Philippines / Eastern Europe location fixes,
-24 Jul) are all based on `feat/design-1`, not `main`, and are real unlanded work:
-image optimisation (2.1MB → 158KB on several photos), a video component rewrite,
-calculator changes, a new `start-quiz.tsx`, and a `location-page` schema addition.
-All three touch the *same* files (`location/content.ts`, `calculator.tsx`,
-`index.tsx`, `queries/location-page.ts`), so they conflict with each other as well
-as with `main`. They cannot be merged as-is and should not be closed blind. Needs
-a decision: rebase and land them one at a time, or re-do the work against `main`.
+**Related: PRs #5, #6, #7 — RESOLVED 26 Jul. All three landed.** They were based on
+`feat/design-1`, not `main`, and were real unlanded work: image optimisation
+(2.1MB → 158KB on several photos), a video component rewrite, calculator changes,
+a new `start-quiz.tsx`, and `location-page` schema additions. Because all three
+touched the same four files they conflicted with each other as well as with `main`,
+so each was cherry-picked onto `main` separately, re-verified, and landed on its
+own PR. The originals were closed as superseded, not merged.
+
+| Original | Replaced by | Landed |
+|---|---|---|
+| #7 Philippines | #29 | `d8f816f` |
+| #5 LATAM | #30 | `44a1da2` |
+| #6 Eastern Europe | #36 | `2c8b1c9` |
+
+Two things were changed during the rebase rather than carried across verbatim:
+
+1. **Dropped a `live.ts` hunk from the Philippines branch.** It added a
+   `SANITY_PUBLIC_READ=1` escape hatch that set `serverToken` / `browserToken` to
+   `false`. Nothing in the repo sets that variable, it was read raw via
+   `process.env` (bypassing the strict zod env schema), and it sat in the Visual
+   Editing file that CLAUDE.md explicitly lists as do-not-touch. It was local
+   verify scaffolding with no product benefit, so it did not ship. Note it failed
+   *closed* (no token = no draft access), so this was hygiene, not a security fix.
+2. **Threaded two hardcoded strings out of `start-quiz.tsx` into props**
+   (`selectedPrefix`, `emptyStatus`). They tripped the UI_STRINGS lint rule, which
+   is the exact rule this track exists to satisfy. Every other string in that
+   component was already a prop; these two had been missed. The quiz config stays
+   code-driven by design (`queries/location-page.ts` falls back to the registry
+   when Sanity has no quiz), so the copy lives in `location/content.ts`.
+
+**Still open from this appendix:** the `feat/design-1` question above (CTA hover
+restyle + decrypt-text fixes). Unresolved. Do not delete that branch.
+
+**Known gap surfaced while landing these:** the location start-quiz copy is not
+Sanity-editable. Only the `variant` toggle (`cards` | `quiz`) is in the schema; the
+quiz's own strings are code-owned. Consistent with how the feature was designed,
+but it is a real editability hole for a customer-facing block. Candidate for the
+WP-12 Location polish package.
 
 ---
 
