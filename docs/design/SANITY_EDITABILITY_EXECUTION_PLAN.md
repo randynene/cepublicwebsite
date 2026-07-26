@@ -1,12 +1,37 @@
 # Sanity editability — consolidated execution plan
 
-**Status:** Executing — WP-01/02 (#22), WP-03 (#23), WP-04 (#24), WP-05 (#25) merged; WP-06 (this PR)
+**Status:** Executing — WP-01/02 (#22), WP-03 (#23), WP-04 (#24), WP-05 (#25), WP-06 (#27) all merged to `main`. Next: WP-07.
 **Date:** 2026-07-26  
 **Goal:** Seb can edit *everything meaningful* on the main marketing pages via Sanity Studio → Publish → staging updates.  
 **Source of truth site:** https://staging.jakevibes.dev  
 **Studio:** https://mygratr-cloudemployee.sanity.studio/
 
 This document consolidates two fan-out audits into **one ordered fix backlog**. Execute in the work packages below (not random drive-bys).
+
+---
+
+## Standing rules for this track (read before any WP)
+
+1. **Seeds are destructive, so snapshot first.** Every `scripts/static/seed-*.ts`
+   ends in `createOrReplace` on a hardcoded singleton `_id`, which silently wipes
+   anything Seb edited in Studio. **`npm run static:backup-singletons`** (added
+   26 Jul) snapshots every singleton to `audit-output/sanity-backups/<timestamp>/`
+   and restores from the same script with `--restore <dir> --apply`. Run the
+   backup before any seed. Restore is dry-run by default.
+2. **Chat CTAs use the `#chat` token** introduced in WP-06. Reuse
+   `site/src/lib/chat.ts` and `ChatLink` / `ChatPill` from
+   `site/src/components/shared/chat-link/`. Never ship a CTA whose `href` is `#`
+   or an anchor to the section it already sits in.
+3. **Every CTA is locale-aware** via `toInternalHref` from `site/src/lib/url.ts`.
+   UK pages keep the visitor inside `/uk`.
+4. **Studio deploys are Jake's manual gate** (`cd studio && npx sanity deploy`),
+   as are all env-var changes and Vercel dashboard work.
+5. **`npm run lint` has 30 pre-existing errors** (Tech Debt #36). Do not fix them.
+   Confirm you added none.
+6. **Add a `defineLocations` entry** in `studio/sanity.config.ts` for every
+   singleton you touch. Without it the doc opens in Presentation with no idea
+   which URL to preview, so "editable in Sanity" is not "editable in
+   Presentation". WP-05 established the pattern; see the backlog item in WP-15.
 
 ---
 
@@ -165,7 +190,9 @@ npm run launch:verify-hubspot-forms
 - [x] FAQ fallback CTA: real chat URL field (stop `href="#faq"`)
 - [x] Optional: schema for matcher steps 2–4 if making interactive — **not done, deliberately** (D2 defers the multi-step flow)
 - [x] Smoke — both locales, all four CTA branches verified in-browser
-- [ ] Presentation smoke — **needs Studio deploy + reseed after merge**
+- [x] Merged as #27 (26 Jul), rebased onto main after #25/#26 landed
+- [x] **Seed RUN 26 Jul** — `npm run static:seed-how-it-works-page`, verified in the dataset: `matcher.talkCtas` now holds `{label,href}` pairs (`#chat`, `/book-a-call`) and `faq.fallbackCtaHref` = `#chat`. Backup taken first (see below).
+- [ ] Presentation smoke — **Jake, in the browser.** Blocked on the `defineLocations` gap: `howItWorksPage` has no Presentation location entry yet, so the doc opens with no preview URL. See WP-15.
 
 **Shipped**
 
@@ -196,8 +223,9 @@ members and the plain strings already in the dataset, and legacy strings inherit
 the static content's destination by position. So the page keeps working — with
 live CTAs — between the Studio deploy and the reseed, in either order.
 
-**After merge (Jake):** deploy Studio (`cd studio && npx sanity deploy`), then
-`npm run static:seed-how-it-works-page`.
+**Status 26 Jul:** merged (#27) and **seeded**. The Studio schema was deployed during
+the WP-06 build session, so the seed had a schema to land against. Remaining for Jake:
+the Presentation click-to-edit smoke, which needs the `defineLocations` entry (WP-15).
 
 **Filed, not fixed (out of WP-06 scope):**
 - Home's "Ready to find your engineer" section has the same dead-`<span>` talk CTAs
@@ -317,8 +345,19 @@ live CTAs — between the Studio deploy and the reseed, in either order.
  Location pages, catalogue FAQ panels. All are dead clicks today.
 - [ ] Orphan schema cleanup pass (seeded-but-never-rendered fields) — document or delete
 - [ ] `NEXT_PUBLIC_HUBSPOT_PORTAL_ID` verified on Vercel Production + Preview
-- [ ] Presentation locations map expanded beyond `homePage` for key singletons (optional UX win)
+- [ ] **Presentation locations map — NOT optional, it gates the whole track.**
+  `studio/sanity.config.ts` declares `defineLocations` for `homePage` and (since
+  WP-05) `contactPage`. Every other singleton opens in Presentation with no idea
+  which URL to preview, so **"editable in Sanity" is not yet the same as "editable
+  in Presentation" for anything shipped in WP-01 through WP-06**. If Seb opens the
+  Studio today he will conclude the work was not done. The dataset holds 49
+  singletons (`npm run static:backup-singletons -- --list`); the in-scope marketing
+  ones each need a 9-line entry on the WP-05 pattern, US + UK href. Do this before
+  handing the Studio to Seb.
 - [ ] Sanity CORS already includes `https://staging.jakevibes.dev` (done)
+- [x] **Singleton backup/restore script** — `npm run static:backup-singletons`
+  (added 26 Jul). Was a genuine hole: every seed does `createOrReplace` on a fixed
+  `_id` and there was no way back. First full snapshot taken 26 Jul (49 docs).
 
 ---
 
@@ -413,6 +452,44 @@ A page is Done when:
 
 - Earlier pass detail: `docs/design/SANITY_WIRING_AUDIT.md` (batch 1 deep tables)  
 - Visual editing ops: `docs/design/VISUAL_EDITING.md`  
+
+---
+
+## Appendix C — Branch state finding (26 Jul), needs a call from Jake
+
+Surfaced while clearing the PR backlog. **Not acted on**, because it is a design
+direction question, not a routine technical one.
+
+**`feat/design-1` holds design work that never reached `main`.** `main` was cut
+from `feat/design-1` at #20 on 25 Jul 13:28, but `feat/design-1` kept receiving
+commits, one of them *after* the cut:
+
+| Commit | Date | What |
+|---|---|---|
+| `7ea6e85` | 25 Jul 15:45 (after the cut) | Fix decrypt scramble glyph overlap on hero + home headings |
+| `c4a8fc8` | 24 Jul | Site-wide sweep-fill CTA hover restyle across primitives, chrome, templates |
+| `3e03b0b` | 24 Jul | Point hero "See how it works" CTA at `/how-it-works` |
+| `777de38` | 24 Jul | Decrypt scramble freeze fix; faster Where We Work panel expansion |
+| `9ce3da0` | 24 Jul | Where We Work home section; hero card + process video redesign |
+
+`git diff main feat/design-1` is 41 files. Most of it is `main` being correctly
+*ahead* (WP-01 to WP-05). The genuinely at-risk items are the CTA hover restyle
+and the decrypt-text fixes, which are visual polish `main` does not have. The
+Where We Work commit overlaps WP-02, which built its own Sanity-wired version, so
+those two need reconciling rather than merging.
+
+**Open question for Jake:** cherry-pick the hover restyle + decrypt fixes onto
+`main`, or treat them as superseded? Until this is answered, `feat/design-1`
+must not be deleted.
+
+**Related: PRs #5, #6, #7** (LATAM / Philippines / Eastern Europe location fixes,
+24 Jul) are all based on `feat/design-1`, not `main`, and are real unlanded work:
+image optimisation (2.1MB → 158KB on several photos), a video component rewrite,
+calculator changes, a new `start-quiz.tsx`, and a `location-page` schema addition.
+All three touch the *same* files (`location/content.ts`, `calculator.tsx`,
+`index.tsx`, `queries/location-page.ts`), so they conflict with each other as well
+as with `main`. They cannot be merged as-is and should not be closed blind. Needs
+a decision: rebase and land them one at a time, or re-do the work against `main`.
 
 ---
 

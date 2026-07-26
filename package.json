@@ -87,6 +87,7 @@
     "static:seed-hire-engineers-page": "tsx scripts/static/seed-hire-engineers-page.ts",
     "static:seed-our-work-page": "tsx scripts/static/seed-our-work-page.ts",
     "static:patch-home-hero": "tsx scripts/static/patch-home-hero.ts",
+    "static:backup-singletons": "tsx scripts/static/backup-singletons.ts",
     "static:seed-how-it-works-page": "tsx scripts/static/seed-how-it-works-page.ts",
     "static:seed-pricing-page": "tsx scripts/static/seed-pricing-page.ts",
     "static:seed-for-developers-page": "tsx scripts/static/seed-for-developers-page.ts",
