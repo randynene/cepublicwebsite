@@ -775,45 +775,46 @@ would drop pages Google currently ranks during the migration.
   - **Ship first (Option A):** after calculator result, primary CTA =
     **“Get a more accurate estimate — book a call”** (pass role/region/seniority into
     booking context when possible). Secondary = short hiring brief / Start Hiring.
-    Helper later = AI chat on Pricing.
-  - **Utopia / highest conversion (Option B, next):** under the result, show
-    **example match profiles** for that role + region + seniority (clearly labelled
-    examples, not fake “we matched you”), then CTA to book a call to see a real
-    shortlist. This is the butter-up + convert loop.
+  - **Utopia (design next):** calculator → AI chat asks a few high-signal questions →
+    living hiring brief builds on the side → marketing sweeteners (technical vetting,
+    deep profiles, psychometrics) → example shortlist-style cards (labelled examples)
+    → Book a call for real shortlist. Full scope + conversion audit:
+    **`docs/design/PRICING_LEAD_CONVERSION_UX.md`** (Claude Design brief).
+  - AI chat brain lives in Jake’s separate app/DB; site embeds it. Until ready, same
+    shell can run scripted questions with the same side brief.
 
 ### 8a. Utopia conversion loop (what “lots of leads” looks like)
 
-Goal: every interested visitor is warmed, then given one obvious next step.
+Goal: warm them, learn about them without a form dump, convert on Book a Call.
 
 ```
-Browse / land on Pricing (or Home calculator)
+Pricing calculator → estimate
         ↓
-Play with numbers (role, region, seniority)  ← butter: proof of value
+Chat asks 4–6 key questions (chips first)
         ↓
-See savings + (later) example profiles       ← butter: “this could be my team”
+Side panel: hiring brief builds live (+ vetting sweeteners)
         ↓
-PRIMARY: Book a call for tailored estimate / real shortlist
-   or SECONDARY: Start Hiring multi-step if not ready to talk
-   or HELPER: AI chat if they have a question
+Brief ready → example shortlist-style profiles (labelled examples)
         ↓
-Call / form → HubSpot → human match → 2 real profiles
+PRIMARY: Book a call (always available as escape)
+   SECONDARY: keep chatting / Start Hiring
         ↓
-Repeatable: same pattern on Hire Engineers, Locations, Fractional CTO, Home
+HubSpot + human match → 2 real profiles
 ```
+
+Full audit, chat UI direction, question list, metrics, and Claude Design frame list:
+`docs/design/PRICING_LEAD_CONVERSION_UX.md`.
 
 **Rules that protect conversion:**
-1. Never fake that the calculator matched real people.
-2. Put Schedule a Call wherever interest spikes (calculator result, “get matched
-   at this rate”, end of key service pages).
-3. One real multi-step funnel only (Start Hiring) — page demos either wire to
-   HubSpot or hand off; no dead submit buttons.
-4. AI chat assists; it does not replace Book a Call.
-5. Measure: calculator completes → Book-a-call clicks → booked calls → qualified
-   opportunities (HubSpot). Optimise that chain, not vanity form fills.
+1. Never fake that chat/calculator matched real people.
+2. Book a Call always one click away (chat must not trap hot leads).
+3. One real multi-step funnel only (Start Hiring) for async detail lovers.
+4. Email only at book / explicit save — not before the first answers.
+5. Measure: calculator → panel engage → brief ready → book clicks → bookings → opps.
 
-**Build sequence:** A on Pricing now → B profile teaser when design/content ready →
-wire the same post-interest CTA pattern on Home + Hire Engineers + Locations →
-AI chat entry points when Jake’s app is ready to embed.
+**Build sequence:** V1 Option A on Pricing → V2 this chat+brief module (design in
+Claude Design now) → V3 plug Jake’s AI app into the left rail → reuse on Home /
+Hire Engineers / Locations.
 
 ---
 
