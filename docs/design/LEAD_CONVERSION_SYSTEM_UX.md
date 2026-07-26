@@ -1,323 +1,164 @@
 # Lead conversion system — Claude Design scope (sitewide)
 
 > **Feed this whole file into Claude Design.**  
-> Owner: Jake. Status: Design scope (26 Jul 2026).  
+> Owner: Jake. Status: **Simplified — locked 26 Jul 2026.**  
 > Roadmap: D7 + D8 in `docs/ROADMAP_TO_COMPLETION.md`.  
-> Pricing-module deep dive (audit, questions, metrics):  
-> `docs/design/PRICING_LEAD_CONVERSION_UX.md`.
+> Pricing-module deep dive: `docs/design/PRICING_LEAD_CONVERSION_UX.md`.
 
 ---
 
 ## 0. One-sentence brief
 
-Design a **sitewide lead system** where visitors get warmed up freely, then at moments of interest can refine via **AI chat + a living hiring brief**, while **Schedule a Call** is always the fast hot path — never a form dump, never fake “we matched you.”
+Keep the site simple: **Schedule a Call everywhere interest shows**, and at the biggest interest moments open **AI chat + a living hiring brief**. No form maze. Start Hiring stays in the background only.
 
 ---
 
-## 1. Goals
+## 1. Simplified system (what we actually use)
 
-1. **Convert more booked calls** (primary KPI).
-2. **Butter prospects up** before a hard ask (trust + desire).
-3. **Collect high-signal hiring data** in a non-intrusive way (for sales + Jake’s AI app).
-4. Feel like **one coherent CE product**, not random forms on random pages.
-
-### Non-goals
-
-- Email-gating downloads or pricing quotes.
-- Replacing Calendly with chat.
-- Fake instant engineer matching from 3 dropdowns.
-- Putting a heavy multi-step form on every page.
-
----
-
-## 2. The system (4 parts — design all of them)
-
-Think in **modules**, reused across the site with different intensity.
-
-| Module | What it is | Job |
+| Module | Plain English | Role |
 |---|---|---|
-| **M1 — Hot CTA** | Schedule a Call / Calendly | Instant human path |
-| **M2 — Refinement module** | AI chat (left) + living hiring brief (right) + sweeteners | Warm path: questions → brief builds → book call |
-| **M3 — Async funnel** | Start Hiring multi-step (HubSpot) | People who want a form, not a call yet |
-| **M4 — Helper chat** | Lighter sitewide AI bubble (same brain, smaller shell) | Questions anywhere; can hand off into M2 |
+| **M1 — Schedule a Call** | Talk to a human now (Calendly) | **Primary door sitewide** |
+| **M2 — Chat + living brief** | AI asks a few questions; brief builds on the side; then book a call | **Warm path at interest spikes only** |
+| **M4 — Helper chat** | Small AI bubble for quick questions | **Sitewide helper (later)** |
+| **M3 — Start Hiring** | Old multi-step HubSpot funnel | **Keep alive, do not promote** |
 
-**Brain:** Jake’s separate AI app / DB powers M2 + M4.  
-**Site:** CE Next.js hosts shells, calculator context, Calendly, HubSpot.
+### What “simplified” means (Jake locked)
 
-### Intent lanes (locked)
+1. **Necessary on the site:** M1 + M2 (+ M4 later).  
+2. **Not necessary as a marketed door:** M3 — keep URLs/forms working for parity; **do not add new links** to `/start-hiring` across the site.  
+3. **One visual language** for M1/M2/M4 — not different form styles on every page.  
+4. **Butter up first** — browse freely; hard ask only when interest spikes.
 
-| Intent | Door |
+---
+
+## 2. Intent → door (simple)
+
+| Visitor mood | Door |
 |---|---|
-| Hot — “talk now” | M1 Schedule a Call |
-| Warm — “help me specify” | M2 Refinement module |
-| Async detail | M3 Start Hiring |
-| Curious / stuck | M4 Helper chat |
-| Browsing | No form — content + soft CTAs |
-| Soft stay-in-touch | Footer newsletter only |
+| Ready to talk | **M1 Schedule a Call** |
+| Just saw a price / clicked “get matched” | **M2 Chat + brief** (with M1 escape always) |
+| Quick question | **M4 Helper chat** |
+| Wandering / reading | Nothing — soft M1 at section ends only |
+| Email updates | Footer newsletter only |
+| Somehow hits old `/start-hiring` URL | M3 still works (background) |
 
 ---
 
-## 3. Utopia flow (core story to design)
+## 3. Core flow to design (M2)
 
 ```
-Interest moment (calculator, “get matched”, end of service page, etc.)
+Interest spike (esp. Pricing calculator)
         ↓
-Offer choice:
-  • Book a call now (M1)
-  • Refine with AI (M2)  ← default warm path
+M2 opens: AI asks 4–6 key questions
         ↓
-Chat asks 4–6 high-signal questions (chips first)
+Side: hiring brief builds + vetting sweeteners
         ↓
-Side panel: hiring brief builds live
+Brief ready → example profile cards (labelled examples)
         ↓
-Sweeteners unlock (technical vetting, deep profiles, psychometrics…)
-        ↓
-Brief ready → example shortlist-style cards (labelled EXAMPLES)
-        ↓
-Primary: Schedule a call (brief context passed in)
+Book a call (M1)  ← always available as “Skip — book now”
 ```
 
-**Escape at every step:** “Skip — book a call now.”
+---
+
+## 4. SITEWIDE PLACEMENT (simplified)
+
+### Everywhere
+| What | Module |
+|---|---|
+| Header **Schedule a Call** | M1 |
+| Footer newsletter | Soft email (not sales) |
+| Floating AI helper (later) | M4 — can hand off to M2 |
+
+### Interest spikes only — full M2
+| Page | When M2 opens |
+|---|---|
+| **Pricing** | After calculator result (**hero / design first**) |
+| **Home** | Calculator / “Get matched at this rate” |
+| **Hire Engineers** | “Get matched” (replace dead demo form) |
+| **Fractional CTO** | “Find your CTO” (replace dead demo form) |
+| **Locations ×3** | Secondary “Build a brief” — hero stays **M1** |
+
+### Light only — M1 (no full M2 panel)
+| Page | CTA |
+|---|---|
+| How It Works | Book a call (+ helper M4 later; no heavy matcher maze) |
+| Services / Technology detail | End CTA → Schedule a Call |
+| Hubs (blog, services, etc.) | Soft Schedule a Call only |
+| Blog / downloads / stories / reviews | Soft “Book 15 mins” after content (downloads **ungated**) |
+| Contact | Simple HubSpot + Calendly (M1) — normal contact page |
+| Book a Call pages | Calendly only (already chose M1) |
+| About / Our Work | Soft M1 at end |
+| Legal / thank-yous | Nothing |
+
+### Explicitly out
+| Page | Note |
+|---|---|
+| **For Developers** | Talent join form — **different system**, not client M2 |
+| **Start Hiring links** | **Do not add** new sitewide links; Locations may keep or switch hero to M1 in design pass |
 
 ---
 
-## 4. SITEWIDE PLACEMENT MAP (the important bit)
+## 5. Locations note (current vs simplified)
 
-Where each module appears across the website.
-
-### 4.1 Global (every page)
-
-| Placement | Module | Behaviour |
-|---|---|---|
-| **Header — Schedule a Call** | M1 | Always visible. Calendly popup (current pattern). Hot path. |
-| **Footer newsletter** | Soft email only | Stay-in-touch. Not a sales form. |
-| **Floating AI helper** (later) | M4 | Corner/edge entry. Answers questions. If topic = hiring/pricing → **hand off into M2** (“Continue — build your brief”). |
-| **Clara / legacy chat** | Replace or coexist TBD | Design assumes Jake’s AI app becomes the helper; don’t invent a third chat brand in frames. |
-
-### 4.2 Pricing — HERO placement (design first)
-
-| Placement | Module | Behaviour |
-|---|---|---|
-| **After calculator result** | **M2 full split panel** | Primary utopia surface. Calculator data pre-fills the brief. |
-| Same section | M1 | Persistent “Book a call for a tailored estimate”. |
-| Page end / FAQ help | M4 or M2 deep-link | “Ask about this rate” opens helper or scrolls to M2. |
-
-**Claude Design priority #1:** Pricing calculator result → M2 open / mid / brief-ready.
-
-### 4.3 Home
-
-| Placement | Module | Behaviour |
-|---|---|---|
-| Hero primary CTA | M1 or scroll to match | Keep simple; don’t open M2 in the hero. |
-| **Pricing calculator block** (“Get matched at this rate”) | Opens **M2** (inline or navigate to `/pricing#refine` with state) | Same refinement story as Pricing. |
-| Ready-to-find / final CTA band | M1 primary + “Prefer to refine first?” → M2 | Dual door. |
-
-### 4.4 How It Works
-
-| Placement | Module | Behaviour |
-|---|---|---|
-| Existing matcher / quiz area | Evolve toward **M2 lite** or handoff | Don’t keep a dead stub. Either real questions→brief or CTA into M2. |
-| Stage ends / final CTA | M1 | Book a call. |
-| FAQ “ask” | M4 | Helper. |
-
-### 4.5 Hire Engineers (`/services/software-engineers`)
-
-| Placement | Module | Behaviour |
-|---|---|---|
-| Hero “Get matched” | Start M2 **or** M1 (A/B later; default **M2** for butter) | |
-| On-page Find-form demo | **Replace / hand off** — no dead submit | Either becomes M2 questions or “Continue → build your brief” |
-| Calculator “Get matched at this rate” | M2 with context | |
-| Final CTA | M1 + M2 secondary | |
-
-### 4.6 Fractional CTO
-
-| Placement | Module | Behaviour |
-|---|---|---|
-| “Find your CTO” / match form | Same rule as Hire Engineers — **no demo dead-end** | M2 (CTO-flavoured questions) or M1 |
-| Final CTA | M1 | |
-
-### 4.7 Location pages (LATAM / PH / EE)
-
-| Placement | Module | Behaviour |
-|---|---|---|
-| Hero primary | M1 (“Meet your engineer in 7 days” → call) | Hot, location already known → pre-fill brief region |
-| Secondary | M2 (“Build a brief for this region”) | |
-| FAQ / chat hrefs | M4 | Stop `#chat` dead anchors — wire to helper |
-
-### 4.8 Services + Technology detail + hubs
-
-| Placement | Module | Behaviour |
-|---|---|---|
-| Mid / end CTA bands | M1 primary | “Schedule a call” / “Hire [role]” |
-| Soft secondary | “Not ready? Build a brief” → M2 | Especially on high-traffic service pages |
-| Hub furniture CTAs | M1 | Keep light; hubs are browse mode |
-
-### 4.9 Contact
-
-| Placement | Module | Behaviour |
-|---|---|---|
-| Page body | Simple HubSpot + Calendly (M1) | People who typed “contact” want a normal door |
-| Optional | M4 helper | Not the hero |
-
-### 4.10 Book a Call pages
-
-| Placement | Module | Behaviour |
-|---|---|---|
-| Page | **M1 only** (Calendly inline) | Do not stack M2 here — they already chose hot path |
-| After booking | Thank-you (noindex) | Already exists |
-
-### 4.11 Start Hiring funnel
-
-| Placement | Module | Behaviour |
-|---|---|---|
-| `/start-hiring/*` | **M3 only** | Real HubSpot steps. Optional top link: “Rather talk? Book a call”. |
-
-### 4.12 Blog / resources / downloads / videos / tools / stories / reviews
-
-| Placement | Module | Behaviour |
-|---|---|---|
-| In-content / end of article | Soft M1 | “Want this applied to your team? Book 15 mins” |
-| Downloads | **Ungated** + soft M1 after | No email wall (D7) |
-| Tools / calculators (standalone → pricing) | Same as Pricing M2 when calculator completes | |
-| Resource hubs | Browse mode; footer/header only | Don’t interrupt listing grids with M2 |
-
-### 4.13 For Developers (talent lane — different audience)
-
-| Placement | Module | Behaviour |
-|---|---|---|
-| Join / build profile form | **Talent join** (not client M2) | Separate track — engineers joining the network |
-| CTAs | Stay on `#join` / talent CRM | Do **not** mix client hiring brief into this page |
-
-**Design note:** Client conversion system ≠ talent join form. Different goals; don’t unify them into one chat.
-
-### 4.14 About / Our Work / Legal / Thank-yous
-
-| Placement | Module | Behaviour |
-|---|---|---|
-| About / Our Work mid/final CTA | M1 | Light |
-| Legal | None | |
-| Thank-you pages | None (noindex) | Confirmation only |
+Today Locations hero points at `/start-hiring` (M3).  
+**Simplified target:** hero → **M1 Schedule a Call**; optional secondary → **M2 Build a brief**.  
+M3 remains reachable only via old URLs / redirects, not as the main button.
 
 ---
 
-## 5. Placement intensity (so the site doesn’t feel like a chatbot maze)
+## 6. Visual rules (Claude Design)
 
-| Intensity | Where | What user sees |
-|---|---|---|
-| **Full M2** | Pricing (hero), optionally Home calculator + Hire Engineers | Split chat + living brief |
-| **M2 lite** | HIW matcher, service page secondary | Shorter questions or “Open brief builder” |
-| **M1 only** | Header, Book a Call, Contact, most CTAs | One-click call |
-| **M4 only** | Floating helper | Small; can upgrade to M2 |
-| **Silent** | Blog grids, legal, thank-yous | No interruption |
-
-**Rule:** Full M2 appears at **interest spikes** (just saw a number, just clicked “get matched”), not on first paint of every page.
+- CE dark + lime. Not a purple chatbot skin.
+- **M2** = one split composition (chat | living brief), mainly on Pricing.
+- One question at a time; chips first; Book a Call always visible.
+- Sweeteners: vetting, deep profiles, psychometrics — short proofs, don’t block questions.
+- Example engineer cards only after brief is ready — labelled **Examples**.
+- **M4** = small; must not compete with header Schedule a Call.
+- Mobile: chat main + compact brief + pinned Book a Call.
 
 ---
 
-## 6. Visual / UX rules for Claude Design
+## 7. Claude Design frame list (keep it short)
 
-### Brand + composition
+### Kit
+1. M1 Schedule a Call (header + in-panel)  
+2. M2 desktop: empty / mid / brief-ready (+ sweetener + example cards)  
+3. M2 mobile  
+4. M4 helper: collapsed / open / “Build a brief” handoff  
 
-- CE dark ground + lime accent (site tokens). Not purple SaaS chatbot.
-- Pricing M2 = **one composition** under the calculator — not a dashboard of widgets.
-- Side brief is the emotional payoff; chat is the quiet interviewer.
-- Sweeteners: one at a time, short proof lines (vetting, deep profiles, psychometrics).
-- Example engineer cards only after brief threshold — labelled **Examples**.
+### Placements (only what’s necessary)
+5. **Pricing** — calculator → M2 (priority #1)  
+6. **Home** — calculator CTA → M2  
+7. **Hire Engineers** — get matched → M2  
+8. **Fractional CTO** — find CTO → M2  
+9. **Location** — hero M1 + secondary M2  
+10. **Service detail** — end band M1 only  
+11. **Blog/download end** — soft M1 only  
+12. **Contact** — simple form + Calendly  
 
-### Chat UI (M2)
-
-- One question at a time.
-- Chips / multiple choice first; free text last.
-- Always show Book a Call.
-- Progress = brief filling on the right (not a scary % quiz bar).
-
-### Helper (M4)
-
-- Compact launcher; doesn’t steal header CTA.
-- Clear CE identity (not a generic “Chat with us!” blob).
-- Handoff control: “Build a hiring brief” → expands/navigates to M2.
-
-### Mobile
-
-- M2: chat main + compact sticky brief card + pinned Book a Call.
-- M4: standard bottom/side sheet; don’t cover the header CTA.
+Skip designing M3 as a marketed experience. Skip full M2 on every hub/blog.
 
 ---
 
-## 7. Context passed into chat / brief (for all placements)
+## 8. Ship sequence
 
-Whenever M2 opens, pre-fill what we already know:
-
-- Page type + URL  
-- Locale (US / UK)  
-- Role / service / technology slug if any  
-- Location region if on a location page  
-- Calculator outputs if any (seniority, estimate range)  
-- CTA that opened it (“get matched at this rate”, “find your CTO”, etc.)
-
-Design the brief so empty fields look intentional (“Waiting — answer in chat”), not broken.
+| Stage | Ship |
+|---|---|
+| **V1** | Stronger M1 on Pricing calculator (“accurate estimate — book a call”) |
+| **V2** | M2 on Pricing (design now in Claude Design) |
+| **V3** | Jake’s AI app powers M2 + M4 |
+| **V4** | Same M2 on Home / Hire Engineers / FCTO / Locations secondary |
+| **Background** | Keep M3 `/start-hiring` working; no new promos |
 
 ---
 
-## 8. Claude Design — frame list (produce these)
+## 9. Bottom line
 
-### A. System kit
-1. M1 Schedule a Call button states (header + in-module)  
-2. M2 desktop split: empty / mid / brief-ready (+ sweetener + example cards)  
-3. M2 mobile stack  
-4. M4 floating helper: collapsed / open / handoff-to-M2  
-5. Sweetener chips/cards set (vetting, deep profile, psychometrics, “2 profiles in ~7 days”)
+**Simple sitewide model:**
 
-### B. Site placements (priority order)
-6. **Pricing** — calculator result → M2 (hero)  
-7. **Home** — calculator CTA opening M2  
-8. **Hire Engineers** — hero + replace dead find-form with M2 handoff  
-9. **Fractional CTO** — match CTA → M2 or M1  
-10. **Location** — hero dual door (call + build brief)  
-11. **How It Works** — matcher area → M2 lite  
-12. **Service detail** — end CTA band (M1 + secondary M2)  
-13. **Blog article end** — soft M1 only  
-14. **Download thank-you / after ungated download** — soft M1  
-15. **Contact** — simple form + Calendly (no M2 hero)  
-16. **For Developers** — talent join (explicitly separate)
+- **M1** = default conversion everywhere  
+- **M2** = special experience when they’re hot (Pricing first)  
+- **M4** = helpful chat later  
+- **M3** = keep the lights on, don’t feature it  
 
-### C. Escape + trust
-17. First chat screen with “Skip — book a call now”  
-18. Example cards with honest “Example shortlist style” labelling  
-19. Brief-ready state pitching the call without guilt
-
----
-
-## 9. Ship sequence (so design doesn’t block launch)
-
-| Stage | What ships | Design |
-|---|---|---|
-| **V1** | M1 stronger on Pricing calculator result (Option A) | Light |
-| **V2** | M2 shell on Pricing (scripted questions OK) + side brief + sweeteners | **This brief** |
-| **V3** | Jake’s AI app powers M2/M4; structured brief → HubSpot | Embed |
-| **V4** | Roll Full M2 / M2 lite to Home, Hire Engineers, Locations, HIW per map above | Same kit, new placements |
-
----
-
-## 10. Open decisions for Jake (answer in design review)
-
-1. Home calculator: **inline M2** or send to `/pricing#refine`?  
-2. Hire Engineers / FCTO dead forms: **replace with M2** or button handoff only?  
-3. Sitewide M4: ship with V2 or after Pricing M2 is proven?  
-4. Talent (For Developers): confirm stays a **separate** system.  
-5. Which sweeteners are legally/sales-safe to claim (esp. psychometrics)?
-
----
-
-## 11. Bottom line for Claude Design
-
-**Design one kit (M1–M4), then place it by intent:**
-
-- **Pricing** = full refinement theatre (chat + brief + sweeteners).  
-- **Interest spikes** elsewhere = same module or a lite handoff.  
-- **Header** = always Book a Call.  
-- **Browse pages** = soft CTAs only.  
-- **Talent** = different funnel.  
-
-Utopia is not “chat everywhere.”  
-Utopia is **the right door at the right moment, sitewide, with one visual language.**
+Utopia is not more doors. Utopia is **fewer, clearer doors** used at the right moment.
