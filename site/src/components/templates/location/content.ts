@@ -116,7 +116,9 @@ export interface LocationContent {
     presenter: string
     pullQuote: string
     image: string
-    /** YouTube/Vimeo/Loom link. When set, the poster becomes click-to-play. */
+    /** Local mp4 path — muted ambient autoplay on load; click restarts with sound. */
+    videoSrc?: string
+    /** YouTube/Vimeo/Loom link. Used when `videoSrc` is absent. */
     videoUrl?: string
   }
   // Optional across regions: the "four hubs" bulleted+image section (LATAM/EE
@@ -264,10 +266,10 @@ export const LATAM_CONTENT: LocationContent = {
         flag: '🇨🇴',
       },
       {
-        name: 'Petar K.',
-        role: 'Senior Data Eng · 9 yrs',
+        name: 'Mateus S.',
+        role: 'Senior Full Stack · 7 yrs',
         vettedLabel: 'Vetted by Senior Eng',
-        skills: ['Python', 'Terraform', 'AWS'],
+        skills: ['React', 'Node.js', 'TypeScript'],
         image: `${A}/eng-mateus.jpg`,
         rotate: -2,
         flag: '🇧🇷',
@@ -310,9 +312,15 @@ export const LATAM_CONTENT: LocationContent = {
     titleAccent: 'Latin America.',
     intro:
       'Seb on the time zone advantage, the seniority bar, and why LATAM has become the default nearshore choice for serious US engineering teams.',
-    presenter: 'Grace Tannor · Why LATAM',
+    presenter: 'Seb Hall · Why LATAM',
     pullQuote: 'same seniority, half the cost.',
-    image: `${A}/video-still.jpg`,
+    // Same Seb Hall explainer as the live CE home page. Hosted as mp4 so
+    // muted ambient autoplay works on every domain (Vimeo embeds are
+    // privacy-restricted outside cloudemployee.io and look squashed when
+    // forced into background mode).
+    image: '/design/home/media/seb-hall.jpg',
+    videoSrc: '/design/home/media/seb-hall.mp4',
+    videoUrl: 'https://player.vimeo.com/video/1131836141?h=765af4f0eb',
   },
   onGround: {
     eyebrow: 'Where we are',
@@ -353,7 +361,7 @@ export const LATAM_CONTENT: LocationContent = {
         skills: ['Python', 'AWS', 'Go'],
         years: '8 years experience',
         bio: 'Previously at a Mexican AI startup. Placed with a US health-tech company for 14 months. Works US ET.',
-        image: `${A}/eng-mateus.jpg`,
+        image: `${A}/eng-reinaldo.jpg`,
         flag: '🇲🇽',
       },
       {

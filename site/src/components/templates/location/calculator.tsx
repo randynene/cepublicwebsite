@@ -24,8 +24,9 @@ const ROLES = [
   { id: 'ml', label: 'ML / AI Engineer', base: 6200 },
 ] as const
 
+// Senior+ only — location pages market senior engineers (5+ years). Mid level
+// was removed so the calculator matches the page promise.
 const SENIORITY = [
-  { id: 'mid', label: 'Mid level', mult: 0.78 },
   { id: 'senior', label: 'Senior level', mult: 1 },
   { id: 'lead', label: 'Lead / Staff', mult: 1.28 },
 ] as const

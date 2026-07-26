@@ -1,19 +1,43 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 
 import { parseVideoUrl } from '@/components/ui/video-embed'
 
-// Location video media card. When `videoUrl` is a YouTube/Vimeo/Loom link the
-// poster becomes click-to-play (poster -> iframe swap on click). When it is
-// empty the poster shows as a static still with a decorative play button
-// (the pre-wiring behaviour). The surrounding section copy stays in the server
-// template; only this media card is a client component.
+// Location video media card.
+//
+// Preferred path — local `videoSrc` (mp4):
+//   1. Page load → muted autoplay loop (background animation, no controls)
+//   2. Click play → restart at 0:00 with sound + native controls
+//
+// Fallback — remote YouTube/Vimeo/Loom `videoUrl` (when no mp4 is set):
+//   same click-to-play behaviour via a fresh iframe (starts at 0:00).
+//
+// Frame is locked to 16:9 with the same padding-top wrap the live CE homepage
+// uses for Seb's embed, so mobile never squashes the picture.
 
-function embedSrc(provider: string, id: string): string {
-  if (provider === 'vimeo') return `https://player.vimeo.com/video/${id}?autoplay=1`
-  if (provider === 'youtube') return `https://www.youtube-nocookie.com/embed/${id}?autoplay=1`
-  if (provider === 'loom') return `https://www.loom.com/embed/${id}?autoplay=1`
+/** Optional Vimeo privacy hash (`?h=…`) required by some private embeds. */
+function vimeoHash(url: string): string | null {
+  const m = url.match(/[?&]h=([a-f0-9]+)/i)
+  return m?.[1] ?? null
+}
+
+function vimeoQuery(sourceUrl: string, extras: string): string {
+  const hash = vimeoHash(sourceUrl)
+  const h = hash ? `&h=${hash}` : ''
+  return `badge=0&autopause=0&player_id=0&app_id=58479&${extras}${h}`
+}
+
+function interactiveSrc(provider: string, id: string, sourceUrl: string): string {
+  if (provider === 'vimeo') {
+    return `https://player.vimeo.com/video/${id}?${vimeoQuery(sourceUrl, 'autoplay=1&muted=0')}`
+  }
+  if (provider === 'youtube') {
+    return `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=0&playsinline=1&rel=0`
+  }
+  if (provider === 'loom') {
+    return `https://www.loom.com/embed/${id}?autoplay=1`
+  }
   return `https://www.linkedin.com/embed/feed/update/urn:li:share:${id}`
 }
 
@@ -25,7 +49,111 @@ function PlayGlyph({ className }: { className?: string }) {
   )
 }
 
-export function LocationVideo({
+/** 16:9 frame — padding hack matches live CE homepage Vimeo wrap. */
+function VideoFrame({ children }: { children: ReactNode }) {
+  return (
+    <div className="relative w-full overflow-hidden rounded-[16px] bg-[#0A1628]" style={{ paddingTop: '56.25%' }}>
+      {children}
+    </div>
+  )
+}
+
+function NativeLocationVideo({
+  image,
+  presenter,
+  pullQuote,
+  videoSrc,
+  title,
+}: {
+  image: string
+  presenter: string
+  pullQuote: string
+  videoSrc: string
+  title: string
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [playing, setPlaying] = useState(false)
+
+  // Keep muted ambient looping until the visitor explicitly hits play.
+  useEffect(() => {
+    const el = videoRef.current
+    if (!el || playing) return
+    el.muted = true
+    el.loop = true
+    el.playsInline = true
+    void el.play().catch(() => {
+      // Autoplay can be blocked; poster + play button remain.
+    })
+  }, [playing, videoSrc])
+
+  function handlePlay() {
+    const el = videoRef.current
+    if (!el) return
+    setPlaying(true)
+    el.loop = false
+    el.muted = false
+    el.controls = true
+    el.currentTime = 0
+    void el.play().catch(() => {
+      /* user can use native controls */
+    })
+  }
+
+  return (
+    <div className="relative w-full rounded-[20px] border border-[#22314D] bg-[#101B30]">
+      <div className="p-4">
+        <VideoFrame>
+          <video
+            ref={videoRef}
+            src={videoSrc}
+            poster={image}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            className="absolute inset-0 h-full w-full object-cover object-center"
+            aria-label={title}
+          />
+
+          {!playing ? (
+            <>
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#060F1E]/75 via-transparent to-[#060F1E]/20"
+              />
+
+              <span className="pointer-events-none absolute left-4 top-4 inline-flex max-w-[85%] items-center gap-2 rounded-pill bg-[#060F1E]/80 px-3 py-1.5 text-[11px] font-medium text-white sm:left-5 sm:top-5 sm:px-4 sm:py-2 sm:text-[12px]">
+                <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full bg-[#FF4D4D]" />
+                <span className="truncate">{presenter}</span>
+              </span>
+
+              <button
+                type="button"
+                onClick={handlePlay}
+                className="absolute inset-0 flex cursor-pointer items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary"
+                aria-label={`Play video: ${title}`}
+              >
+                <span
+                  aria-hidden="true"
+                  className="flex h-[72px] w-[72px] items-center justify-center rounded-full bg-brand-primary text-[#060F1E] shadow-[0_0_0_12px_rgba(212,255,60,0.18)] transition-transform hover:scale-105 lg:h-[92px] lg:w-[92px]"
+                >
+                  <PlayGlyph className="h-7 w-7 lg:h-8 lg:w-8" />
+                </span>
+              </button>
+
+              <span className="pointer-events-none absolute bottom-3 left-1/2 max-w-[92%] -translate-x-1/2 rounded-pill bg-[#060F1E]/80 px-3 py-1.5 text-center text-[12px] font-medium text-white sm:bottom-4 sm:px-4 sm:py-2 sm:text-[13px]">
+                {pullQuote}
+              </span>
+            </>
+          ) : null}
+        </VideoFrame>
+      </div>
+    </div>
+  )
+}
+
+function EmbedLocationVideo({
   image,
   presenter,
   pullQuote,
@@ -35,65 +163,138 @@ export function LocationVideo({
   image: string
   presenter: string
   pullQuote: string
-  videoUrl?: string
+  videoUrl: string
   title: string
 }) {
   const [playing, setPlaying] = useState(false)
-  const parsed = videoUrl ? parseVideoUrl(videoUrl) : null
+  const parsed = parseVideoUrl(videoUrl)
   const playable = Boolean(parsed)
 
   if (playing && parsed) {
     return (
-      <div className="rounded-[20px] border border-[#22314D] bg-[#101B30] p-4">
-        <div className="relative overflow-hidden rounded-[16px] bg-[#0A1628]" style={{ aspectRatio: '16 / 9' }}>
-          <iframe
-            src={embedSrc(parsed.provider, parsed.id)}
-            title={title}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-            allowFullScreen
-            className="absolute inset-0 h-full w-full border-0"
-          />
+      <div className="w-full rounded-[20px] border border-[#22314D] bg-[#101B30]">
+        <div className="p-4">
+          <VideoFrame>
+            <iframe
+              key={`play-${parsed.provider}-${parsed.id}`}
+              src={interactiveSrc(parsed.provider, parsed.id, videoUrl)}
+              title={title}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+              allowFullScreen
+              referrerPolicy="strict-origin-when-cross-origin"
+              className="absolute inset-0 h-full w-full border-0"
+            />
+          </VideoFrame>
         </div>
       </div>
     )
   }
 
-  const Poster = (
-    <div className="relative overflow-hidden rounded-[16px] bg-[#0A1628]">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={image} alt="" className="h-auto max-h-[620px] w-full object-cover" loading="lazy" />
-      <span className="absolute left-5 top-5 inline-flex items-center gap-2 rounded-pill bg-[#060F1E]/80 px-4 py-2 text-[12px] font-medium text-white">
-        <span aria-hidden="true" className="h-2 w-2 rounded-full bg-[#FF4D4D]" />
-        {presenter}
-      </span>
-      <span className="absolute inset-0 flex items-center justify-center">
-        <span
-          aria-hidden="true"
-          className="flex h-[92px] w-[92px] items-center justify-center rounded-full bg-brand-primary text-[#060F1E] shadow-[0_0_0_14px_rgba(212,255,60,0.18)]"
-        >
-          <PlayGlyph className="h-8 w-8" />
-        </span>
-      </span>
-      <span className="absolute bottom-5 left-1/2 -translate-x-1/2 rounded-pill bg-[#060F1E]/80 px-4 py-2 text-[13px] font-medium text-white">
-        {pullQuote}
-      </span>
+  return (
+    <div className="relative w-full rounded-[20px] border border-[#22314D] bg-[#101B30]">
+      <div className="p-4">
+        <VideoFrame>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={image}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover object-top"
+            loading="lazy"
+          />
+
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#060F1E]/75 via-transparent to-[#060F1E]/20"
+          />
+
+          <span className="pointer-events-none absolute left-4 top-4 inline-flex max-w-[85%] items-center gap-2 rounded-pill bg-[#060F1E]/80 px-3 py-1.5 text-[11px] font-medium text-white sm:left-5 sm:top-5 sm:px-4 sm:py-2 sm:text-[12px]">
+            <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full bg-[#FF4D4D]" />
+            <span className="truncate">{presenter}</span>
+          </span>
+
+          {playable ? (
+            <button
+              type="button"
+              onClick={() => setPlaying(true)}
+              className="absolute inset-0 flex cursor-pointer items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary"
+              aria-label={`Play video: ${title}`}
+            >
+              <span
+                aria-hidden="true"
+                className="flex h-[72px] w-[72px] items-center justify-center rounded-full bg-brand-primary text-[#060F1E] shadow-[0_0_0_12px_rgba(212,255,60,0.18)] transition-transform hover:scale-105 lg:h-[92px] lg:w-[92px]"
+              >
+                <PlayGlyph className="h-7 w-7 lg:h-8 lg:w-8" />
+              </span>
+            </button>
+          ) : (
+            <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
+              <span
+                aria-hidden="true"
+                className="flex h-[72px] w-[72px] items-center justify-center rounded-full bg-brand-primary text-[#060F1E] shadow-[0_0_0_12px_rgba(212,255,60,0.18)] lg:h-[92px] lg:w-[92px]"
+              >
+                <PlayGlyph className="h-7 w-7 lg:h-8 lg:w-8" />
+              </span>
+            </span>
+          )}
+
+          <span className="pointer-events-none absolute bottom-3 left-1/2 max-w-[92%] -translate-x-1/2 rounded-pill bg-[#060F1E]/80 px-3 py-1.5 text-center text-[12px] font-medium text-white sm:bottom-4 sm:px-4 sm:py-2 sm:text-[13px]">
+            {pullQuote}
+          </span>
+        </VideoFrame>
+      </div>
     </div>
   )
+}
+
+export function LocationVideo({
+  image,
+  presenter,
+  pullQuote,
+  videoUrl,
+  videoSrc,
+  title,
+}: {
+  image: string
+  presenter: string
+  pullQuote: string
+  videoUrl?: string
+  /** Local mp4 path — preferred for muted ambient autoplay without embed domain issues. */
+  videoSrc?: string
+  title: string
+}) {
+  const localSrc = videoSrc?.trim()
+  if (localSrc) {
+    return (
+      <NativeLocationVideo
+        image={image}
+        presenter={presenter}
+        pullQuote={pullQuote}
+        videoSrc={localSrc}
+        title={title}
+      />
+    )
+  }
+
+  const remote = videoUrl?.trim()
+  if (remote) {
+    return (
+      <EmbedLocationVideo
+        image={image}
+        presenter={presenter}
+        pullQuote={pullQuote}
+        videoUrl={remote}
+        title={title}
+      />
+    )
+  }
 
   return (
-    <div className="relative rounded-[20px] border border-[#22314D] bg-[#101B30] p-4">
-      {playable ? (
-        <button
-          type="button"
-          onClick={() => setPlaying(true)}
-          className="block w-full cursor-pointer rounded-[16px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary"
-          aria-label={`Play video: ${title}`}
-        >
-          {Poster}
-        </button>
-      ) : (
-        Poster
-      )}
-    </div>
+    <EmbedLocationVideo
+      image={image}
+      presenter={presenter}
+      pullQuote={pullQuote}
+      videoUrl=""
+      title={title}
+    />
   )
 }

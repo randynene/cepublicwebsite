@@ -266,17 +266,18 @@ function Advantage({ content }: { content: LocationContent }) {
 function VideoFeature({ content }: { content: LocationContent }) {
   const { video } = content
   return (
-    <section className={cn(BAND, 'py-[72px] text-center')}>
+    <section className="mx-auto w-full max-w-[1280px] px-4 py-[72px] text-center sm:px-6 xl:px-0">
       <Eyebrow className="text-center">{video.eyebrow}</Eyebrow>
       <div className="mt-3">
         <Heading lead={video.titleLead} accent={video.titleAccent} />
       </div>
       <p className={cn('mx-auto mt-4 max-w-[760px] text-[16px]', BODY)}>{video.intro}</p>
-      <div className="mt-10">
+      <div className="mx-auto mt-10 w-full max-w-[920px]">
         <LocationVideo
           image={video.image}
           presenter={video.presenter}
           pullQuote={video.pullQuote}
+          videoSrc={video.videoSrc}
           videoUrl={video.videoUrl}
           title={`${video.titleLead} ${video.titleAccent}`}
         />
@@ -509,7 +510,8 @@ function PrimaryHub({ content }: { content: LocationContent }) {
 function ProfileCard({ p }: { p: EngineerProfile }) {
   return (
     <li className="relative h-[540px] overflow-hidden rounded-[20px] border border-[#22314D] bg-[#16223A]">
-      <img src={p.image} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+      {/* object-top keeps faces framed; cover prevents stretch/squash on mobile */}
+      <img src={p.image} alt="" className="absolute inset-0 h-full w-full object-cover object-top" loading="lazy" />
       <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#060F1E]/[0.97] via-[#060F1E]/55 to-[#060F1E]/10" />
       <span className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-[#0A1628]/80 text-[15px]">
         {p.flag}
