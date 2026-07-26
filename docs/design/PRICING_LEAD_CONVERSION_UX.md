@@ -1,4 +1,4 @@
-# Pricing lead conversion UX — scope + conversion audit
+# Pricing lead conversion UX - scope + conversion audit
 
 > Owner: Jake. Status: **Strategy draft for Claude Design** (26 Jul 2026).  
 > Related roadmap decisions: D7 (intent lanes), D8 (Pricing conversion) in
@@ -22,25 +22,29 @@ We open a **refinement moment**:
    (technical vetting, deep profiles, psychometric profiling, etc.).
 4. The visitor can always **Schedule a call** for a human accurate estimate /
    real shortlist.
-5. The AI chat comes from **Jake’s separate app / database**, embedded into this
-   site later — this doc scopes the UX contract so design + integration stay aligned.
+5. The conversation backend can be an extended **headless Clara service** if it
+   passes the audit gates. The CE site owns the visible M2 shell and living brief.
 
 **Ship order (do not block launch on utopia):**
 
 | Stage | Experience | Blocks launch? |
 |---|---|---|
-| **V1 — Option A** | Calculator result → strong “Get a more accurate estimate — book a call” (+ optional short questions) | No — do this first |
-| **V2 — This doc** | Chat asks key questions → side brief builds → sweeteners → book a call | Design now, build after V1 |
-| **V3** | Jake’s AI app fully powers the chat + writes structured brief into HubSpot / CRM | After embed is ready |
+| **V1 - Option A** | Calculator result → strong “Get a more accurate estimate - book a call” (+ optional short questions) | No - do this first |
+| **V2 - This doc** | Chat asks key questions → side brief builds → sweeteners → book a call | Design now, build after V1 |
+| **V3** | A headless backend (Clara if it passes the audit gates) powers the CE-owned chat + structured brief | After API/security/data contract is ready |
 
 ---
 
-## 2. Conversion audit — is this the best way to convert?
+## 2. Conversion audit - is this the best way to convert?
 
 ### Verdict
 
-**Yes — as the *warm-path* utopia on Pricing, with a permanent one-click Book a Call escape.**  
-**No — as the *only* door.** Hot visitors who already want a human will bounce if chat is mandatory.
+**Hypothesis, not a proven conversion fact:** this is a strong warm-path candidate,
+with a permanent one-click Book a Call escape. It must beat V1 on booked calls and
+qualified opportunities before it becomes the default experience.
+
+It should not be the only door. Hot visitors who already want a human may abandon
+the journey if chat is mandatory.
 
 This pattern scores high on both goals Jake cares about:
 
@@ -52,41 +56,43 @@ This pattern scores high on both goals Jake cares about:
 
 ### Why it can beat “just Book a Call”
 
-- Calculator users are **warm**, not cold — they will answer 3–5 good questions if each answer visibly upgrades the side panel.
+- Calculator users are **warm**, not cold - they may answer 3–5 good questions if each answer visibly upgrades the side panel.
 - A living brief makes the interaction feel like **progress**, not a form.
 - Sweeteners (vetting / psychometrics / deep profiles) sell the *method*, which is CE’s real differentiator vs a rate table.
 - Chat feels lighter than a multi-step HubSpot wall for people not ready to talk.
 
 ### Where it fails (design must avoid these)
 
-1. **Chat as a trap** — if Book a Call is hidden, hot leads churn. Always show it.
-2. **Fake matching** — never say “We found your engineer” from chat answers alone. Say “Your brief is ready — here’s what shortlists look like / book to get yours.”
-3. **Too many questions** — max **4–6 critical** before the first hard CTA. More only if they opt to continue.
-4. **Sweetener spam** — vetting proof should support the story, not interrupt every reply with a carousel.
-5. **Email too early** — do not gate the first answers behind email. Ask identity when they book or explicitly save the brief.
-6. **Tiny floating bubble only** — for this Pricing moment, chat should feel like a **panel experience**, not a ignored widget in the corner.
+1. **Chat as a trap** - if Book a Call is hidden, hot leads may leave. Always show it.
+2. **Fake matching** - never say “We found your engineer” from chat answers alone. Say “Your brief is ready - here’s what shortlists look like / book to get yours.”
+3. **Too many questions** - max **4–6 critical** before the first hard CTA. More only if they opt to continue.
+4. **Sweetener spam** - vetting proof should support the story, not interrupt every reply with a carousel.
+5. **Email too early** - do not gate the first answers behind email. Ask identity when they book or explicitly save the brief.
+6. **Tiny floating bubble only** - for this Pricing moment, chat should feel like a **panel experience**, not an ignored widget in the corner.
 
 ### Compared to alternatives
 
 | Approach | Conversion quality | Butter | Data quality | Verdict |
 |---|---|---|---|---|
-| Calculator → Book a Call only (V1) | High for hot traffic | Medium | Low (role/region/seniority only) | **Ship first** |
+| Calculator → Book a Call only (V1) | High for hot traffic | Medium | Low (calculator context only) | **Ship first** |
 | Calculator → long HubSpot form | Medium | Low | High | Feels salesy on Pricing |
 | Calculator → email for PDF quote | Low–medium | Low | Medium | Rejected (D7) |
-| **Calculator → chat Qs + side brief + sweeteners + Book a Call** | **Highest for warm traffic** | **Highest** | **High (structured)** | **Utopia** |
+| **Calculator → chat Qs + side brief + sweeteners + Book a Call** | Hypothesized high (test required) | High | High (structured) | **Candidate utopia** |
 | AI chat sitewide with no Pricing module | Medium | Medium | Uneven | Helper lane, not Pricing hero |
 
-**Best overall system:** V1 always available + this utopia as the default refinement path for people who engage after the estimate.
+**Working hypothesis:** V1 remains the baseline. Roll out M2 gradually and keep it
+only if it lifts Book a Call clicks, Calendly bookings, and qualified HubSpot
+opportunities rather than merely increasing chat engagement.
 
 ---
 
 ## 3. Utopia user flow (happy path)
 
 ```
-1. User sets role / region / seniority on Pricing calculator
+1. User sets developer count, talent region, comparison country, and currency on the Pricing calculator
 2. Sees estimate + savings
 3. Refinement panel opens (or scrolls into view):
-      LEFT: AI chat — “Want a more accurate picture? 4 quick questions.”
+      LEFT: guided questions / AI chat - “Want a more accurate picture? 4 quick questions.”
       RIGHT: Hiring brief starts with calculator data already filled
 4. Chat asks only the highest-signal questions (see §5)
 5. Each answer updates the right-hand brief (progress, not a quiz score)
@@ -95,26 +101,26 @@ This pattern scores high on both goals Jake cares about:
       - Example shortlist style cards may appear (labelled examples)
       - Sweeteners unlock: technical vetting, deep profile, psychometrics
 7. Primary CTA: Schedule a call (pre-filled context from brief)
-   Secondary: Continue in chat / Start Hiring if they prefer async
-8. On book or explicit save → identity + brief to HubSpot / Jake’s app DB
+   Secondary: Continue refining / explicitly save the brief if offered
+8. On book or explicit save → identity + brief to HubSpot / approved backend DB
 ```
 
-**Escape hatch at every step:** “Skip — book a call now.”
+**Escape hatch at every step:** “Skip - book a call now.”
 
 ---
 
 ## 4. What the chat app should look like (UX direction)
 
-This is for Claude Design. Not final pixels — composition rules.
+This is for Claude Design. Not final pixels - composition rules.
 
 ### 4.1 Layout (desktop)
 
-**Split panel under / beside the calculator result — one composition, not a dashboard.**
+**Split panel under / beside the calculator result - one composition, not a dashboard.**
 
 ```
 +---------------------------+------------------------------+
-|  AI chat                  |  Living hiring brief         |
-|  - short messages         |  - role / region / seniority |
+|  Guided/AI chat           |  Living hiring brief         |
+|  - short messages         |  - calculator context        |
 |  - 1 question at a time   |  - stack / must-haves        |
 |  - quick-reply chips      |  - timeline / team size      |
 |  - “Book a call” always   |  - estimate range            |
@@ -124,7 +130,7 @@ This is for Claude Design. Not final pixels — composition rules.
 ```
 
 - Left chat ~45%, right brief ~55% (brief is the emotional payoff).
-- Dark CE ground, lime accent — match site tokens, not a generic chatbot skin.
+- Dark CE ground, lime accent - match site tokens, not a generic chatbot skin.
 - One question visible at a time; previous answers collapse into short summary chips.
 - Prefer **tap chips / multiple choice** over typing for the first 4 questions (faster, cleaner data). Allow free text on “anything else?”
 
@@ -137,33 +143,56 @@ This is for Claude Design. Not final pixels — composition rules.
 
 ### 4.3 Chat personality
 
-- Concise, expert, human — CE voice, not “Hey friend!!!”.
+- Concise, expert, human - CE voice, not “Hey friend!!!”.
 - Each question explains *why* in half a line (“This changes seniority banding and vetting depth”).
 - Never guilt them for skipping.
-- After enough data, chat itself pitches the call: “I can keep going, or a matcher can turn this brief into two real profiles — usually within 7 days.”
+- After enough data, chat itself pitches the call: “I can keep going, or after a discovery call a matcher can turn this brief into real profiles.” Any delivery-time claim must match sales-approved live copy.
 
 ### 4.4 Entry points (where chat appears)
 
 | Priority | Entry | Behaviour |
 |---|---|---|
 | P0 | Pricing calculator result | Opens the split panel (this module) |
-| P1 | Home calculator CTA | Same module or deep-link into Pricing module with state |
+| P1 | Home calculator CTA | Deep-link to `/pricing#refine` with state; inline Home M2 is deferred |
 | P2 | Sitewide floating chat | Lighter helper; can hand off into Pricing brief module when topic = pricing/hiring |
 | P3 | Hire Engineers / Locations | Same pattern later |
 
 Floating sitewide chat ≠ this Pricing module. Same AI brain, different shells.
 
-### 4.5 Integration contract (Jake’s separate app)
+### 4.5 Integration contract (CE shell + headless backend)
 
-Design assumes the embed can:
+The Clara repository was audited. Clara is useful as a possible headless backend,
+but its current widget/iframe is not the M2 UI. The CE site owns the chat rail and
+living brief. A backend must:
 
-- Accept **initial context** from the calculator (role, region, seniority, estimate range, locale, page URL).
+- Accept **initial context** from the calculator (developer count, talent region,
+  comparison country, currency, estimate range, locale, page URL).
 - Emit **structured brief updates** (JSON fields in §5) to the parent page so the side panel can render without scraping chat text.
 - Emit **intent events**: `brief_ready`, `book_call_clicked`, `handoff_to_human`.
-- Support **Book a Call** URL with query/notes payload (role, region, seniority, brief id).
-- Live on Jake’s DB; CE site does not become source of truth for chat transcripts.
+- Support **Book a Call** context with the calculator fields, answered brief fields, source page, and brief id.
+- Keep transcripts in the approved backend database; the CE site is not their source of truth.
+- Use signed sessions, durable rate limiting, explicit CORS, versioned schemas,
+  webhook verification, and a documented retention/deletion policy.
 
-Until the app is ready: V1 Book a Call only; V2 can use a scripted question UI with the same side brief (same design, fake AI), then swap the left rail to the real app.
+Until the backend is ready: V1 is Book a Call only; V2 uses **guided scripted
+questions** with the same side brief. It must not pretend to be AI. V3 connects
+the backend after all gates in `LEAD_CONVERSION_EXECUTION_PLAN.md` §1a pass.
+
+### 4.6 CRM + Calendly handoff contract (required before V3)
+
+| Event | Destination | Minimum payload |
+|---|---|---|
+| `book_call_clicked` | Calendly context/prefill where supported | brief id, calculator context, role, seniority, skills, timeline, locale, source page |
+| `calendly_scheduled` | HubSpot contact + timeline note/deal workflow | same context + Calendly event reference |
+| `brief_ready` | Chat backend DB only until identity capture | structured non-PII brief |
+| `brief_saved` (explicit) | Approved HubSpot form/API | email + consent + versioned brief JSON |
+
+**Failure rules:**
+
+- Calendly script fails → show a normal `/book-a-call` link.
+- HubSpot write fails → booking still succeeds; log/alert without showing success for a saved brief.
+- M2/backend fails → V1 estimate + M1 Book a Call still work.
+- Never make M1 depend on M2, Clara, or HubSpot success.
 
 ---
 
@@ -173,21 +202,24 @@ Until the app is ready: V1 Book a Call only; V2 can use a scripted question UI w
 
 Suggested order (edit in design review):
 
-1. **What are you hiring for?** (role confirm / refine — may already be known)
+1. **What are you hiring for?** (always ask; the current calculator does not collect role)
 2. **Must-have stack or skills?** (chips + optional other)
-3. **Seniority / years?** (if not already from calculator)
+3. **Seniority / years?** (always ask unless the calculator is redesigned to collect it)
 4. **When do you need someone?** (ASAP / 2–4 weeks / exploring)
 5. **How many seats?** (1 / 2–3 / team)
 6. **Anything a matcher must know?** (free text, optional)
 
 Stop at “brief ready” after 4 if 1–4 are answered; 5–6 are bonus.
 
-### 5.2 Side panel — hiring brief fields
+### 5.2 Side panel - hiring brief fields
 
 Visual profile = **their hiring brief**, not a fake engineer at first.
 
 - Role  
-- Region  
+- Talent region (pre-filled from calculator)
+- Comparison country (pre-filled from calculator)
+- Developer count (pre-filled from calculator)
+- Currency (pre-filled from calculator)
 - Seniority  
 - Monthly estimate range (from calculator)  
 - Skills / must-haves  
@@ -202,6 +234,8 @@ Visual profile = **their hiring brief**, not a fake engineer at first.
 - Label clearly: **“Example of the shortlist style you’d get”** (not “Your matches”).
 - 1–2 cards: photo/avatar treatment, role, seniority, stack tags, rate band aligned to estimate.
 - CTA on cards = same Book a Call (do not invent a second conversion).
+- The existing Pricing hero candidate card is also marketing illustration. If its
+  copy implies a real match, apply the same clear example labelling.
 
 ---
 
@@ -215,8 +249,8 @@ Suggested sweetener modules (rotate or unlock in sequence):
 |---|---|---|
 | Technical vetting | Pair-programming / senior-led technical bar | After skills question |
 | Deep profiles | Notes on stack fit + working style, not CV spam | When brief hits 50% |
-| Psychometric / culture | Matched to how your team actually works | After “matcher must know” or brief ready |
-| Speed proof | “Two vetted profiles in ~7 days” | At brief ready, next to Book a Call |
+| Psychometric / culture | **Design-only until sales/legal approves this current capability and wording** | After “matcher must know” or brief ready |
+| Speed proof | Use only the sales-approved live SLA wording | At brief ready, next to Book a Call |
 
 **Rules:**
 
@@ -230,9 +264,9 @@ Suggested sweetener modules (rotate or unlock in sequence):
 
 | Door | Label direction | When |
 |---|---|---|
-| **Primary** | Get a tailored estimate — book a call | Always visible; emphasized at brief ready |
+| **Primary** | Get a tailored estimate - book a call | Always visible; emphasized at brief ready |
 | **Secondary** | Keep refining in chat | While they are engaged |
-| **Tertiary** | Prefer a form? Start Hiring | For async detail lovers |
+| **Tertiary** | Save/email my brief (optional) | Only after brief-ready, with explicit identity/consent; no Start Hiring link |
 | **Helper** | Sitewide AI chat | Other pages / general questions |
 
 Identity capture: on **Book a Call** (Calendly) and/or when they explicitly “Save my brief / email me this brief.”
@@ -250,7 +284,32 @@ Optimise this chain, not vanity chat turns:
 5. Calendly bookings  
 6. HubSpot opportunities / matched shortlists  
 
-Secondary: chat → Start Hiring handoff rate; bounce from panel without CTA.
+Secondary: save-brief rate; panel abandonment; M2 failures that fall back to M1.
+
+### 8.1 Analytics + experiment contract
+
+| Event | When | Properties (no raw chat text) |
+|---|---|---|
+| `calc_complete` | Estimate rendered | talent region, comparison country, dev count, currency, estimate band |
+| `m2_panel_open` | Refinement opens | source page, experiment variant |
+| `m2_question_answer` | Guided answer selected | question id, answer id |
+| `m2_brief_ready` | Required fields filled | brief field count, brief id |
+| `m2_book_call_click` | M1 clicked inside M2 | brief id, brief-ready boolean |
+| `calendly_scheduled` | Booking confirmed | attribution/session reference |
+
+**Experiment rule:** V1 is the control. V2 starts as a measured variant, not an
+automatic 100% replacement. Agree sample size and decision window before launch.
+Judge success on booked calls and qualified opportunities, not chat turns.
+
+### 8.2 Privacy, accessibility, and performance gates
+
+- Label V3 as an AI assistant; V2 is “guided questions”.
+- Link to privacy information before storing a transcript or identity.
+- Define controller/processor, retention, deletion, and UK/EU CMP/consent behavior.
+- Focus management, keyboard operation, Escape close, polite live announcements,
+  44px controls, reduced motion, and mobile keyboard-safe sticky controls are required.
+- Lazy-load M2 after user action. Do not regress Pricing LCP/CLS against V1.
+- No-JS or backend failure always leaves the estimate and normal Book a Call link.
 
 ---
 
@@ -262,7 +321,7 @@ Please produce frames for:
 2. Desktop **split: chat + living brief** (empty / mid / brief-ready)  
 3. Brief-ready with **one sweetener + example profile cards + Book a call**  
 4. Mobile stack: chat + compact brief + pinned CTA  
-5. Escape: “Skip — book a call now” from first chat screen  
+5. Escape: “Skip - book a call now” from first chat screen
 6. Optional: sitewide floating chat handoff into this module  
 
 Use existing CE dark/lime language. No purple SaaS chatbot clichés. No email gate on screen 1.
@@ -274,7 +333,8 @@ Use existing CE dark/lime language. No purple SaaS chatbot clichés. No email ga
 1. Is the side panel **only the hiring brief** at first, or brief + example engineers from the first unlock? (Rec: brief first, engineers at ready.)  
 2. Should “Save my brief” ever ask for email without booking? (Rec: optional, after ready only.)  
 3. Which 4 questions are sacred for v1 of the chat script?  
-4. Does Jake’s AI app already expose an embed + structured events, or do we design the shell first and plug the brain in at V3?  
+4. **Resolved architecture:** design/build the CE shell first. Clara may be extended
+   headlessly at V3 only after the execution-plan gates pass; do not use Clara widget UI as M2.
 5. Any sweeteners that are **claims we must not make** until legal/sales approve (e.g. psychometric)?
 
 ---
@@ -283,8 +343,12 @@ Use existing CE dark/lime language. No purple SaaS chatbot clichés. No email ga
 
 **Best conversion system for CE Pricing:**
 
-> Show the number → let AI ask a few high-signal questions → build their brief visually while selling how deep CE profiles are → always offer Schedule a Call for the real shortlist.
+> Show the number → use guided questions (V2) or an AI assistant (V3 after gates)
+> to build their brief visually while showing CE’s profiling depth → always offer
+> Schedule a Call for the real shortlist.
 
-That is the highest-probability warm-lead converter **if** Book a Call stays one click away and we never fake a completed human match.
+That is the conversion hypothesis to test. It is worth designing because it gives
+value while collecting useful context, but it is not “best” until it beats the V1
+Book a Call baseline on bookings and qualified opportunities.
 
 V1 still ships Option A. This doc is the utopia Jake designs next.

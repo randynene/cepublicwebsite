@@ -766,17 +766,20 @@ would drop pages Google currently ranks during the migration.
   Necessary doors only — see `docs/design/LEAD_CONVERSION_SYSTEM_UX.md`:
   - **M1 Schedule a Call** = primary door sitewide
   - **M2 Chat + living brief** = warm path at interest spikes only (Pricing first)
-  - **M4 Helper chat** = sitewide later (Jake’s AI app)
+  - **M4 Helper chat** = CE-owned helper later (Clara headless if gates pass)
   - **M3 Start Hiring** = keep URLs/forms working; **do not promote** / no new links
   - Butter-up first; ungate downloads; no email-gate for pricing quotes
   - Locations hero should move off `/start-hiring` toward M1 (+ optional M2)
 - **D8 - Pricing conversion. CONFIRMED (26 Jul).** Pricing is the highest-value page.
   - **Ship first (Option A):** after calculator result, primary CTA =
-    **“Get a more accurate estimate — book a call”** (pass role/region/seniority into
-    booking context when possible). Secondary = short hiring brief / Start Hiring.
+    **“Get a more accurate estimate - book a call”**. Pass the calculator data it
+    actually collects (developer count, talent region, comparison country, currency,
+    estimate range, locale, source page) into booking context where supported.
+    Secondary = optional 2–3 guided brief questions, **not** Start Hiring.
   - **Utopia (design next):** calculator → AI chat asks a few high-signal questions →
     living hiring brief builds on the side → marketing sweeteners (technical vetting,
-    deep profiles, psychometrics) → example shortlist-style cards (labelled examples)
+    deep profiles, psychometrics only if sales/legal approves) → example
+    shortlist-style cards (labelled examples)
     → Book a call for real shortlist.
   - **Claude Design feed (sitewide placement + kit):**  
     **`docs/design/LEAD_CONVERSION_SYSTEM_UX.md`**  
@@ -784,8 +787,17 @@ would drop pages Google currently ranks during the migration.
   - **Execution handoff (new chat):**  
     **`docs/design/LEAD_CONVERSION_EXECUTION_PLAN.md`** — page matrix, phases A–F,
     copy-paste starter prompt.
-  - AI chat brain lives in Jake’s separate app/DB; site embeds it. Until ready, same
-    shell can run scripted questions with the same side brief.
+  - The CE site owns the M2 UI shell. Until a backend is ready, the shell can run
+    clearly-labelled guided questions with the same side brief.
+- **D9 - Clara architecture. CONFIRMED AFTER REPO AUDIT (26 Jul).**
+  `galaxyfunk/clara-chatbot` is a mature Q&A/RAG product with streaming, sessions,
+  knowledge management, HubSpot sync, Calendly attribution, and admin tooling.
+  **Do not rebuild those backend capabilities without cause. Do not use Clara’s
+  current widget/iframe as Pricing M2.** Build CE-owned M2/M4 interfaces and evaluate
+  Clara as a headless backend after adding structured brief I/O, signed sessions,
+  durable rate limiting, staging CORS, webhook verification, privacy/retention, and
+  accessibility gates. Remove the legacy Clara launcher before M4 ships so two chat
+  widgets never compete. Full decision: `docs/design/LEAD_CONVERSION_EXECUTION_PLAN.md` §1a.
 
 ### 8a. Utopia conversion loop (what “lots of leads” looks like)
 
@@ -801,7 +813,7 @@ Side panel: hiring brief builds live (+ vetting sweeteners)
 Brief ready → example shortlist-style profiles (labelled examples)
         ↓
 PRIMARY: Book a call (always available as escape)
-   SECONDARY: keep chatting / Start Hiring
+   SECONDARY: keep refining / explicitly save brief (optional)
         ↓
 HubSpot + human match → 2 real profiles
 ```
@@ -813,13 +825,13 @@ Pricing audit / questions / metrics: `docs/design/PRICING_LEAD_CONVERSION_UX.md`
 **Rules that protect conversion:**
 1. Never fake that chat/calculator matched real people.
 2. Book a Call always one click away (chat must not trap hot leads).
-3. One real multi-step funnel only (Start Hiring) for async detail lovers.
+3. Start Hiring remains working for legacy/direct traffic but is not promoted.
 4. Email only at book / explicit save — not before the first answers.
 5. Measure: calculator → panel engage → brief ready → book clicks → bookings → opps.
 
-**Build sequence:** V1 Option A on Pricing → V2 this chat+brief module (design in
-Claude Design now) → V3 plug Jake’s AI app into the left rail → reuse on Home /
-Hire Engineers / Locations.
+**Build sequence:** V1 Option A on Pricing → V2 this guided chat+brief module
+(design in Claude Design now) → V3 connect a headless backend (Clara if its gates
+pass) → reuse on Home / Hire Engineers / Locations.
 
 ---
 
