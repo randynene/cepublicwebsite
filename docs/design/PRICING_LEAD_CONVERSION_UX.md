@@ -3,8 +3,9 @@
 > Owner: Jake. Status: **Strategy draft for Claude Design** (26 Jul 2026).  
 > Related roadmap decisions: D7 (intent lanes), D8 (Pricing conversion) in
 > `docs/ROADMAP_TO_COMPLETION.md`.  
-> This doc is the design brief for the Pricing “after calculator” experience and
-> the AI chat panel that feeds a living hiring brief / profile.
+> **Parent brief (feed this into Claude Design for sitewide placement):**  
+> `docs/design/LEAD_CONVERSION_SYSTEM_UX.md`  
+> This file is the **Pricing hero module** deep dive (audit, questions, metrics).
 
 ---
 

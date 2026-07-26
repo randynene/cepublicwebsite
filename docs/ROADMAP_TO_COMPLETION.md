@@ -778,8 +778,10 @@ would drop pages Google currently ranks during the migration.
   - **Utopia (design next):** calculator → AI chat asks a few high-signal questions →
     living hiring brief builds on the side → marketing sweeteners (technical vetting,
     deep profiles, psychometrics) → example shortlist-style cards (labelled examples)
-    → Book a call for real shortlist. Full scope + conversion audit:
-    **`docs/design/PRICING_LEAD_CONVERSION_UX.md`** (Claude Design brief).
+    → Book a call for real shortlist.
+  - **Claude Design feed (sitewide placement + kit):**  
+    **`docs/design/LEAD_CONVERSION_SYSTEM_UX.md`**  
+    Pricing deep dive/audit: `docs/design/PRICING_LEAD_CONVERSION_UX.md`.
   - AI chat brain lives in Jake’s separate app/DB; site embeds it. Until ready, same
     shell can run scripted questions with the same side brief.
 
@@ -802,8 +804,9 @@ PRIMARY: Book a call (always available as escape)
 HubSpot + human match → 2 real profiles
 ```
 
-Full audit, chat UI direction, question list, metrics, and Claude Design frame list:
-`docs/design/PRICING_LEAD_CONVERSION_UX.md`.
+Sitewide placement map + Claude Design frame list:
+`docs/design/LEAD_CONVERSION_SYSTEM_UX.md`.  
+Pricing audit / questions / metrics: `docs/design/PRICING_LEAD_CONVERSION_UX.md`.
 
 **Rules that protect conversion:**
 1. Never fake that chat/calculator matched real people.
