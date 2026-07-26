@@ -1,7 +1,7 @@
 # Sanity editability — consolidated execution plan
 
-**Status:** Executing — WP-01/02 (#22), WP-03 (#23), WP-04 (#24) merged; WP-05 (this PR)
-**Date:** 2026-07-25  
+**Status:** Executing — WP-01/02 (#22), WP-03 (#23), WP-04 (#24), WP-05 (#25) merged; WP-06 (this PR)
+**Date:** 2026-07-26  
 **Goal:** Seb can edit *everything meaningful* on the main marketing pages via Sanity Studio → Publish → staging updates.  
 **Source of truth site:** https://staging.jakevibes.dev  
 **Studio:** https://mygratr-cloudemployee.sanity.studio/
@@ -160,11 +160,51 @@ npm run launch:verify-hubspot-forms
 **Page:** `/how-it-works`
 
 **Do**
-- [ ] Confirm D2 for matcher steps 2–4
-- [ ] Wire talk CTA hrefs (AI chat / book-a-call) — stop non-clickable `<span>`s
-- [ ] FAQ fallback CTA: real chat URL field (stop `href="#faq"`)
-- [ ] Optional: schema for matcher steps 2–4 if making interactive
-- [ ] Smoke
+- [x] Confirm D2 for matcher steps 2–4 — **applied the locked default**: the matcher stays a visual demo, every CTA leaving it is real. Same call as WP-03.
+- [x] Wire talk CTA hrefs (AI chat / book-a-call) — stop non-clickable `<span>`s
+- [x] FAQ fallback CTA: real chat URL field (stop `href="#faq"`)
+- [x] Optional: schema for matcher steps 2–4 if making interactive — **not done, deliberately** (D2 defers the multi-step flow)
+- [x] Smoke — both locales, all four CTA branches verified in-browser
+- [ ] Presentation smoke — **needs Studio deploy + reseed after merge**
+
+**Shipped**
+
+`matcher.talkCtas` changed from a bare string array to `{ label, href }`, so the two
+pills under the matcher card are real links instead of decorative `<span>`s. `faq`
+gained `fallbackCtaHref`. Both are Studio-editable, and the whole page is now
+locale-aware: every CTA on `/uk/how-it-works` keeps the visitor in `/uk`.
+
+**The `#chat` convention (new, and it matters beyond this page)**
+
+Several templates point a "talk to our AI" CTA at `#chat` or `#faq`, which does
+nothing when clicked — Clara has no URL, it opens via `window.ClaraWidget.open()`.
+Now: Sanity stores the token `#chat`, and `ChatLink` / `ChatPill`
+(`site/src/components/shared/chat-link/`) render a real link to `/book-a-call`
+while intercepting the click to open the widget.
+
+The interception is gated on the widget having actually **mounted**, not on the
+API existing. `window.ClaraWidget` is defined the moment the script parses, but
+its `open()` is a silent no-op until it has fetched its workspace settings — and
+that fetch is CORS-blocked on origins Clara does not allow, local dev included.
+Trusting `typeof open === 'function'` would have produced a CTA that swallows the
+click and does nothing, which is worse than the bug being fixed. Verified all four
+branches in-browser: widget mounted → chat opens, no navigation; widget absent →
+navigates to `/book-a-call`; non-chat href → never intercepted; UK → `/uk/book-a-call`.
+
+**Migration safety.** The Zod boundary accepts both the new `{ label, href }`
+members and the plain strings already in the dataset, and legacy strings inherit
+the static content's destination by position. So the page keeps working — with
+live CTAs — between the Studio deploy and the reseed, in either order.
+
+**After merge (Jake):** deploy Studio (`cd studio && npx sanity deploy`), then
+`npm run static:seed-how-it-works-page`.
+
+**Filed, not fixed (out of WP-06 scope):**
+- Home's "Ready to find your engineer" section has the same dead-`<span>` talk CTAs
+ on its own `readyToFind` content shape. Home is a different work package; the fix
+ is the same pattern. → WP-15.
+- `#chat` also appears on Pricing, the Location pages, and the catalogue FAQ panels
+ with no handler at all. They can adopt `ChatLink`/`ChatPill` as-is. → WP-15.
 
 ---
 
@@ -272,6 +312,9 @@ npm run launch:verify-hubspot-forms
 **Do**
 - [ ] OG image: for every in-scope page with `og: false` or unused OG — enable + query + `generateMetadata`
 - [ ] CTA href pattern: labels without hrefs get schema `*Href` or become non-links
+- [ ] Adopt `ChatLink`/`ChatPill` (built in WP-06) everywhere `#chat` or `#faq` is
+ currently used as a chat CTA: Home `readyToFind` talk pills, Pricing, the three
+ Location pages, catalogue FAQ panels. All are dead clicks today.
 - [ ] Orphan schema cleanup pass (seeded-but-never-rendered fields) — document or delete
 - [ ] `NEXT_PUBLIC_HUBSPOT_PORTAL_ID` verified on Vercel Production + Preview
 - [ ] Presentation locations map expanded beyond `homePage` for key singletons (optional UX win)

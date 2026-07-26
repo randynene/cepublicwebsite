@@ -33,7 +33,7 @@ export default async function UkHowItWorksPage() {
         description={description}
         faqItems={content.faq.items}
       />
-      <HowItWorksTemplate content={content} />
+      <HowItWorksTemplate content={content} locale="en-GB" />
     </>
   )
 }

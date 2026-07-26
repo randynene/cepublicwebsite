@@ -7,6 +7,9 @@ import { cn } from '@/components/ui/_utils/cn'
 import { Reveal } from '@/components/motion/reveal'
 import { CountUp } from '@/components/motion/count-up'
 import { EngineerMatchQuiz } from '@/components/shared/engineer-match-quiz'
+import { ChatPill } from '@/components/shared/chat-link'
+import type { Locale } from '@/lib/locale-path'
+import { toInternalHref } from '@/lib/url'
 
 import type { HiwContent } from './content'
 import { HeroCard } from './hero-cards'
@@ -47,7 +50,9 @@ function Eyebrow({ children }: { children: string }) {
   return <p className={EYEBROW}>{children}</p>
 }
 
-function Hero({ content }: { content: HiwContent }) {
+type SectionProps = { content: HiwContent; locale: Locale }
+
+function Hero({ content, locale }: SectionProps) {
   const { hero } = content
   const [ana, reinaldo] = hero.people
   const textStack = (
@@ -74,7 +79,7 @@ function Hero({ content }: { content: HiwContent }) {
       <div className="mt-[30px] flex flex-wrap items-center justify-center gap-[14px]">
         <MegaMenuPillLabel
           as="a"
-          href={hero.ctaHref}
+          href={toInternalHref(hero.ctaHref, locale).href}
           variant="pill-green"
           size="cta"
           leadingArrow
@@ -443,7 +448,7 @@ function Testimonials({ content }: { content: HiwContent }) {
   )
 }
 
-function Matcher({ content }: { content: HiwContent }) {
+function Matcher({ content, locale }: SectionProps) {
   const { matcher } = content
   return (
     <section className="bg-[#070D18] py-[72px] lg:py-[104px]">
@@ -457,14 +462,14 @@ function Matcher({ content }: { content: HiwContent }) {
           {matcher.paragraph}
         </p>
         <div className="mt-[40px]">
-          <EngineerMatchQuiz content={matcher} />
+          <EngineerMatchQuiz content={matcher} locale={locale} />
         </div>
       </div>
     </section>
   )
 }
 
-function Faq({ content }: { content: HiwContent }) {
+function Faq({ content, locale }: SectionProps) {
   const { faq } = content
   return (
     <section id="faq" className="scroll-mt-[96px] bg-[#070D18] py-[72px] lg:py-[104px]">
@@ -479,9 +484,9 @@ function Faq({ content }: { content: HiwContent }) {
               {faq.fallbackLabel}
             </div>
             <p className={cn('text-[14px] leading-[21px]', MUTED)}>{faq.fallbackBody}</p>
-            <MegaMenuPillLabel
-              as="a"
-              href="#faq"
+            <ChatPill
+              href={faq.fallbackCtaHref}
+              locale={locale}
               variant="pill-green"
               size="cta"
               leadingArrow
@@ -517,15 +522,21 @@ function Faq({ content }: { content: HiwContent }) {
   )
 }
 
-export function HowItWorksTemplate({ content }: { content: HiwContent }) {
+export function HowItWorksTemplate({
+  content,
+  locale = 'en-US',
+}: {
+  content: HiwContent
+  locale?: Locale
+}) {
   return (
     <main id="main" className="bg-[#070D18]">
-      <Hero content={content} />
+      <Hero content={content} locale={locale} />
       <Stages content={content} />
       <DeRisk content={content} />
       <Testimonials content={content} />
-      <Matcher content={content} />
-      <Faq content={content} />
+      <Matcher content={content} locale={locale} />
+      <Faq content={content} locale={locale} />
     </main>
   )
 }

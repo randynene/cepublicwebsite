@@ -27,6 +27,28 @@ const statMember = defineArrayMember({
   preview: { select: { title: 'value', subtitle: 'label' } },
 })
 
+// `#chat` is the site-wide token for "open the Clara chat widget". The widget
+// has no URL of its own, so the site renders a link to the booking page and
+// upgrades the click to open the chat. See site/src/lib/chat.ts.
+const CHAT_HREF_HINT = 'A path such as /book-a-call, or #chat to open the AI chat widget.'
+
+const talkCtaMember = defineArrayMember({
+  type: 'object',
+  name: 'talkCta',
+  title: 'Talk CTA',
+  fields: [
+    defineField({ name: 'label', title: 'Label', type: 'string', validation: (R) => R.required() }),
+    defineField({
+      name: 'href',
+      title: 'Destination',
+      type: 'string',
+      description: CHAT_HREF_HINT,
+      validation: (R) => R.required(),
+    }),
+  ],
+  preview: { select: { title: 'label', subtitle: 'href' } },
+})
+
 const labelValueMember = defineArrayMember({
   type: 'object',
   name: 'labelValue',
@@ -291,7 +313,13 @@ const matcherSection = defineField({
       ],
     }),
     defineField({ name: 'talkPrompt', title: 'Talk prompt', type: 'string' }),
-    defineField({ name: 'talkCtas', title: 'Talk CTAs', type: 'array', of: [{ type: 'string' }] }),
+    defineField({
+      name: 'talkCtas',
+      title: 'Talk CTAs',
+      description: 'The two pills under the matcher card. Each one needs a destination.',
+      type: 'array',
+      of: [talkCtaMember],
+    }),
     defineField({
       name: 'bookHref',
       title: 'Book-a-call href',
@@ -314,7 +342,13 @@ const faqSection = defineField({
     defineField({ name: 'titleAccent', title: 'Title (accent word)', type: 'string' }),
     defineField({ name: 'fallbackLabel', title: 'Fallback label', type: 'string' }),
     defineField({ name: 'fallbackBody', title: 'Fallback body', type: 'text', rows: 2 }),
-    defineField({ name: 'fallbackCta', title: 'Fallback CTA', type: 'string' }),
+    defineField({ name: 'fallbackCta', title: 'Fallback CTA label', type: 'string' }),
+    defineField({
+      name: 'fallbackCtaHref',
+      title: 'Fallback CTA destination',
+      type: 'string',
+      description: CHAT_HREF_HINT,
+    }),
     defineField({
       name: 'items',
       title: 'Items',

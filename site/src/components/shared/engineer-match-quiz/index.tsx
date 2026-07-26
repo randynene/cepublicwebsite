@@ -1,6 +1,9 @@
+import { ChatLink } from '@/components/shared/chat-link'
 import { MegaMenuPillLabel } from '@/components/ui/mega-menu-pill-label'
 import { cn } from '@/components/ui/_utils/cn'
 import { Reveal } from '@/components/motion/reveal'
+import type { Locale } from '@/lib/locale-path'
+import { toInternalHref } from '@/lib/url'
 
 // Engineer Match Quiz — SHARED component (How It Works + future Home adoption).
 //
@@ -10,6 +13,9 @@ import { Reveal } from '@/components/motion/reveal'
 // (steps advance/back, single-select role/team, skills add/remove, preview
 // unlock at step 4) is deferred to a follow-up session — this file is the
 // standalone home so that upgrade lands here with no template rewrite.
+//
+// The card is a demo, but every CTA leaving it is real (decision D2): the
+// "Next" pill and the two talk CTAs below the card all go somewhere.
 //
 // Prop-driven so Home can pass its own copy later. All strings arrive via
 // props (no JSX literals here beyond the two decorative glyphs).
@@ -32,14 +38,22 @@ export interface MatchQuizContent {
     stats: readonly { value: string; label: string }[]
   }
   talkPrompt: string
-  talkCtas: readonly string[]
+  talkCtas: readonly { label: string; href: string }[]
   bookHref: string
 }
 
 const CARD = 'rounded-[20px] border border-[#22314D] bg-[#101B30]'
 const MUTED = 'text-[#7F8CA0]'
+const TALK_PILL =
+  'rounded-full bg-[#16233B] px-[16px] py-[8px] text-[13px] font-semibold text-white transition-colors hover:bg-[#1E2E4A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
 
-export function EngineerMatchQuiz({ content }: { content: MatchQuizContent }) {
+export function EngineerMatchQuiz({
+  content,
+  locale = 'en-US',
+}: {
+  content: MatchQuizContent
+  locale?: Locale
+}) {
   return (
     <>
       <Reveal className={cn(CARD, 'grid gap-[28px] p-[28px] lg:grid-cols-[1.5fr_1fr] lg:p-[36px]')}>
@@ -102,7 +116,7 @@ export function EngineerMatchQuiz({ content }: { content: MatchQuizContent }) {
             </div>
             <MegaMenuPillLabel
               as="a"
-              href={content.bookHref}
+              href={toInternalHref(content.bookHref, locale).href}
               variant="pill-green"
               size="cta"
               leadingArrow
@@ -156,12 +170,9 @@ export function EngineerMatchQuiz({ content }: { content: MatchQuizContent }) {
       <div className="mt-[24px] flex flex-wrap items-center justify-center gap-[14px]">
         <span className={cn('text-[14px]', MUTED)}>{content.talkPrompt}</span>
         {content.talkCtas.map((cta) => (
-          <span
-            key={cta}
-            className="rounded-full bg-[#16233B] px-[16px] py-[8px] text-[13px] font-semibold text-white"
-          >
-            {cta}
-          </span>
+          <ChatLink key={cta.label} href={cta.href} locale={locale} className={TALK_PILL}>
+            {cta.label}
+          </ChatLink>
         ))}
       </div>
     </>

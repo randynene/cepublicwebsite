@@ -239,7 +239,10 @@ async function buildDoc() {
       ),
     },
     talkPrompt: HC.matcher.talkPrompt,
-    talkCtas: [...HC.matcher.talkCtas],
+    talkCtas: keyed(
+      HC.matcher.talkCtas.map((cta) => ({ label: cta.label, href: cta.href })),
+      'talk-cta',
+    ),
     bookHref: HC.matcher.bookHref,
   }
 
@@ -250,6 +253,7 @@ async function buildDoc() {
     fallbackLabel: HC.faq.fallbackLabel,
     fallbackBody: HC.faq.fallbackBody,
     fallbackCta: HC.faq.fallbackCta,
+    fallbackCtaHref: HC.faq.fallbackCtaHref,
     items: keyed(
       HC.faq.items.map((f) => ({ number: f.number, question: f.question, answer: f.answer })),
       'faq',

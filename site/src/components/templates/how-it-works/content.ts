@@ -16,6 +16,10 @@
 // CE's published figure; the funnel counts and 4.9/5 satisfaction are
 // realistic placeholders pending confirmed CE numbers.
 
+// Relative, not the `@/` alias: the seed script imports this file from the
+// repo root, where `@/` resolves to a different src tree.
+import { CHAT_HREF } from '../../../lib/chat'
+
 export interface HiwPerson {
   name: string
   role: string
@@ -41,6 +45,12 @@ export interface HiwFaqItem {
   number: string
   question: string
   answer: string
+}
+
+export interface HiwTalkCta {
+  label: string
+  /** `#chat` opens the Clara widget; anything else is an ordinary link. */
+  href: string
 }
 
 export interface HiwTestimonial {
@@ -289,7 +299,10 @@ export const HIW_CONTENT = {
       ],
     },
     talkPrompt: 'Prefer to talk first?',
-    talkCtas: ['Ask our AI anything', 'Book a call'],
+    talkCtas: [
+      { label: 'Ask our AI anything', href: CHAT_HREF },
+      { label: 'Book a call', href: '/book-a-call' },
+    ] as HiwTalkCta[],
     bookHref: '/book-a-call',
   },
   faq: {
@@ -299,6 +312,7 @@ export const HIW_CONTENT = {
     fallbackLabel: "Can't find your question?",
     fallbackBody: "Ask our AI chatbot - trained on every sales call we've had.",
     fallbackCta: 'Open chat',
+    fallbackCtaHref: CHAT_HREF,
     items: [
       {
         number: '01',

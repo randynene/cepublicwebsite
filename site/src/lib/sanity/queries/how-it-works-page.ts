@@ -3,9 +3,10 @@ import 'server-only'
 import { stegaClean } from '@sanity/client/stega'
 import { z } from 'zod'
 
+import { CHAT_HREF } from '@/lib/chat'
 import { sanityFetch } from '@/lib/sanity/live'
 import { stegaEnum } from '@/lib/sanity/stega-enum'
-import type { HiwContent } from '@/components/templates/how-it-works/content'
+import { HIW_CONTENT, type HiwContent } from '@/components/templates/how-it-works/content'
 
 // howItWorksPage singleton fetch (route /how-it-works). The GROQ projection
 // dereferences every photo into a plain `image` url string plus its `imageAlt`,
@@ -45,10 +46,16 @@ const HOW_IT_WORKS_QUERY = /* groq */ `
     eyebrow, titleLead, titleAccent, paragraph, steps, question, questionSub,
     roles, bottomPills, nextLabel,
     matching{ label, unlocks, tags, note, stats[]{ value, label } },
-    talkPrompt, talkCtas, bookHref
+    talkPrompt,
+    // Left unprojected on purpose: documents seeded before the schema change
+    // hold plain strings here, and a projection would flatten those to null.
+    // The mapper below normalises both shapes.
+    talkCtas,
+    bookHref
   },
   faq{
     eyebrow, titleLead, titleAccent, fallbackLabel, fallbackBody, fallbackCta,
+    fallbackCtaHref,
     items[]{ number, question, answer }
   }
 }
@@ -198,7 +205,12 @@ export const HowItWorksPageSchema = z.object({
         .nullable()
         .optional(),
       talkPrompt: nzs,
-      talkCtas: zStrArr,
+      // Union tolerates the pre-schema-change string form. Normalised in
+      // toHiwContent so the template only ever sees { label, href }.
+      talkCtas: z
+        .array(z.union([z.string(), z.object({ label: nzs, href: nzs }).passthrough()]))
+        .nullable()
+        .optional(),
       bookHref: nzs,
     })
     .nullable()
@@ -211,6 +223,7 @@ export const HowItWorksPageSchema = z.object({
       fallbackLabel: nzs,
       fallbackBody: nzs,
       fallbackCta: nzs,
+      fallbackCtaHref: nzs,
       items: z
         .array(z.object({ number: nzs, question: nzs, answer: nzs }))
         .nullable()
@@ -249,6 +262,10 @@ export async function fetchHowItWorksPage(): Promise<HowItWorksPageData | null> 
 // stega, since their parser reads the numeric run and ignores trailing
 // characters; the testimonial `variant` selector is cleaned at the Zod
 // boundary via stegaEnum.)
+//
+// Hrefs get the same treatment for the same reason: they are machine values,
+// never display text, and a stega-tagged "#chat" would not match the chat
+// token or resolve as a URL.
 export function toHiwContent(data: HowItWorksPageData): HiwContent {
   const rows = data.stages?.funnel?.rows
   if (rows) {
@@ -256,5 +273,41 @@ export function toHiwContent(data: HowItWorksPageData): HiwContent {
       if (typeof row.barWidth === 'string') row.barWidth = stegaClean(row.barWidth)
     }
   }
+
+  if (data.hero) data.hero.ctaHref = cleanHref(data.hero.ctaHref, HIW_CONTENT.hero.ctaHref)
+  if (data.matcher) {
+    data.matcher.bookHref = cleanHref(data.matcher.bookHref, HIW_CONTENT.matcher.bookHref)
+    data.matcher.talkCtas = normaliseTalkCtas(data.matcher.talkCtas)
+  }
+  if (data.faq) {
+    data.faq.fallbackCtaHref = cleanHref(data.faq.fallbackCtaHref, HIW_CONTENT.faq.fallbackCtaHref)
+  }
+
   return data as unknown as HiwContent
+}
+
+function cleanHref(value: string | null | undefined, fallback: string): string {
+  const cleaned = typeof value === 'string' ? stegaClean(value).trim() : ''
+  return cleaned || fallback
+}
+
+// Accepts both the current { label, href } members and the plain strings that
+// documents seeded before the schema change still hold. Legacy strings inherit
+// the static content's destination for the same position, so the CTA is live
+// the moment the schema deploys, without waiting for a reseed.
+type TalkCtaInput = NonNullable<HowItWorksPageData['matcher']>['talkCtas']
+
+function normaliseTalkCtas(value: TalkCtaInput): { label: string; href: string }[] {
+  const items = Array.isArray(value) ? value : []
+  const defaults = HIW_CONTENT.matcher.talkCtas
+
+  return items.flatMap((item, i) => {
+    const fallbackHref = defaults[i]?.href ?? CHAT_HREF
+    if (typeof item === 'string') {
+      const label = item.trim()
+      return label ? [{ label, href: fallbackHref }] : []
+    }
+    const label = typeof item.label === 'string' ? item.label : ''
+    return label ? [{ label, href: cleanHref(item.href, fallbackHref) }] : []
+  })
 }
