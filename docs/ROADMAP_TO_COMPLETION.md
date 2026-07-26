@@ -712,6 +712,12 @@ Nothing goes to the real domain until all of these are green:
 - [ ] Structured data correct per template (Service on service pages, etc.).
 - [ ] Nav structured data uses the safe serializer.
 - [ ] Start-hiring funnel behaves as live (steps, forms, redirects).
+- [ ] **HubSpot + sales-funnel once-over (Phase 7.9):** Jake funnel map signed;
+      `launch:verify-hubspot-forms` PASS; one real test lead per path on staging;
+      portal id on Vercel; no dead primary form CTAs.
+- [ ] **Speed + crawl pass (Phase 7.10):** Screaming Frog staging crawl filed;
+      Lighthouse SEO 100 on sample set; Tier 1 SEO/AEO checklist green; Perf debt
+      (third-party scripts) owned, not ignored.
 - [ ] Every page is editable in Presentation (including the static-page batch).
 - [ ] Real social-share image in place.
 - [ ] Organization structured data has verified social links.
@@ -755,6 +761,59 @@ make silently. Recommendation given; Jake confirms.
 and indexed on CE. Decision: keep them live with their captured content so they stay
 indexed and parity holds; redesign later. They are NOT hidden/noindexed, because that
 would drop pages Google currently ranks during the migration.
+
+- **D7 - Lead capture / intent system. CONFIRMED (26 Jul).** Butter-up first; hard ask
+  only when intent is clear. Lanes:
+  - **Hot** → Schedule a Call / Calendly (default conversion door)
+  - **Warm–hot** → one real multi-step = Start Hiring (HubSpot)
+  - **Curious** → AI chat from Jake's separate app (later; helper lane, not main CTA)
+  - **Browsing** → no form; great content + soft CTAs
+  - **Soft stay-in-touch** → footer newsletter only
+  - **Downloads** → ungate (or mostly ungate); soft “book a call” after
+  - **No** email-gate for pricing quotes; calculator + Book a Call instead
+- **D8 - Pricing conversion. CONFIRMED (26 Jul).** Pricing is the highest-value page.
+  - **Ship first (Option A):** after calculator result, primary CTA =
+    **“Get a more accurate estimate — book a call”** (pass role/region/seniority into
+    booking context when possible). Secondary = short hiring brief / Start Hiring.
+    Helper later = AI chat on Pricing.
+  - **Utopia / highest conversion (Option B, next):** under the result, show
+    **example match profiles** for that role + region + seniority (clearly labelled
+    examples, not fake “we matched you”), then CTA to book a call to see a real
+    shortlist. This is the butter-up + convert loop.
+
+### 8a. Utopia conversion loop (what “lots of leads” looks like)
+
+Goal: every interested visitor is warmed, then given one obvious next step.
+
+```
+Browse / land on Pricing (or Home calculator)
+        ↓
+Play with numbers (role, region, seniority)  ← butter: proof of value
+        ↓
+See savings + (later) example profiles       ← butter: “this could be my team”
+        ↓
+PRIMARY: Book a call for tailored estimate / real shortlist
+   or SECONDARY: Start Hiring multi-step if not ready to talk
+   or HELPER: AI chat if they have a question
+        ↓
+Call / form → HubSpot → human match → 2 real profiles
+        ↓
+Repeatable: same pattern on Hire Engineers, Locations, Fractional CTO, Home
+```
+
+**Rules that protect conversion:**
+1. Never fake that the calculator matched real people.
+2. Put Schedule a Call wherever interest spikes (calculator result, “get matched
+   at this rate”, end of key service pages).
+3. One real multi-step funnel only (Start Hiring) — page demos either wire to
+   HubSpot or hand off; no dead submit buttons.
+4. AI chat assists; it does not replace Book a Call.
+5. Measure: calculator completes → Book-a-call clicks → booked calls → qualified
+   opportunities (HubSpot). Optimise that chain, not vanity form fills.
+
+**Build sequence:** A on Pricing now → B profile teaser when design/content ready →
+wire the same post-interest CTA pattern on Home + Hire Engineers + Locations →
+AI chat entry points when Jake’s app is ready to embed.
 
 ---
 
