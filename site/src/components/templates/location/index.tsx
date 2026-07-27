@@ -49,6 +49,9 @@ const LOGOS_LABEL_LINES_FALLBACK = ['Trusted by', '300+', 'engineering teams']
 
 // Time-zone stat-card icons: 20x20 lime line-icons (stroke #D4FF3C, no fill) on
 // a dark navy #1B2A45 tile (set on the AdvantageTile wrapper).
+// Explicit px, not h-5/w-5: tokens.css sets --spacing to 0.5rem, so every
+// Tailwind spacing step on this page is double the stock scale (h-5 = 40px).
+const ICON_GLYPH = 'h-[20px] w-[20px]'
 const iconBase = {
   viewBox: '0 0 24 24',
   fill: 'none',
@@ -59,17 +62,17 @@ const iconBase = {
   'aria-hidden': true,
 }
 const TIMEZONE_ICON_MAP: Record<NonNullable<AdvantageCard['icon']>, React.ReactNode> = {
-  clock: <svg key="clock" {...iconBase} className="h-5 w-5"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>,
-  dollar: <svg key="dollar" {...iconBase} className="h-5 w-5"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>,
-  bolt: <svg key="bolt" {...iconBase} className="h-5 w-5"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" /></svg>,
-  globe: <svg key="globe" {...iconBase} className="h-5 w-5"><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18Z" /></svg>,
+  clock: <svg key="clock" {...iconBase} className={ICON_GLYPH}><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>,
+  dollar: <svg key="dollar" {...iconBase} className={ICON_GLYPH}><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>,
+  bolt: <svg key="bolt" {...iconBase} className={ICON_GLYPH}><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" /></svg>,
+  globe: <svg key="globe" {...iconBase} className={ICON_GLYPH}><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18Z" /></svg>,
   chat: (
-    <svg key="chat" {...iconBase} className="h-5 w-5">
+    <svg key="chat" {...iconBase} className={ICON_GLYPH}>
       <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
     </svg>
   ),
   users: (
-    <svg key="users" {...iconBase} className="h-5 w-5">
+    <svg key="users" {...iconBase} className={ICON_GLYPH}>
       <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
       <circle cx="9" cy="7" r="3" />
       <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
@@ -90,39 +93,39 @@ const TIMEZONE_ICONS: React.ReactNode[] = [
 // each section invented its own (round lime-tinted circles with a tick glyph),
 // which is why the EOR + "three ways" tiles read as a different design.
 const ICON_TILE =
-  'flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-[#1B2A45]'
+  'flex h-[40px] w-[40px] shrink-0 items-center justify-center rounded-[10px] bg-[#1B2A45]'
 
 // "How we keep your engineer" tiles. Each EOR commitment gets its own icon
 // instead of five identical ticks. Matched on the item title so the mapping
 // survives a copy edit in Studio, with a positional fallback.
 const EOR_ICONS = {
   shield: (
-    <svg {...iconBase} className="h-5 w-5">
+    <svg {...iconBase} className={ICON_GLYPH}>
       <path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6l7-3Z" />
       <path d="m9 12 2 2 4-4" />
     </svg>
   ),
   cap: (
-    <svg {...iconBase} className="h-5 w-5">
+    <svg {...iconBase} className={ICON_GLYPH}>
       <path d="M22 10 12 5 2 10l10 5 10-5Z" />
       <path d="M6 12v5c0 1 3 3 6 3s6-2 6-3v-5" />
     </svg>
   ),
   heart: (
-    <svg {...iconBase} className="h-5 w-5">
+    <svg {...iconBase} className={ICON_GLYPH}>
       <path d="M12 21s-7-4.5-9.5-9A5 5 0 0 1 12 6a5 5 0 0 1 9.5 6c-.6 1-1.5 2-2.5 3" />
       <path d="M3 12h4l2-3 3 6 2-3h4" />
     </svg>
   ),
   building: (
-    <svg {...iconBase} className="h-5 w-5">
+    <svg {...iconBase} className={ICON_GLYPH}>
       <path d="M4 21V6a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v15" />
       <path d="M14 10h5a1 1 0 0 1 1 1v10M2 21h20" />
       <path d="M7 9h4M7 13h4M7 17h4M17 14h1M17 18h1" />
     </svg>
   ),
   support: (
-    <svg {...iconBase} className="h-5 w-5">
+    <svg {...iconBase} className={ICON_GLYPH}>
       <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
       <circle cx="9" cy="7" r="3" />
       <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
@@ -315,12 +318,21 @@ function LogoStrip({ content }: { content: LocationContent }) {
 }
 
 // ── Time-zone advantage ─────────────────────────────────────────────────────
+// Every spacing value here is explicit px. The page's Tailwind steps are on a
+// doubled scale (--spacing: 0.5rem), which is what inflated these cards to
+// 290x423 with an 80px icon tile. Fixed geometry keeps all four cards - and the
+// same row on all three region pages - identical: 24px padding, 40px tile,
+// 8px stack gap. The floor is the tallest natural card across the three regions
+// (PH/EE run to a fourth body line), so LATAM's shorter cards match them rather
+// than sitting 20px shorter.
+const ADVANTAGE_CARD_MIN_H = 'min-h-[254px]'
+
 function AdvantageTile({ card, icon }: { card: AdvantageCard; icon: React.ReactNode }) {
   return (
-    <li className={cn(CARD, CARD_HOVER, 'flex flex-col gap-2 p-6 text-left')}>
-      <span className={cn(ICON_TILE, 'mb-3')}>{icon}</span>
+    <li className={cn(CARD, CARD_HOVER, ADVANTAGE_CARD_MIN_H, 'flex flex-col gap-[8px] p-[24px] text-left')}>
+      <span className={cn(ICON_TILE, 'mb-[10px]')}>{icon}</span>
       <p className="text-[11px] font-semibold uppercase tracking-[1.2px] text-[#6B7589]">{card.eyebrow}</p>
-      <h3 className="text-[24px] font-bold text-white">{card.title}</h3>
+      <h3 className="text-[22px] font-bold leading-[28px] text-white">{card.title}</h3>
       <p className={cn('text-[14px] leading-[21px]', BODY)}>{card.body}</p>
     </li>
   )
@@ -335,7 +347,7 @@ function Advantage({ content }: { content: LocationContent }) {
         <Heading lead={advantage.titleLead} accent={advantage.titleAccent} />
       </div>
       <p className={cn('mt-4 max-w-[700px] text-[16px]', BODY)}>{advantage.intro}</p>
-      <ul className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <ul className="mt-[40px] grid grid-cols-1 items-stretch gap-[20px] sm:grid-cols-2 lg:grid-cols-4">
         {advantage.cards.map((c, i) => (
           <AdvantageTile
             key={c.title}
@@ -764,7 +776,7 @@ function StartTile({ card, featured }: { card: StartCard; featured?: boolean }) 
       {featured ? (
         <span className={cn(ICON_TILE, 'mb-1 bg-brand-primary')}>
           {/* Lime tile, so the line-icon inverts to dark ink rather than lime. */}
-          <svg {...iconBase} stroke="#060F1E" className="h-5 w-5">
+          <svg {...iconBase} stroke="#060F1E" className={ICON_GLYPH}>
             <path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" />
           </svg>
         </span>
