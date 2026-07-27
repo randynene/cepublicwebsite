@@ -362,18 +362,15 @@ body {
   background-size: 0 2px;
   transition: background-size 0.3s ease, color 0.25s ease;
 }
-.nav-underline:hover,
-.nav-underline:focus-visible,
-.nav-trigger:hover .nav-underline,
-.nav-trigger:focus-visible .nav-underline,
-.nav-trigger[aria-expanded='true'] .nav-underline {
+.nav-item:hover .nav-underline,
+.nav-item:focus-visible .nav-underline,
+.nav-item[aria-expanded='true'] .nav-underline {
   background-size: 100% 2px;
   color: var(--color-text-primary);
 }
 /* Keyboard users get the hover visual plus a ring. `outline` rather than
    Tailwind's box-shadow ring for the same layering reason as `.cta-sweep`. */
-.nav-underline:focus-visible,
-.nav-trigger:focus-visible {
+.nav-item:focus-visible {
   outline: 2px solid #fff;
   outline-offset: 3px;
 }

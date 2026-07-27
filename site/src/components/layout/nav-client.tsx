@@ -66,8 +66,19 @@ function isActionClusterLink(link: PrimaryLink, locale: Locale): boolean {
 // Nav link resting type — 16px/600 muted, per the 1E reference. The centre-out
 // lime underline and the white hover colour live in `.nav-underline`
 // (globals.css); the weight is set at rest so hover never reflows the row.
+//
+// The 5px underline gutter is part of this box, so centring the box in the row
+// leaves the text 1.25px above the CTA baselines. Transform, not padding: the
+// label has to move without changing the row's height.
 const NAV_LABEL_CLASS =
-  'nav-underline pb-[5px] text-[16px] font-semibold leading-none text-text-secondary'
+  'nav-underline translate-y-[1.25px] pb-[5px] text-[16px] font-semibold leading-none text-text-secondary'
+
+// Every nav item — dropdown trigger and plain link alike — uses this box so the
+// row's `items-center` lands all five labels on the same line. The 5px
+// underline gutter belongs on the inner label span, never on this element: put
+// it here and the padding stops being symmetric and the label drifts down.
+const NAV_ITEM_CLASS =
+  'nav-item inline-flex items-center gap-[7px] whitespace-nowrap py-2 tracking-[-0.08px]'
 
 declare global {
   interface Window {
@@ -281,12 +292,13 @@ const MegaMenuTrigger = forwardRef<
       onMouseLeave={onMouseLeave}
       onFocus={onOpen}
       onBlur={onScheduleClose}
-      className="nav-trigger group inline-flex items-center gap-[7px] whitespace-nowrap py-2 tracking-[-0.08px]"
+      className={cn(NAV_ITEM_CLASS, 'group')}
     >
       <span className={NAV_LABEL_CLASS}>{link.label}</span>
-      {/* Matches the label's 5px underline gutter so `items-center` keeps the
-          caret optically level with the text rather than 2.5px low. */}
-      <span className="mb-[5px] inline-flex">
+      {/* Tracks the label's own nudge so the caret stays level with the text
+          rather than with the label box, which is 5px taller because of the
+          underline gutter. */}
+      <span className="inline-flex -translate-y-[1.25px]">
         <ChevronInCircle isActive={isOpen} />
       </span>
     </button>
@@ -687,13 +699,10 @@ export default function NavClient({
           <li key={link._key}>
             <Link
               href={href}
-              className={cn(
-                'inline-block whitespace-nowrap py-2 tracking-[-0.08px]',
-                NAV_LABEL_CLASS,
-              )}
+              className={NAV_ITEM_CLASS}
               {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
             >
-              {link.label}
+              <span className={NAV_LABEL_CLASS}>{link.label}</span>
             </Link>
           </li>
         )
