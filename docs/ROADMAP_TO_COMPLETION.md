@@ -4,7 +4,7 @@
 > it live on staging, ready for a zero-loss crossover. If any other doc disagrees
 > with this file about "what is done", this file wins until launch.
 >
-> Owner: Jake. Author of record: planning brain. Last updated: 25 Jul 2026.
+> Owner: Jake. Author of record: planning brain. Last updated: 27 Jul 2026.
 
 ---
 
@@ -883,6 +883,12 @@ Nothing goes to the real domain until all of these are green:
 - [ ] Structured data correct per template (Service on service pages, etc.).
 - [ ] Nav structured data uses the safe serializer.
 - [ ] Start-hiring funnel behaves as live (steps, forms, redirects).
+- [ ] **HubSpot + sales-funnel once-over (Phase 7.9):** Jake funnel map signed;
+      `launch:verify-hubspot-forms` PASS; one real test lead per path on staging;
+      portal id on Vercel; no dead primary form CTAs.
+- [ ] **Speed + crawl pass (Phase 7.10):** Screaming Frog staging crawl filed;
+      Lighthouse SEO 100 on sample set; Tier 1 SEO/AEO checklist green; Perf debt
+      (third-party scripts) owned, not ignored.
 - [ ] Every page is editable in Presentation (including the static-page batch).
 - [ ] Real social-share image in place.
 - [ ] Organization structured data has verified social links.
@@ -926,6 +932,77 @@ make silently. Recommendation given; Jake confirms.
 and indexed on CE. Decision: keep them live with their captured content so they stay
 indexed and parity holds; redesign later. They are NOT hidden/noindexed, because that
 would drop pages Google currently ranks during the migration.
+
+- **D7 - Lead capture / intent system. CONFIRMED + SIMPLIFIED (26 Jul).**
+  Necessary doors only — see `docs/design/lead-conversion/LEAD_CONVERSION_SYSTEM_UX.md`:
+  - **M1 Schedule a Call** = primary door sitewide
+  - **M2 Chat + living brief** = warm path at interest spikes only (Pricing first)
+  - **M4 Helper chat** = CE-owned helper later (Clara headless if gates pass)
+  - **M3 Start Hiring** = keep URLs/forms working; **do not promote** / no new links
+  - Butter-up first; ungate downloads; no email-gate for pricing quotes
+  - Locations hero should move off `/start-hiring` toward M1 (+ optional M2)
+- **D8 - Pricing conversion. CONFIRMED (26 Jul).** Pricing is the highest-value page.
+  - **Ship first (Option A):** after calculator result, primary CTA =
+    **“Get a more accurate estimate - book a call”**. Pass the calculator data it
+    actually collects (developer count, talent region, comparison country, currency,
+    estimate range, locale, source page) into booking context where supported.
+    Secondary = optional 2–3 guided brief questions, **not** Start Hiring.
+  - **Utopia (design next):** calculator → AI chat asks a few high-signal questions →
+    living hiring brief builds on the side → marketing sweeteners (technical vetting,
+    deep profiles, psychometrics only if sales/legal approves) → example
+    shortlist-style cards (labelled examples)
+    → Book a call for real shortlist.
+  - **Claude Design feed (sitewide placement + kit):**  
+    **`docs/design/lead-conversion/LEAD_CONVERSION_SYSTEM_UX.md`**
+    Pricing deep dive/audit: `docs/design/lead-conversion/PRICING_LEAD_CONVERSION_UX.md`.
+  - **Execution handoff (new chat):**  
+    **`docs/design/lead-conversion/LEAD_CONVERSION_EXECUTION_PLAN.md`** — page matrix, phases A–F,
+    copy-paste starter prompt.
+  - The CE site owns the M2 UI shell. Until a backend is ready, the shell can run
+    clearly-labelled guided questions with the same side brief.
+- **D9 - Clara architecture. CONFIRMED AFTER REPO AUDIT (26 Jul).**
+  `galaxyfunk/clara-chatbot` is a mature Q&A/RAG product with streaming, sessions,
+  knowledge management, HubSpot sync, Calendly attribution, and admin tooling.
+  **Do not rebuild those backend capabilities without cause. Do not use Clara’s
+  current widget/iframe as Pricing M2.** Build CE-owned M2/M4 interfaces and evaluate
+  Clara as a headless backend after adding structured brief I/O, signed sessions,
+  durable rate limiting, staging CORS, webhook verification, privacy/retention, and
+  accessibility gates. Remove the legacy Clara launcher before M4 ships so two chat
+  widgets never compete. Full decision: `docs/design/lead-conversion/LEAD_CONVERSION_EXECUTION_PLAN.md` §1a.
+
+### 8a. Utopia conversion loop (what “lots of leads” looks like)
+
+Goal: warm them, learn about them without a form dump, convert on Book a Call.
+
+```
+Pricing calculator → estimate
+        ↓
+Chat asks 4–6 key questions (chips first)
+        ↓
+Side panel: hiring brief builds live (+ vetting sweeteners)
+        ↓
+Brief ready → example shortlist-style profiles (labelled examples)
+        ↓
+PRIMARY: Book a call (always available as escape)
+   SECONDARY: keep refining / explicitly save brief (optional)
+        ↓
+HubSpot + human match → 2 real profiles
+```
+
+Sitewide placement map + Claude Design frame list:
+`docs/design/lead-conversion/LEAD_CONVERSION_SYSTEM_UX.md`.
+Pricing audit / questions / metrics: `docs/design/lead-conversion/PRICING_LEAD_CONVERSION_UX.md`.
+
+**Rules that protect conversion:**
+1. Never fake that chat/calculator matched real people.
+2. Book a Call always one click away (chat must not trap hot leads).
+3. Start Hiring remains working for legacy/direct traffic but is not promoted.
+4. Email only at book / explicit save — not before the first answers.
+5. Measure: calculator → panel engage → brief ready → book clicks → bookings → opps.
+
+**Build sequence:** V1 Option A on Pricing → V2 this guided chat+brief module
+(design in Claude Design now) → V3 connect a headless backend (Clara if its gates
+pass) → reuse on Home / Hire Engineers / Locations.
 
 ---
 
