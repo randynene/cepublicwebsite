@@ -20,16 +20,17 @@ import customerStoriesHub from './customer-stories-hub'
 import reviewsHub from './reviews-hub'
 import compareHub from './compare-hub'
 
-// Static content singletons (§4.4) — 13
+// Static content singletons (§4.4)
+//
+// retentionPage / sourcingPage / embeddingPage / scaleThisWeekPage were removed
+// on 26 Jul 2026. Those four URLs 301 rather than render (see the deliberate
+// divergence block in site/next.config.ts), so the documents backed no route and
+// only offered Seb fields that changed nothing.
 import homePage from './home-page'
 import aboutUsPage from './about-us-page'
 import howItWorksPage from './how-it-works-page'
 import contactPage from './contact-page'
 import forDevelopersPage from './for-developers-page'
-import retentionPage from './retention-page'
-import sourcingPage from './sourcing-page'
-import embeddingPage from './embedding-page'
-import scaleThisWeekPage from './scale-this-week-page'
 import workWithShawneePage from './work-with-shawnee-page'
 import startHiringPage from './start-hiring-page'
 import notFoundPage from './not-found-page'
@@ -82,10 +83,6 @@ export const singletonTypes = [
   howItWorksPage,
   contactPage,
   forDevelopersPage,
-  retentionPage,
-  sourcingPage,
-  embeddingPage,
-  scaleThisWeekPage,
   workWithShawneePage,
   startHiringPage,
   notFoundPage,

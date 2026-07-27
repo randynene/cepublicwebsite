@@ -135,7 +135,9 @@ Grouped in `studio/schemas/structure.ts` into six Studio nav sections.
 
 **Collection indexes (5):** servicesHub (/services), technologyHub (/technology), customerStoriesHub (/customer-stories + /our-work alias), reviewsHub (/reviews), compareHub (/compare + /alternatives alias). `teamHub` dropped — `/team` is a 301 to `/about-us`.
 
-**Static content (13):** homePage (/), aboutUsPage (/about-us), howItWorksPage (/how-it-works), contactPage (/contact), forDevelopersPage (/for-developers), retentionPage (/retention), sourcingPage (/sourcing), embeddingPage (/embedding), scaleThisWeekPage (/scale-this-week), workWithShawneePage (/work-with-shawnee), startHiringPage (/start-hiring/contact-info), notFoundPage (/404), privacyPolicyPage (/legals/privacy-policy — migrated from Webflow Legal pages collection).
+**Static content (9):** homePage (/), aboutUsPage (/about-us), howItWorksPage (/how-it-works), contactPage (/contact), forDevelopersPage (/for-developers), workWithShawneePage (/work-with-shawnee), startHiringPage (/start-hiring/contact-info), notFoundPage (/404), privacyPolicyPage (/legals/privacy-policy — migrated from Webflow Legal pages collection).
+
+**Removed 26 Jul 2026 (4):** retentionPage (/retention), sourcingPage (/sourcing), embeddingPage (/embedding), scaleThisWeekPage (/scale-this-week). All four URLs 301 rather than render — the first three to /how-it-works, the last to the homepage — so the documents backed no route. Schema types deleted; documents removed from the dataset via `npm run static:delete-retired-singletons`. See the deliberate-divergence block in `site/next.config.ts` and `data/webflow/parity-exceptions.json`.
 
 **Calculator pages (2):** hiringCostCalculatorPage (/hiring-cost-calculator), priceComparisonCalculatorPage (/price-comparison-calculator). Logic hardcoded in Next.js; singletons hold marketing copy only.
 

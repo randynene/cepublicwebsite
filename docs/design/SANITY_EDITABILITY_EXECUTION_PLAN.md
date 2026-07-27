@@ -368,11 +368,35 @@ the Presentation click-to-edit smoke, which needs the `defineLocations` entry (W
   `startHiringPage` (drives `/start-hiring/[step]`, a noindex funnel with no single
   page).
 
-  **Surfaced by this work — 4 orphan singletons with no route at all:**
-  `retentionPage`, `sourcingPage`, `embeddingPage`, `scaleThisWeekPage`. They exist
-  in the schema and in the dataset but nothing in `site/src/app` renders them. Seb
-  can edit four documents that appear nowhere. Either build the routes or delete
-  the singletons; folding into the orphan-schema cleanup item above.
+  **Surfaced by this work, then RESOLVED 26 Jul — 4 singletons with no route:**
+  `retentionPage`, `sourcingPage`, `embeddingPage`, `scaleThisWeekPage`. Removed:
+  schema types deleted, documents deleted from the dataset, Studio structure and
+  generated types updated.
+
+  Correcting the first draft of this note, which called them orphans and framed the
+  choice as build-the-routes-or-delete. That was wrong in a way that mattered. All
+  four are live 200 pages on cloudemployee.io, present in the live sitemap in both
+  locales, and the live homepage and How It Works page link to them repeatedly.
+  They were never dead URLs — they are a real content funnel we chose not to
+  rebuild. The routing decision had in fact already been made by Jake on 13 Jul and
+  shipped: all eight paths (US + UK) 301, recorded in `parity-exceptions.json` and
+  in the deliberate-divergence block in `site/next.config.ts`. What was genuinely
+  orphaned was only the Sanity documents, which is what got deleted.
+
+  **Destination change, 26 Jul (Jake, overriding the 13 Jul decision):**
+  `/scale-this-week` and `/uk/scale-this-week` now go to the homepage rather than
+  `/start-hiring/contact-info`. Recorded against the recommendation, which was to
+  keep the funnel destination: the page is a booking CTA, so the funnel matches its
+  intent, and pointing a specific page at a generic homepage is the pattern Google
+  can read as a soft 404 and discount. Low stakes (321 impressions, position 19, no
+  backlinks). If those impressions decay post-launch, this redirect is the first
+  place to look.
+
+  **Guarded deletion script:** `npm run static:delete-retired-singletons` (dry run
+  by default, `--apply` to write). Refuses to run if any document holds fields
+  beyond `title`/`locale`, i.e. if someone edited them since seeding, and refuses if
+  anything still references them. Deletes published and draft forms in one
+  transaction. All four were untouched title-only stubs from 24 Apr 2026.
 - [ ] Sanity CORS already includes `https://staging.jakevibes.dev` (done)
 - [x] **Singleton backup/restore script** — `npm run static:backup-singletons`
   (added 26 Jul). Was a genuine hole: every seed does `createOrReplace` on a fixed

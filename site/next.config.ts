@@ -71,8 +71,9 @@ const lockedRules: Redirect[] = [
   // the same subject passes the relevance across. Neither has a single backlink,
   // so a redirect is all they need. Cost: three lines instead of three page builds.
   //
-  // /scale-this-week (321 impressions, position 19) is a booking CTA, so it goes
-  // to the start-hiring funnel instead.
+  // /scale-this-week (321 impressions, position 19) is a booking CTA we are not
+  // rebuilding. It goes to the homepage — Jake's call, 26 Jul 2026, overriding the
+  // original start-hiring destination.
   //
   // Recorded in data/webflow/parity-exceptions.json so the parity gate reports
   // them as expected, not as failures.
@@ -100,15 +101,11 @@ const lockedRules: Redirect[] = [
   { source: '/sourcing', destination: '/how-it-works', permanent: true },
   { source: '/embedding', destination: '/how-it-works', permanent: true },
   { source: '/retention', destination: '/how-it-works', permanent: true },
-  { source: '/scale-this-week', destination: '/start-hiring/contact-info', permanent: true },
+  { source: '/scale-this-week', destination: '/', permanent: true },
   { source: '/uk/sourcing', destination: '/uk/how-it-works', permanent: true },
   { source: '/uk/embedding', destination: '/uk/how-it-works', permanent: true },
   { source: '/uk/retention', destination: '/uk/how-it-works', permanent: true },
-  {
-    source: '/uk/scale-this-week',
-    destination: '/uk/start-hiring/contact-info',
-    permanent: true,
-  },
+  { source: '/uk/scale-this-week', destination: '/uk', permanent: true },
 ]
 
 const config: NextConfig = {

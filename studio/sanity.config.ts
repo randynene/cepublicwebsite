@@ -29,8 +29,6 @@ const dataset = process.env.SANITY_DATASET || 'production'
 //   navigation / footer / siteSettings   sitewide chrome
 //   compareHub        hub root retired via 301 to /alternatives (Phase 4.2)
 //   startHiringPage   drives /start-hiring/[step], a noindex funnel with no single page
-//   retentionPage / sourcingPage / embeddingPage / scaleThisWeekPage
-//                     no route exists in site/src/app for any of these four
 const PAGE_LOCATIONS: Record<string, { title: string; path: string; usOnly?: boolean }> = {
   // Marketing
   aboutUsPage: { title: 'About Us', path: '/about-us' },

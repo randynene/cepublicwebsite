@@ -51,8 +51,8 @@
       ],
       "expect": "permanent",
       "decidedBy": "Jake",
-      "decidedAt": "2026-07-13",
-      "reason": "Live serves this 200. A booking CTA we are not rebuilding. 321 impressions at position 19, no backlinks, so a 301 into the start-hiring funnel preserves what little equity it holds."
+      "decidedAt": "2026-07-26",
+      "reason": "Live serves this 200. A booking CTA we are not rebuilding. 321 impressions at position 19, no backlinks. Destination changed from /start-hiring/contact-info to the homepage on 26 Jul 2026 (Jake's call, overriding the 13 Jul decision). Noted for whoever reads this later: sending a specific page to a generic homepage is the pattern Google can treat as a soft 404, which discards the equity the redirect is meant to preserve, and it drops booking intent onto a page that does not act on it. Jake weighed that and chose the homepage anyway; if /scale-this-week impressions decay to zero in Search Console post-launch, this redirect is the first thing to look at."
     },
     {
       "paths": [
