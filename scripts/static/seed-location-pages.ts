@@ -254,9 +254,13 @@ async function buildDoc(c: LocationContent) {
         titleAccent: c.included.titleAccent,
         youLabel: c.included.youLabel,
         ...(c.included.youSubhead ? { youSubhead: c.included.youSubhead } : {}),
+        ...(c.included.youBody ? { youBody: c.included.youBody } : {}),
         you: [...c.included.you],
+        ...(c.included.youFootnote ? { youFootnote: c.included.youFootnote } : {}),
         weLabel: c.included.weLabel,
+        ...(c.included.wePill ? { wePill: c.included.wePill } : {}),
         ...(c.included.weSubhead ? { weSubhead: c.included.weSubhead } : {}),
+        ...(c.included.weBody ? { weBody: c.included.weBody } : {}),
         we: [...c.included.we],
         footnote: c.included.footnote,
       }

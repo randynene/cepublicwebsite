@@ -47,7 +47,10 @@ const LOCATION_PAGE_QUERY = /* groq */ `
     items[]{ title, body }
   },
   included{
-    eyebrow, titleLead, titleAccent, youLabel, you, youSubhead, weLabel, we, weSubhead, footnote
+    eyebrow, titleLead, titleAccent,
+    youLabel, you, youSubhead, youBody, youFootnote,
+    weLabel, we, weSubhead, weBody, wePill,
+    footnote
   },
   regionsStrip{
     title, retentionValue, retentionLabel,
@@ -197,9 +200,13 @@ export const LocationPageSchema = z.object({
       youLabel: nzs,
       you: zStrArr,
       youSubhead: nzs,
+      youBody: nzs,
+      youFootnote: nzs,
       weLabel: nzs,
       we: zStrArr,
       weSubhead: nzs,
+      weBody: nzs,
+      wePill: nzs,
       footnote: nzs,
     })
     .nullable()

@@ -179,9 +179,19 @@ function Eyebrow({ children, className }: { children: string; className?: string
   return <p className={cn(EYEBROW, className)}>{children}</p>
 }
 
-function Heading({ lead, accent, size = 'text-[34px] lg:text-[52px]' }: { lead: string; accent: string; size?: string }) {
+function Heading({
+  lead,
+  accent,
+  size = 'text-[34px] lg:text-[52px]',
+  id,
+}: {
+  lead: string
+  accent: string
+  size?: string
+  id?: string
+}) {
   return (
-    <h2 className={cn(size, 'font-bold leading-[1.05] tracking-[-1.4px] text-white')}>
+    <h2 id={id} className={cn(size, 'font-bold leading-[1.05] tracking-[-1.4px] text-white')}>
       {lead}
       {accent ? (
         <>
@@ -479,70 +489,120 @@ function Eor({ content }: { content: LocationContent }) {
 }
 
 // ── "What's included" split list (PH-only) ──────────────────────────────────
+// One bordered card holds both columns, so they share a height and the
+// comparison reads as a comparison. Lime is an accent only (label, pill, ticks)
+// - the previous full-lime "We" slab outshouted the page's own CTA. The "We"
+// list runs two-up on wide screens, which is what stops the shorter "You"
+// column leaving dead space beneath it.
 function Included({ content }: { content: LocationContent }) {
   const { included } = content
   if (!included) return null
+  // Fee bar: the opening sentence is bold, the rest is body weight, so the bar
+  // reads as one line rather than two blocks.
+  const footMatch = included.footnote.match(/^([^.]*\.)\s*(.*)$/)
+  const footLead = footMatch?.[1] ?? included.footnote
+  const footRest = footMatch?.[2] ?? ''
+  const COL_PAD = 'px-[22px] py-[28px] min-[901px]:px-[40px] min-[901px]:py-[44px]'
+  const COL_TITLE =
+    'mt-[18px] text-[21px] font-semibold leading-[27px] tracking-[-0.7px] text-white min-[901px]:text-[26px] min-[901px]:leading-[32px]'
+  const ITEM = 'flex gap-[12px] rounded-[12px] bg-[#101B30] px-[16px] py-[15px]'
+  const ITEM_TEXT = 'text-[14.5px] font-medium leading-[20px] text-[#DCE3EC]'
   return (
-    <section className={cn(BAND, 'py-[72px]')}>
+    <section className={cn(BAND, 'py-[72px]')} aria-labelledby="whats-included">
       <Eyebrow>{included.eyebrow}</Eyebrow>
       <div className="mt-3">
-        <Heading lead={included.titleLead} accent={included.titleAccent} size="text-[30px] lg:text-[40px]" />
+        <Heading
+          id="whats-included"
+          lead={included.titleLead}
+          accent={included.titleAccent}
+          size="text-[30px] lg:text-[40px]"
+        />
       </div>
-      {/* Both columns are the same object: eyebrow, subhead, then a divided list
-          where every row is a [24px marker][text] grid. The marker box is a
-          fixed square with its own centred icon, so markers line up with the
-          first line of text no matter how many lines the row wraps to - the old
-          version nudged a text glyph with mt-1 / mt-0.5 and drifted. */}
-      {/* items-start, not stretch: the two columns hold 3 and 7 rows, so
-          matching their heights just leaves the short card mostly empty. */}
-      <div className="mt-10 grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
-        <div className={cn(CARD, 'flex flex-col p-8 lg:p-10')}>
-          <p className="text-[11px] font-semibold uppercase tracking-[1.6px] text-brand-primary">
-            {included.youLabel}
-          </p>
-          {included.youSubhead ? (
-            <p className="mt-4 whitespace-pre-line text-[24px] font-semibold leading-[33px] tracking-[-0.7px] text-white">
-              {included.youSubhead.replace(/\. /g, '.\n')}
+      <div className="mt-10 overflow-hidden rounded-[24px] border border-[#22314D] bg-[#0B1424]">
+        <div className="grid grid-cols-1 min-[901px]:grid-cols-[340px_1fr] min-[1181px]:grid-cols-[400px_1fr]">
+          {/* YOU */}
+          <div
+            className={cn(
+              COL_PAD,
+              'flex flex-col border-b border-[#22314D] min-[901px]:border-b-0 min-[901px]:border-r',
+            )}
+          >
+            <p className="text-[11px] font-semibold uppercase tracking-[1.6px] text-[#7F8CA0]">
+              {included.youLabel}
             </p>
-          ) : null}
-          <ul className="mt-8 flex flex-col divide-y divide-[#22314D] border-t border-[#22314D]">
-            {included.you.map((b) => (
-              <li key={b} className="grid grid-cols-[28px_1fr] items-start gap-x-[14px] py-[14px]">
-                <span
-                  aria-hidden="true"
-                  className="mt-[2px] grid h-[28px] w-[28px] place-items-center rounded-[8px] border border-[#22314D] bg-[#16223A] text-[13px] font-bold leading-none text-brand-primary"
-                >
-                  {GLYPH.arrow}
+            {included.youSubhead ? (
+              <h3 className={cn(COL_TITLE, 'whitespace-pre-line')}>
+                {included.youSubhead.replace(/\. /g, '.\n')}
+              </h3>
+            ) : null}
+            {included.youBody ? (
+              <p className="mt-[14px] text-[14.5px] leading-[22px] text-[#7F8CA0]">{included.youBody}</p>
+            ) : null}
+            <ul className="mt-[30px] flex flex-col gap-[10px]">
+              {included.you.map((b) => (
+                <li key={b} className={cn(ITEM, 'items-center border border-[#1E2C46]')}>
+                  <span
+                    aria-hidden="true"
+                    className="shrink-0 text-[13px] font-bold leading-none text-brand-primary"
+                  >
+                    {GLYPH.arrow}
+                  </span>
+                  <span className={ITEM_TEXT}>{b}</span>
+                </li>
+              ))}
+            </ul>
+            {included.youFootnote ? (
+              <p className="mt-auto pt-[22px] text-[13.5px] leading-[20px] text-[#5C6A80] min-[901px]:pt-[34px]">
+                {included.youFootnote}
+              </p>
+            ) : null}
+          </div>
+
+          {/* WE */}
+          <div
+            className={cn(
+              COL_PAD,
+              'bg-[linear-gradient(180deg,rgba(212,255,60,0.05),rgba(212,255,60,0)_320px)]',
+            )}
+          >
+            <div className="flex flex-wrap items-baseline justify-between gap-[16px]">
+              <p className="text-[11px] font-bold uppercase tracking-[1.6px] text-brand-primary">
+                {included.weLabel}
+              </p>
+              {included.wePill ? (
+                <span className="whitespace-nowrap rounded-full bg-brand-primary px-[14px] py-[7px] text-[12px] font-semibold leading-none text-[#060F1E]">
+                  {included.wePill}
                 </span>
-                <span className="text-[15.5px] font-medium leading-[26px] text-white">{b}</span>
-              </li>
-            ))}
-          </ul>
+              ) : null}
+            </div>
+            {included.weSubhead ? <h3 className={COL_TITLE}>{included.weSubhead}</h3> : null}
+            {included.weBody ? (
+              <p className="mt-[14px] max-w-[520px] text-[14.5px] leading-[22px] text-[#8B96A8]">
+                {included.weBody}
+              </p>
+            ) : null}
+            <ul className="mt-[30px] grid grid-cols-1 gap-[10px] min-[1181px]:grid-cols-2">
+              {included.we.map((b) => (
+                <li key={b} className={cn(ITEM, 'items-start border border-[#22314D]')}>
+                  <span
+                    aria-hidden="true"
+                    className="mt-[1px] grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full bg-brand-primary"
+                  >
+                    <CheckMark tone="ink" />
+                  </span>
+                  <span className={ITEM_TEXT}>{b}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
 
-        <div className="flex flex-col rounded-[20px] bg-brand-primary p-8 text-[#060F1E] lg:p-10">
-          <p className="text-[11px] font-semibold uppercase tracking-[1.6px] text-[#060F1E]/60">
-            {included.weLabel}
+        {/* FEE BAR */}
+        <div className="border-t border-[#22314D] bg-[#101B30] px-[22px] py-[20px] min-[901px]:px-[40px] min-[901px]:py-[22px]">
+          <p className="text-[15px] leading-[22px] text-[#8B96A8]">
+            <strong className="font-semibold text-white">{footLead}</strong>{' '}
+            {footRest}
           </p>
-          {included.weSubhead ? (
-            <p className="mt-4 text-[24px] font-semibold leading-[33px] tracking-[-0.7px] text-[#060F1E]">
-              {included.weSubhead}
-            </p>
-          ) : null}
-          <ul className="mt-8 flex flex-col divide-y divide-[rgba(6,15,30,0.14)] border-t border-[rgba(6,15,30,0.14)]">
-            {included.we.map((b) => (
-              <li key={b} className="grid grid-cols-[28px_1fr] items-start gap-x-[14px] py-[14px]">
-                <span
-                  aria-hidden="true"
-                  className="mt-[2px] grid h-[28px] w-[28px] place-items-center rounded-full bg-[#060F1E]"
-                >
-                  <CheckMark tone="lime" />
-                </span>
-                <span className="text-[15.5px] font-medium leading-[26px]">{b}</span>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-auto pt-8 text-[17px] font-bold leading-[26px]">{included.footnote}</p>
         </div>
       </div>
     </section>

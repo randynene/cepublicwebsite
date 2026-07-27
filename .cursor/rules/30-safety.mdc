@@ -13,17 +13,29 @@ Mechanical, never bend, regardless of framing. This is a LIVE production website
   Vercel or in Sanity. Env-var and token changes are an explicit approval gate.
   The `SANITY_MIGRATION_WRITE_TOKEN` carries patch/delete + asset-upload power;
   treat any write-token action as a stop-and-ask.
-- NEVER mutate the live Sanity `production` dataset (delete docs, bulk-patch,
-  re-run a migrator) without sign-off. The dataset holds ~388-451 verified docs
-  including the CONTENT-1E embed recovery. A bad bulk patch corrupts real content.
-  The agent WRITES the migrator/patch script; Jake reviews and runs it.
+- NEVER bulk-mutate the live Sanity `production` dataset without sign-off. The
+ dataset holds ~388-451 verified docs including the CONTENT-1E embed recovery.
+ Stop-and-ask covers: any patch whose GROQ selects more than one document,
+ `createOrReplace` on a whole document (it silently drops every field absent
+ from the payload), deletes, unsets, and re-running a content migrator. For
+ those the agent WRITES the script; Jake reviews and runs it.
+- The agent MAY run a NARROW patch: one named document, named fields, values
+ sourced from a committed code file, idempotent on re-run. Say plainly which doc
+ and which fields before running, and flag that the write overwrites anything
+ Seb may have edited in Studio for those fields.
 - NEVER fabricate a CE site fact, a Sanity query result, or a content/image
   figure. Specify the probe, wait for Jake's paste (see 20-probes).
 - NEVER run the production cutover or activate the 317 redirects without explicit
   approval. LAUNCH is irreversible without a prepared rollback.
 - The agent MAY build/deploy code to a Vercel PREVIEW for review. Production
-  cutover, domain config, redirect activation, and any env-var change stay Jake's
-  by-hand gates.
+ cutover, domain config, redirect activation, and any env-var change stay Jake's
+ by-hand gates.
+- The agent MAY run `npx sanity deploy`. A Studio deploy ships SCHEMA CODE to the
+ hosted editor; it writes no documents and is reversible by redeploying. Do not
+ confuse it with a dataset write just because the roadmap says "deploy Studio +
+ seed" in one breath. Deploying is the agent's. Dataset writes follow the narrow
+ patch vs bulk/destructive boundary above. Removing or renaming an existing
+ field is still a stop-and-ask (it orphans data in live documents).
 
 ## Push + commit discipline
 - Push ALWAYS waits for Jake's explicit approval. Never push unprompted.

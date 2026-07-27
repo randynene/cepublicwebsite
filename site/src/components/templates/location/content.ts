@@ -142,19 +142,29 @@ export interface LocationContent {
     intro?: string
     items: { title: string; body: string }[]
   }
-  // PH-only: "What's included" - a lime you-direct / we-handle split list.
+  // PH-only: "What's included" - a you-direct / we-handle split inside one card.
   included?: {
     eyebrow: string
     titleLead: string
     titleAccent: string
+    /** Column label, count included (e.g. "You - 3 things"). */
     youLabel: string
     you: string[]
-    /** Optional subhead under the You label. */
+    /** Optional subhead under the You label. Each sentence renders on its own line. */
     youSubhead?: string
+    /** Optional supporting paragraph under the You subhead. */
+    youBody?: string
+    /** Optional closing line pinned to the bottom of the You column. */
+    youFootnote?: string
+    /** Column label, count included (e.g. "We - 8 things"). */
     weLabel: string
     we: string[]
     /** Optional subhead under the We label. */
     weSubhead?: string
+    /** Optional supporting paragraph under the We subhead. */
+    weBody?: string
+    /** Optional lime pill beside the We label. */
+    wePill?: string
     footnote: string
   }
   // PH-only: three-region strip (Makati / Cebu / Clark) with retention callout.
@@ -860,25 +870,31 @@ export const PHILIPPINES_CONTENT: LocationContent = {
   },
   included: {
     eyebrow: "What's included",
-    titleLead: 'You get the engineer. We handle',
-    titleAccent: 'everything else.',
-    youLabel: 'You',
+    titleLead: 'You get the engineer.',
+    titleAccent: 'We handle everything else.',
+    youLabel: 'You - 3 things',
     youSubhead: 'Run your team. Ship your product.',
+    youBody: "The engineer works like any other member of your team. That's the only part you touch.",
     you: [
       "Direct your engineer's work",
-      'Bring them into your standups & Slack',
+      'Bring them into standups and Slack',
       'Treat them like a full-time hire',
     ],
-    weLabel: 'We',
+    youFootnote: 'No HR. No payroll. No local entity. No admin.',
+    weLabel: 'We - 8 things',
+    wePill: 'Included in the fee',
     weSubhead: 'The full operational stack.',
+    weBody:
+      'Employment, compliance, retention and risk - handled in their country, billed as one line.',
     we: [
       "Source and vet the engineer (free if you don't hire)",
       'Employ them locally with full benefits and private healthcare',
-      'Handle payroll, taxes, and compliance in their country',
+      'Handle payroll, taxes and compliance in the Philippines',
       'Provide a US or UK-based account manager',
       "Replace them at no cost if it isn't working",
-      'Support their training, performance, and retention long-term',
-      'Liability insurance + IP/data protection on every contract',
+      'Support training, performance and retention long-term',
+      'Liability insurance on every contract',
+      'IP and data protection assigned to you',
     ],
     footnote: 'One monthly fee. No setup. No placement fees. 30 days notice on a rolling contract.',
   },
