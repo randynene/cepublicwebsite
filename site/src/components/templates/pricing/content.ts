@@ -17,6 +17,19 @@
 // selection (Eastern Europe devs / UK company / GBP) reproduces the design's
 // numbers exactly; other selections recompute by ratio off the same table.
 
+// Marcus Kilgour (CTO, Salmon Software) testimonial clip. Plays muted + looping
+// as the testimonial card's backdrop, then from the start with sound on click.
+// A `pricingPage.testimonial.videoUrl` value set in Studio takes precedence.
+export const PRICING_TESTIMONIAL_VIDEO_URL =
+  'https://player.vimeo.com/video/1145433775?badge=0&autopause=0&player_id=0&app_id=58479'
+
+// Vimeo's own thumbnail for that clip, so the panel shows the video's frame
+// before the player loads (and for reduced-motion visitors, who never get the
+// ambient loop). Sourced from vimeo.com/api/oembed.json for video 1145433775.
+// Refresh this alongside any change to the URL above.
+export const PRICING_TESTIMONIAL_VIDEO_POSTER =
+  'https://i.vimeocdn.com/video/2094402241-4a0e2a3ff719db196f080ccd086babe0e80da7371ebb41c5c8062b7d8975599e-d_1280x720'
+
 export interface PricingMeta {
   title: string
   description: string
@@ -44,7 +57,12 @@ export interface PricingHero {
   titleAccent: string
   paragraph: string
   pills: TrustPill[]
+  /** @deprecated Single rotated photo card. Superseded by `cards` (the
+   *  three-card stack). Kept so an existing Sanity hero object still validates. */
   candidate: Candidate
+  /** Three overlapping talent-profile cards, back to front. Code-owned layout
+   *  shared with the home + location heroes (HeroCards). */
+  cards: Candidate[]
 }
 
 // ── Calculator benchmark model ───────────────────────────────────────────
@@ -183,7 +201,10 @@ export interface PricingTestimonial {
   role: string
   caption: string
   companyLogo: string
-  videoStill: string
+  /** Hosted clip (Vimeo). Drives the ambient loop + click-to-play-with-sound. */
+  videoUrl: string
+  /** Frame shown behind the player. Derived from the clip, not editorial. */
+  videoPoster: string
 }
 
 export interface PricingFaqItem {
@@ -243,6 +264,39 @@ export const PRICING_CONTENT: PricingContent = {
       imageAlt: 'Reinaldo A., a senior backend engineer vetted by Cloud Employee',
       flag: '🇮🇹',
     },
+    // Back card, middle card, front card. Photos are the shared hero-card set
+    // under site/public/design/home/engineers/hero-card - the /pricing/ image
+    // slot the single-card hero pointed at was never delivered, which is why
+    // that card rendered as bare alt text.
+    cards: [
+      {
+        name: 'Kyla T.',
+        role: 'Senior Backend · 6 yrs',
+        vettedLabel: 'Vetted by Senior Eng',
+        skills: ['Node.js', 'Python', 'AWS'],
+        image: '/design/home/engineers/hero-card/kyla.jpg',
+        imageAlt: 'Kyla T., a senior backend engineer vetted by Cloud Employee',
+        flag: '🇵🇭',
+      },
+      {
+        name: 'Marcello P.',
+        role: 'Senior Data Engineer · 9 yrs',
+        vettedLabel: 'Vetted by Senior Eng',
+        skills: ['Python', 'Snowflake', 'Airflow'],
+        image: '/design/home/engineers/hero-card/marcello.jpg',
+        imageAlt: 'Marcello P., a senior data engineer vetted by Cloud Employee',
+        flag: '🇦🇷',
+      },
+      {
+        name: 'Petra K.',
+        role: 'Senior AI Engineer · 7 yrs',
+        vettedLabel: 'Vetted by Senior Eng',
+        skills: ['AI Native', 'RAG', 'AWS'],
+        image: '/design/home/engineers/hero-card/petra.jpg',
+        imageAlt: 'Petra K., a senior AI engineer vetted by Cloud Employee',
+        flag: '🇭🇷',
+      },
+    ],
   },
   calculator: {
     eyebrow: 'Calculate',
@@ -394,7 +448,8 @@ export const PRICING_CONTENT: PricingContent = {
     role: 'CTO, Salmon Software',
     caption: 'Marcus Kilgour, CTO, Salmon Software · on onboarding the Manila team',
     companyLogo: '/design/home/logos/salmon.png',
-    videoStill: '/pricing/video-still.png',
+    videoUrl: PRICING_TESTIMONIAL_VIDEO_URL,
+    videoPoster: PRICING_TESTIMONIAL_VIDEO_POSTER,
   },
   faq: {
     eyebrow: 'Got questions?',

@@ -166,7 +166,7 @@ function buildDoc() {
       role: PC.testimonial.role,
       caption: PC.testimonial.caption,
       companyLogo: PC.testimonial.companyLogo,
-      videoStill: PC.testimonial.videoStill,
+      videoUrl: PC.testimonial.videoUrl,
     },
 
     faq: {

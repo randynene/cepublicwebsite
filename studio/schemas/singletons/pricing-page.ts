@@ -281,7 +281,12 @@ const testimonialSection = defineField({
     defineField({ name: 'role', title: 'Role', type: 'string' }),
     defineField({ name: 'caption', title: 'Caption', type: 'string' }),
     defineField({ name: 'companyLogo', title: 'Company logo path/URL', type: 'string' }),
-    defineField({ name: 'videoStill', title: 'Video still path/URL', type: 'string' }),
+    defineField({
+      name: 'videoUrl',
+      title: 'Video URL (Vimeo / YouTube)',
+      type: 'string',
+      description: 'Plays muted + looping as the card backdrop, with sound on click.',
+    }),
   ],
 })
 

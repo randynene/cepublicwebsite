@@ -2,9 +2,13 @@ import { BlogBand } from '@/components/blog/container'
 import { Marquee } from '@/components/ui/marquee'
 import { FaqToggleGlyph } from '@/components/ui/faq-list'
 import { cn } from '@/components/ui/_utils/cn'
+import { STICKY_ASIDE } from '@/components/layout/sticky-aside'
+import { HeroCards } from '@/components/templates/home/hero-cards'
+import type { HomeProfile } from '@/components/templates/home/content'
 
 import type { BenefitCard, PricingContent } from './content'
 import { CostCalculator } from './cost-calculator'
+import { TestimonialVideo } from './testimonial-video'
 
 // TEMPLATE-PRICING - faithful port of the locked "/pricing" design
 // (docs/raw-html/Pricing Page 2.dc.html + docs/raw-html-pdf/pricing-page-full.png).
@@ -26,7 +30,7 @@ const H2 =
   'text-[34px] font-semibold leading-[1.05] tracking-[-1.3px] text-white lg:text-[48px] lg:leading-[52px] lg:tracking-[-1.5px]'
 const ACCENT = 'font-serif font-normal italic text-brand-primary'
 const CARD = 'rounded-[20px] border border-[#22314D] bg-[#101B30]'
-const GLYPH = { arrow: '→', check: '✓', star: '★', play: '▶', quote: '“' } as const
+const GLYPH = { arrow: '→', check: '✓', star: '★', play: '▶', quote: '"' } as const
 
 function Eyebrow({ children }: { children: string }) {
   return <p className={EYEBROW}>{children}</p>
@@ -74,7 +78,20 @@ const BENEFIT_ICONS: Record<string, React.ReactNode> = {
 // ── Hero ──────────────────────────────────────────────────────────────────
 function Hero({ content }: { content: PricingContent }) {
   const { hero } = content
-  const c = hero.candidate
+  // Three overlapping talent-profile cards, same component the home + location
+  // heroes use, so the hover-parallax and card treatment stay identical.
+  // Falls back to the single authored candidate if `cards` is ever emptied.
+  const stack = hero.cards?.length ? hero.cards : [hero.candidate]
+  // HeroCards renders the LAST slot in front, so the mobile single-card mirror
+  // shows the same face the desktop stack leads with.
+  const front = stack[stack.length - 1]
+  const profiles: HomeProfile[] = stack.map((c) => ({
+    name: c.name,
+    role: c.role,
+    flag: c.flag,
+    tags: c.skills,
+    image: c.image,
+  }))
   return (
     <section className="grid grid-cols-1 items-center gap-12 pt-16 lg:grid-cols-[1.1fr_0.9fr] lg:pt-24">
       <div>
@@ -95,39 +112,33 @@ function Hero({ content }: { content: PricingContent }) {
         </ul>
       </div>
 
-      {/* Rotated candidate photo card */}
-      <div className="flex justify-center lg:justify-end">
+      {/* Stacked talent-profile cards. Desktop only: the stack is absolutely
+          positioned and needs the room. Mobile keeps a single portrait. */}
+      <div className="relative w-full">
+        <div className="hidden lg:block">
+          <HeroCards profiles={profiles} pills={[]} />
+        </div>
         <div
-          className="group relative h-[420px] w-[320px] overflow-hidden rounded-[24px] bg-[#16223A] shadow-[inset_0_0_0_10px_#22314D,0_40px_60px_-30px_rgba(0,0,0,.8)] transition-transform duration-300 ease-out will-change-transform hover:[transform:rotate(-1deg)_translateY(-10px)_scale(1.02)] motion-reduce:transition-none motion-reduce:hover:transform-none"
-          style={{ transform: 'rotate(-3deg)' }}
+          className="relative mx-auto h-[400px] w-[300px] overflow-hidden rounded-[24px] bg-[#16223A] lg:hidden"
+          style={{ boxShadow: 'inset 0 0 0 10px #22314D' }}
         >
-          <img src={c.image} alt={c.imageAlt} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
-          <span aria-hidden="true" className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#060F1E]/70 to-transparent" />
-          <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-[#060F1E]/[0.98] via-[#060F1E]/70 to-transparent" />
-
-          <div className="absolute inset-0 flex flex-col justify-between p-5">
-            <div className="flex items-start justify-between gap-3">
-              <span>
-                <span className="block text-[17px] font-semibold text-white">{c.name}</span>
-                <span className="block text-[13px] text-white/70">{c.role}</span>
-              </span>
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/25 bg-[#0A1628] text-[11px] font-semibold text-white/80">
-                {c.flag}
-              </span>
-            </div>
-            <div>
-              <span className="inline-flex items-center gap-1.5 rounded-pill bg-brand-primary/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.6px] text-brand-primary">
-                <span aria-hidden="true">{GLYPH.check}</span>
-                {c.vettedLabel}
-              </span>
-              <ul className="mt-3 flex flex-wrap gap-2">
-                {c.skills.map((s) => (
-                  <li key={s} className="rounded-md bg-brand-primary px-2.5 py-1 text-[12px] font-semibold text-[#0A1628]">
-                    {s}
-                  </li>
-                ))}
-              </ul>
-            </div>
+          <img
+            src={front.image}
+            alt={front.imageAlt}
+            className="absolute inset-0 h-full w-full object-cover"
+            loading="lazy"
+          />
+          <span
+            aria-hidden="true"
+            className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-[#060F1E]/[0.98] via-[#060F1E]/70 to-transparent"
+          />
+          <div className="absolute inset-x-0 bottom-0 p-5">
+            <span className="inline-flex items-center gap-1.5 rounded-pill bg-brand-primary/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.6px] text-brand-primary">
+              <span aria-hidden="true">{GLYPH.check}</span>
+              {front.vettedLabel}
+            </span>
+            <p className="mt-3 text-[17px] font-semibold text-white">{front.name}</p>
+            <p className="text-[13px] text-white/70">{front.role}</p>
           </div>
         </div>
       </div>
@@ -310,42 +321,58 @@ function Testimonial({ content }: { content: PricingContent }) {
     <section className="mt-28">
       <div className="max-w-[640px]">
         <Eyebrow>{testimonial.eyebrow}</Eyebrow>
-        <div className="mt-3">
+        <div className="mt-[16px]">
           <SectionHeading lead={testimonial.titleLead} accent={testimonial.titleAccent} />
         </div>
       </div>
-      <div className={cn(CARD, 'mt-10 grid grid-cols-1 items-stretch overflow-hidden lg:grid-cols-[1fr_620px]')}>
-        <div className="flex flex-col p-8 lg:p-12">
-          <img src={testimonial.companyLogo} alt={testimonial.role} className="h-6 w-auto self-start opacity-90 [filter:brightness(0)_invert(1)]" loading="lazy" />
-          <span aria-hidden="true" className="mt-6 text-[64px] leading-none text-brand-primary">{GLYPH.quote}</span>
-          <blockquote className="mt-2 text-[20px] leading-[30px] text-text-default/90">{testimonial.quote}</blockquote>
-          <div className="mt-8 flex flex-wrap gap-4">
+      <div
+        className={cn(
+          CARD,
+          'mt-[56px] grid grid-cols-1 items-stretch overflow-hidden rounded-[24px] lg:min-h-[520px] lg:grid-cols-[44fr_56fr]',
+        )}
+      >
+        <div className="flex flex-col justify-between gap-[28px] p-[32px] lg:px-[48px] lg:py-[44px]">
+          <img
+            src={testimonial.companyLogo}
+            alt={testimonial.role}
+            className="h-[30px] w-auto self-start [filter:brightness(0)_invert(1)]"
+            loading="lazy"
+          />
+          <div className="flex flex-col items-start gap-[12px]">
+            <span
+              aria-hidden="true"
+              className="text-[28px] font-extrabold leading-none tracking-[-2px] text-brand-primary"
+            >
+              {GLYPH.quote}
+            </span>
+            <blockquote className="max-w-[430px] text-[18px] leading-[28px] tracking-[-0.3px] text-white">
+              {testimonial.quote}
+            </blockquote>
+          </div>
+          <div className="flex flex-wrap gap-[28px]">
             {testimonial.stats.map((stat) => (
-              <div key={stat.label} className="rounded-[14px] border border-brand-primary/60 px-5 py-4">
-                <p className="text-[32px] font-semibold text-brand-primary">{stat.value}</p>
-                <p className="mt-1 max-w-[160px] text-[13px] text-text-default/60">{stat.label}</p>
+              <div key={stat.label} className="w-[140px] border-l border-brand-primary pl-[12px]">
+                <p className="text-[26px] font-extrabold leading-none tracking-[-0.8px] text-brand-primary">
+                  {stat.value}
+                </p>
+                <p className="mt-[8px] text-[12px] leading-[16px] tracking-[-0.08px] text-white/85">{stat.label}</p>
               </div>
             ))}
           </div>
-          <div className="mt-8">
-            <p className="text-[18px] font-semibold text-text-default">{testimonial.name}</p>
-            <p className="text-[13px] text-brand-primary">{testimonial.role}</p>
+          <div>
+            <p className="text-[19px] font-semibold tracking-[-0.38px] text-white">{testimonial.name}</p>
+            <p className="mt-[2px] text-[12.5px] tracking-[-0.08px] text-[#6B7589]">{testimonial.role}</p>
           </div>
         </div>
 
         {/* Video fills the whole right panel, edge to edge */}
-        <div className="relative min-h-[320px] overflow-hidden bg-[#0A1628]">
-          <img src={testimonial.videoStill} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
-          <span className="absolute inset-0 flex items-center justify-center">
-            <span aria-hidden="true" className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-primary text-[22px] text-[#0A1628] shadow-[0_0_0_10px_rgba(212,255,60,0.25)]">
-              {GLYPH.play}
-            </span>
-          </span>
-          <span className="absolute inset-x-4 top-4 flex items-center gap-2 rounded-pill bg-[#060F1E]/85 px-4 py-2 text-[12px] text-white/90">
-            <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full bg-[#FF4D4D]" />
-            {testimonial.caption}
-          </span>
-        </div>
+        <TestimonialVideo
+          videoUrl={testimonial.videoUrl}
+          poster={testimonial.videoPoster}
+          caption={testimonial.caption}
+          title={testimonial.caption}
+          playLabel={testimonial.caption}
+        />
       </div>
     </section>
   )
@@ -357,7 +384,7 @@ function Faq({ content }: { content: PricingContent }) {
   return (
     <section className="mt-28">
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-[0.9fr_1.1fr]">
-        <div>
+        <div className={STICKY_ASIDE}>
           <Eyebrow>{faq.eyebrow}</Eyebrow>
           <div className="mt-3">
             <SectionHeading lead={faq.titleLead} accent={faq.titleAccent} />
