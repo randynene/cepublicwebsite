@@ -10,3 +10,23 @@ site/node_modules/
 .DS_Store
 **/.DS_Store
 cloudemploye data/
+
+# Heavy design + capture artefacts (~1.4GB combined). These are local working
+# references, not repo content: Figma binaries, Webflow single-file exports with
+# every asset inlined, PDF prints and screenshot runs. Git stores them forever
+# even after deletion, and GitHub hard-rejects any single file over 100MB.
+# Keep them backed up outside the repo.
+CE-Figma-redesign/
+*.fig
+*.zip
+docs/raw-html/
+docs/raw-html-pdf/
+docs/live-captures-jul2026/
+docs/re-design/screenshots/
+docs/blog_topic_hubs.pdf
+
+# Scratch verification scripts
+__verify*.js
+
+# Agent tooling worktrees - nested git checkouts, never repo content
+.claude/worktrees/
