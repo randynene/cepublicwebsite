@@ -25,8 +25,14 @@ docs/live-captures-jul2026/
 docs/re-design/screenshots/
 docs/blog_topic_hubs.pdf
 
+docs/images/
+
+# Third-party lead exports. Company and contact data pulled from TheirStack -
+# keep it out of git for the same reason audit-output is ignored.
+data/theirstack/
+
 # Scratch verification scripts
 __verify*.js
 
-# Agent tooling worktrees - nested git checkouts, never repo content
-.claude/worktrees/
+# Agent tooling - local editor state and nested git checkouts, never repo content
+.claude/
