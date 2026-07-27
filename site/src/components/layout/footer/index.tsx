@@ -18,7 +18,7 @@ export default async function Footer({ locale }: { locale: Locale }) {
   if (!data) {
     return (
       <footer role="contentinfo" className={FOOTER_SHELL}>
-        <div className={cn(FOOTER_PAD_MOBILE_X, 'lg:px-16', FOOTER_PAD_Y)}>
+        <div className={cn(FOOTER_PAD_MOBILE_X, 'lg:px-[64px]', FOOTER_PAD_Y)}>
           <div className={CHROME_CONTENT_BAND}>
             <p className="text-[14px] text-[#7F8CA0]">
               {UI_STRINGS['footer.fallbackCopyright'].replace(
@@ -35,7 +35,9 @@ export default async function Footer({ locale }: { locale: Locale }) {
   return (
     <footer role="contentinfo" className={FOOTER_SHELL}>
       <FooterTopCta block={data.topCtaBlock} locale={locale}/>
-      <div className={cn(FOOTER_PAD_MOBILE_X, 'lg:px-16', FOOTER_PAD_Y)}>
+      {/* 64px to match CHROME_H_PAD and the top-CTA band above; `lg:px-16`
+          resolved to 128px under this project's 0.5rem spacing scalar. */}
+      <div className={cn(FOOTER_PAD_MOBILE_X, 'lg:px-[64px]', FOOTER_PAD_Y)}>
         <div className={CHROME_CONTENT_BAND}>
           <FooterLinkGrid sections={data.sections} talentLocations={data.talentLocations} locale={locale}/>
           <FooterSubscribe subscribe={data.subscribe} />

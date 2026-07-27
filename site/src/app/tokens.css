@@ -94,6 +94,7 @@
   --color-text-tertiary: #7F8CA0;     /* labels, metadata */
   --color-accent-primary: #D4FF3C;    /* lime: CTAs, highlights, quote marks, accents */
   --color-accent-alt: #C8FB28;        /* yellow-alt lime */
+  --color-accent-deep: #B7EC25;       /* darker lime — sweep fill on a lime CTA (header 1E) */
   --color-text-dark: #060F1E;         /* text / icon on lime fills (always dark) */
 
   /* Lime opacity scale (spec §1c) — apply via Tailwind's opacity modifier

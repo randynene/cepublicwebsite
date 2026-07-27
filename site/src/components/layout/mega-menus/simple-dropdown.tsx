@@ -44,19 +44,23 @@ function SimpleDropdownItemRow({
     >
       {icon ? (
         <span className="grid size-7 shrink-0 place-items-center rounded-[7px] border border-[#22314D] bg-[#16223A] text-text-secondary transition-colors duration-reveal ease-reveal group-hover:border-brand-primary/40 group-hover:text-brand-primary motion-reduce:transition-none">
-          <MaterialIcon
-            name={icon}
-            size="sm"
-            className="flex items-center justify-center w-4 h-4 text-[16px] leading-none"
-          />
+          {/* h-auto/w-auto is the fix, not decoration. The `sm` preset boxes the
+           * glyph in a fixed 32px square, but the Google Material Symbols
+           * stylesheet is un-layered so its own 24px font-size beats any
+           * Tailwind text-* utility - leaving a 24px glyph sitting top-left of
+           * a 32px box, and the tile then centred the BOX. Collapsing the span
+           * onto the glyph's real advance makes it centre exactly. */}
+          <MaterialIcon name={icon} size="sm" className="block h-auto w-auto" />
         </span>
       ) : null}
+      {/* whitespace-nowrap on both lines: the panel is w-max, so it grows to
+       * the widest row instead of wrapping a subtitle onto a second line. */}
       <span className="min-w-0">
-        <span className="block text-[13.5px] font-semibold leading-tight text-text-default group-hover:text-brand-primary">
+        <span className="block whitespace-nowrap text-[13.5px] font-semibold leading-tight text-text-default group-hover:text-brand-primary">
           {label}
         </span>
         {subtitle ? (
-          <span className="mt-[2px] block text-[12px] leading-[1.3] text-text-tertiary">
+          <span className="mt-[2px] block whitespace-nowrap text-[12px] leading-[1.3] text-text-tertiary">
             {subtitle}
           </span>
         ) : null}

@@ -326,3 +326,140 @@ body {
 .sf-link:focus-visible > .c {
   color: var(--color-text-dark);
 }
+
+/* ===========================================================================
+   ACCENT CHIP CLUSTER (Jul 2026) — header 1E.
+   Reference: docs/design/raw-html/1e-header-reference.html.
+
+   Two CTA archetypes ("For Engineers" outlined chip, "Schedule a Call" solid
+   pill) plus the centre-out nav underline. These are deliberately SEPARATE
+   from the `.sf-*` sweep-fill block above, which still drives mega-menu
+   section pills, footer pills and template CTAs. Reasons:
+     - the fill is painted with `background-position` on an oversized two-stop
+       gradient rather than a `::before` overlay. An overlay has to be clipped
+       by `overflow:hidden` to respect the 999px radius, and that same clip
+       plus its stacking context fights the solid pill's arrow glyph.
+     - the colour language differs: `.sf-p` sweeps lime→ink and flips the
+       label to lime; this archetype sweeps lime→deeper-lime and keeps the
+       label dark.
+   Shape (padding, font-size) stays with the consumer's Tailwind classes; only
+   colour, fill mechanic, timing and easing are fixed here.
+
+   The reference's raw hex values are approximations of the production
+   palette, so these read the D2 tokens instead: #C4F24C → accent-primary,
+   #A9E02F → accent-deep, #0A0E14 → text-dark. Contrast is equal or better. */
+
+/* Centre-out lime underline on the four primary nav links. A gradient
+   background grows from 0 to full label width — no `text-decoration` (can't
+   be animated or offset) and no pseudo-element (can't affect layout). */
+.nav-underline {
+  background-image: linear-gradient(
+    var(--color-accent-primary),
+    var(--color-accent-primary)
+  );
+  background-repeat: no-repeat;
+  background-position: 50% 100%;
+  background-size: 0 2px;
+  transition: background-size 0.3s ease, color 0.25s ease;
+}
+.nav-underline:hover,
+.nav-underline:focus-visible,
+.nav-trigger:hover .nav-underline,
+.nav-trigger:focus-visible .nav-underline,
+.nav-trigger[aria-expanded='true'] .nav-underline {
+  background-size: 100% 2px;
+  color: var(--color-text-primary);
+}
+/* Keyboard users get the hover visual plus a ring. `outline` rather than
+   Tailwind's box-shadow ring for the same layering reason as `.cta-sweep`. */
+.nav-underline:focus-visible,
+.nav-trigger:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+/* Shared sweep. `background-position: 100% 0` parks the fill half of a
+   200%-wide gradient off-canvas; hover slides it to `0 0` so the colour wipes
+   in left-to-right instead of cross-fading. */
+.cta-sweep {
+  background-repeat: no-repeat;
+  background-size: 200% 100%;
+  background-position: 100% 0;
+  transition: background-position 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.3s ease;
+}
+.cta-sweep:hover,
+.cta-sweep:focus-visible {
+  background-position: 0 0;
+}
+/* Outline, not box-shadow: this stylesheet is unlayered and would otherwise
+   outrank (and erase) Tailwind's layered `ring-*` focus utilities. */
+.cta-sweep:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+/* Outlined chip — lime sweeps in from the left, label flips to ink. */
+.cta-sweep-outline {
+  color: var(--color-accent-primary);
+  border: 1.5px solid var(--color-accent-primary);
+  background-color: transparent;
+  background-image: linear-gradient(
+    90deg,
+    var(--color-accent-primary) 50%,
+    transparent 50%
+  );
+}
+.cta-sweep-outline:hover,
+.cta-sweep-outline:focus-visible {
+  color: var(--color-text-dark);
+}
+
+/* Solid pill — deeper lime sweeps across, the arrow slides out of the label,
+   and the pill lifts on a lime shadow.
+
+   The gap opens 0 → 10px while padding-right closes 24px → 14px, so the pill's
+   own width never changes and nothing beside it reflows. (The reference nets
+   +6px here; matching it verbatim would push the chip to its left on hover,
+   which the no-layout-shift requirement rules out.) */
+.cta-sweep-solid {
+  gap: 0;
+  color: var(--color-text-dark);
+  border: 1.5px solid transparent;
+  background-color: var(--color-accent-primary);
+  background-image: linear-gradient(
+    90deg,
+    var(--color-accent-deep) 50%,
+    transparent 50%
+  );
+  transition: background-position 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    gap 0.3s ease, padding 0.3s ease, box-shadow 0.25s ease;
+}
+.cta-sweep-solid:hover,
+.cta-sweep-solid:focus-visible {
+  gap: 10px;
+  box-shadow: 0 12px 26px rgb(212 255 60 / 0.4);
+}
+/* Auto-width pill only. A full-width pill (mobile drawer) centres its label
+   inside a fixed box, so there is no padding to trade and nothing to reflow. */
+.cta-sweep-solid:not(.cta-sweep-block):hover,
+.cta-sweep-solid:not(.cta-sweep-block):focus-visible {
+  padding-right: 14px;
+}
+/* Tightened tier — see the size variants in components/ui/cta-button for why
+   the boundary sits at 1360px here rather than the reference's 1200px. */
+@media (max-width: 1359px) {
+  .cta-sweep-solid:not(.cta-sweep-block):hover,
+  .cta-sweep-solid:not(.cta-sweep-block):focus-visible {
+    padding-right: 8px;
+  }
+}
+
+/* End states above still apply; only the animation between them is dropped. */
+@media (prefers-reduced-motion: reduce) {
+  .nav-underline,
+  .cta-sweep,
+  .cta-sweep-solid {
+    transition: none;
+  }
+}

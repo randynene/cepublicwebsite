@@ -12,8 +12,8 @@ import {
   type ReactNode,
 } from 'react'
 
+import { CtaButton } from '@/components/ui/cta-button'
 import { Icon } from '@/components/ui/icon'
-import { MegaMenuPillLabel } from '@/components/ui/mega-menu-pill-label'
 import { cn } from '@/components/ui/_utils/cn'
 import type {
   NavigationDoc,
@@ -24,6 +24,7 @@ import type {
 } from '@/lib/sanity/queries/navigation'
 import { UI_STRINGS } from '@/lib/ui-strings'
 import type { Locale } from '@/lib/locale-path'
+import { stripLocalePrefix } from '@/lib/locale-path'
 import { toInternalHref } from '@/lib/url'
 
 import { MegaMenuShell } from './mega-menus/_shell'
@@ -34,17 +35,39 @@ import { CHROME_CONTENT_BAND, CHROME_HEADER_ROW } from './chrome-band'
 
 // MYGRATR-NAV-SIMPLE — Header client island.
 //
-// Desktop nav: 2 compact anchored dropdowns (Services / Locations) + 3 plain
-// links (Case Studies / Pricing / For Engineers) + Schedule a Call CTA.
+// Desktop nav: 2 compact anchored dropdowns (Services / Locations) + 2 plain
+// links (Case Studies / Pricing), then a right-hand action cluster holding
+// For Engineers + Schedule a Call.
 // The big Services + Resources mega-menus stay in the codebase for regression
 // safety but are no longer wired into the nav (Services → compact dropdown,
 // Resources → footer). A single `openMenu` key drives whichever dropdown (mega
 // OR compact) is open, so only one is ever open at a time.
 //
-// Mobile: lightweight drawer accordions for every dropdown (frame 06).
+// Mobile: lightweight drawer accordions for every dropdown (frame 06), with the
+// same two CTAs stacked full-width at the foot of the drawer.
+//
+// ACCENT CHIP CLUSTER (Jul 2026, header 1E): For Engineers was promoted out of
+// the nav into the action cluster. Sanity has no field marking a primary link
+// as an action, and its label is editable in Studio, so it is matched on its
+// destination path — the stable half of the record. If Seb ever repoints it,
+// it falls back to rendering as a normal nav link rather than disappearing.
 
 const CE_CALENDLY_INTRO_URL =
   'https://calendly.com/d/cwwf-6k5-2qy/intro-call-cloud-employee'
+
+const ACTION_CLUSTER_PATHS = new Set(['/for-developers'])
+
+function isActionClusterLink(link: PrimaryLink, locale: Locale): boolean {
+  const { href, isExternal } = toInternalHref(link.url, locale)
+  if (isExternal) return false
+  return ACTION_CLUSTER_PATHS.has(stripLocalePrefix(href))
+}
+
+// Nav link resting type — 16px/600 muted, per the 1E reference. The centre-out
+// lime underline and the white hover colour live in `.nav-underline`
+// (globals.css); the weight is set at rest so hover never reflows the row.
+const NAV_LABEL_CLASS =
+  'nav-underline pb-[5px] text-[16px] font-semibold leading-none text-text-secondary'
 
 declare global {
   interface Window {
@@ -119,14 +142,18 @@ function resourcesMobileItems(data: ResourcesMegaMenu, locale: Locale): MobileMe
   })
 }
 
+// Schedule a Call — solid pill. Opens the Calendly popup when the widget has
+// loaded, otherwise follows the Sanity href as a plain link.
 function CalendlyCTA({
   label,
   fallbackHref,
+  block,
   className,
   locale,
 }: {
   label: string
   fallbackHref: string
+  block?: boolean
   className?: string
   locale: Locale
 }) {
@@ -138,22 +165,42 @@ function CalendlyCTA({
   }
   const { href, isExternal } = toInternalHref(fallbackHref, locale)
   return (
-    <MegaMenuPillLabel
+    <CtaButton
       as="a"
       href={href}
-      variant="pill-green"
-      size="cta"
-      leadingArrow
-      leadingGlyph={<Icon name="chevron-right" size="sm" className="size-2.5" />}
+      external={isExternal}
+      variant="solid"
       label={label}
-      // `size="cta"` reserves only 4px on the left (icon hugs the edge) vs
-      // 14px on the right — correct for an auto-width pill, but once this
-      // stretches to `w-full` (mobile drawer) that imbalance reads as the
-      // icon+label group sitting left-of-centre. `pl-3.5` matches the right
-      // side so `justify-center` centres the whole group truthfully.
-      className={cn('w-full justify-center pl-3.5 xl:w-auto xl:pl-[4px]', className)}
+      block={block}
+      className={className}
       onClick={onClick}
-      {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+    />
+  )
+}
+
+// For Engineers — outlined chip. Reads its label and destination from the same
+// Sanity primaryLink it used to render as nav text, so Studio still owns both.
+function ForEngineersCTA({
+  link,
+  block,
+  locale,
+  onClick,
+}: {
+  link: PrimaryLink
+  block?: boolean
+  locale: Locale
+  onClick?: () => void
+}) {
+  const { href, isExternal } = toInternalHref(link.url, locale)
+  return (
+    <CtaButton
+      as="a"
+      href={href}
+      external={isExternal}
+      variant="outline"
+      label={link.label}
+      block={block}
+      onClick={onClick}
     />
   )
 }
@@ -234,15 +281,14 @@ const MegaMenuTrigger = forwardRef<
       onMouseLeave={onMouseLeave}
       onFocus={onOpen}
       onBlur={onScheduleClose}
-      className={cn(
-        'group inline-flex items-center gap-[7px] whitespace-nowrap py-2 text-[14.5px] font-medium leading-none tracking-[-0.08px] text-text-secondary transition duration-reveal ease-reveal motion-reduce:transition-none',
-        'hover:font-semibold hover:text-brand-primary',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ring focus-visible:rounded-sm',
-        isOpen && 'font-semibold text-brand-primary',
-      )}
+      className="nav-trigger group inline-flex items-center gap-[7px] whitespace-nowrap py-2 tracking-[-0.08px]"
     >
-      <span>{link.label}</span>
-      <ChevronInCircle isActive={isOpen} />
+      <span className={NAV_LABEL_CLASS}>{link.label}</span>
+      {/* Matches the label's 5px underline gutter so `items-center` keeps the
+          caret optically level with the text rather than 2.5px low. */}
+      <span className="mb-[5px] inline-flex">
+        <ChevronInCircle isActive={isOpen} />
+      </span>
     </button>
   )
 })
@@ -295,7 +341,10 @@ function SimpleNavDropdown({
         labelledById={triggerId}
         onMouseEnterPanel={onCancelClose}
         onMouseLeavePanel={onScheduleClose}
-        className="left-0 right-auto top-full mt-2 w-[344px] max-w-[calc(100vw-2rem)] rounded-[16px]"
+        // w-max sizes the card to its widest row so every subtitle stays on one
+        // line (they used to wrap at the old fixed 344px). min-w keeps the old
+        // width as the floor for short menus.
+        className="left-0 right-auto top-full mt-2 w-max min-w-[344px] max-w-[calc(100vw-2rem)] rounded-[16px]"
       >
         <SimpleDropdownContent data={data} onNavigate={onClose} locale={locale} />
       </MegaMenuShell>
@@ -378,7 +427,8 @@ function MobileMegaAccordion({
 }
 
 function MobileDrawer({
-  primaryLinks,
+  navOnlyLinks,
+  actionLinks,
   ctaButton,
   servicesMegaMenu,
   resourcesMegaMenu,
@@ -386,7 +436,8 @@ function MobileDrawer({
   locationsDropdown,
   locale,
 }: {
-  primaryLinks: PrimaryLink[]
+  navOnlyLinks: PrimaryLink[]
+  actionLinks: PrimaryLink[]
   ctaButton: NavigationDoc['ctaButton']
   servicesMegaMenu: ServicesMegaMenu
   resourcesMegaMenu: ResourcesMegaMenu
@@ -432,7 +483,7 @@ function MobileDrawer({
           </div>
           <nav aria-label="Primary" className="flex-1 overflow-y-auto">
             <ul className="flex flex-col px-[18px] py-4">
-              {primaryLinks.map((link) => {
+              {navOnlyLinks.map((link) => {
                 const dropdownType = link.dropdownType ?? null
                 if (dropdownType === 'services-simple') {
                   return (
@@ -493,16 +544,27 @@ function MobileDrawer({
               })}
             </ul>
           </nav>
-          {ctaButton?.label && (
-            <div className="border-t border-border-subtle p-4">
-              <CalendlyCTA
-                label={ctaButton.label}
-                fallbackHref={ctaButton.link ?? '/contact'}
-                className="w-full justify-center"
-                locale={locale}
-              />
+          {actionLinks.length > 0 || ctaButton?.label ? (
+            <div className="flex flex-col gap-[14px] border-t border-border-subtle p-4">
+              {actionLinks.map((link) => (
+                <ForEngineersCTA
+                  key={link._key}
+                  link={link}
+                  locale={locale}
+                  block
+                  onClick={closeDrawer}
+                />
+              ))}
+              {ctaButton?.label ? (
+                <CalendlyCTA
+                  label={ctaButton.label}
+                  fallbackHref={ctaButton.link ?? '/contact'}
+                  locale={locale}
+                  block
+                />
+              ) : null}
             </div>
-          )}
+          ) : null}
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
@@ -562,9 +624,16 @@ export default function NavClient({
     }, 120)
   }, [cancelClose, closeMega])
 
+  // For Engineers leaves the nav row and joins the action cluster. Anything
+  // that isn't an action link keeps its existing order and behaviour.
+  const actionLinks = primaryLinks.filter((link) => isActionClusterLink(link, locale))
+  const navOnlyLinks = primaryLinks.filter((link) => !isActionClusterLink(link, locale))
+
+  // 24px gap widening to the reference's 36px at 1360px, matching the CTA
+  // padding tiers — see components/ui/cta-button for why 1360 and not 1200.
   const navLinks = (
-    <ul className="flex items-center justify-center gap-4 xl:gap-6">
-      {primaryLinks.map((link) => {
+    <ul className="flex items-center justify-center gap-[24px] min-[1360px]:gap-[36px]">
+      {navOnlyLinks.map((link) => {
         const dropdownType = link.dropdownType ?? null
         if (isSimpleDropdownKey(dropdownType)) {
           const data =
@@ -618,7 +687,10 @@ export default function NavClient({
           <li key={link._key}>
             <Link
               href={href}
-              className="inline-block whitespace-nowrap py-2 text-[14.5px] font-medium leading-none tracking-[-0.08px] text-text-secondary hover:text-brand-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ring focus-visible:rounded-sm transition duration-reveal ease-reveal motion-reduce:transition-none"
+              className={cn(
+                'inline-block whitespace-nowrap py-2 tracking-[-0.08px]',
+                NAV_LABEL_CLASS,
+              )}
               {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
             >
               {link.label}
@@ -635,7 +707,8 @@ export default function NavClient({
       <div className="flex w-full items-center justify-between xl:hidden">
         {logo}
         <MobileDrawer
-          primaryLinks={primaryLinks}
+          navOnlyLinks={navOnlyLinks}
+          actionLinks={actionLinks}
           ctaButton={ctaButton}
           locale={locale}
           servicesMegaMenu={servicesMegaMenu}
@@ -651,16 +724,20 @@ export default function NavClient({
           <div className="shrink-0">{logo}</div>
           <nav
             aria-label="Primary"
-            className="flex min-w-0 flex-1 items-center justify-center px-3 xl:px-4"
+            className="flex min-w-0 flex-1 items-center justify-center px-[12px]"
           >
             {navLinks}
           </nav>
-          <div className="shrink-0">
+          <div className="flex shrink-0 items-center gap-[14px]">
+            {actionLinks.map((link) => (
+              <ForEngineersCTA key={link._key} link={link} locale={locale} />
+            ))}
             {ctaButton?.label ? (
               <CalendlyCTA
                 label={ctaButton.label}
                 fallbackHref={ctaButton.link ?? '/contact'}
-locale={locale}/>
+                locale={locale}
+              />
             ) : null}
           </div>
         </div>
