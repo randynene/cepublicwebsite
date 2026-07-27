@@ -8,6 +8,7 @@ import { MegaMenuPillLabel } from '@/components/ui/mega-menu-pill-label'
 import { PortableText } from '@/components/ui/portable-text'
 import { Tag } from '@/components/ui/tag'
 import { cn } from '@/components/ui/_utils/cn'
+import { STICKY_ASIDE } from '@/components/layout/sticky-aside'
 import type { Locale } from '@/lib/locale'
 import { UI_STRINGS } from '@/lib/ui-strings'
 import { toInternalHref } from '@/lib/url'
@@ -387,7 +388,7 @@ export default function DownloadTemplate({ download }: DownloadTemplateProps) {
                 'grid grid-cols-1 items-start gap-[32px] py-[56px] lg:grid-cols-[340px_1fr] lg:gap-[48px] lg:py-[80px]',
               )}
             >
-              <div>
+              <div className={STICKY_ASIDE}>
                 <Heading
                   as="h2"
                   size="h2"

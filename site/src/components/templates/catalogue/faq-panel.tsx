@@ -1,5 +1,6 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { cn } from '@/components/ui/_utils/cn'
+import { STICKY_ASIDE } from '@/components/layout/sticky-aside'
 import type { HubFaq } from '@/data/services'
 import { ACCENT, BAND_1280, BODY, Eyebrow } from './shared'
 
@@ -23,7 +24,7 @@ export function CatalogueFaqPanel({ items, chatHref = '#chat' }: { items: HubFaq
   return (
     <section className={cn(BAND_1280, 'py-[72px]')}>
       <div className="grid gap-10 lg:grid-cols-[0.9fr_1.6fr]">
-        <div>
+        <div className={STICKY_ASIDE}>
           <Eyebrow>{COPY.eyebrow}</Eyebrow>
           <h2 className="mt-4 text-[32px] font-semibold leading-[1.1] tracking-[-1px] text-white lg:text-[46px] lg:leading-[54px]">
             {COPY.titleLead} <span className={ACCENT}>{COPY.titleAccent}</span>

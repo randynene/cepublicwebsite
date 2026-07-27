@@ -8,6 +8,7 @@ import { PortableText } from '@/components/ui/portable-text'
 import { Tag } from '@/components/ui/tag'
 import { Text } from '@/components/ui/text'
 import { cn } from '@/components/ui/_utils/cn'
+import { STICKY_ASIDE } from '@/components/layout/sticky-aside'
 import type { Locale } from '@/lib/locale'
 import { UI_STRINGS } from '@/lib/ui-strings'
 import type { CompareBlog } from '@/types/sanity/documents/compare-blog'
@@ -197,7 +198,7 @@ export default function CompareTemplate({ post, locale }: CompareTemplateProps) 
                 'grid grid-cols-1 items-start gap-[32px] py-[56px] lg:grid-cols-[340px_1fr] lg:gap-[48px] lg:py-[72px]',
               )}
             >
-              <div>
+              <div className={STICKY_ASIDE}>
                 <Heading
                   as="h2"
                   className="mb-[14px] text-[30px] font-semibold leading-[34px] tracking-[-1px] text-white lg:mb-[18px] lg:text-[46px] lg:leading-[56px] lg:tracking-[-1.4px]"

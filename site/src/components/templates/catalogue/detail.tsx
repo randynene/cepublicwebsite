@@ -1,5 +1,6 @@
 import Link from 'next/link'
 
+import { CtaButton } from '@/components/ui/cta-button'
 import { cn } from '@/components/ui/_utils/cn'
 import type { HubQuote, HubStory } from '@/data/services'
 import { SERVICES_HUB } from '@/data/services'
@@ -192,7 +193,9 @@ export function CatalogueDetail({ content, hireHref = '/book-a-call', scheduleHr
   const trailingStatements = isTechnology ? statements : statements.slice(1)
 
   return (
-    <main id="main" className="overflow-x-hidden">
+    // overflow-x-CLIP, not hidden: `hidden` makes this element a scroll
+    // container, which silently kills the sticky FAQ intro column inside it.
+    <main id="main" className="overflow-x-clip">
       {/* 1. HERO */}
       <section className={cn(BAND_1280, 'grid grid-cols-1 items-center gap-12 pt-[64px] lg:grid-cols-[1fr_0.9fr] lg:pt-[88px]')}>
         <div>
@@ -343,10 +346,15 @@ export function CatalogueDetail({ content, hireHref = '/book-a-call', scheduleHr
               {DC.ctaLead} <span className={ACCENT}>{DC.ctaAccent}</span>
             </h2>
             <p className={cn('mt-4 max-w-[440px] text-[16px] leading-[24px]', BODY)}>{DC.ctaBodyPre} {name} {DC.ctaBodyPost}</p>
-            <a href={scheduleHref} className="sf sf-p mt-6 inline-flex w-fit items-center gap-2.5 rounded-pill py-[10px] pl-[10px] pr-6 text-[15px] font-bold">
-              <span aria-hidden="true" className="ic flex h-[32px] w-[32px] items-center justify-center text-[14px]">{GLYPH.arrow}</span>
-              <span className="c">{DC.scheduleCta}</span>
-            </a>
+            {/* Same solid archetype as the header's Schedule a Call, so the
+                two read identically wherever they appear (header 1E). */}
+            <CtaButton
+              as="a"
+              href={scheduleHref}
+              variant="solid"
+              label={DC.scheduleCta}
+              className="mt-6 w-fit"
+            />
           </div>
           <Placeholder className="hidden h-[240px] rounded-[16px] lg:block" />
         </div>

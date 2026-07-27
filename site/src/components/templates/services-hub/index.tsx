@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
 import { cn } from '@/components/ui/_utils/cn'
+import { STICKY_ASIDE } from '@/components/layout/sticky-aside'
 import { type ServiceCard, type TechChip } from '@/data/services'
 import type { ServicesHubContent } from '@/lib/catalogue/hub-content'
 import { CatalogueFaq } from '@/components/templates/catalogue/faq'
@@ -77,7 +78,9 @@ function CardCategory({ eyebrow, lead, accent, cards, prefix }: { eyebrow: strin
 export function ServicesHubTemplate({ content, pathPrefix = '' }: { content: ServicesHubContent; pathPrefix?: string }) {
   const h = content
   return (
-    <main id="main" className="overflow-x-hidden">
+    // overflow-x-CLIP, not hidden: `hidden` makes this element a scroll
+    // container, which silently kills the sticky FAQ intro column inside it.
+    <main id="main" className="overflow-x-clip">
       {/* Hero */}
       <section className={cn(BAND, 'pb-[24px] pt-[72px] text-center lg:pt-[96px]')}>
         <span className="inline-flex items-center gap-2 rounded-pill border border-brand-primary/30 bg-brand-primary/10 px-4 py-2 text-[11px] font-bold uppercase tracking-[1px] text-brand-primary">
@@ -174,7 +177,7 @@ export function ServicesHubTemplate({ content, pathPrefix = '' }: { content: Ser
       {/* FAQ */}
       <section className={cn(BAND, 'py-[64px]')}>
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-[0.8fr_1.2fr]">
-          <div>
+          <div className={STICKY_ASIDE}>
             <Eyebrow>{CAT_LABELS.gotQuestions}</Eyebrow>
             <h2 className="mt-3 text-[34px] font-semibold tracking-[-1px] text-white lg:text-[42px]">
               {CAT_LABELS.theQuestionsLead} <span className={ACCENT}>{CAT_LABELS.ctosAskAccent}</span>
