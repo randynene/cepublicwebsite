@@ -67,6 +67,25 @@ function prefersReduced(): boolean {
   return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
+// Split the frozen export body after its FIRST top-level <div> (the hero), so
+// the hero can be given its own full-viewport wrapper and everything from
+// "Applying is broken" down starts below the fold. Depth-counts <div>/</div>;
+// the export is machine-generated and contains no <div in attribute text.
+function splitHeroBlock(html: string): [hero: string, rest: string] {
+  let depth = 0
+  const re = /<div\b|<\/div>/g
+  let match: RegExpExecArray | null
+  while ((match = re.exec(html)) !== null) {
+    if (match[0] === '</div>') {
+      depth -= 1
+      if (depth === 0) return [html.slice(0, re.lastIndex), html.slice(re.lastIndex)]
+    } else {
+      depth += 1
+    }
+  }
+  return ['', html]
+}
+
 // --- Multi-step "build your profile" form + live profile preview ---
 function JoinForm({ content }: { content: ForEngineersContent }) {
   const j = content.join
@@ -354,10 +373,12 @@ export function ForEngineersTemplate({
   // reproducing the export byte-for-byte when nothing is overridden.
   const preHtml = hydrateFe2(FE2_PRE_HTML, content)
   const postHtml = hydrateFe2(FE2_POST_HTML, content)
+  const [heroHtml, restHtml] = splitHeroBlock(preHtml)
 
   const mainRef = useRef<HTMLElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLDivElement>(null)
+  const heroRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const root = mainRef.current
@@ -475,6 +496,19 @@ export function ForEngineersTemplate({
       canvas.style.marginLeft = ''
       canvas.style.marginRight = ''
       stage.style.height = ''
+
+      // Hero fills the viewport under the chrome. The hero lives INSIDE the
+      // zoomed canvas, so a px value written here is multiplied by `s` when it
+      // renders: divide by s to land on the real viewport height. Measuring the
+      // hero's own document offset covers the announcement bar + header without
+      // hard-coding either height.
+      const hero = heroRef.current
+      if (hero) {
+        hero.style.minHeight = ''
+        const offset = hero.getBoundingClientRect().top + window.scrollY
+        const avail = Math.max(420, window.innerHeight - offset)
+        hero.style.minHeight = `${avail / s}px`
+      }
     }
     fit()
     window.addEventListener('resize', fit)
@@ -507,8 +541,29 @@ export function ForEngineersTemplate({
       <style>{FE2_UI_CSS}</style>
       <div className="fe2-stage" ref={stageRef}>
         <div className="fe2-canvas" ref={canvasRef}>
-          {/* Hero -> testimonials (tokenised Figma export, hydrated from content) */}
-          <div dangerouslySetInnerHTML={{ __html: preHtml }} />
+          {/* Hero, held to a full viewport height so it is all a visitor sees
+           * on landing; the See-more control scrolls to "Applying is broken". */}
+          <div className="fe2-hero-vh" ref={heroRef}>
+            <div dangerouslySetInnerHTML={{ __html: heroHtml }} />
+            <button
+              type="button"
+              className="fe2-seemore"
+              onClick={() =>
+                document
+                  .getElementById('fe2-after-hero')
+                  ?.scrollIntoView({ behavior: prefersReduced() ? 'auto' : 'smooth', block: 'start' })
+              }
+            >
+              <span className="fe2-seemore-t">{content.hero.seeMore}</span>
+              <span className="fe2-seemore-a" aria-hidden="true">
+                <svg viewBox={V}>
+                  <path d="M12 5v14M6 13l6 6 6-6" />
+                </svg>
+              </span>
+            </button>
+          </div>
+          {/* Everything from "Applying is broken" down */}
+          <div id="fe2-after-hero" dangerouslySetInnerHTML={{ __html: restHtml }} />
           {/* Build your profile (working React form) */}
           <JoinForm content={content} />
           {/* Stop applying. Get matched. mini-CTA (tokenised export, hydrated) */}

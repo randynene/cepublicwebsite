@@ -63,6 +63,8 @@ export interface FeHero {
   ctaGhostHref?: string
   trust: string[]
   card: FeHeroCard
+  /** Label on the scroll-down control under the full-height hero. */
+  seeMore: string
 }
 export interface FeStat {
   num: string
@@ -298,6 +300,7 @@ export const FOR_ENGINEERS_CONTENT: ForEngineersContent = {
       ],
       image: '',
     },
+    seeMore: 'See more',
   },
   problem: {
     eyebrow: 'WHY THIS EXISTS',
