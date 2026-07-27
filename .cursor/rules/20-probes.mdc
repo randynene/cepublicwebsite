@@ -1,0 +1,76 @@
+---
+description: Step 0 probe catalog for Mygratr. Read when a brief touches Sanity, the Webflow source, a migration script, a route, a GROQ query, a schema, or a content/image figure.
+globs:
+  - "scripts/**"
+  - "studio/**"
+  - "site/src/app/**/route.ts"
+  - "site/src/lib/**"
+  - "site/src/components/**"
+alwaysApply: false
+---
+
+# Step 0 probe catalog (Mygratr)
+
+Each line is a probe or a scar that caught a real failure. When a brief touches
+the surface, the matching probe is mandatory in Step 0. Jake runs the probe and
+pastes results back. You never fabricate a result.
+
+## The hard rule: never fabricate a CE site fact
+Every claim about the CE site (image quality, doc counts, field presence, what a
+page renders) must be grounded in LIVE data, not inferred from context files. A
+fabricated image-quality figure was caught by self-audit before it shipped to
+Claude Code. Probe, do not infer.
+
+## Context files lag reality
+Project knowledge files consistently fall behind actual execution state. Verify
+currency before trusting any single file. Multi-factor verification before
+trusting one document. Prefer catching errors before they propagate into
+permanent docs.
+
+## Field maps and live APIs disagree (recurring scar)
+The Webflow-to-Sanity field map and the live API have diverged multiple times
+(CONTENT-1B, 1C). ALWAYS run a live field-slug sweep against the real source
+before writing a migration brief. The field map is a starting point, not truth.
+The CONTENT-1E selector scar: Webflow RichText returns
+`<div data-rt-embed-type='true'>` (single-quote), NOT the `w-embed` CSS class,
+which only exists on the published site. Wrong selector wasted a diagnosis cycle.
+
+## Sanity (the live backend)
+- Project `lzbhll1u`, dataset `production`. Studio at
+  mygratr-cloudemployee.sanity.studio.
+- SCHEMA.md is authoritative over assumptions, but probe the live dataset before
+  referencing a field or count. `migrations.status = content_complete`; DESIGN-1
+  and TEMPLATE-* do NOT transition state (transitions resume at QA-1 / LAUNCH).
+- Image source shape: standard Sanity image object (asset/alt/hotspot/crop).
+  Templates pass `source={doc.field}` to E1 Image; never construct URLs by hand.
+- Migrator field-write pattern: conditional spread, never null literals.
+  `uploadImage()` returns null on empty Webflow source; writing the null literal
+  (not omitting it) was the CONTENT-1D-CLEANUP root cause. New migrators must use
+  conditional spread (CONVENTIONS.md).
+
+## Components / design (current phase)
+- Components separate STRUCTURE (React, locked) from SKIN (tokens). Most
+  components re-skin via token swap; a few need shape edits; very few are new.
+  Before editing, diff the new Figma component against the existing primitive in
+  COMPONENTS.md and tag it re-skin / shape-edit / new.
+- Token re-extract (D2) replaces the old teal `#1c787c` era tokens with the new
+  Figma's. Probe Storybook after the swap to see which primitives break.
+- TEMPLATE-BLOG is the pattern template. All other detail templates inherit its
+  route + GROQ/Zod + JSON-LD + B3 PortableText patterns. Read it before building
+  a new template.
+
+## Routes / build
+- File-path collision check before adding a route or component.
+- Next.js 16.2.4, Tailwind v4, app router. Vercel root directory override is
+  `site/`. Locales: US default + `/uk/` prefix.
+- "Built != working." Tests do not prove correctness. Visual eyeball checks at
+  named HALTs have caught real errors automated gates missed. Prod/staging smoke
+  is part of the phase.
+
+## Don't-touch / intentional list
+- `migrations.status` stays `content_complete` through all design + template
+  phases. Do not transition it.
+- The raw CONTENT-1E embed recovery (142 tables + 7 videoEmbeds) is canonical. Do
+  not re-flatten or re-run the old htmlToBlocks path.
+- DESIGN-1 Brief B Steps 7, 9, 10, 11 are parked deliberately. Do not "finish"
+  them mid-phase unless the active brief calls for it.

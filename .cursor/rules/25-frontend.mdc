@@ -1,0 +1,67 @@
+---
+description: Frontend + template build gotchas for the Mygratr Next.js site. Read when working anywhere under site/ (templates, primitives, routes, Sanity wiring).
+globs:
+  - "site/**"
+  - "studio/**"
+alwaysApply: false
+---
+
+# Frontend / template build rules (Mygratr site)
+
+The site is Next.js 16.2.4 + Tailwind v4 + Sanity, on Vercel (root override
+`site/`). These patterns were locked in DESIGN-1 + TEMPLATE-BLOG. Honour them.
+
+## Component library is the source of truth
+- 22 primitives + Icon system live under `site/src/components/ui/{name}/`.
+  COMPONENTS.md is the index; the `index.tsx` source carries the rationale.
+  Read COMPONENTS.md before composing a template; do not reinvent a primitive
+  that exists.
+- Structure vs skin: primitives read colour/type/spacing from tokens. To restyle
+  for the new design, change tokens (D2), not the primitive, unless the Figma
+  changed the component's actual SHAPE (then it's a tagged shape-edit in D4).
+- Layout-root providers: TooltipProvider + ToastProvider must wrap once at
+  `site/src/app/layout.tsx` or those primitives break.
+
+## Forms
+- react-hook-form + zod. C1/C2/C4 register-based; C3 Select is Controller-based
+  (Radix is controlled). C5 FormField is the smart wrapper (auto ids + aria +
+  error reading). Use FormField for composed forms; bare register for single
+  inputs.
+
+## Sanity data + rendering
+- E1 Image takes the Sanity source object; hotspot/crop honoured via
+  @sanity/image-url. Never hand-build image URLs. `priority` only on hero/LCP.
+- B3 PortableText renders body content. Inline images route through E1. Use the
+  override hatch (partial deep-merge) for per-template renderer overrides, do not
+  fork B3. `<h3>` renders at size h4 per HALT 4 Decision 6.
+- E2 VideoEmbed auto-detects Vimeo / YouTube / LinkedIn (CONTENT-1E added
+  LinkedIn). Lite mode needs poster + title; eager needs title only.
+- GROQ + Zod per template: project exactly what the template needs, validate the
+  shape. TEMPLATE-BLOG is the reference implementation.
+
+## SEO is structural, per template
+- One H1, semantic HTML, correct JSON-LD schema.org type, meta from Sanity,
+  canonical + locale-correct (US default + `/uk/`). Sitemap entry per locale.
+  This is acceptance criteria, not polish.
+
+## Known scaffold gaps (do not be surprised by these)
+- Header + Footer chrome land at STATIC-1; templates built before then render
+  without nav (Tech Debt #24). Header locked at Path A (no GSAP yet; batched with
+  HOME).
+- Third-party script budget, cookie hygiene, ClaraChatBot WCAG AA, hero
+  aspect-ratio are SCAFFOLD-AUDIT batch (Tech Debt #21-#33), not per-template
+  fixes. Log, defer, do not chase mid-template.
+- Finsweet `@2` is ESM-only, patched via `type="module"`. env.ts is split
+  client/server for primitive-safe public-var import. Don't "tidy" either.
+
+## Visual Editing
+Single-client architecture; `defineLive` with viewer-scoped serverToken at
+`site/src/lib/sanity/live.ts`. Draft-mode enable route has a six-step security
+order with allow-list + Sanity-null-origin escape hatch + secret + same-origin
+redirect. Do not loosen the security order to "make preview work".
+
+## UI strings
+UI_STRINGS lint rule is live (`react/jsx-no-literals` + local rule). Canonical
+SoT at `tools/eslint/ui-strings.json`; generated `site/src/lib/ui-strings.ts` is
+do-not-edit (`npm run generate-ui-strings`). Marketing copy comes from Sanity,
+not hardcoded JSX.

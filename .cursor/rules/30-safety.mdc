@@ -1,0 +1,62 @@
+---
+description: Human-only gates that protect Mygratr's production site, Sanity dataset, credentials, and spend. Always on. Never bend.
+alwaysApply: true
+---
+
+# Safety (human-only gates)
+
+Mechanical, never bend, regardless of framing. This is a LIVE production website
+(cloudemployee.io). Be meticulous.
+
+## The agent NEVER does these. Jake does them by hand.
+- NEVER touch credentials (`.env`, `.env.local`) or set/remove env vars on
+  Vercel or in Sanity. Env-var and token changes are an explicit approval gate.
+  The `SANITY_MIGRATION_WRITE_TOKEN` carries patch/delete + asset-upload power;
+  treat any write-token action as a stop-and-ask.
+- NEVER mutate the live Sanity `production` dataset (delete docs, bulk-patch,
+  re-run a migrator) without sign-off. The dataset holds ~388-451 verified docs
+  including the CONTENT-1E embed recovery. A bad bulk patch corrupts real content.
+  The agent WRITES the migrator/patch script; Jake reviews and runs it.
+- NEVER fabricate a CE site fact, a Sanity query result, or a content/image
+  figure. Specify the probe, wait for Jake's paste (see 20-probes).
+- NEVER run the production cutover or activate the 317 redirects without explicit
+  approval. LAUNCH is irreversible without a prepared rollback.
+- The agent MAY build/deploy code to a Vercel PREVIEW for review. Production
+  cutover, domain config, redirect activation, and any env-var change stay Jake's
+  by-hand gates.
+
+## Push + commit discipline
+- Push ALWAYS waits for Jake's explicit approval. Never push unprompted.
+- Commits only at named HALTs. Single-line commit messages, no body, no
+  Co-Authored-By trailer. Explicit path staging, never `git add -A` / `git add .`.
+- One phase per session. No overclaiming in commit messages; state divergences in
+  the DEV-N log, do not hide them.
+- Before trusting a build: run typecheck/lint/build manually. There is no CI
+  safety net. These rules and Jake's manual gates are the only gate.
+
+## Brief + architecture gates
+- Briefs are LOCKED before execution. The execution brain does not change
+  architecture mid-build (Two-Brain model, see 00-core). If a build step needs an
+  architecture decision not in the brief, STOP and surface it.
+- High-stakes briefs (schema, security, foundational, HIGH-complexity) get a
+  cross-model audit via the `.audit/` kit before they're finalised. Do not skip
+  the audit on a foundational or pre-launch brief to save time.
+
+## Design-restart specific gates
+- Do not "rebuild" components that only need a token re-skin. Diff against
+  COMPONENTS.md and the new Figma first; tag re-skin / shape-edit / new. A
+  rebuild where an edit was correct is wasted spend and lost behaviour.
+- Do not transition `migrations.status` off `content_complete` during design or
+  template phases.
+
+## When ambiguous
+Fail closed. Log, never silent. Saying less and doing less is the safe default.
+Probe before claiming. Catch the error before it propagates into permanent docs
+or live content.
+
+## Don't-touch list (intentional, documented)
+- The CONTENT-1E embed recovery path and its data. Do not re-flatten.
+- The Visual Editing draft-mode security order. Do not loosen.
+- env.ts client/server split, Finsweet `@2` module patch, over-broad nothing-to-
+  tidy scaffold quirks logged as Tech Debt. Defer to SCAFFOLD-AUDIT, don't chase.
+- DESIGN-1 Brief B parked Steps 7, 9, 10, 11. Leave parked unless the brief says.

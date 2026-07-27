@@ -1,0 +1,68 @@
+---
+description: How to write a phase brief for Mygratr. Apply when planning, drafting, or reviewing a phase brief, including before a brief file exists.
+alwaysApply: false
+---
+
+# Phase brief standards
+
+A phase brief is the single source of truth for a build. Briefs are LOCKED before
+execution. Halt on drift from the brief; log the drift, do not silently deviate.
+
+## Step 0 (mandatory, before any build step)
+Step 0 is sacred. Every probe either confirms or changes the design. It gathers:
+- Git state + branch-base sanity off the real deployed tip (branch is currently
+  `feat/design-1`, confirm the working tree before branching).
+- Read every file before editing. FIND line numbers, never assert them.
+- File-path collision check before adding routes/components.
+- Live data probes Jake runs and pastes back. NEVER fabricate a CE site fact, a
+  Sanity query result, or an image/field figure (see 20-probes).
+
+## Trace every behavior to a named file in a numbered step
+Behaviors described but never given a step ship broken ("built != working").
+Exit criteria map to real file paths. No orphans. Every template behavior traces
+to a component, a GROQ projection, a Zod schema, and a route.
+
+## Structure
+ASCII wireframes for major screens. Numbered surgical steps with exact file
+paths. Exit-criteria checklist mapped to real paths. Explicit non-goals.
+Deferred-items table. Decisions-for-human section (ideally "none expected").
+D-prefix identifiers for architectural decisions; DEV-N log for mid-execution
+deviations. Commit the brief at authoring time.
+
+## Per-template SEO + GEO contract (every template brief)
+SEO is specified IN the brief, never retrofitted. Each template brief states:
+- Heading hierarchy (one H1, logical cascade).
+- The correct JSON-LD schema.org type (BLOG = BlogPosting + BreadcrumbList +
+  FAQPage; others get their right type).
+- Meta fields wired from Sanity (title, description, OG, canonical).
+- Internal linking / entity cross-links.
+- Where the template emits clean entity + answer-shaped data for AI search.
+Design and SEO decisions belong in the spec, not bolted on post-template.
+
+## Pre-TEMPLATE prep block (template phases only)
+1. Screenshot re-capture pass (8-10 per template incl. hover/interaction/fold).
+2. Per-template visual reference doc (screenshots + field-to-UI map + complexity
+   rating).
+3. Per-template QA thresholds (not global).
+4. Storybook stories (optional; prioritise for human-developer handoff).
+5. Standardised v0.dev prompt template with new CE design tokens.
+
+## Audit
+Self-audit the brief first. For schema-heavy, security-heavy, foundational, or
+HIGH-complexity briefs, run a cross-model audit via the `.audit/` kit (see
+30-safety and the Cross-Model Audit Kit guide): brief to disk -> run the kit
+-> read synthesis.md -> fold findings back. The cross-model pre-build audit
+catches what a single-model self-audit misses.
+
+## Post-phase context-file gate (tiered cadence)
+- TIER 1, ALWAYS (bundled into phase-close commit): CHANGELOG.md (1 line),
+  CLAUDE.md (phase table row + stamp), PHASE_HISTORY.md (3-5 line paragraph).
+- TIER 2, WHEN CHANGED: FEATURE_MAP.md, CONVENTIONS.md, REGISTRY.md, SCHEMA.md,
+  COMPONENTS.md, CAPABILITY_LOG.md.
+- TIER 3, FOUNDATIONAL / HIGH-COMPLEXITY / PRE-LAUNCH ONLY: pre-flight context
+  audit, deep cross-file audit, post-phase coverage matrix.
+Phase weight: STATIC-1 + HOME = Tier 3. SERVICE + TECHNOLOGY = Tier 3.
+SCAFFOLD-AUDIT + QA-1 + LAUNCH = Tier 3. COMPARE + CUSTOMER_STORY = Tier 1 + Tier
+2 lookout. Simple pattern-apply (TEAM_MEMBER, REVIEW, VIDEO, DOWNLOAD, TOOL,
+EVENT, BOOK_A_CALL) = Tier 1 only.
+No silent skips: if a normally-updated file was untouched, say why in one line.
