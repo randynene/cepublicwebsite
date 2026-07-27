@@ -283,6 +283,13 @@ export function toHireEngineersContent(data: HireEngineersPageData): HireEnginee
       }
     : HE.price
 
+  // The offer photo ships as a real file in /public. Sanity wins when Seb
+  // uploads one; until then the code asset must survive the Sanity spread
+  // (which would otherwise leave image undefined and show the placeholder).
+  const offer: HireEngineersContent['offer'] = c.offer
+    ? { ...c.offer, img: { ...c.offer.img, image: c.offer.img?.image || HE.offer.img.image } }
+    : HE.offer
+
   const vet: HireEngineersContent['vet'] = c.vet
     ? {
         ...c.vet,
@@ -291,5 +298,5 @@ export function toHireEngineersContent(data: HireEngineersPageData): HireEnginee
       }
     : HE.vet
 
-  return { ...c, price, vet }
+  return { ...c, offer, price, vet }
 }

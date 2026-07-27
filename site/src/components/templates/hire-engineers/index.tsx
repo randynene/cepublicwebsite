@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 
+import { Spotlight } from '@/components/motion/spotlight'
 import { cn } from '@/components/ui/_utils/cn'
 import { parseVideoUrl } from '@/components/ui/video-embed'
 import { CALC, HE, type HireEngineersContent } from './content'
@@ -9,6 +10,9 @@ import './hire-engineers.css'
 
 // Inline style for a real photo dropped into a placeholder slot: fill the tile,
 // cover-crop, inherit the tile's rounding. Empty slots keep the CSS placeholder.
+const OFFER_IMG_PLACEHOLDER = 'imgslot offer-img rvl'
+const OFFER_IMG_WITH_PHOTO = 'imgslot offer-img has-img rvl'
+
 const COVER: React.CSSProperties = {
   position: 'absolute',
   inset: 0,
@@ -532,6 +536,10 @@ export function HireEngineersTemplate({ content = HE }: { content?: HireEngineer
     return () => io.disconnect()
   }, [])
 
+  // A real offer photo hides the placeholder chrome (tag + caption brief).
+  const offerHasImage = Boolean(content.offer.img.image)
+  const offerImgClass = offerHasImage ? OFFER_IMG_WITH_PHOTO : OFFER_IMG_PLACEHOLDER
+
   return (
     <main id="main" className="he" ref={rootRef}>
       {/* HERO */}
@@ -612,14 +620,21 @@ export function HireEngineersTemplate({ content = HE }: { content?: HireEngineer
                 </div>
               ))}
             </div>
-            <div className="imgslot offer-img rvl">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              {content.offer.img.image ? <img src={content.offer.img.image} alt={content.offer.img.t} style={COVER} /> : null}
-              <span className="tag">{content.offer.img.tag}</span>
-              <div className="cap">
-                <div className="t">{content.offer.img.t}</div>
-                <div className="s">{content.offer.img.s}</div>
-              </div>
+            {/* Real photo shipped: the "Image suggestion" tag + caption are
+             * the placeholder brief and are dropped once an image exists. */}
+            <div className={offerImgClass}>
+              {offerHasImage ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={content.offer.img.image} alt={content.offer.img.t} style={COVER} />
+              ) : (
+                <>
+                  <span className="tag">{content.offer.img.tag}</span>
+                  <div className="cap">
+                    <div className="t">{content.offer.img.t}</div>
+                    <div className="s">{content.offer.img.s}</div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -700,14 +715,18 @@ export function HireEngineersTemplate({ content = HE }: { content?: HireEngineer
         </div>
       </section>
 
-      {/* PROOF */}
-      <section className="proof">
+      {/* PROOF — cursor spotlight on the heading only. Spotlight's own
+          bg-[#070D18] loses to `.he .proof`'s higher-specificity --navy, so the
+          section keeps its designed ground and just gains the glow layer. */}
+      <Spotlight className="proof">
         <div className="wrap">
-          <span className="eyebrow">{content.proof.eyebrow}</span>
-          <h2 className="st">
-            {content.proof.h2Lead}{' '}
-            <em>{content.proof.h2Em}</em>
-          </h2>
+          <div data-spot-item className="transition-opacity duration-300 motion-safe:opacity-55">
+            <span className="eyebrow">{content.proof.eyebrow}</span>
+            <h2 className="st">
+              {content.proof.h2Lead}{' '}
+              <em>{content.proof.h2Em}</em>
+            </h2>
+          </div>
           <div className="cs-grid">
             <div className="cs-main rvl">
               <div className="cs-stat">{content.proof.stat}</div>
@@ -757,7 +776,7 @@ export function HireEngineersTemplate({ content = HE }: { content?: HireEngineer
           </div>
           <p className="proof-note">{content.proof.note}</p>
         </div>
-      </section>
+      </Spotlight>
 
       {/* PRICING */}
       <section className="price">

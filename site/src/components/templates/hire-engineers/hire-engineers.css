@@ -146,6 +146,10 @@ html {
   flex-direction: column;
   justify-content: flex-end;
 }
+/* A real photo replaces the placeholder fill entirely. */
+.he .imgslot.has-img {
+  background: none;
+}
 .he .imgslot .tag {
   position: absolute;
   top: 14px;

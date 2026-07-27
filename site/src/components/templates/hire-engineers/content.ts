@@ -186,7 +186,15 @@ export const HE: HireEngineersContent = {
       { h4: 'Replace anytime', p: 'Not the right fit? Replaced at no cost. 30 days notice. No lock-in.' },
       { h4: 'We keep them', p: 'HR, wellbeing, and L&D on our side means 97% stay 2+ years.' },
     ],
-    img: { tag: 'Image suggestion', t: 'An engineer at their desk, mid-work.', s: 'Candid, real setup - sells "embedded", not "headshot".' },
+    // Real photo shipped (public/hire-engineers/website_image_ce.png), so the
+    // "Image suggestion" tag + caption are suppressed at render. Seb can still
+    // override the photo in Studio; t/s stay as the alt text + fallback brief.
+    img: {
+      tag: 'Image suggestion',
+      t: 'Two Cloud Employee engineers talking at their desk.',
+      s: 'Candid, real setup - sells "embedded", not "headshot".',
+      image: '/hire-engineers/website_image_ce.png',
+    },
   },
   roles: {
     eyebrow: 'Roles',
@@ -327,27 +335,12 @@ export const HE: HireEngineersContent = {
     h2Lead: 'Ready to hire your',
     h2Em: 'next engineer?',
     p: 'Tell us what you need. Two vetted candidates in front of you within 7 working days.',
-    cta: 'Start hiring',
+    cta: 'Contact us today',
     sub: '300+ teams built · 97% stay 2+ years · No lock-in',
   },
 }
 
-// Calculator engine - lookup tables copied verbatim from the source <script>.
-export const CALC = {
-  base: {
-    'Senior Backend Engineer': 5400,
-    'Senior Frontend Engineer': 5200,
-    'Senior Full-Stack Engineer': 5600,
-    'DevOps Engineer': 6200,
-    'AI / ML Engineer': 6800,
-  } as Record<string, number>,
-  rMult: { 'Latin America': 1.0, Europe: 1.18, Philippines: 0.82 } as Record<string, number>,
-  sMult: { Senior: 1.0, Mid: 0.78, 'Lead / Staff': 1.32 } as Record<string, number>,
-  usA: {
-    'Senior Backend Engineer': 175000,
-    'Senior Frontend Engineer': 168000,
-    'Senior Full-Stack Engineer': 180000,
-    'DevOps Engineer': 198000,
-    'AI / ML Engineer': 215000,
-  } as Record<string, number>,
-} as const
+// Calculator engine - the rate tables now live in lib/calculators/next-hire.ts
+// so the Home page calculator runs on exactly the same numbers. Re-exported
+// here under the original name so nothing that imports CALC has to change.
+export { NEXT_HIRE_RATES as CALC } from '@/lib/calculators/next-hire'
