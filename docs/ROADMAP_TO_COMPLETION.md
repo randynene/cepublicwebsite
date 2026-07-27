@@ -384,6 +384,116 @@ is thin, which is fragile and already caused a Home crash.
 **Gate to pass:** these pages fully editable, no fallback in use, no crash.
 **Marker.io:** fold into Review Wave 5 - core marketing.
 
+### 6a. Sticky FAQ intro column - DONE (27 Jul 2026)
+
+The intro column of the two-column FAQ ("Got questions?" + heading + the
+"can't find your question" chatbot card) now pins beside the accordion while
+the questions scroll, on every page that has that layout. One shared constant
+at `site/src/components/layout/sticky-aside.ts` (`lg:sticky lg:top-[104px]
+lg:self-start`), plus the equivalent rule for the hand-ported Fractional CTO
+CSS. Desktop only; below `lg` the grid is already one column.
+
+Applied to: Home, How It Works, Pricing, the three Location pages, Fractional
+CTO, Services hub, Technology hub, Service detail, Technology detail, Download
+detail, Tool detail, Compare detail (plus every `/uk` mirror - same components).
+
+**Load-bearing side fix:** `overflow-x: hidden` on the page root makes that
+element a scroll container, which silently kills `position: sticky` inside it.
+Switched to `overflow-x: clip` (same visual result, no scroll container) on
+Location, Services hub, Technology hub, catalogue detail and `.fcto`.
+
+**Not applied, by design:** the blog / resource / alternatives hubs and the blog
++ review article pages put their FAQ in a single 720px reading column, so there
+is no second column to pin. If those should match the two-column pattern that is
+a design decision, not a bug.
+
+Verified by rendering each page and measuring: all 13 pin at exactly 104px.
+
+### 6b. Blank image slots - OPEN (audited 27 Jul 2026)
+
+Audited two ways and cross-checked: a code+Sanity read, and a render pass over
+every template that detects boxes painting no image (the code alone cannot tell
+you what a visitor sees, because most of these are fallbacks that appear only
+when the image data is missing). Where the two disagreed, the page was opened
+and looked at. Confirmed list:
+
+| Page | What a visitor sees | Cause |
+|---|---|---|
+| `/services` (+ `/uk`) | **All 20 service cards are empty tiles**, plus the promo panel = 21 | No image field wired on the card at all |
+| `/` (Where we work) | **6 random stock landscapes** captioned São Paulo, Bogotá, Buenos Aires, Manila, Zagreb, Cape Town | `picsum.photos` stand-ins in `home/content.ts`; all 6 `homePage.whereWeWork` hubs have no uploaded image |
+| `/our-work` (+ `/uk`) | 3 striped tiles captioned "customer photo" | `ourWorkPage.statsPhoto` / `beyondHiring.photo` / `midCta.photo` all null in Sanity |
+| `/services/[slug]` + `/technology/[slug]` (~124 pages × 2 locales) | 1 empty tile in the "Schedule a call" band on each | Fixed furniture, never wired (`catalogue/detail.tsx:351`) |
+| `/services/software-engineers` | 4 "Image suggestion" tiles | Placeholder brief; real assets never supplied |
+| `/about-us` (+ `/uk`) | 1 empty tile beside "We started because hiring was broken" | `aboutUsPage.founderImage` unset and static fallback is `''` |
+| `/services/fractional-ctos` | 1 empty photo box under "Tell us what you need" | `matched.feature.image` never supplied |
+| `/tools/culture-match` | Full-width empty walkthrough tile | No poster image |
+
+Lower salience, same root cause: all 101 `technology` docs have no `icon`, so the
+technology-coverage chips on service detail pages render empty 48px logo slots;
+and one blog post (`nearshoring-or-offshoring-the-strategic-choice-for-tech-leaders`)
+has no thumbnail, so it shows a stripe card on every listing it appears in.
+
+**Checked and genuinely fine** (do not re-audit): `/for-developers` - the ten
+Figma slots look empty in `content.ts` but empty there means "keep the baked
+export asset", and real photos render. Also clean: How It Works, Pricing,
+Contact, Referrals, the three Location pages, Compare, and every hub
+(customer-stories, reviews, blog, videos, tools, downloads, events,
+alternatives, technology). Team photos, customer-story heroes and review avatars
+are all complete in Sanity.
+
+Worst first: the `/services` grid (every card blank on a top-level nav page) and
+the homepage stock photos (random landscapes presented as CE locations - a
+credibility problem, not just a gap).
+
+**Gate to pass:** no visible placeholder or stand-in image on any page that
+ships. Mostly needs real photography from Seb; the exceptions are `/services`
+cards and the service/technology CTA band, which have no image field wired at
+all and need a code change before any photo can be dropped in.
+
+### 6c. Jul 27 design + copy pass - DONE (27 Jul 2026)
+
+Jake's edit list, executed and verified in-browser:
+
+- **Copy.** Home hero trimmed to three trust points (one monthly fee / we handle
+  HR & payroll / 300+ teams built); "Client story" eyebrow becomes "Jobs boards
+  don't work anymore"; footer CTA wording unified on "Contact Us Today"; Cape
+  Town dropped from the locations slider (5 remain).
+- **Home cost calculator.** Was static markup dressed to look like dropdowns.
+  Now a real client component (`home/calculator-card.tsx` +
+  `lib/calculators/next-hire.ts`) sharing the pricing page's model, with the
+  SAVE badge derived from the computed figure rather than hard-coded. All five
+  calculators on the site audited and confirmed recomputing.
+- **Fractional CTO.** Hero replaced with the shortlist panel and the three CTO
+  archetype cards per the supplied design.
+- **For Engineers.** Hero fills the viewport on landing, with a see-more cue
+  down to "Applying is broken".
+- **Chrome.** Nav dropdowns widened so each sentence sits on one line; the
+  Locations pin centred (Material Symbols advance-width, not a box-centring
+  problem); header CTA chips + centre-out nav underline.
+- **Pricing.** Hero now runs the home page's three stacked talent-profile cards.
+- **Locations (all three).** Square icon tiles at real pixel sizes, subject
+  icons instead of generic ticks on the EOR row, video widened to the home
+  page's band, "What's included" columns rebuilt with aligned markers, and
+  "Engineers we've placed" cards rebuilt to the supplied reference with
+  prominent flags.
+
+**Cursor spotlight.** Audited every page for where the location pages'
+cursor-follow glow belongs. Component promoted out of the location folder to
+`site/src/components/motion/spotlight.tsx` and applied to Home "Ready to find",
+How It Works matcher, Hire Engineers "Proof", and the About Us story. Found and
+fixed a half-applied case: the Philippines quiz variant wrapped in `Spotlight`
+but marked no `data-spot-item`, so it glowed without dimming. Nine sections
+verified by measuring real opacity before and after the cursor arrives.
+
+**Deliberately excluded** (do not "finish the job" later without a design call):
+heroes, calculators, forms, marquees and FAQ accordions already own the cursor;
+gradient-band sections and catalogue statement bands need a transparent-ground
+Spotlight variant first, since the component hardcodes `#070D18`.
+
+**Known drift:** four separate hand-rolled versions of this glow now exist (home
+client story, For Engineers, Fractional CTO, and the shared component). Folding
+them into one is a tidy-up, not urgent.
+
 ### PHASE 7 - SEO + parity full verification (the launch gate)
 Goal: prove the crossover is safe before anyone flips the domain.
 

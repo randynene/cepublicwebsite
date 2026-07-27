@@ -10,6 +10,10 @@ import { cn } from '@/components/ui/_utils/cn'
 // section. The CALLER controls which elements dim (add data-spot-item + a
 // `motion-safe:opacity-*` class) - the cards/CTAs must NOT be marked, so they
 // stay full-bright. prefers-reduced-motion users get full opacity, no glow.
+//
+// Reserve it for statement moments and decision grids on the `#070D18` ground.
+// It is the wrong tool for forms, calculators, marquees and accordions, where
+// the section already owns the visitor's cursor.
 
 const GLOW_R = 360
 const OVERLAY_INSET = 320
