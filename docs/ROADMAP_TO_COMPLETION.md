@@ -476,6 +476,13 @@ Jake's edit list, executed and verified in-browser:
   page's band, "What's included" columns rebuilt with aligned markers, and
   "Engineers we've placed" cards rebuilt to the supplied reference with
   prominent flags.
+- **CTA + trust-strip alignment.** Audited the canonical sweep pills and header
+  CTA pills across representative marketing, hub, catalogue and location pages.
+  Labels and leading icon circles now share a 1px optical lift. Philippines hero
+  benefits stay on one desktop row. The standard "Trusted by 300+ / Engineering
+  Teams" label is locked to exactly two lines on Location, Pricing and catalogue
+  detail logo strips. Typecheck, changed-file lint and the full site build pass;
+  the Philippines layout was browser-verified at 1440px.
 
 **Cursor spotlight.** Audited every page for where the location pages'
 cursor-follow glow belongs. Component promoted out of the location folder to
@@ -554,6 +561,38 @@ Nothing was written to the production dataset.
 
 **Not done:** the technology *detail* pages (`/technology/[slug]`) do not show
 the logo yet. Easy follow-on if wanted.
+
+### 6e. FAQ "Open chat" panel - DONE (27 Jul 2026)
+
+Six templates rendered the "Can't find your question? / Open chat" panel that
+sits beside an FAQ section, and all six had been hand-rolled separately, so all
+six looked different: the eyebrow was lime on one, white on two and grey on two;
+three had the lime pill with the dark arrow circle and three had a flat pill or
+a bare inline arrow.
+
+They now all render one component, `site/src/components/shared/faq-chat-card/`:
+`#101B30` card on a `#22314D` border at 20px radius, lime uppercase eyebrow,
+`#B8C2D1` body, and the canonical `size="cta"` lime pill. Affected: Home, How It
+Works, Pricing, the three Location pages, and the Service/Technology detail
+pages (`CatalogueFaqPanel`). Fractional CTO keeps its own scoped CSS (a `.fcto *`
+reset makes Tailwind spacing unreliable inside it) but its `.faq-cta` rules were
+matched to the shared card by hand.
+
+**Three of the six CTAs were dead links.** Home pointed at `#faq` (the section
+containing the button), Fractional CTO at `#`, and Location + the catalogue panel
+at a raw `#chat` anchor that matches no element. The shared card uses `ChatPill`,
+so every one of them now opens the Clara widget and falls back to `/book-a-call`
+when the widget is unavailable (see `site/src/lib/chat.ts`).
+
+**One content item left for Seb.** The Home FAQ body renders "Ask our AI chatbot
+, trained on every sales call we've had" - a stray space before the comma. That
+string comes from Sanity, not from code; the code fallback in `home/content.ts`
+was corrected (em dash -> hyphen) but the dataset value needs an edit in Studio.
+Nothing was written to the production dataset.
+
+**Not done:** the FAQ sections on the `/services` and `/technology` hub index
+pages have no chat panel at all (they are a single stacked column of cards, no
+left aside). Adding one there is a layout decision, not a fix - flagged for Jake.
 
 ### PHASE 7 - SEO + parity full verification (the launch gate)
 Goal: prove the crossover is safe before anyone flips the domain.
@@ -841,9 +880,9 @@ from the product tracker and should be deleted before launch (scaffold debt).
 | Pricing | `/pricing` | Yes | WIRED-FALLBACK | Phase 6: fill Sanity + calculator embed (D5) | 5 |
 | For Developers | `/for-developers` (+ `/uk`) | Yes | DONE - rebuilt + Sanity-wired, pixel-parity PROVEN (not yet seeded/pushed) | Phase 3.1: tokenise-and-hydrate rebuild of the frozen Figma export; `forDevelopersPage` bespoke singleton + GROQ/Zod/transform + US/UK routes + seed. `npm run static:verify-fe2-parity` asserts byte-identical output. Build green, routes 200. Jake to seed + push. | 2 |
 | Our Work | `/our-work` | Yes | **DONE (WIRE-BESPOKE 23 Jul): `ourWorkPage` reconciled generic -> bespoke (copy + stat numbers + 3 photo tiles); GROQ/Zod/transform + US/UK routes (Sanity-first, static fallback) + seed. Committed `5bd39df`, pushed, Studio deployed, SEEDED to production (verified bespoke doc landed). Fully editable in Studio.** Stories/logos/reviews/bento already Sanity-driven from their own docs. Seb: upload the 3 optional photo tiles in Studio if wanted. | DONE (G2). Optional: photo uploads | 2 |
-| Location: LATAM | `/services/latam-developers` | Net-new | BUILT + COMMITTED (bespoke `LocationTemplate` + cost calculator + location JSON-LD, dark/lime; 200). G1 done. **G2 wiring code-complete (WIRE-BESPOKE 23 Jul): `locationPage` schema + GROQ/Zod/transform + route (Sanity-first, code fallback) + seed; tsc/build/routes-200 green.** OPEN: Jake deploys Studio + runs `npm run static:seed-location-pages`. | Deploy Studio + run seed; then DONE | 2 |
-| Location: Philippines | `/services/philippines-developers` | Net-new | BUILT + COMMITTED (same `LocationTemplate`; 200). G1 done. G2 wiring code-complete (WIRE-BESPOKE 23 Jul, same as LATAM). Doc IS seeded (page renders Sanity data). **"What's included" section redesigned 27 Jul - DONE** (one bordered card, equal-height columns, two-up "We" list, lime as accent only) per `whats-included-1a.html`; copy rewritten with counted labels + 8 split "We" items + PH-named payroll line; 4 new fields (`youBody`, `youFootnote`, `wePill`, `weBody`) added to schema/GROQ/Zod/seed. **Studio deployed + `npm run static:patch-ph-included` run against production** (published doc patched, no draft existed); verified rendering at 1440/1024/390. | DONE (G1+G2) | 2 |
-| Location: Eastern Europe | `/services/eastern-europe-developers` | Net-new | BUILT + COMMITTED (same `LocationTemplate`; 200; net-new slug, no service doc). G1 done. G2 wiring code-complete (WIRE-BESPOKE 23 Jul, same as LATAM). OPEN: Studio deploy + seed. | Deploy Studio + run seed | 2 |
+| Location: LATAM | `/services/latam-developers` | Net-new | BUILT + COMMITTED (bespoke `LocationTemplate` + cost calculator + location JSON-LD, dark/lime; 200). G1 + G2 done. **27 Jul:** redesigned shared "What's included" card added after the regional overview with Latin America-specific payroll copy; `locationPage-latam-developers.included` patched in production (published doc only, no draft) so all copy is Studio-editable. | DONE (G1+G2) | 2 |
+| Location: Philippines | `/services/philippines-developers` | Net-new | BUILT + COMMITTED (same `LocationTemplate`; 200). G1 done. G2 wiring code-complete (WIRE-BESPOKE 23 Jul, same as LATAM). Doc IS seeded (page renders Sanity data). **"What's included" section redesigned 27 Jul - DONE** (one bordered card, equal-height columns, two-up "We" list, lime as accent only) per `whats-included-1a.html`; copy rewritten with counted labels + 8 split "We" items + PH-named payroll line; 4 new fields (`youBody`, `youFootnote`, `wePill`, `weBody`) added to schema/GROQ/Zod/seed. **Studio deployed + `npm run static:patch-ph-included` run against production** (published doc patched, no draft existed); verified rendering at 1440/1024/390. **27 Jul polish:** hero CTA contents optically centred; all three benefit facts share one desktop row; trusted-by label is exactly two lines. | DONE (G1+G2) | 2 |
+| Location: Eastern Europe | `/services/eastern-europe-developers` | Net-new | BUILT + COMMITTED (same `LocationTemplate`; 200; net-new slug, no service doc). G1 + G2 done. **27 Jul:** redesigned shared "What's included" card added after the regional overview with Eastern Europe-specific payroll copy; `locationPage-eastern-europe-developers.included` patched in production (published doc only, no draft) so all copy is Studio-editable. | DONE (G1+G2) | 2 |
 | About Us | `/about-us` | YES - live + indexed on CE | URL-LIVE-ONLY | Keep live w/ captured content (stays indexed); redesign later (deferred). Do NOT hide. | 4 (defer design) |
 | Contact | `/contact` | YES - live + indexed on CE (`/contact-us` -> `/contact`) | URL-LIVE-ONLY | Keep live w/ captured content; redesign later (deferred). Do NOT hide. | 4 (defer design) |
 | Referrals | `/referrals` | Design exists | URL-LIVE-ONLY (built + wired) | Phase 5.3 DESIGN pass (not a build) | 4 |

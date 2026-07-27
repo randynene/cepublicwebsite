@@ -97,7 +97,7 @@ export interface LocationContent {
     floatingBadges: string[]
   }
   logosLabel: string
-  /** Optional 3-line logo-strip label (e.g. Trusted by / 300+ / engineering teams). */
+  /** Optional logo-strip label lines. Standard trusted-by copy renders on two lines. */
   logosLabelLines?: string[]
   /** Optional editable logo strip. Falls back to the shared logo set when absent. */
   logos?: LocationLogo[]
@@ -252,6 +252,39 @@ export interface LocationContent {
 
 const A = '/location/latam'
 
+function regionalIncluded(region: string): NonNullable<LocationContent['included']> {
+  return {
+    eyebrow: "What's included",
+    titleLead: 'You get the engineer.',
+    titleAccent: 'We handle everything else.',
+    youLabel: 'You - 3 things',
+    youSubhead: 'Run your team. Ship your product.',
+    youBody: "The engineer works like any other member of your team. That's the only part you touch.",
+    you: [
+      "Direct your engineer's work",
+      'Bring them into standups and Slack',
+      'Treat them like a full-time hire',
+    ],
+    youFootnote: 'No HR. No payroll. No local entity. No admin.',
+    weLabel: 'We - 8 things',
+    wePill: 'Included in the fee',
+    weSubhead: 'The full operational stack.',
+    weBody:
+      'Employment, compliance, retention and risk - handled in their country, billed as one line.',
+    we: [
+      "Source and vet the engineer (free if you don't hire)",
+      'Employ them locally with full benefits and private healthcare',
+      `Handle payroll, taxes and compliance across ${region}`,
+      'Provide a US or UK-based account manager',
+      "Replace them at no cost if it isn't working",
+      'Support training, performance and retention long-term',
+      'Liability insurance on every contract',
+      'IP and data protection assigned to you',
+    ],
+    footnote: 'One monthly fee. No setup. No placement fees. 30 days notice on a rolling contract.',
+  }
+}
+
 export const LATAM_CONTENT: LocationContent = {
   region: 'Latin America',
   slug: 'latam-developers',
@@ -345,6 +378,7 @@ export const LATAM_CONTENT: LocationContent = {
     ],
     image: `${A}/team.jpg`,
   },
+  included: regionalIncluded('Latin America'),
   primaryHub: {
     eyebrow: 'Where we are on the ground',
     titleLead: 'Mexico City is our heart in',
@@ -592,6 +626,7 @@ export const EASTERN_EUROPE_CONTENT: LocationContent = {
     ],
     image: `${EE}/team.jpg`,
   },
+  included: regionalIncluded('Eastern Europe'),
   primaryHub: {
     eyebrow: 'Where we are on the ground',
     titleLead: 'Warsaw is our',

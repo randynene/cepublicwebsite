@@ -1,0 +1,202 @@
+/* Expanding-hub panel row.
+ *
+ * Originally the second half of home/where-we-work.css (a port of
+ * design_handoff_where_we_work/"Where We Work.dc.html"); split out so the
+ * Philippines location page can render the identical row. The section shell and
+ * heading styles stay in where-we-work.css - only the row is shared.
+ *
+ * The whole interaction is pure CSS `:hover` (accordion widen + veil fade + FAB
+ * glyph swap); no JS state, so consumers stay server components.
+ *
+ * Class names keep the `ww-` prefix they were born with rather than churning
+ * every selector for a rename. The selectors are flat (never nested under
+ * `.ww`), so the row works anywhere this file is imported.
+ */
+
+.ww-row {
+  --ww-lime: #d4ff3c;
+  display: flex;
+  gap: 6px;
+  height: 620px;
+}
+.ww-row *,
+.ww-row *::before,
+.ww-row *::after {
+  box-sizing: border-box;
+}
+.ww-panel {
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  flex: 1 1 0%;
+  flex-grow: 1;
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: flex-grow 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+/* Accordion: any hover in the row levels every panel to grow:1, then the
+   hovered panel alone jumps to 3.4 — siblings shrink to make room. */
+.ww-row:hover .ww-panel {
+  flex-grow: 1;
+}
+.ww-row .ww-panel:hover {
+  flex-grow: 3.4;
+}
+/* A panel with no destination is not clickable, so it must not claim to be. */
+.ww-panel.is-static {
+  cursor: default;
+}
+
+/* image layer — rests slightly zoomed, settles to 1 on hover ("opening") */
+.ww-img {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  transform: scale(1.06);
+  transition: transform 0.7s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.ww-panel:hover .ww-img {
+  transform: scale(1);
+}
+
+/* dark navy veil — full at rest, fades out on hover to reveal the photo */
+.ww-veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(10, 24, 50, 0.82) 0%,
+    rgba(8, 22, 52, 0.86) 55%,
+    rgba(6, 18, 46, 0.92) 100%
+  );
+  transition: opacity 0.4s ease;
+}
+.ww-panel:hover .ww-veil {
+  opacity: 0;
+}
+
+/* bottom scrim — fades in on hover so the caption stays legible over the photo */
+.ww-scrim {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: linear-gradient(180deg, rgba(7, 13, 24, 0) 45%, rgba(7, 13, 24, 0.85) 100%);
+  transition: opacity 0.4s ease;
+}
+.ww-panel:hover .ww-scrim {
+  opacity: 1;
+}
+
+/* corner FAB — "+" at rest, flips to a lime "→" on hover */
+.ww-fab {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background: rgba(9, 24, 32, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+  transition: background 0.5s ease, box-shadow 0.5s ease;
+}
+.ww-panel:hover .ww-fab {
+  background: var(--ww-lime);
+  box-shadow: none;
+}
+.ww-fab svg {
+  position: absolute;
+  transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.ww-plus {
+  stroke: #fff;
+  opacity: 1;
+}
+.ww-arr {
+  stroke: #060f1e;
+  opacity: 0;
+  transform: translateX(-6px);
+}
+.ww-panel:hover .ww-plus {
+  opacity: 0;
+  transform: rotate(90deg);
+}
+.ww-panel:hover .ww-arr {
+  opacity: 1;
+  transform: translateX(0);
+}
+/* Static panels keep the plus and turn it into a dark "×" instead of an arrow:
+   the arrow reads as "this goes somewhere", and these do not. */
+.ww-panel.is-static:hover .ww-plus {
+  opacity: 1;
+  stroke: #060f1e;
+  transform: rotate(45deg);
+}
+
+/* caption */
+.ww-cap {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  bottom: 26px;
+  z-index: 3;
+}
+.ww-name {
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 1.2;
+  letter-spacing: -0.3px;
+  color: #fff;
+  white-space: nowrap;
+}
+.ww-note {
+  margin: 6px 0 0;
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 19px;
+  letter-spacing: -0.1px;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* ── below tablet: horizontal-scroll carousel, no hover-expand ─────────── */
+@media (max-width: 900px) {
+  .ww-row {
+    height: 520px;
+    gap: 12px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  .ww-row .ww-panel {
+    flex: 0 0 76%;
+    scroll-snap-align: start;
+  }
+  .ww-row .ww-panel:hover {
+    flex: 0 0 76%;
+  }
+  /* veil dimmed + image un-zoomed so photos read while swiping */
+  .ww-veil {
+    opacity: 0.35;
+  }
+  .ww-img {
+    transform: scale(1);
+  }
+}
+
+/* respect reduced-motion — drop the transitions, keep the end states */
+@media (prefers-reduced-motion: reduce) {
+  .ww-panel,
+  .ww-img,
+  .ww-veil,
+  .ww-scrim,
+  .ww-fab,
+  .ww-fab svg {
+    transition: none;
+  }
+}

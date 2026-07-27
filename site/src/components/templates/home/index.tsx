@@ -9,6 +9,7 @@ import { Reveal } from '@/components/motion/reveal'
 import { CountUp } from '@/components/motion/count-up'
 import { DecryptText } from '@/components/motion/decrypt-text'
 import { Spotlight } from '@/components/motion/spotlight'
+import { FaqChatCard } from '@/components/shared/faq-chat-card'
 import { STICKY_ASIDE } from '@/components/layout/sticky-aside'
 
 import {
@@ -917,21 +918,12 @@ function Faq({ content }: SectionProps) {
           <h2 className={cn('mt-[16px]', H2)}>
             {faq.titleLead} <span className={ACCENT}>{faq.titleAccent}</span>
           </h2>
-          <div className={cn(CARD, 'mt-[28px] flex flex-col items-start gap-[10px] p-[24px]')}>
-            <div className="text-[13px] font-bold uppercase tracking-[0.9px] text-white">
-              {faq.fallbackLabel}
-            </div>
-            <p className={cn('text-[14px] leading-[21px]', MUTED)}>{faq.fallbackBody}</p>
-            <MegaMenuPillLabel
-              as="a"
-              href="#faq"
-              variant="pill-green"
-              size="cta"
-              leadingArrow
-              leadingGlyph={GLYPH.arrow}
-              label={faq.fallbackCta}
-            />
-          </div>
+          <FaqChatCard
+            className="mt-[28px]"
+            label={faq.fallbackLabel}
+            body={faq.fallbackBody}
+            cta={faq.fallbackCta}
+          />
         </div>
 
         <Accordion type="single" collapsible className="w-full">

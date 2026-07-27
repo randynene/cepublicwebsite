@@ -520,7 +520,7 @@ export const HOME_CONTENT = {
     titleLead: 'The questions',
     titleAccent: 'CTOs and founders ask.',
     fallbackLabel: "Can't find your question?",
-    fallbackBody: 'Ask our AI chatbot — trained on every sales call we\u2019ve had.',
+    fallbackBody: 'Ask our AI chatbot - trained on every sales call we\u2019ve had.',
     fallbackCta: 'Open chat',
     items: [
       {

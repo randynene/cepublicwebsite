@@ -8,7 +8,7 @@ import { Reveal } from '@/components/motion/reveal'
 import { CountUp } from '@/components/motion/count-up'
 import { Spotlight } from '@/components/motion/spotlight'
 import { EngineerMatchQuiz } from '@/components/shared/engineer-match-quiz'
-import { ChatPill } from '@/components/shared/chat-link'
+import { FaqChatCard } from '@/components/shared/faq-chat-card'
 import { STICKY_ASIDE } from '@/components/layout/sticky-aside'
 import type { Locale } from '@/lib/locale-path'
 import { toInternalHref } from '@/lib/url'
@@ -30,7 +30,6 @@ import { TestimonialsSlider } from './testimonials-slider'
 // (FooterTopCta) — not rebuilt here. The interactive matcher is a static stub.
 
 const BAND = 'mx-auto w-full max-w-[1440px] px-[22px] sm:px-[32px] lg:px-[64px]'
-const CARD = 'rounded-[20px] border border-[#22314D] bg-[#101B30]'
 const EYEBROW =
   'text-[12px] font-semibold uppercase leading-[18.6px] tracking-[1.68px] text-brand-primary'
 const MUTED = 'text-[#7F8CA0]'
@@ -485,21 +484,14 @@ function Faq({ content, locale }: SectionProps) {
           <h2 className={cn('mt-[16px]', H2)}>
             {faq.titleLead} <span className={ACCENT}>{faq.titleAccent}</span>
           </h2>
-          <div className={cn(CARD, 'mt-[28px] flex flex-col items-start gap-[10px] p-[24px]')}>
-            <div className="text-[13px] font-bold uppercase tracking-[0.9px] text-white">
-              {faq.fallbackLabel}
-            </div>
-            <p className={cn('text-[14px] leading-[21px]', MUTED)}>{faq.fallbackBody}</p>
-            <ChatPill
-              href={faq.fallbackCtaHref}
-              locale={locale}
-              variant="pill-green"
-              size="cta"
-              leadingArrow
-              leadingGlyph={GLYPH.arrow}
-              label={faq.fallbackCta}
-            />
-          </div>
+          <FaqChatCard
+            className="mt-[28px]"
+            label={faq.fallbackLabel}
+            body={faq.fallbackBody}
+            cta={faq.fallbackCta}
+            href={faq.fallbackCtaHref}
+            locale={locale}
+          />
         </div>
 
         <Accordion type="single" collapsible className="w-full">

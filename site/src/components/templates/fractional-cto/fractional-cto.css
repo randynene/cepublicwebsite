@@ -1413,24 +1413,37 @@ html {
   line-height: 1.05;
   margin-top: 12px;
 }
+/* Matches the shared FaqChatCard (components/shared/faq-chat-card) so this
+   page's "Open chat" panel reads identically to Home / Pricing / Location. */
 .fcto .faq-cta {
   margin-top: 36px;
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: 20px;
-  padding: 30px;
+  padding: 24px;
 }
 .fcto .faq-cta .eyebrow {
   display: block;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
 }
 .fcto .faq-cta p {
-  font-size: 14.5px;
-  line-height: 1.55;
-  color: #f7f9f0;
+  font-size: 14px;
+  line-height: 21px;
+  color: var(--text);
 }
 .fcto .faq-cta .btn-primary {
-  margin-top: 20px;
+  margin-top: 16px;
+  font-size: 13px;
+  padding: 4px 14px 4px 4px;
+  gap: 6px;
+  box-shadow: 0 2px 8px -3px rgba(0, 0, 0, 0.45);
+}
+.fcto .faq-cta .btn-primary .arw {
+  width: 20px;
+  height: 20px;
 }
 .fcto .faq-list {
   border-top: 1px solid var(--line);

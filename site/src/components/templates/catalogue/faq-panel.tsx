@@ -1,6 +1,8 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { cn } from '@/components/ui/_utils/cn'
+import { FaqChatCard } from '@/components/shared/faq-chat-card'
 import { STICKY_ASIDE } from '@/components/layout/sticky-aside'
+import { CHAT_HREF } from '@/lib/chat'
 import type { HubFaq } from '@/data/services'
 import { ACCENT, BAND_1280, BODY, Eyebrow } from './shared'
 
@@ -18,9 +20,7 @@ const COPY = {
   cardCta: 'Open chat',
 } as const
 
-const GLYPH = { arrow: '→' } as const
-
-export function CatalogueFaqPanel({ items, chatHref = '#chat' }: { items: HubFaq[]; chatHref?: string }) {
+export function CatalogueFaqPanel({ items, chatHref = CHAT_HREF }: { items: HubFaq[]; chatHref?: string }) {
   return (
     <section className={cn(BAND_1280, 'py-[72px]')}>
       <div className="grid gap-10 lg:grid-cols-[0.9fr_1.6fr]">
@@ -29,19 +29,13 @@ export function CatalogueFaqPanel({ items, chatHref = '#chat' }: { items: HubFaq
           <h2 className="mt-4 text-[32px] font-semibold leading-[1.1] tracking-[-1px] text-white lg:text-[46px] lg:leading-[54px]">
             {COPY.titleLead} <span className={ACCENT}>{COPY.titleAccent}</span>
           </h2>
-          <div className="mt-7 flex flex-col items-start gap-2.5 rounded-[20px] border border-[#22314D] bg-[#101B30] p-6">
-            <span className="text-[13px] font-bold uppercase tracking-[0.9px] text-white">{COPY.cardLabel}</span>
-            <p className={cn('text-[14px] leading-[21px]', BODY)}>{COPY.cardBody}</p>
-            <a
-              href={chatHref}
-              className="sf sf-p mt-1 inline-flex items-center gap-2 rounded-pill px-5 py-2.5 text-[14px] font-bold"
-            >
-              <span className="c inline-flex items-center gap-2">
-                <span aria-hidden="true">{GLYPH.arrow}</span>
-                {COPY.cardCta}
-              </span>
-            </a>
-          </div>
+          <FaqChatCard
+            className="mt-7"
+            label={COPY.cardLabel}
+            body={COPY.cardBody}
+            cta={COPY.cardCta}
+            href={chatHref}
+          />
         </div>
 
         <Accordion type="single" collapsible className="w-full">

@@ -2,6 +2,7 @@ import { BlogBand } from '@/components/blog/container'
 import { Marquee } from '@/components/ui/marquee'
 import { FaqToggleGlyph } from '@/components/ui/faq-list'
 import { cn } from '@/components/ui/_utils/cn'
+import { FaqChatCard } from '@/components/shared/faq-chat-card'
 import { STICKY_ASIDE } from '@/components/layout/sticky-aside'
 import { HeroCards } from '@/components/templates/home/hero-cards'
 import type { HomeProfile } from '@/components/templates/home/content'
@@ -30,6 +31,7 @@ const H2 =
   'text-[34px] font-semibold leading-[1.05] tracking-[-1.3px] text-white lg:text-[48px] lg:leading-[52px] lg:tracking-[-1.5px]'
 const ACCENT = 'font-serif font-normal italic text-brand-primary'
 const CARD = 'rounded-[20px] border border-[#22314D] bg-[#101B30]'
+const STANDARD_TRUSTED_LABEL_LINES = ['Trusted by 300+', 'engineering teams']
 const GLYPH = { arrow: '→', check: '✓', star: '★', play: '▶', quote: '"' } as const
 
 function Eyebrow({ children }: { children: string }) {
@@ -276,6 +278,8 @@ function DeRisk({ content }: { content: PricingContent }) {
 // ── Rating callout + logo bar ────────────────────────────────────────────────
 function RatingAndLogos({ content }: { content: PricingContent }) {
   const { glassdoor, logoBar } = content
+  const usesStandardTrustedLabel =
+    logoBar.label.trim().toLowerCase() === 'trusted by 300+ engineering teams'
   return (
     <section className="mt-20 flex flex-col items-center gap-12">
       <div className={cn(CARD, 'flex flex-wrap items-center justify-center gap-4 px-6 py-4')}>
@@ -292,8 +296,12 @@ function RatingAndLogos({ content }: { content: PricingContent }) {
       </div>
 
       <div className="flex flex-col items-center gap-6 lg:flex-row lg:gap-8">
-        <p className="max-w-[120px] text-center text-[12px] font-semibold uppercase leading-[1.5] tracking-[1.2px] text-[#7F8CA0] lg:text-left">
-          {logoBar.label}
+        <p className="text-center text-[12px] font-semibold uppercase leading-[1.5] tracking-[1.2px] text-[#7F8CA0] lg:text-left">
+          {usesStandardTrustedLabel ? (
+            STANDARD_TRUSTED_LABEL_LINES.map((line) => (
+              <span key={line} className="block whitespace-nowrap">{line}</span>
+            ))
+          ) : logoBar.label}
         </p>
         <span aria-hidden="true" className="hidden h-10 w-px bg-[#22314D] lg:block" />
         <ul className="flex flex-wrap items-center justify-center divide-x divide-[#22314D]">
@@ -389,19 +397,13 @@ function Faq({ content }: { content: PricingContent }) {
           <div className="mt-3">
             <SectionHeading lead={faq.titleLead} accent={faq.titleAccent} />
           </div>
-          <div className={cn(CARD, 'mt-8 p-6')}>
-            <p className="text-[12px] font-semibold uppercase tracking-[1.2px] text-text-default/50">{faq.helpEyebrow}</p>
-            <p className="mt-2 text-[15px] text-text-default/70">{faq.helpBody}</p>
-            <a
-              href={faq.helpCtaHref}
-              className="sf sf-p mt-4 inline-flex h-[46px] items-center gap-2.5 rounded-pill py-[8px] pl-[8px] pr-5 text-[14px] font-bold shadow-[0_0_24px_rgba(212,255,60,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-[#070D18]"
-            >
-              <span aria-hidden="true" className="ic flex h-[30px] w-[30px] items-center justify-center text-[13px]">
-                {GLYPH.arrow}
-              </span>
-              <span className="c">{faq.helpCta}</span>
-            </a>
-          </div>
+          <FaqChatCard
+            className="mt-8"
+            label={faq.helpEyebrow}
+            body={faq.helpBody}
+            cta={faq.helpCta}
+            href={faq.helpCtaHref}
+          />
         </div>
 
         <div className="flex flex-col gap-3">

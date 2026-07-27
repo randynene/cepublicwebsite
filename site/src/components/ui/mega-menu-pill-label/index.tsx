@@ -285,11 +285,7 @@ export const MegaMenuPillLabel = forwardRef<
         />
       ) : null}
       <span className={cn(sweepVariant && 'c', 'inline-flex items-center gap-1.5')}>
-        {/* `size="cta"` sets 13px bold text at `leading-none` — bold Inter's
-         * cap-height sits slightly above the line box's true centre, so the
-         * label reads a touch high inside the pill. `top-px` nudges it down
-         * without affecting layout width/height (relative offset only). */}
-        <span className={cn(size === 'cta' && 'relative top-px')}>{label}</span>
+        <span>{label}</span>
         {hasArrow ? <ArrowGlyph /> : null}
         {children}
       </span>

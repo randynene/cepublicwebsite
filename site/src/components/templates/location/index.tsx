@@ -8,6 +8,8 @@ import { LocationCalculator } from './calculator'
 import { LocationStartQuiz } from './start-quiz'
 import { LocationVideo } from './video'
 import { Spotlight } from '@/components/motion/spotlight'
+import { FaqChatCard } from '@/components/shared/faq-chat-card'
+import { HubPanels } from '@/components/shared/hub-panels'
 import { STICKY_ASIDE } from '@/components/layout/sticky-aside'
 
 // Card hover: lift + lime border glow (homepage data-mo-cardhover equivalent).
@@ -44,8 +46,21 @@ export const LOGOS_FALLBACK: LocationLogo[] = [
   { name: 'Scorpion', src: '/design/home/logos/scorpion.png', displayH: 14, displayOpacity: 0.8, invert: true },
 ]
 
-// The logo-strip label as separate lines when the doc has none set.
-const LOGOS_LABEL_LINES_FALLBACK = ['Trusted by', '300+', 'engineering teams']
+// The logo-strip label is locked to two lines for the standard trusted-by copy.
+const LOGOS_LABEL_LINES_FALLBACK = ['Trusted by 300+', 'engineering teams']
+const STANDARD_LOGOS_LABEL = 'trusted by 300+ engineering teams'
+
+function logoLabelLines(content: LocationContent): string[] {
+  const configured = content.logosLabelLines?.length
+    ? content.logosLabelLines
+    : content.logosLabel
+      ? [content.logosLabel]
+      : LOGOS_LABEL_LINES_FALLBACK
+
+  return configured.join(' ').trim().toLowerCase() === STANDARD_LOGOS_LABEL
+    ? LOGOS_LABEL_LINES_FALLBACK
+    : configured
+}
 
 // Time-zone stat-card icons: 20x20 lime line-icons (stroke #D4FF3C, no fill) on
 // a dark navy #1B2A45 tile (set on the AdvantageTile wrapper).
@@ -252,9 +267,9 @@ function Hero({ content }: { content: LocationContent }) {
             className="!h-[48px] !px-[26px] !text-[15px]"
           />
         </div>
-        <ul className="mt-7 flex flex-wrap gap-x-6 gap-y-2">
+        <ul className="mt-7 grid grid-cols-1 gap-x-[18px] gap-y-2 sm:grid-cols-3">
           {hero.trustPills.map((p) => (
-            <li key={p} className={cn('flex items-center gap-2 text-[13px]', BODY)}>
+            <li key={p} className={cn('flex items-center gap-2 whitespace-nowrap text-[13px]', BODY)}>
               <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-brand-primary" />
               {p}
             </li>
@@ -293,17 +308,12 @@ function Hero({ content }: { content: LocationContent }) {
 // ── Logo bar ────────────────────────────────────────────────────────────────
 function LogoStrip({ content }: { content: LocationContent }) {
   const logos = content.logos?.length ? content.logos : LOGOS_FALLBACK
-  const labelLines =
-    content.logosLabelLines?.length
-      ? content.logosLabelLines
-      : content.logosLabel
-        ? [content.logosLabel]
-        : LOGOS_LABEL_LINES_FALLBACK
+  const labelLines = logoLabelLines(content)
   return (
     <section className={cn(BAND, 'mt-[24px] flex flex-col items-center gap-5 py-[24px] lg:flex-row lg:justify-center lg:gap-8')}>
-      <p className="max-w-[140px] text-center text-[11px] font-semibold uppercase leading-[1.5] tracking-[1.4px] text-[#7F8CA0] lg:text-left">
+      <p className="text-center text-[11px] font-semibold uppercase leading-[1.5] tracking-[1.4px] text-[#7F8CA0] lg:text-left">
         {labelLines.map((line) => (
-          <span key={line} className="block">
+          <span key={line} className="block whitespace-nowrap">
             {line}
           </span>
         ))}
@@ -621,18 +631,9 @@ function RegionsStrip({ content }: { content: LocationContent }) {
       <div className="mt-3">
         <Heading lead={titleLead} accent={titleAccent} size="text-[30px] lg:text-[44px]" />
       </div>
-      <ul className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
-        {strip.hubs.map((hub) => (
-          <li key={hub.city} className="relative h-[240px] overflow-hidden rounded-[20px] border border-[#22314D]">
-            <img src={hub.image} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
-            <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#060F1E]/95 via-[#060F1E]/30 to-transparent" />
-            <div className="absolute inset-x-0 bottom-0 p-5 text-left">
-              <p className="text-[18px] font-semibold text-white">{hub.city}</p>
-              <p className="text-[13px] text-white/70">{hub.note}</p>
-            </div>
-          </li>
-        ))}
-      </ul>
+      <div className="mt-10 text-left">
+        <HubPanels panels={strip.hubs.map((hub) => ({ name: hub.city, note: hub.note, image: hub.image }))} />
+      </div>
       <div className="mt-8 inline-flex items-center gap-3 rounded-full border border-[#22314D] bg-[#101B30] px-5 py-3">
         <span className="text-[17px] font-bold text-white">{strip.retentionValue}</span>
         <span className="text-[12.5px] text-[#B8C2D1]">{strip.retentionLabel}</span>
@@ -946,14 +947,12 @@ function Faq({ content }: { content: LocationContent }) {
         <div className={STICKY_ASIDE}>
           <Eyebrow>{faq.eyebrow}</Eyebrow>
           <h2 className="mt-3 text-[34px] font-bold leading-[1.08] tracking-[-1px] text-white lg:text-[46px]">{faq.title}</h2>
-          <div className={cn(CARD, 'mt-8 p-6')}>
-            <p className="text-[12px] font-semibold uppercase tracking-[1.2px] text-[#7F8CA0]">{faq.helpEyebrow}</p>
-            <p className={cn('mt-2 text-[15px]', BODY)}>{faq.helpBody}</p>
-            <a href="#chat" className="mt-4 inline-flex items-center gap-2 rounded-pill bg-brand-primary px-4 py-2 text-[13px] font-bold text-[#060F1E]">
-              <span aria-hidden="true">{GLYPH.arrow}</span>
-              {faq.helpCta}
-            </a>
-          </div>
+          <FaqChatCard
+            className="mt-8"
+            label={faq.helpEyebrow}
+            body={faq.helpBody}
+            cta={faq.helpCta}
+          />
         </div>
         <div className="flex flex-col">
           {faq.items.map((item, i) => (
@@ -995,6 +994,7 @@ export function LocationTemplate({ content }: { content: LocationContent }) {
       ) : (
         <>
           <OnGround content={content} />
+          <Included content={content} />
           <PrimaryHub content={content} />
           <Engineers content={content} />
         </>

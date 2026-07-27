@@ -59,7 +59,7 @@ const LOGOS = [
   { name: 'Scorpion', src: '/design/home/logos/scorpion.png', displayHeight: 14, displayOpacity: 0.8, invert: true },
 ]
 
-const LOGOS_LABEL_LINES = ['Trusted by', '300+', 'engineering teams']
+const LOGOS_LABEL_LINES = ['Trusted by 300+', 'engineering teams']
 
 // SEO meta per slug - metaTitle <=60, metaDescription 140-160 (schema rules).
 const SEO: Record<string, { metaTitle: string; metaDescription: string }> = {

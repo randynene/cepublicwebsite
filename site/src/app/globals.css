@@ -133,6 +133,34 @@ body {
   }
 }
 
+/* Decrypt reveal — pre-hydration hold (site/src/components/motion/decrypt-text.tsx).
+   The real word ships in the server HTML for SEO, no-JS and assistive tech, but
+   a browser that is going to run the scramble must never paint it first. This
+   holds the word invisible (space still reserved, so no layout shift) from the
+   moment it is parsed until DecryptText writes its first scrambled frame and
+   removes the attribute. It cannot use the `html.motion-ready` gate the block
+   above uses, because that class only lands after hydration — the whole point
+   here is to cover the window BEFORE hydration.
+     - `scripting: enabled`      → no-JS browsers never match, word stays visible.
+     - reduced motion            → never matches, word stays visible.
+     - hydration never happens   → the failsafe animation reveals it after 4s.
+   4s, not 1-2s: the failsafe must outlast a slow real-world hydration, or it
+   would itself cause the flash of finished text this rule exists to prevent. */
+@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+  [data-decrypt-hold] {
+    visibility: hidden;
+    animation: decrypt-hold-failsafe 1ms linear 4s forwards;
+  }
+  @keyframes decrypt-hold-failsafe {
+    from {
+      visibility: hidden;
+    }
+    to {
+      visibility: visible;
+    }
+  }
+}
+
 /* Card hover-lift — independent of the reveal system above (direct user
    interaction, not an on-load animation), but still reduced-motion aware. */
 .hover-lift {
@@ -214,6 +242,13 @@ body {
   flex-shrink: 0;
   border-radius: 50%;
   transition: background-color 0.35s ease, color 0.35s ease;
+}
+/* Inter's optical centre sits slightly below the mathematical centre of these
+   pills. Lift both the label and any leading icon circle together by 1px.
+   Text-link sweeps are excluded because they are aligned to surrounding copy. */
+.sf:not(.sf-link) > .c,
+.sf:not(.sf-link) > .ic {
+  transform: translateY(-1px);
 }
 .sf::before {
   content: "";

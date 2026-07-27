@@ -28,7 +28,7 @@ export interface CatalogueDetailProps {
 // Fixed furniture copy + serif-italic accent phrases (verbatim from the reference).
 const DC = {
   hire: 'Hire',
-  trusted: 'TRUSTED BY 300+ ENGINEERING TEAMS',
+  trusted: ['TRUSTED BY 300+', 'ENGINEERING TEAMS'],
   techEyebrow: 'Technology coverage',
   techLead: 'From your front end to your back end,',
   techAccent: "we've got your stack handled.",
@@ -226,7 +226,9 @@ export function CatalogueDetail({ content, hireHref = '/book-a-call', scheduleHr
       {/* 2. TRUSTED BY marquee */}
       <section className="mt-[64px] overflow-hidden border-y border-[#16203A] py-[36px]">
         <div className="flex items-center gap-8 px-6 lg:px-16">
-          <span className="max-w-[170px] shrink-0 text-[12px] font-bold uppercase leading-[18px] tracking-[0.9px] text-[#7F8CA0]">{DC.trusted}</span>
+          <span className="shrink-0 text-[12px] font-bold uppercase leading-[18px] tracking-[0.9px] text-[#7F8CA0]">
+            {DC.trusted.map((line) => <span key={line} className="block whitespace-nowrap">{line}</span>)}
+          </span>
           <div aria-hidden="true" className="flex flex-1 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]">
             <ul className="flex shrink-0 animate-marquee items-center gap-[56px] pr-[56px] motion-reduce:animate-none">
               {ltrack.map((l, i) => (

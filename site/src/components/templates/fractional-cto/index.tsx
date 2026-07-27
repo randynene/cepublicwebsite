@@ -4,6 +4,8 @@ import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 
 
 import { cn } from '@/components/ui/_utils/cn'
 import { parseVideoUrl } from '@/components/ui/video-embed'
+import { ChatLink } from '@/components/shared/chat-link'
+import { CHAT_HREF } from '@/lib/chat'
 import { FCTO, type FctoContent } from './content'
 import './fractional-cto.css'
 
@@ -637,12 +639,12 @@ export function FractionalCtoTemplate({ content = FCTO }: { content?: FctoConten
             <div className="faq-cta">
               <span className="eyebrow">{content.faq.ctaEyebrow}</span>
               <p>{content.faq.ctaBody}</p>
-              <a href="#" className="btn-primary">
+              <ChatLink href={CHAT_HREF} className="btn-primary">
                 <span className="arw">
                   <Arrow />
                 </span>
                 {content.faq.ctaBtn}
-              </a>
+              </ChatLink>
             </div>
           </div>
           <div className="faq-list">

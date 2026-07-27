@@ -131,9 +131,9 @@ export const CtaButton = forwardRef<
 
   const inner = (
     <>
-      <span>{label}</span>
+      <span className="relative -top-px">{label}</span>
       {variant === 'solid' ? (
-        <span aria-hidden="true" className="text-[16px] font-extrabold">
+        <span aria-hidden="true" className="relative -top-px text-[16px] font-extrabold">
           {ARROW_GLYPH}
         </span>
       ) : null}
