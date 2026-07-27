@@ -6,8 +6,10 @@ import { Marquee } from '@/components/ui/marquee'
 import { cn } from '@/components/ui/_utils/cn'
 import { Reveal } from '@/components/motion/reveal'
 import { CountUp } from '@/components/motion/count-up'
+import { Spotlight } from '@/components/motion/spotlight'
 import { EngineerMatchQuiz } from '@/components/shared/engineer-match-quiz'
 import { ChatPill } from '@/components/shared/chat-link'
+import { STICKY_ASIDE } from '@/components/layout/sticky-aside'
 import type { Locale } from '@/lib/locale-path'
 import { toInternalHref } from '@/lib/url'
 
@@ -451,21 +453,25 @@ function Testimonials({ content }: { content: HiwContent }) {
 function Matcher({ content, locale }: SectionProps) {
   const { matcher } = content
   return (
-    <section className="bg-[#070D18] py-[72px] lg:py-[104px]">
+    // Cursor spotlight on the heading block only - the quiz below is an input
+    // surface and must stay full-bright.
+    <Spotlight className="py-[72px] lg:py-[104px]">
       <div className={BAND}>
-        <Eyebrow>{matcher.eyebrow}</Eyebrow>
-        <h2 className={cn('mt-[16px]', H2_SM)}>
-          {matcher.titleLead}{' '}
-          <span className={cn(ACCENT, 'whitespace-nowrap')}>{matcher.titleAccent}</span>
-        </h2>
-        <p className="mt-[18px] max-w-[560px] text-[16px] font-normal leading-[24px] tracking-[-0.08px] text-text-secondary">
-          {matcher.paragraph}
-        </p>
+        <div data-spot-item className="transition-opacity duration-300 motion-safe:opacity-50">
+          <Eyebrow>{matcher.eyebrow}</Eyebrow>
+          <h2 className={cn('mt-[16px]', H2_SM)}>
+            {matcher.titleLead}{' '}
+            <span className={cn(ACCENT, 'whitespace-nowrap')}>{matcher.titleAccent}</span>
+          </h2>
+          <p className="mt-[18px] max-w-[560px] text-[16px] font-normal leading-[24px] tracking-[-0.08px] text-text-secondary">
+            {matcher.paragraph}
+          </p>
+        </div>
         <div className="mt-[40px]">
           <EngineerMatchQuiz content={matcher} locale={locale} />
         </div>
       </div>
-    </section>
+    </Spotlight>
   )
 }
 
@@ -474,7 +480,7 @@ function Faq({ content, locale }: SectionProps) {
   return (
     <section id="faq" className="scroll-mt-[96px] bg-[#070D18] py-[72px] lg:py-[104px]">
       <div className={cn(BAND, 'grid gap-[40px] lg:grid-cols-[0.9fr_1.6fr]')}>
-        <div>
+        <div className={STICKY_ASIDE}>
           <Eyebrow>{faq.eyebrow}</Eyebrow>
           <h2 className={cn('mt-[16px]', H2)}>
             {faq.titleLead} <span className={ACCENT}>{faq.titleAccent}</span>

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 
+import { Spotlight } from '@/components/motion/spotlight'
 import { CardMarquee } from '@/components/social-proof/card-marquee'
 import { LogoMarquee } from '@/components/social-proof/logo-marquee'
 import { ReviewCard } from '@/components/social-proof/review-card'
@@ -148,27 +149,31 @@ export async function AboutUsTemplate({
         </div>
       </section>
 
-      <section className={cn(BAND, 'grid items-center gap-10 py-[72px] lg:grid-cols-[1.1fr_0.9fr]')}>
-        <div>
-          <p className={EYEBROW}>{C.story.eyebrow}</p>
-          <h2 className="mt-3 text-[32px] font-semibold leading-[1.1] tracking-[-1.2px] text-white lg:text-[42px] lg:leading-[47px]">
-            {C.story.titleLead} <span className={ACCENT}>{C.story.titleAccent}</span>
-          </h2>
-          <p className={cn('mt-5 max-w-[560px] text-[16px] leading-[26px]', BODY)}>{C.story.body}</p>
+      {/* Cursor spotlight on the narrative, not the portrait - dimming a photo
+          reads as a loading state rather than an effect. */}
+      <Spotlight className="py-[72px]">
+        <div className={cn(BAND, 'grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]')}>
+          <div data-spot-item className="transition-opacity duration-300 motion-safe:opacity-55">
+            <p className={EYEBROW}>{C.story.eyebrow}</p>
+            <h2 className="mt-3 text-[32px] font-semibold leading-[1.1] tracking-[-1.2px] text-white lg:text-[42px] lg:leading-[47px]">
+              {C.story.titleLead} <span className={ACCENT}>{C.story.titleAccent}</span>
+            </h2>
+            <p className={cn('mt-5 max-w-[560px] text-[16px] leading-[26px]', BODY)}>{C.story.body}</p>
+          </div>
+          <div className="relative min-h-[280px] overflow-hidden rounded-[20px] border border-[#22314D] bg-[#1B2A45]">
+            {C.founderImage ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={C.founderImage} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+            ) : (
+              <span
+                aria-hidden
+                className="absolute inset-0 opacity-40"
+                style={{ backgroundImage: 'repeating-linear-gradient(135deg, #22314D 0 2px, transparent 2px 10px)' }}
+              />
+            )}
+          </div>
         </div>
-        <div className="relative min-h-[280px] overflow-hidden rounded-[20px] border border-[#22314D] bg-[#1B2A45]">
-          {C.founderImage ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={C.founderImage} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
-          ) : (
-            <span
-              aria-hidden
-              className="absolute inset-0 opacity-40"
-              style={{ backgroundImage: 'repeating-linear-gradient(135deg, #22314D 0 2px, transparent 2px 10px)' }}
-            />
-          )}
-        </div>
-      </section>
+      </Spotlight>
 
       <section id="team" className="bg-gradient-to-b from-[#0A1628] to-[#0b1a30] py-[72px]">
         <div className={BAND}>
