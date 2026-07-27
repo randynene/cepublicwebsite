@@ -117,7 +117,14 @@ export async function OurWorkTemplate({
 }) {
   const C = content
   const [stories, reviewsData, bento] = await Promise.all([fetchCustomerStoriesData(), fetchReviewsData(), fetchOurWorkBento()])
-  const heroCards = [...(stories?.featured ?? []), ...(stories?.grid ?? [])].slice(0, 3)
+  // The hero card design overlays the company logo on the photo, so a story with no
+  // logo renders as a bare name chip. Travel Tech Client is an anonymised customer
+  // with no logo to show (Tech Debt #16), which is why live skips it here and runs
+  // Salmon / Willo / Event Connections. /customer-stories still lists it - only this
+  // logo-on-photo row requires a logo.
+  const heroCards = [...(stories?.featured ?? []), ...(stories?.grid ?? [])]
+    .filter((s) => s.companyLogo?.asset)
+    .slice(0, 3)
   const logos = stories?.marqueeLogos ?? []
   const reviews = reviewsData?.reviews ?? []
   const ratingValue = `${GLASSDOOR_SUMMARY.rating}/5`

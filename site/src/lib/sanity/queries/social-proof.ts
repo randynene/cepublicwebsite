@@ -20,7 +20,7 @@ import { NOT_RETIRED } from '@/lib/sanity/queries/_filters'
 //     .companyLogo                -> review.companyLogo
 //   spec `client` (marquee logos) -> customerStory.companyLogo (the "trusted by"
 //                                    logos ARE our customer-story companies)
-//   customerStory.heroImage       -> companyPeopleImage (else companyProductImage)
+//   customerStory.heroImage       -> companyProductImage (else companyPeopleImage)
 //   customerStory.featured        -> featuredOnCustomerStoriesPage
 //
 // EVERY asset is a field on the SAME document it renders, so imagery can never
@@ -42,7 +42,7 @@ const StoryCardSchema = z.object({
   title: z.string().nullable().optional(),
   companyName: z.string().nullable().optional(),
   companyLogo: ImageSchema,
-  image: ImageSchema, // companyPeopleImage, else companyProductImage
+  image: ImageSchema, // companyProductImage, else companyPeopleImage
 })
 export type StoryCard = z.infer<typeof StoryCardSchema>
 
@@ -82,15 +82,18 @@ export type HubHero = z.infer<typeof HubHeroSchema>
 // other 10 are unwritten drafts that do not appear on the live site.
 const REAL_STORY = /* groq */ `!(customerStoryTitle match "*in progress*")`
 
-// companyPeopleImage first (the design uses the person photo), companyProductImage as
-// the fallback.
+// companyProductImage first, companyPeopleImage as the fallback. Verified against
+// live for all 7 published stories: the card photo on cloudemployee.io is the
+// product image in every case (byte-identical assets, matching dimensions), while
+// companyPeopleImage is a second, usually portrait, shot. The detail template
+// already resolves its hero the same way.
 const STORY_PROJECTION = /* groq */ `{
   _id,
   "slug": slug.current,
   "title": customerStoryTitle,
   companyName,
   companyLogo,
-  "image": coalesce(companyPeopleImage, companyProductImage)
+  "image": coalesce(companyProductImage, companyPeopleImage)
 }`
 
 const REVIEW_PROJECTION = /* groq */ `{
@@ -140,7 +143,7 @@ const OUR_WORK_BENTO_QUERY = /* groq */ `
     "title": customerStoryTitle,
     companyName,
     companyLogo,
-    "image": coalesce(companyPeopleImage, companyProductImage),
+    "image": coalesce(companyProductImage, companyPeopleImage),
     videoUrl
   }`
 
@@ -173,7 +176,7 @@ export type ReviewsData = {
 const REVIEWS_QUERY = /* groq */ `{
   "hero": *[_id == "reviewsHub"][0]{ title, eyebrow, metaTitle, metaDescription },
   "reviews": *[_type == "review" && ${NOT_RETIRED}] | order(order asc) ${REVIEW_PROJECTION},
-  "stories": *[_type == "customerStory" && ${NOT_RETIRED} && ${REAL_STORY} && defined(companyPeopleImage.asset)]
+  "stories": *[_type == "customerStory" && ${NOT_RETIRED} && ${REAL_STORY} && (defined(companyProductImage.asset) || defined(companyPeopleImage.asset))]
     | order(featuredOnCustomerStoriesPage desc, order asc)[0...3] ${STORY_PROJECTION},
   "glassdoor": *[_type == "glassdoorReview"] | order(_createdAt asc){
     _id, title, "role": clientName, "category": workField, "body": reviewDescription
