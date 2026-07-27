@@ -53,12 +53,19 @@ export function LocationStartQuiz({
 
   return (
     <div className="mx-auto flex w-full max-w-[900px] flex-col items-center gap-4">
-      <p className="text-center text-[12px] font-semibold uppercase tracking-[1.68px] text-brand-primary">{eyebrow}</p>
-      <h2 className="text-center text-[34px] font-semibold leading-[1.08] tracking-[-1.4px] text-white lg:text-[52px] lg:leading-[56px]">
-        {title}{' '}
-        {titleAccent ? <span className="font-serif font-normal italic text-brand-primary">{titleAccent}</span> : null}
-      </h2>
-      <p className="text-center text-[17px] text-[#B8C2D1]">{subtitle}</p>
+      {/* data-spot-item: the parent Spotlight dims this heading block at rest.
+          The quiz card below is an input surface and stays full-bright. */}
+      <div
+        data-spot-item
+        className="flex flex-col items-center gap-4 transition-opacity duration-300 motion-safe:opacity-50"
+      >
+        <p className="text-center text-[12px] font-semibold uppercase tracking-[1.68px] text-brand-primary">{eyebrow}</p>
+        <h2 className="text-center text-[34px] font-semibold leading-[1.08] tracking-[-1.4px] text-white lg:text-[52px] lg:leading-[56px]">
+          {title}{' '}
+          {titleAccent ? <span className="font-serif font-normal italic text-brand-primary">{titleAccent}</span> : null}
+        </h2>
+        <p className="text-center text-[17px] text-[#B8C2D1]">{subtitle}</p>
+      </div>
 
       <div className="mt-4 w-full overflow-hidden rounded-[24px] border border-[#22314D] bg-[#101B30] shadow-[0_30px_50px_rgba(0,0,0,0.35)]">
         <div className="h-[5px] bg-brand-primary" />

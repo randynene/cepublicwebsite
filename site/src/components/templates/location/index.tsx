@@ -7,7 +7,8 @@ import { HeroCards } from '@/components/templates/home/hero-cards'
 import { LocationCalculator } from './calculator'
 import { LocationStartQuiz } from './start-quiz'
 import { LocationVideo } from './video'
-import { Spotlight } from './spotlight'
+import { Spotlight } from '@/components/motion/spotlight'
+import { STICKY_ASIDE } from '@/components/layout/sticky-aside'
 
 // Card hover: lift + lime border glow (homepage data-mo-cardhover equivalent).
 const CARD_HOVER =
@@ -83,6 +84,93 @@ const TIMEZONE_ICONS: React.ReactNode[] = [
   TIMEZONE_ICON_MAP.bolt,
   TIMEZONE_ICON_MAP.globe,
 ]
+
+// Shared icon tile — the square used by every card on the page. 40x40, 10px
+// radius, dark navy fill, 20x20 lime line-icon centred inside it. Previously
+// each section invented its own (round lime-tinted circles with a tick glyph),
+// which is why the EOR + "three ways" tiles read as a different design.
+const ICON_TILE =
+  'flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-[#1B2A45]'
+
+// "How we keep your engineer" tiles. Each EOR commitment gets its own icon
+// instead of five identical ticks. Matched on the item title so the mapping
+// survives a copy edit in Studio, with a positional fallback.
+const EOR_ICONS = {
+  shield: (
+    <svg {...iconBase} className="h-5 w-5">
+      <path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6l7-3Z" />
+      <path d="m9 12 2 2 4-4" />
+    </svg>
+  ),
+  cap: (
+    <svg {...iconBase} className="h-5 w-5">
+      <path d="M22 10 12 5 2 10l10 5 10-5Z" />
+      <path d="M6 12v5c0 1 3 3 6 3s6-2 6-3v-5" />
+    </svg>
+  ),
+  heart: (
+    <svg {...iconBase} className="h-5 w-5">
+      <path d="M12 21s-7-4.5-9.5-9A5 5 0 0 1 12 6a5 5 0 0 1 9.5 6c-.6 1-1.5 2-2.5 3" />
+      <path d="M3 12h4l2-3 3 6 2-3h4" />
+    </svg>
+  ),
+  building: (
+    <svg {...iconBase} className="h-5 w-5">
+      <path d="M4 21V6a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v15" />
+      <path d="M14 10h5a1 1 0 0 1 1 1v10M2 21h20" />
+      <path d="M7 9h4M7 13h4M7 17h4M17 14h1M17 18h1" />
+    </svg>
+  ),
+  support: (
+    <svg {...iconBase} className="h-5 w-5">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="3" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  ),
+} as const
+
+type EorIconKey = keyof typeof EOR_ICONS
+
+const EOR_ICON_ORDER: EorIconKey[] = ['shield', 'cap', 'heart', 'building', 'support']
+
+/** Keyword -> icon. First match wins; falls back to slot order. */
+const EOR_ICON_RULES: [RegExp, EorIconKey][] = [
+  [/employer of record|legal|complian|contract|payroll tax/i, 'shield'],
+  [/l&d|learn|train|certif|budget|develop/i, 'cap'],
+  [/health|insur|wellbeing|medical|leave/i, 'heart'],
+  [/office|workspace|desk|region/i, 'building'],
+  [/support|team|hr|manager|people/i, 'support'],
+]
+
+function eorIcon(title: string, index: number): React.ReactNode {
+  const hit = EOR_ICON_RULES.find(([re]) => re.test(title))
+  const key = hit?.[1] ?? EOR_ICON_ORDER[index % EOR_ICON_ORDER.length]
+  return EOR_ICONS[key]
+}
+
+/** Drawn tick, replacing the ✓ text glyph. A glyph inherits the font's own
+ *  optical centring, which is what made the old list markers sit off-baseline;
+ *  a fixed 14x14 SVG in a fixed-size box aligns to the first text line every
+ *  time. `tone` picks the stroke for dark vs lime surfaces. */
+const CHECK_STROKE = { lime: '#D4FF3C', ink: '#060F1E' } as const
+
+function CheckMark({ tone = 'lime' }: { tone?: keyof typeof CHECK_STROKE }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={CHECK_STROKE[tone]}
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className="h-[13px] w-[13px]"
+    >
+      <path d="m5 13 5 5L20 6" />
+    </svg>
+  )
+}
 
 function Eyebrow({ children, className }: { children: string; className?: string }) {
   return <p className={cn(EYEBROW, className)}>{children}</p>
@@ -230,9 +318,7 @@ function LogoStrip({ content }: { content: LocationContent }) {
 function AdvantageTile({ card, icon }: { card: AdvantageCard; icon: React.ReactNode }) {
   return (
     <li className={cn(CARD, CARD_HOVER, 'flex flex-col gap-2 p-6 text-left')}>
-      <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-[10px] bg-[#1B2A45]">
-        {icon}
-      </span>
+      <span className={cn(ICON_TILE, 'mb-3')}>{icon}</span>
       <p className="text-[11px] font-semibold uppercase tracking-[1.2px] text-[#6B7589]">{card.eyebrow}</p>
       <h3 className="text-[24px] font-bold text-white">{card.title}</h3>
       <p className={cn('text-[14px] leading-[21px]', BODY)}>{card.body}</p>
@@ -272,7 +358,10 @@ function VideoFeature({ content }: { content: LocationContent }) {
         <Heading lead={video.titleLead} accent={video.titleAccent} />
       </div>
       <p className={cn('mx-auto mt-4 max-w-[760px] text-[16px]', BODY)}>{video.intro}</p>
-      <div className="mx-auto mt-10 w-full max-w-[920px]">
+      {/* Full content-band width, matching the home page's process video card
+          (which spans its own 1440px band). The old 920px cap made the same
+          asset read as a much smaller player on the location pages. */}
+      <div className="mx-auto mt-10 w-full">
         <LocationVideo
           image={video.image}
           presenter={video.presenter}
@@ -303,11 +392,14 @@ function OnGround({ content }: { content: LocationContent }) {
         <p className={cn('mt-4 text-[16px] leading-[25px]', BODY)}>{onGround.body}</p>
         <ul className="mt-6 flex flex-col gap-3">
           {onGround.bullets.map((b) => (
-            <li key={b} className={cn('flex items-start gap-3 text-[15px]', BODY)}>
-              <span aria-hidden="true" className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-primary/15 text-[11px] text-brand-primary">
-                {GLYPH.check}
+            <li key={b} className={cn('grid grid-cols-[26px_1fr] items-start gap-x-[14px] text-[15px] leading-[24px]', BODY)}>
+              <span
+                aria-hidden="true"
+                className="mt-[3px] grid h-[26px] w-[26px] place-items-center rounded-full bg-brand-primary/15"
+              >
+                <CheckMark />
               </span>
-              {b}
+              <span>{b}</span>
             </li>
           ))}
         </ul>
@@ -317,6 +409,16 @@ function OnGround({ content }: { content: LocationContent }) {
 }
 
 // ── EOR / "How we keep your engineer" (PH-only) ─────────────────────────────
+function EorTile({ item, index }: { item: { title: string; body: string }; index: number }) {
+  return (
+    <li className={cn(CARD, CARD_HOVER, 'flex flex-col gap-2 p-6')}>
+      <span className={cn(ICON_TILE, 'mb-3')}>{eorIcon(item.title, index)}</span>
+      <h3 className="text-[17px] font-semibold leading-[24px] text-white">{item.title}</h3>
+      <p className={cn('text-[14px] leading-[21px]', BODY)}>{item.body}</p>
+    </li>
+  )
+}
+
 function Eor({ content }: { content: LocationContent }) {
   const { eor } = content
   if (!eor) return null
@@ -343,38 +445,20 @@ function Eor({ content }: { content: LocationContent }) {
       {useBalancedFive ? (
         <div className="mt-10 flex flex-col gap-5">
           <ul className="grid grid-cols-1 gap-5 md:grid-cols-3">
-            {items.slice(0, 3).map((item) => (
-              <li key={item.title} className={cn(CARD, CARD_HOVER, 'flex flex-col gap-2 p-6')}>
-                <span className="mb-1 flex h-9 w-9 items-center justify-center rounded-full bg-brand-primary/15 text-[13px] text-brand-primary">
-                  {GLYPH.check}
-                </span>
-                <h3 className="text-[17px] font-semibold text-white">{item.title}</h3>
-                <p className={cn('text-[14px] leading-[21px]', BODY)}>{item.body}</p>
-              </li>
+            {items.slice(0, 3).map((item, i) => (
+              <EorTile key={item.title} item={item} index={i} />
             ))}
           </ul>
           <ul className="mx-auto grid w-full max-w-[calc((100%-2.5rem)*2/3)] grid-cols-1 gap-5 md:grid-cols-2">
-            {items.slice(3).map((item) => (
-              <li key={item.title} className={cn(CARD, CARD_HOVER, 'flex flex-col gap-2 p-6')}>
-                <span className="mb-1 flex h-9 w-9 items-center justify-center rounded-full bg-brand-primary/15 text-[13px] text-brand-primary">
-                  {GLYPH.check}
-                </span>
-                <h3 className="text-[17px] font-semibold text-white">{item.title}</h3>
-                <p className={cn('text-[14px] leading-[21px]', BODY)}>{item.body}</p>
-              </li>
+            {items.slice(3).map((item, i) => (
+              <EorTile key={item.title} item={item} index={i + 3} />
             ))}
           </ul>
         </div>
       ) : (
         <ul className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-3">
-          {items.map((item) => (
-            <li key={item.title} className={cn(CARD, CARD_HOVER, 'flex flex-col gap-2 p-6')}>
-              <span className="mb-1 flex h-9 w-9 items-center justify-center rounded-full bg-brand-primary/15 text-[13px] text-brand-primary">
-                {GLYPH.check}
-              </span>
-              <h3 className="text-[17px] font-semibold text-white">{item.title}</h3>
-              <p className={cn('text-[14px] leading-[21px]', BODY)}>{item.body}</p>
-            </li>
+          {items.map((item, i) => (
+            <EorTile key={item.title} item={item} index={i} />
           ))}
         </ul>
       )}
@@ -392,39 +476,61 @@ function Included({ content }: { content: LocationContent }) {
       <div className="mt-3">
         <Heading lead={included.titleLead} accent={included.titleAccent} size="text-[30px] lg:text-[40px]" />
       </div>
-      <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className={cn(CARD, 'p-8')}>
-          <p className="text-[11px] font-semibold uppercase tracking-[1.4px] text-brand-primary">{included.youLabel}</p>
+      {/* Both columns are the same object: eyebrow, subhead, then a divided list
+          where every row is a [24px marker][text] grid. The marker box is a
+          fixed square with its own centred icon, so markers line up with the
+          first line of text no matter how many lines the row wraps to - the old
+          version nudged a text glyph with mt-1 / mt-0.5 and drifted. */}
+      {/* items-start, not stretch: the two columns hold 3 and 7 rows, so
+          matching their heights just leaves the short card mostly empty. */}
+      <div className="mt-10 grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+        <div className={cn(CARD, 'flex flex-col p-8 lg:p-10')}>
+          <p className="text-[11px] font-semibold uppercase tracking-[1.6px] text-brand-primary">
+            {included.youLabel}
+          </p>
           {included.youSubhead ? (
-            <p className="mt-3 whitespace-pre-line text-[22px] font-semibold leading-[32px] tracking-[-0.6px] text-white">
+            <p className="mt-4 whitespace-pre-line text-[24px] font-semibold leading-[33px] tracking-[-0.7px] text-white">
               {included.youSubhead.replace(/\. /g, '.\n')}
             </p>
           ) : null}
-          <ul className={cn('flex flex-col gap-4', included.youSubhead ? 'mt-7' : 'mt-5')}>
+          <ul className="mt-8 flex flex-col divide-y divide-[#22314D] border-t border-[#22314D]">
             {included.you.map((b) => (
-              <li key={b} className={cn('flex items-start gap-3 text-[16px] font-medium text-white')}>
-                <span aria-hidden="true" className="mt-1 text-brand-primary">{GLYPH.arrow}</span>
-                {b}
+              <li key={b} className="grid grid-cols-[28px_1fr] items-start gap-x-[14px] py-[14px]">
+                <span
+                  aria-hidden="true"
+                  className="mt-[2px] grid h-[28px] w-[28px] place-items-center rounded-[8px] border border-[#22314D] bg-[#16223A] text-[13px] font-bold leading-none text-brand-primary"
+                >
+                  {GLYPH.arrow}
+                </span>
+                <span className="text-[15.5px] font-medium leading-[26px] text-white">{b}</span>
               </li>
             ))}
           </ul>
         </div>
-        <div className="rounded-[20px] bg-brand-primary p-8 text-[#060F1E]">
-          <p className="text-[11px] font-semibold uppercase tracking-[1.4px] text-[#060F1E]/70">{included.weLabel}</p>
+
+        <div className="flex flex-col rounded-[20px] bg-brand-primary p-8 text-[#060F1E] lg:p-10">
+          <p className="text-[11px] font-semibold uppercase tracking-[1.6px] text-[#060F1E]/60">
+            {included.weLabel}
+          </p>
           {included.weSubhead ? (
-            <p className="mt-3 text-[22px] font-semibold leading-[32px] tracking-[-0.6px] text-[#060F1E]">
+            <p className="mt-4 text-[24px] font-semibold leading-[33px] tracking-[-0.7px] text-[#060F1E]">
               {included.weSubhead}
             </p>
           ) : null}
-          <ul className={cn('flex flex-col gap-4', included.weSubhead ? 'mt-7' : 'mt-5')}>
+          <ul className="mt-8 flex flex-col divide-y divide-[rgba(6,15,30,0.14)] border-t border-[rgba(6,15,30,0.14)]">
             {included.we.map((b) => (
-              <li key={b} className="flex items-start gap-3 text-[15px] font-medium">
-                <span aria-hidden="true" className="mt-0.5">{GLYPH.check}</span>
-                {b}
+              <li key={b} className="grid grid-cols-[28px_1fr] items-start gap-x-[14px] py-[14px]">
+                <span
+                  aria-hidden="true"
+                  className="mt-[2px] grid h-[28px] w-[28px] place-items-center rounded-full bg-[#060F1E]"
+                >
+                  <CheckMark tone="lime" />
+                </span>
+                <span className="text-[15.5px] font-medium leading-[26px]">{b}</span>
               </li>
             ))}
           </ul>
-          <p className="mt-6 text-[18px] font-bold">{included.footnote}</p>
+          <p className="mt-auto pt-8 text-[17px] font-bold leading-[26px]">{included.footnote}</p>
         </div>
       </div>
     </section>
@@ -506,28 +612,74 @@ function PrimaryHub({ content }: { content: LocationContent }) {
   )
 }
 
-// ── Sample profiles (full-photo overlay cards) ──────────────────────────────
+// ── Sample profiles ─────────────────────────────────────────────────────────
+// Reference layout (docs sample-profiles PNG): identity sits at the TOP of the
+// card over the photo, the flag is a prominent chip top-right, the portrait
+// fills the frame, and the credentials block (skill chips, years, bio) sits at
+// the bottom on solid card ground rather than floating over the picture. The
+// previous version stacked everything at the bottom over a heavy scrim, which
+// buried the name and washed the face out.
 function ProfileCard({ p }: { p: EngineerProfile }) {
   return (
-    <li className="relative h-[540px] overflow-hidden rounded-[20px] border border-[#22314D] bg-[#16223A]">
-      {/* object-top keeps faces framed; cover prevents stretch/squash on mobile */}
-      <img src={p.image} alt="" className="absolute inset-0 h-full w-full object-cover object-top" loading="lazy" />
-      <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#060F1E]/[0.97] via-[#060F1E]/55 to-[#060F1E]/10" />
-      <span className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-[#0A1628]/80 text-[15px]">
-        {p.flag}
-      </span>
-      <div className="absolute inset-x-0 bottom-0 p-6 text-left">
-        <p className="text-[19px] font-semibold text-white">{p.name}</p>
-        <p className="text-[13px] text-brand-primary">{p.role}</p>
-        <ul className="mt-3 flex flex-wrap gap-2">
-          {p.skills.map((s) => (
-            <li key={s} className="rounded-md bg-brand-primary px-2.5 py-1 text-[12px] font-semibold text-[#060F1E]">
-              {s}
-            </li>
-          ))}
-        </ul>
-        <p className="mt-4 text-[13px] font-semibold text-white">{p.years}</p>
-        <p className={cn('mt-2 text-[13px] leading-[20px]', BODY)}>{p.bio}</p>
+    <li
+      className={cn(
+        'flex flex-col overflow-hidden rounded-[20px] border border-[#22314D] bg-[#0C1729] text-left',
+        CARD_HOVER,
+      )}
+    >
+      <div className="relative h-[330px]">
+        {/* object-top keeps faces framed; cover prevents stretch/squash on mobile */}
+        <img
+          src={p.image}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover object-top"
+          loading="lazy"
+        />
+        {/* Top scrim for the name; bottom scrim melts the photo into the card. */}
+        <span
+          aria-hidden="true"
+          className="absolute inset-x-0 top-0 h-[130px] bg-gradient-to-b from-[#060F1E]/90 via-[#060F1E]/45 to-transparent"
+        />
+        <span
+          aria-hidden="true"
+          className="absolute inset-x-0 bottom-0 h-[150px] bg-gradient-to-t from-[#0C1729] via-[#0C1729]/75 to-transparent"
+        />
+
+        <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-5">
+          <div className="min-w-0">
+            <p className="text-[19px] font-semibold leading-[24px] text-white drop-shadow-[0_1px_5px_rgba(0,0,0,0.85)]">
+              {p.name}
+            </p>
+            <p className="mt-[3px] text-[12.5px] leading-[17px] text-white/85 drop-shadow-[0_1px_5px_rgba(0,0,0,0.9)]">
+              {p.role}
+            </p>
+          </div>
+          {/* Flag chip: passport-shaped, ringed and shadowed so it reads as a
+              deliberate badge instead of a small emoji lost on the photo. */}
+          {p.flag ? (
+            <span className="flex h-[34px] w-[46px] shrink-0 items-center justify-center rounded-[9px] bg-[#0A1628]/85 text-[24px] leading-none shadow-[0_2px_10px_rgba(0,0,0,0.45)] ring-1 ring-white/40 backdrop-blur-sm">
+              {p.flag}
+            </span>
+          ) : null}
+        </div>
+
+        {p.skills.length ? (
+          <ul className="absolute inset-x-0 bottom-0 flex flex-wrap gap-2 px-5 pb-4">
+            {p.skills.map((s) => (
+              <li
+                key={s}
+                className="rounded-pill border border-white/12 bg-[#060F1E]/85 px-[11px] py-[5px] text-[12px] font-semibold text-white backdrop-blur-sm"
+              >
+                {s}
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
+
+      <div className="flex flex-col gap-2 px-5 pb-6 pt-1">
+        <p className="text-[13.5px] font-semibold text-white">{p.years}</p>
+        <p className={cn('text-[13px] leading-[20px]', BODY)}>{p.bio}</p>
       </div>
     </li>
   )
@@ -610,18 +762,29 @@ function StartTile({ card, featured }: { card: StartCard; featured?: boolean }) 
     <li className={cn(CARD, CARD_HOVER, 'flex flex-col gap-3 p-6', featured && 'h-full')}>
       {card.eyebrow ? <p className="text-[10px] font-semibold uppercase tracking-[1.4px] text-brand-primary">{card.eyebrow}</p> : null}
       {featured ? (
-        <span className="mb-1 flex h-11 w-11 items-center justify-center rounded-[12px] bg-brand-primary text-[#060F1E]">
-          <span aria-hidden="true">{GLYPH.check}</span>
+        <span className={cn(ICON_TILE, 'mb-1 bg-brand-primary')}>
+          {/* Lime tile, so the line-icon inverts to dark ink rather than lime. */}
+          <svg {...iconBase} stroke="#060F1E" className="h-5 w-5">
+            <path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" />
+          </svg>
         </span>
       ) : null}
       <h3 className="text-[20px] font-semibold text-white">{card.title}</h3>
       <p className={cn('text-[14px] leading-[21px]', BODY)}>{card.body}</p>
       {card.bullets ? (
-        <ul className="flex flex-col gap-2">
+        <ul className="flex flex-col gap-3">
           {card.bullets.map((b) => (
-            <li key={b} className={cn('flex items-start gap-2 text-[13px]', BODY)}>
-              <span aria-hidden="true" className="mt-0.5 text-brand-primary">{GLYPH.check}</span>
-              {b}
+            <li
+              key={b}
+              className={cn('grid grid-cols-[22px_1fr] items-start gap-x-[10px] text-[13.5px] leading-[20px]', BODY)}
+            >
+              <span
+                aria-hidden="true"
+                className="mt-[3px] grid h-[22px] w-[22px] place-items-center rounded-full bg-brand-primary/12"
+              >
+                <CheckMark />
+              </span>
+              <span>{b}</span>
             </li>
           ))}
         </ul>
@@ -708,7 +871,7 @@ function Faq({ content }: { content: LocationContent }) {
   return (
     <section className={cn(BAND, 'pb-[112px] pt-[72px]')}>
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-[380px_1fr]">
-        <div>
+        <div className={STICKY_ASIDE}>
           <Eyebrow>{faq.eyebrow}</Eyebrow>
           <h2 className="mt-3 text-[34px] font-bold leading-[1.08] tracking-[-1px] text-white lg:text-[46px]">{faq.title}</h2>
           <div className={cn(CARD, 'mt-8 p-6')}>
@@ -742,7 +905,9 @@ function Faq({ content }: { content: LocationContent }) {
 export function LocationTemplate({ content }: { content: LocationContent }) {
   const isPh = Boolean(content.eor)
   return (
-    <main id="main" className="overflow-x-hidden">
+    // overflow-x-CLIP, not hidden: `hidden` makes this element a scroll
+    // container, which silently kills the sticky FAQ intro column inside it.
+    <main id="main" className="overflow-x-clip">
       <Hero content={content} />
       <LogoStrip content={content} />
       <Advantage content={content} />
