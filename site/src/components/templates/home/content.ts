@@ -190,8 +190,8 @@ export interface WhereWeWorkContent {
   hubs: WhereWeWorkHub[]
 }
 
-// Fallback when Sanity whereWeWork is empty. Cape Town has no dedicated
-// location page yet → Hire Engineers until an Africa hub exists.
+// Fallback when Sanity whereWeWork is empty. Five hubs, one per city we can
+// point at a real location page.
 export const WHERE_WE_WORK: WhereWeWorkContent = {
   eyebrow: 'Where we work',
   titleLead: 'Built on the ground in',
@@ -223,11 +223,6 @@ export const WHERE_WE_WORK: WhereWeWorkContent = {
       name: 'Zagreb',
       href: '/services/eastern-europe-developers',
       image: 'https://picsum.photos/seed/zagreb5/800/1100',
-    },
-    {
-      name: 'Cape Town',
-      href: '/services/software-engineers',
-      image: 'https://picsum.photos/seed/capetown8/800/1100',
     },
   ],
 }
@@ -297,7 +292,7 @@ export const HOME_CONTENT = {
     ] as HomeLogo[],
   },
   clientStory: {
-    eyebrow: 'Client story',
+    eyebrow: "Jobs boards don't work anymore",
     quoteLines: [
       "Cloud Employee didn't send us 100s of CVs.",
       'Their engineers did the screening and handed us',

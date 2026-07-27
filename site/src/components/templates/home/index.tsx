@@ -8,6 +8,8 @@ import { cn } from '@/components/ui/_utils/cn'
 import { Reveal } from '@/components/motion/reveal'
 import { CountUp } from '@/components/motion/count-up'
 import { DecryptText } from '@/components/motion/decrypt-text'
+import { Spotlight } from '@/components/motion/spotlight'
+import { STICKY_ASIDE } from '@/components/layout/sticky-aside'
 
 import {
   HERO_PROFILE_CARD_PEOPLE,
@@ -19,6 +21,7 @@ import {
   type HomeReason,
 } from './content'
 import { ProfileCard } from './profile-card'
+import { HomeCalculatorCard } from './calculator-card'
 import { ClientStorySection } from './client-story'
 import { ProcessVideo } from './process-video'
 import { WhereWeWork } from './where-we-work'
@@ -53,7 +56,6 @@ const GLYPH = {
   quote: '\u201C',
   play: '\u25B6',
   plus: '+',
-  chevron: '\u2304',
   bolt: '\u26A1',
   clock: '\u25F7',
 } as const
@@ -654,9 +656,10 @@ function Included({ content }: SectionProps) {
   )
 }
 
-// #4 — Calculator: rounded-[32px] card; field labels float ABOVE compact
-// select box (label-above-field pattern). #5 — Save badge tilted 6deg,
-// right-[24px] top-[-24px], shadow-sm, fully visible (no overflow-hidden).
+// #4 — Calculator: rounded-[32px] card; field labels float ABOVE the select
+// box. The card itself is a client component (HomeCalculatorCard) because the
+// three dropdowns are real, working <select>s wired to the shared next-hire
+// rate engine. #5 — Save badge tilted 6deg lives inside that component.
 function Calculator({ content }: SectionProps) {
   const { calculator } = content
   return (
@@ -667,65 +670,7 @@ function Calculator({ content }: SectionProps) {
           {calculator.titleLead} <span className={ACCENT}>{calculator.titleAccent}</span>
         </h2>
 
-        {/* #4a — rounded-[32px], no overflow-hidden so badge is fully visible */}
-        <Reveal className="relative mt-[40px] grid rounded-[32px] border border-[#22314D] bg-[#101B30] lg:grid-cols-[1.4fr_1fr]">
-          {/* Left: compact labeled fields */}
-          <div className="flex flex-col gap-[18px] p-[28px] lg:p-[40px]">
-            {calculator.fields.map((field) => (
-              <div key={field.label} className="flex flex-col gap-[8px]">
-                {/* #4b — label floats ABOVE the select box */}
-                <span className={cn('text-[11px] font-semibold uppercase tracking-[1.2px]', MUTED)}>
-                  {field.label}
-                </span>
-                <div className="flex items-center justify-between rounded-[12px] border border-[#22314D] bg-[#16233B] px-[16px] py-[12px]">
-                  <span className="text-[17px] font-semibold text-white">{field.value}</span>
-                  <span aria-hidden className="text-[16px] leading-none text-brand-primary">
-                    {GLYPH.chevron}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Right: lime result panel — rounded on right to match card */}
-          <div className="relative flex flex-col justify-center rounded-[0_32px_32px_0] bg-brand-primary p-[28px] text-[#060F1E] lg:p-[40px]">
-            <div className="text-[11px] font-bold uppercase tracking-[1.2px]">
-              {calculator.resultLabel}
-            </div>
-            <div className="mt-[8px] flex items-end gap-[8px]">
-              <span className="text-[44px] font-extrabold leading-none tracking-[-2px] lg:text-[56px]">
-                <CountUp value={calculator.price} />
-              </span>
-              <span className="mb-[6px] text-[18px] font-medium">{calculator.priceSuffix}</span>
-            </div>
-            <div className="my-[18px] h-px w-full bg-[#060F1E]/20" />
-            <div className="flex flex-col gap-[4px]">
-              <span className="text-[13px] font-medium opacity-70">{calculator.comparison}</span>
-              <span className="text-[15px] font-bold">{calculator.saving}</span>
-            </div>
-            <a
-              href="#process"
-              className="mt-[24px] inline-flex w-full items-center justify-center rounded-full bg-[#060F1E] px-[18px] py-[14px] text-[15px] font-bold text-white"
-            >
-              {calculator.cta}
-            </a>
-          </div>
-
-          {/* #5 — badge: right-[24px] top-[-24px] z-10 rotate-[6deg] with shadow.
-           * Pops in (scale 0.7→1) holding the 6deg tilt via variant="pop". */}
-          <Reveal
-            as="span"
-            variant="pop"
-            rotate={6}
-            delay={200}
-            className="absolute right-[24px] top-[-24px] z-[10] flex h-[92px] w-[92px] rotate-[6deg] flex-col items-center justify-center rounded-full bg-white p-[8px] text-center text-[#060F1E] shadow-[0_10px_30px_rgba(0,0,0,.35)]"
-          >
-            <span className="text-[11px] font-extrabold uppercase leading-[13px]">
-              {calculator.badgeSave}
-            </span>
-            <span className="mt-[3px] text-[9px] font-semibold">{calculator.badgeSub}</span>
-          </Reveal>
-        </Reveal>
+        <HomeCalculatorCard calculator={calculator} />
 
         <p className={cn('mt-[16px] text-[13px] leading-[20.15px] tracking-[-0.08px]', MUTED)}>
           {calculator.footnote}
@@ -808,18 +753,23 @@ function RealEngineers({ content }: SectionProps) {
 function ReadyToFind({ content }: SectionProps) {
   const { readyToFind } = content
   return (
-    <section className="bg-[#070D18] py-[72px] lg:py-[104px]">
+    // Cursor spotlight, same treatment as the location pages' "Three ways to
+    // start". Only the heading block carries data-spot-item, so the quiz card
+    // below stays full-bright and fully usable.
+    <Spotlight className="py-[72px] lg:py-[104px]">
       <div className={BAND}>
-        <Eyebrow>{readyToFind.eyebrow}</Eyebrow>
-        {/* H — force accent phrase onto its own unbroken line */}
-        <h2 className={cn('mt-[16px]', H2)}>
-          {readyToFind.titleLead}
-          <br />
-          <span className={cn(ACCENT, 'whitespace-nowrap')}>{readyToFind.titleAccent}</span>
-        </h2>
-        <p className="mt-[18px] max-w-[560px] text-[16px] font-normal leading-[24px] tracking-[-0.08px] text-text-secondary">
-          {readyToFind.paragraph}
-        </p>
+        <div data-spot-item className="transition-opacity duration-300 motion-safe:opacity-50">
+          <Eyebrow>{readyToFind.eyebrow}</Eyebrow>
+          {/* H — force accent phrase onto its own unbroken line */}
+          <h2 className={cn('mt-[16px]', H2)}>
+            {readyToFind.titleLead}
+            <br />
+            <span className={cn(ACCENT, 'whitespace-nowrap')}>{readyToFind.titleAccent}</span>
+          </h2>
+          <p className="mt-[18px] max-w-[560px] text-[16px] font-normal leading-[24px] tracking-[-0.08px] text-text-secondary">
+            {readyToFind.paragraph}
+          </p>
+        </div>
 
         <Reveal
           className={cn(
@@ -949,7 +899,7 @@ function ReadyToFind({ content }: SectionProps) {
           ))}
         </div>
       </div>
-    </section>
+    </Spotlight>
   )
 }
 
@@ -962,7 +912,7 @@ function Faq({ content }: SectionProps) {
   return (
     <section id="faq" className="scroll-mt-[96px] bg-[#070D18] py-[72px] lg:py-[104px]">
       <div className={cn(BAND, 'grid gap-[40px] lg:grid-cols-[0.9fr_1.6fr]')}>
-        <div>
+        <div className={STICKY_ASIDE}>
           <Eyebrow>{faq.eyebrow}</Eyebrow>
           <h2 className={cn('mt-[16px]', H2)}>
             {faq.titleLead} <span className={ACCENT}>{faq.titleAccent}</span>

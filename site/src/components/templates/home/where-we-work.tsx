@@ -4,7 +4,7 @@ import { WHERE_WE_WORK, type WhereWeWorkContent } from './content'
 import './where-we-work.css'
 
 // "Where we work" — expanding-hub section (sits just above the FAQ; replaces
-// the old Locations marquee). Six tall image panels on a #070D18 ground: at
+// the old Locations marquee). Five tall image panels on a #070D18 ground: at
 // rest each wears a dark-navy veil showing only the city name + a "+" button;
 // on hover (>=900px) the panel widens accordion-style, the veil fades to reveal
 // the photo, and the button flips to a lime "→". Below 900px the row becomes a
