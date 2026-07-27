@@ -64,6 +64,15 @@ function abbrOf(name: string): string {
   return name.replace(/[^a-z0-9]/gi, '').slice(0, 2).toUpperCase()
 }
 
+// The badge renders at 44px, but a handful of the migrated PNGs are 300kB+ at
+// source, so raster gets asked for a 2x thumbnail. SVG is passed through
+// untouched: the Sanity CDN does not transform SVG, and it needs no resizing.
+function logoUrl(logo?: { url: string; extension?: string | null } | null): string | undefined {
+  if (!logo?.url) return undefined
+  if (logo.extension?.toLowerCase() === 'svg') return logo.url
+  return `${logo.url}?w=88&h=88&fit=max&auto=format`
+}
+
 function toServiceCard(s: ServiceHubCard): ServiceCard {
   return { name: s.name, sub: clean(s.tagline) ?? clean(s.shortLabel) ?? '', slug: s.slug }
 }
@@ -123,6 +132,7 @@ export function mapServicesHubData(data: ServicesHubData): ServicesHubContent {
     sub: clean(t.tagline) ?? clean(t.shortLabel) ?? '',
     abbr: abbrOf(t.name),
     slug: t.slug,
+    logo: logoUrl(t.logo),
   }))
 
   const faqs = faqsToHubFaqs(hub?.faqs)
@@ -163,6 +173,7 @@ export function mapTechnologyHubData(data: TechnologyHubData): TechnologyHubCont
     subtitle: clean(t.tagline) ?? clean(t.shortLabel) ?? '',
     abbr: abbrOf(t.name),
     slug: t.slug,
+    logo: logoUrl(t.logo),
   }))
 
   const faqs = faqsToHubFaqs(hub?.faqs)

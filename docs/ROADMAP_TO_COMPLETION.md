@@ -494,6 +494,67 @@ Spotlight variant first, since the component hardcodes `#070D18`.
 client story, For Engineers, Fractional CTO, and the shared component). Folding
 them into one is a tidy-up, not urgent.
 
+### 6d. Technology brand logos - DONE (27 Jul 2026)
+
+The `/technology` index rendered a two-letter abbreviation ("RE", "KU", "PO") in
+the 44px badge on all 101 cards, and the tech-coverage chips on `/services` did
+the same. Both now render the real brand logo.
+
+**The logos were already in Sanity.** `technology.techLogo` is populated on 99 of
+the 101 docs - genuine full-colour marks migrated from Webflow, the same assets
+the live site uses. The hub GROQ simply never projected the field, so the
+templates fell back to initials. The fix was three lines of query plus wiring,
+not new artwork.
+
+> **Process note, worth remembering.** The first attempt at this built a whole
+> brand-icon pipeline from Simple Icons + Devicon + 21 hand-drawn glyphs before
+> checking whether the data already existed. It did. Jake caught it by pointing
+> at the live site. **Check the Sanity schema and a real document before
+> concluding content is missing** - `imageField('techLogo', ...)` was sitting in
+> `studio/schemas/documents/technology.ts` the whole time. Same class of error as
+> Tech Debt #45.
+
+**What ships:**
+- `catalogue-hub.ts` projects `techLogo.asset->{ url, extension }` on both the
+  technology hub and the services tech chips.
+- `hub-content.ts` builds the URL. SVG (69 docs) passes through untouched since
+  the Sanity CDN does not transform SVG; raster (23 PNG + 7 WebP) gets
+  `?w=88&h=88&fit=max&auto=format`, because a couple of the source PNGs are
+  300kB+.
+- `site/src/components/ui/tech-badge/index.tsx` renders the badge for both hubs.
+
+**The tile is white.** These marks are full-colour artwork drawn for a light
+background - the live site puts them on white cards. AWS's mark is `#252f3e`,
+which is invisible against our `#101B30` card, so the logo brings its own ground
+with it. All 93 hub logos were rendered on the white tile and eyeballed; none
+disappear. Contact sheet at `docs/design/tech-logos-sanity.png`.
+
+**Only two technologies have no logo, and neither can.** MVVM and IAM are
+architecture concepts, not products, so no mark exists in Sanity, Simple Icons or
+Devicon. They get a hand-drawn glyph each (layered bars, shield-and-keyhole) from
+a 1.2kB two-symbol sprite.
+
+**Order of precedence in the badge:** Sanity `techLogo` -> sprite glyph ->
+two-letter abbreviation. It can never render blank.
+
+**Adding a technology later.** The fix is to upload `techLogo` in Studio. No code
+change, no build step. `npm run verify:tech-icons` reports any technology that
+would fall back to plain letters, and flags a glyph made redundant by a newly
+uploaded logo. Currently 99 real logos / 2 deliberate glyphs / 0 letters.
+
+The sprite and `tech-icon-map.ts` are hand-maintained, two entries each. An
+earlier version of this generated them from `simple-icons` + `devicon`; those
+packages were removed once the Sanity logos landed, because 159MB of
+devDependencies installed on every Vercel build to produce zero shipped symbols
+is not a trade worth making. If a logo-less technology ever appears and a real
+mark exists for it, pull the path from those sets ad hoc rather than
+re-committing the dependency.
+
+Nothing was written to the production dataset.
+
+**Not done:** the technology *detail* pages (`/technology/[slug]`) do not show
+the logo yet. Easy follow-on if wanted.
+
 ### PHASE 7 - SEO + parity full verification (the launch gate)
 Goal: prove the crossover is safe before anyone flips the domain.
 

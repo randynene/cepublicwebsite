@@ -5,6 +5,7 @@ import { STICKY_ASIDE } from '@/components/layout/sticky-aside'
 import { type ServiceCard, type TechChip } from '@/data/services'
 import type { ServicesHubContent } from '@/lib/catalogue/hub-content'
 import { CatalogueFaq } from '@/components/templates/catalogue/faq'
+import { TechBadge } from '@/components/ui/tech-badge'
 import { ACCENT, BAND, BODY, CAT_LABELS, Chevron, Eyebrow, GLYPH, HubQuotes, HubStories, LimeCheck, SectionHeading } from '@/components/templates/catalogue/shared'
 
 // TEMPLATE-SERVICES-HUB - /services index. Approved D3 design, fed by Sanity
@@ -48,9 +49,7 @@ function TechChipCard({ chip, prefix }: { chip: TechChip; prefix: string }) {
       href={`${prefix}/technology/${chip.slug}`}
       className="group flex items-center gap-4 rounded-[16px] border border-[#22314D] bg-[#101B30] p-5 transition-colors duration-200 hover:bg-[#1B2A45] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-[#070D18]"
     >
-      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] bg-[#16223A] text-[13px] font-bold text-[#7F8CA0]">
-        {chip.abbr}
-      </span>
+      <TechBadge slug={chip.slug} logo={chip.logo} abbr={chip.abbr} />
       <span className="min-w-0 flex-1">
         <span className="block text-[16.5px] font-semibold text-white">{chip.name}</span>
         <span className="block truncate text-[13.5px] text-[#7F8CA0]">{chip.sub}</span>

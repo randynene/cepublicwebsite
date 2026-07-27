@@ -55,11 +55,24 @@ const ServiceHubCardSchema = z.object({
   tagline: z.string().nullable().optional(),
 })
 
+// techLogo is the real brand mark, migrated from Webflow - 99 of the 101
+// technology docs carry one. `extension` drives whether it can go through the
+// Sanity image pipeline: SVG is served as-is (the CDN does not transform it),
+// raster gets resized down, since a couple of the PNGs are 300kB+ at source.
+const TechLogoSchema = z
+  .object({
+    url: z.string(),
+    extension: z.string().nullable().optional(),
+  })
+  .nullable()
+  .optional()
+
 const TechChipCardSchema = z.object({
   name: z.string(),
   slug: z.string(),
   shortLabel: z.string().nullable().optional(),
   tagline: z.string().nullable().optional(),
+  logo: TechLogoSchema,
 })
 
 export const ServicesHubDataSchema = z.object({
@@ -101,7 +114,8 @@ export const SERVICES_HUB_DATA_QUERY = /* groq */ `
     "slug": slug.current,
     shortLabel,
     tagline,
-    order
+    order,
+    "logo": techLogo.asset->{ url, extension }
   } | order(order asc, technologyName asc)[0...10]
 }
 `
@@ -120,6 +134,7 @@ const TechnologyHubCardSchema = z.object({
   slug: z.string(),
   shortLabel: z.string().nullable().optional(),
   tagline: z.string().nullable().optional(),
+  logo: TechLogoSchema,
 })
 
 export const TechnologyHubDataSchema = z.object({
@@ -148,7 +163,8 @@ export const TECHNOLOGY_HUB_DATA_QUERY = /* groq */ `
     "name": technologyName,
     "slug": slug.current,
     shortLabel,
-    tagline
+    tagline,
+    "logo": techLogo.asset->{ url, extension }
   } | order(technologyName asc)
 }
 `

@@ -13,6 +13,8 @@ export interface TechChip {
   sub: string
   abbr: string
   slug: string
+  /** Real brand mark from Sanity `technology.techLogo`. Absent only where no logo exists. */
+  logo?: string
 }
 
 export interface HubStory {

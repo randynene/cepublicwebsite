@@ -3,6 +3,7 @@ import { STICKY_ASIDE } from '@/components/layout/sticky-aside'
 import { type Technology } from '@/data/technologies'
 import type { TechnologyHubContent } from '@/lib/catalogue/hub-content'
 import { CatalogueFaq } from '@/components/templates/catalogue/faq'
+import { TechBadge } from '@/components/ui/tech-badge'
 import { ACCENT, BAND, BODY, CAT_LABELS, Chevron, Eyebrow, HubQuotes, HubStories } from '@/components/templates/catalogue/shared'
 
 // TEMPLATE-TECHNOLOGY-HUB - /technology index. Approved D3 design, fed by Sanity
@@ -21,9 +22,7 @@ function TechCard({ t, prefix }: { t: Technology; prefix: string }) {
         <span className="block text-[16.5px] font-semibold text-white">{t.title}</span>
         <span className="mt-1 block truncate text-[13.5px] font-normal text-[#7F8CA0]">{t.subtitle}</span>
       </span>
-      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] bg-[#16223A] text-[13px] font-bold text-[#7F8CA0]">
-        {t.abbr}
-      </span>
+      <TechBadge slug={t.slug} logo={t.logo} abbr={t.abbr} />
       <Chevron className="h-4 w-4 shrink-0 text-[#7F8CA0] transition-colors group-hover:text-brand-primary" />
     </a>
   )

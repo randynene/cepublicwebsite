@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Fallback glyphs for technologies with no logo in Sanity.
+
+  The real brand logos live in Sanity on `technology.techLogo` (99 of 101 docs)
+  and TechBadge renders those. Only MVVM and IAM have no logo, because both are
+  architecture concepts rather than products, so no mark exists to use. These two
+  are drawn for that gap.
+
+  Hand-maintained. Keep it that way: if a new technology needs a mark, the fix is
+  to upload it in Studio, not to draw one here. `npm run verify:tech-icons`
+  reports anything that would fall back to plain letters.
+
+  Symbol ids must match the keys in
+  src/components/ui/_tech-icons/tech-icon-map.ts.
+
+  Paint is `currentColor` so the badge controls the tint.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <!-- Identity and access management: shield with a keyhole. Who may do what. -->
+  <symbol id="glyph-iam" viewBox="0 0 24 24" fill="currentColor">
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M12 1.6 3.6 5.1v6.6c0 5 3.6 9.2 8.4 10.7 4.8-1.5 8.4-5.7 8.4-10.7V5.1zm0 7.2a2.4 2.4 0 0 0-1.1 4.53V16h2.2v-2.67A2.4 2.4 0 0 0 12 8.8z"/>
+  </symbol>
+
+  <!-- Model-View-ViewModel: three bound layers, each offset from the last. -->
+  <symbol id="glyph-mvvm" viewBox="0 0 24 24" fill="currentColor">
+    <rect x="2.4" y="4" width="13" height="3.6" rx="1.3"/>
+    <rect x="5.5" y="10.2" width="13" height="3.6" rx="1.3" opacity="0.78"/>
+    <rect x="8.6" y="16.4" width="13" height="3.6" rx="1.3" opacity="0.56"/>
+  </symbol>
+</svg>

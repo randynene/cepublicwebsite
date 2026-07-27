@@ -10,6 +10,8 @@ export interface Technology {
   subtitle: string
   abbr: string
   slug: string
+  /** Real brand mark from Sanity `technology.techLogo`. Absent only where no logo exists. */
+  logo?: string
 }
 
 function slugify(s: string): string {
