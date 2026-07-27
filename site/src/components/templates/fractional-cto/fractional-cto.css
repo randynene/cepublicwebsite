@@ -39,7 +39,9 @@ html {
   color: var(--white);
   -webkit-font-smoothing: antialiased;
   line-height: 1.5;
-  overflow-x: hidden;
+  /* clip, not hidden: `hidden` makes this a scroll container, which silently
+     kills the sticky FAQ intro column inside it. */
+  overflow-x: clip;
 }
 .fcto,
 .fcto * {
@@ -421,6 +423,200 @@ html {
   }
   50% {
     transform: translateY(-11px) rotate(var(--rot, 0deg));
+  }
+}
+
+/* HERO "YOUR MATCH" PANEL
+ * Replaces the tilted three-card cluster. Entrance is pure CSS: the panel
+ * rises once, each row rises behind it on a --d delay, and the badge keeps a
+ * slow glow. Everything here is disabled in the reduced-motion block at the
+ * foot of this file. The .cc* cluster rules above are kept for reference and
+ * are no longer rendered by the template. */
+.fcto .mp {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  margin-left: auto;
+  background: linear-gradient(158deg, #12203a, #0c1526);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 26px 60px rgba(6, 15, 30, 0.55);
+  overflow: hidden;
+  animation: fcto-mp-rise 0.7s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+.fcto .mp-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.fcto .mp-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.fcto .mp-badge {
+  flex: none;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--lime);
+  background: rgba(212, 255, 60, 0.12);
+  border: 1px solid rgba(212, 255, 60, 0.28);
+  border-radius: 999px;
+  padding: 6px 12px;
+  white-space: nowrap;
+  animation: fcto-mp-glow 3.6s ease-in-out infinite;
+}
+.fcto .mp-rows {
+  list-style: none;
+}
+.fcto .mp-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+  transition: background 0.25s ease;
+  animation: fcto-mp-row 0.6s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+  animation-delay: var(--d, 0ms);
+}
+.fcto .mp-row:hover {
+  background: rgba(212, 255, 60, 0.04);
+}
+.fcto .mp-ico {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--card-2);
+  border: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+  transition: transform 0.25s ease, border-color 0.25s ease;
+}
+.fcto .mp-row:hover .mp-ico {
+  transform: translateY(-2px);
+  border-color: rgba(212, 255, 60, 0.4);
+}
+.fcto .mp-ico svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: var(--lime);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.fcto .mp-txt {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.fcto .mp-title {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #fff;
+}
+.fcto .mp-meta {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--dim);
+}
+.fcto .mp-price {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+.fcto .mp-amt {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--lime);
+}
+.fcto .mp-per {
+  font-size: 11px;
+  color: var(--dim);
+}
+.fcto .mp-foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px 20px;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.02);
+}
+.fcto .mp-check {
+  flex: none;
+  display: grid;
+  place-items: center;
+}
+.fcto .mp-check svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: var(--lime);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+@media (max-width: 1080px) {
+  .fcto .mp {
+    margin-left: 0;
+    margin-right: auto;
+  }
+}
+@media (max-width: 420px) {
+  .fcto .mp-row {
+    gap: 10px;
+    padding: 14px;
+  }
+  .fcto .mp-meta {
+    font-size: 11px;
+  }
+  .fcto .mp-amt {
+    font-size: 18px;
+  }
+}
+@keyframes fcto-mp-rise {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes fcto-mp-row {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes fcto-mp-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(212, 255, 60, 0);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(212, 255, 60, 0.07);
   }
 }
 
@@ -1203,6 +1399,13 @@ html {
   gap: 72px;
   align-items: start;
 }
+/* The intro column pins beside the questions while they scroll. 104px clears
+   the floating pill header plus the announcement bar. */
+.fcto .faq-left {
+  position: sticky;
+  top: 104px;
+  align-self: start;
+}
 .fcto .faq-left h2 {
   font-size: clamp(34px, 4.6vw, 54px);
   font-weight: 700;
@@ -1328,6 +1531,10 @@ html {
   .fcto .faq-grid {
     grid-template-columns: 1fr;
     gap: 36px;
+  }
+  /* One column below 860px, so the intro is already above the questions. */
+  .fcto .faq-left {
+    position: static;
   }
   .fcto .faq-a .inner {
     padding-left: 0;

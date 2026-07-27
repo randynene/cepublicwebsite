@@ -32,6 +32,22 @@ export interface FctoStatusPill {
   icon: string
   label: string
 }
+/** One priced row inside the hero "Your match" panel. */
+export interface FctoMatchRow {
+  /** Icon key - see MATCH_ROW_ICONS in index.tsx. */
+  icon: 'trend' | 'spark' | 'idea'
+  title: string
+  meta: string
+  price: string
+  per: string
+}
+/** Hero right-hand visual: a single "Your match" shortlist panel. */
+export interface FctoHeroMatch {
+  label: string
+  badge: string
+  rows: FctoMatchRow[]
+  footnote: string
+}
 export interface FctoContent {
   hero: {
     eyebrow: string
@@ -41,7 +57,12 @@ export interface FctoContent {
     ctaPrimary: string
     ctaGhost: string
     trust: string[]
+    /** Hero visual (current design). */
+    match: FctoHeroMatch
+    /** @deprecated Superseded by `match`. Retained so the Sanity projection and
+     *  the fractionalCtoPage schema keep parsing unchanged; nothing renders it. */
     cards: FctoHeroCard[]
+    /** @deprecated Superseded by `match`. See `cards`. */
     statusPills: FctoStatusPill[]
   }
   trusted: { label: string; logos: string[]; aiPill: string }
@@ -110,6 +131,34 @@ export const FCTO: FctoContent = {
     ctaPrimary: 'Find your CTO',
     ctaGhost: 'How matching works',
     trust: ['Vetted network', 'Speak before you commit', 'Rolling monthly, no lock-ins'],
+    match: {
+      label: 'Your match',
+      badge: 'Shortlist in 7 days',
+      rows: [
+        {
+          icon: 'trend',
+          title: 'Scaling CTO',
+          meta: 'Series A · scaled eng team 5+ · 2 days/week',
+          price: '$2,000',
+          per: '/ day',
+        },
+        {
+          icon: 'spark',
+          title: 'AI transformation CTO',
+          meta: 'GenAI rollout · B2B SaaS · 3 days/week',
+          price: '$2,800',
+          per: '/ day',
+        },
+        {
+          icon: 'idea',
+          title: 'Seed CTO',
+          meta: 'Product roadmap · 1 day/week',
+          price: '$1,800',
+          per: '/ day',
+        },
+      ],
+      footnote: 'Sourced and vetted against your brief. No bench, no bodies on a list.',
+    },
     cards: [
       {
         left: '52px',

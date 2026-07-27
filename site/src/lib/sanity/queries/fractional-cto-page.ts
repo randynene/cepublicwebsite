@@ -229,6 +229,9 @@ export function toFctoContent(data: FractionalCtoPageData): FctoContent {
   const hero: FctoContent['hero'] = c.hero
     ? {
         ...c.hero,
+        // The hero visual is the code-owned "Your match" panel; Sanity does not
+        // carry it yet, so it always comes from the static content.
+        match: FCTO.hero.match,
         cards: (c.hero.cards ?? []).map((card, i) => ({
           ...card,
           left: FCTO.hero.cards[i]?.left ?? card.left,

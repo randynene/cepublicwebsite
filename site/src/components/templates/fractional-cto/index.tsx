@@ -55,17 +55,24 @@ function PlayTri() {
   )
 }
 
-const STATUS_ICONS: Record<string, ReactNode> = {
-  clock: (
+// Hero "Your match" panel row icons, keyed by FctoMatchRow.icon.
+const MATCH_ROW_ICONS: Record<string, ReactNode> = {
+  trend: (
     <svg viewBox="0 0 24 24">
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 7v5l3 2" />
+      <path d="M4 17l5-5 3 3 7-7" />
+      <path d="M15 8h5v5" />
     </svg>
   ),
-  shieldCheck: (
+  spark: (
     <svg viewBox="0 0 24 24">
-      <path d="M12 3l7 3v5c0 4.4-3 7.6-7 9-4-1.4-7-4.6-7-9V6z" />
-      <path d="M9 12l2 2 4-4" />
+      <path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z" />
+      <path d="M18 15.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z" />
+    </svg>
+  ),
+  idea: (
+    <svg viewBox="0 0 24 24">
+      <path d="M9.5 17h5M10 20h4" />
+      <path d="M12 3a6 6 0 0 0-3.5 10.9c.4.3.5.7.5 1.1h6c0-.4.1-.8.5-1.1A6 6 0 0 0 12 3z" />
     </svg>
   ),
 }
@@ -143,68 +150,39 @@ const MF_OPTION_ICONS: ReactNode[] = [
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-// ── Hero candidate cluster: staggered entrance then slow float ──
-function HeroCluster({ hero }: { hero: FctoContent['hero'] }) {
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const root = ref.current
-    if (!root) return
-    const cards = Array.from(root.querySelectorAll<HTMLElement>('.cc'))
-    const pills = Array.from(root.querySelectorAll<HTMLElement>('.cc-status'))
-
-    if (prefersReducedMotion()) {
-      cards.forEach((c) => c.classList.add('in'))
-      pills.forEach((p) => p.classList.add('in'))
-      return
-    }
-
-    const timers: ReturnType<typeof setTimeout>[] = []
-    cards.forEach((c, i) => {
-      timers.push(
-        setTimeout(() => {
-          c.classList.add('in')
-          timers.push(setTimeout(() => c.classList.add('f'), 740))
-        }, 120 + i * 180),
-      )
-    })
-    pills.forEach((p, i) => {
-      timers.push(setTimeout(() => p.classList.add('in'), 700 + i * 260))
-    })
-    return () => timers.forEach(clearTimeout)
-  }, [])
-
+// ── Hero "Your match" panel ──
+// Replaces the earlier tilted three-card cluster. Entrance is pure CSS
+// (fcto-mp-rise + a per-row --d delay) so there is no JS timer and no
+// server/client mismatch; the reduced-motion block at the foot of
+// fractional-cto.css disables all of it.
+function HeroMatchPanel({ match }: { match: FctoContent['hero']['match'] }) {
   return (
-    <div className="cluster" id="cluster" ref={ref}>
-      {hero.cards.map((c) => (
-        <div
-          key={c.name}
-          className="cc"
-          style={{ left: c.left, top: c.top, ['--rot']: c.rot } as CSSProperties}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <div className="ava">{c.image ? <img src={c.image} alt={c.name} /> : null}</div>
-          <div className="body">
-            <div className="rolerow">
-              <span className="role">{c.role}</span>
-              <span className="days">{c.days}</span>
-            </div>
-            <div className="name">{c.name}</div>
-            <div className="cred">{c.cred}</div>
-            <div className="tags">
-              {c.tags.map((t) => (
-                <span key={t}>{t}</span>
-              ))}
-            </div>
-          </div>
-        </div>
-      ))}
-      {hero.statusPills.map((p) => (
-        <div key={p.label} className="cc-status" style={{ left: p.left, top: p.top }}>
-          <span className="r">{STATUS_ICONS[p.icon]}</span>
-          {p.label}
-        </div>
-      ))}
+    <div className="mp">
+      <div className="mp-head">
+        <span className="mp-label">{match.label}</span>
+        <span className="mp-badge">{match.badge}</span>
+      </div>
+      <ul className="mp-rows">
+        {match.rows.map((r, i) => (
+          <li key={r.title} className="mp-row" style={{ ['--d']: `${180 + i * 110}ms` } as CSSProperties}>
+            <span className="mp-ico">{MATCH_ROW_ICONS[r.icon]}</span>
+            <span className="mp-txt">
+              <span className="mp-title">{r.title}</span>
+              <span className="mp-meta">{r.meta}</span>
+            </span>
+            <span className="mp-price">
+              <span className="mp-amt">{r.price}</span>
+              <span className="mp-per">{r.per}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+      <div className="mp-foot">
+        <span className="mp-check">
+          <Check />
+        </span>
+        {match.footnote}
+      </div>
     </div>
   )
 }
@@ -518,7 +496,7 @@ export function FractionalCtoTemplate({ content = FCTO }: { content?: FctoConten
               ))}
             </div>
           </div>
-          <HeroCluster hero={content.hero} />
+          <HeroMatchPanel match={content.hero.match} />
         </div>
       </section>
 
