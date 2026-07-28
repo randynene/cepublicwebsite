@@ -60,9 +60,17 @@ export function TypewriterText({ segments, className }: TypewriterTextProps) {
     () => segments.map((s) => (s.break ? ' ' : '') + s.text).join(''),
     [segments],
   )
+  // Only the characters that get their own span, in render order. Whitespace
+  // between words is rendered as ordinary text (so the line can break there)
+  // and is never hidden, which is invisible anyway.
   const flatChars = useMemo(() => {
     const out: string[] = []
-    for (const seg of segments) for (const ch of seg.text) out.push(ch)
+    for (const seg of segments) {
+      for (const part of seg.text.split(/(\s+)/)) {
+        if (!part || /^\s+$/.test(part)) continue
+        for (const ch of part) out.push(ch)
+      }
+    }
     return out
   }, [segments])
 
@@ -147,31 +155,47 @@ export function TypewriterText({ segments, className }: TypewriterTextProps) {
   return (
     <span ref={ref} className={cn(className)} aria-label={fullText} data-typewriter-hold>
       {segments.map((seg, si) => {
-        const chars = Array.from(seg.text).map((ch, ci) => {
-          globalIndex += 1
-          const i = globalIndex
+        // Characters have to be inline-block so each one can be hidden and
+        // shown independently. That also makes every character a line-break
+        // opportunity, which split a wrapping headline mid-word ("Matche /
+        // d in days" on Fractional CTO). Grouping each word in a nowrap
+        // inline-block box restores normal wrapping: breaks can only happen at
+        // the spaces between words, which are rendered as ordinary text.
+        const parts = seg.text.split(/(\s+)/).filter(Boolean)
+        const run: ReactNode = parts.map((part, pi) => {
+          if (/^\s+$/.test(part)) return <Fragment key={pi}>{part}</Fragment>
           return (
-            <span
-              key={ci}
-              ref={(el) => {
-                charRefs.current[i] = el
-              }}
-              aria-hidden
-              // inline-block so visibility can be set per character and the
-              // caret box-shadow has an edge to sit against; pre keeps spaces.
-              style={{ display: 'inline-block', whiteSpace: 'pre' }}
-            >
-              {ch}
+            <span key={pi} style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>
+              {Array.from(part).map((ch, ci) => {
+                globalIndex += 1
+                const i = globalIndex
+                return (
+                  <span
+                    key={ci}
+                    ref={(el) => {
+                      charRefs.current[i] = el
+                    }}
+                    aria-hidden
+                    style={{ display: 'inline-block' }}
+                  >
+                    {ch}
+                  </span>
+                )
+              })}
             </span>
           )
         })
-        let run: ReactNode = chars
-        if (seg.em) run = <em>{chars}</em>
-        else if (seg.className) run = <span className={seg.className}>{chars}</span>
+        const wrapped = seg.em ? (
+          <em>{run}</em>
+        ) : seg.className ? (
+          <span className={seg.className}>{run}</span>
+        ) : (
+          run
+        )
         return (
           <Fragment key={si}>
             {seg.break ? <br /> : null}
-            {run}
+            {wrapped}
           </Fragment>
         )
       })}

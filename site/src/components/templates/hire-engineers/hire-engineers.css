@@ -55,10 +55,19 @@ html {
 .he section {
   position: relative;
 }
+/* Content band. Widened from 1200 on the 28 Jul review — at 1920 the old band
+   left 360px of dead margin each side and the hero read as a narrow column in
+   the middle of the screen ("too internal"). 1440/64 is the same band the home
+   page uses, so the marketing pages now line up with each other. */
 .he .wrap {
-  max-width: 1200px;
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 0 40px;
+  padding: 0 64px;
+}
+@media (max-width: 900px) {
+  .he .wrap {
+    padding: 0 24px;
+  }
 }
 .he .eyebrow {
   font-size: 12px;
@@ -187,7 +196,9 @@ html {
 
 /* hero */
 .he .hero {
-  padding: 92px 0 72px;
+  /* Vars come from .hero-screen in globals.css, which steps them down on short
+     windows so the hero + trust bar still fit one screen when zoomed in. */
+  padding: var(--hero-pad-top, 92px) 0 var(--hero-pad-bottom, 72px);
 }
 .he .hero-grid {
   display: grid;
@@ -196,7 +207,7 @@ html {
   align-items: center;
 }
 .he .hero h1 {
-  font-size: clamp(40px, 5.2vw, 60px);
+  font-size: var(--hero-h1-size, clamp(40px, 5.2vw, 60px));
   font-weight: 700;
   letter-spacing: -0.035em;
   line-height: 1.02;
@@ -351,32 +362,16 @@ html {
   }
 }
 
-/* trusted-by strip (28 Jul review) — mirrors the Fractional CTO band so the
-   two service pages read as one family. */
+/* Hero trust bar (28 Jul review). The bar itself is the shared HeroTrustBar
+   component and carries all its own styling; this only positions the band.
+   `scroll-margin-top` on the offer section keeps the "See more" jump clear of
+   the fixed header. */
 .he .he-trusted {
-  padding: 8px 0 72px;
+  padding: 8px 0 56px;
   background: var(--bg);
 }
-.he .he-trusted-inner {
-  display: flex;
-  align-items: center;
-  gap: 28px;
-}
-.he .he-trusted-label {
-  flex: none;
-  max-width: 148px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.09em;
-  line-height: 1.5;
-  color: var(--dim);
-  text-transform: uppercase;
-}
-.he .he-trusted-div {
-  flex: none;
-  width: 1px;
-  height: 34px;
-  background: var(--line);
+.he .offer {
+  scroll-margin-top: 96px;
 }
 
 /* offering */

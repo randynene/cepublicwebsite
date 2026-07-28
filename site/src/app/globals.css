@@ -192,22 +192,177 @@ body {
   }
 }
 
-/* Home hero — "whatever the zoom level, the first screen is the headline and
-   the photo" (Seb, 28 Jul review).
+/* Hero trust bar (site/src/components/social-proof/hero-trust-bar.tsx).
+
+   Deliberately written as two-class selectors rather than Tailwind utilities.
+   The Hire Engineers and Fractional CTO stylesheets open with
+   `.he, .he * { margin: 0; padding: 0 }`, which has the same specificity as a
+   single-class utility and loads later — so inside those pages every Tailwind
+   margin and padding class is silently zeroed. That is what made the first
+   version of this bar render with 1px logo gaps and a padding-less button.
+   `.hero-trust-bar .htb-x` is (0,2,0) and wins everywhere. */
+.hero-trust-bar {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+}
+.hero-trust-bar .htb-row {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 28px;
+}
+.hero-trust-bar .htb-label {
+  flex: none;
+  width: 152px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+  color: #7f8ca0;
+}
+.hero-trust-bar .htb-label span {
+  display: block;
+  white-space: nowrap;
+}
+.hero-trust-bar .htb-divider {
+  flex: none;
+  width: 1px;
+  height: 34px;
+  background: #22314d;
+}
+.hero-trust-bar .htb-ai {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  border: 1px solid #22314d;
+  border-radius: 999px;
+  background: #101b30;
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  transition:
+    border-color 200ms ease,
+    background-color 200ms ease;
+}
+.hero-trust-bar .htb-ai:hover {
+  border-color: rgba(212, 255, 60, 0.5);
+  background: #16233b;
+}
+.hero-trust-bar .htb-ai-arrow {
+  color: #d4ff3c;
+}
+.hero-trust-bar .htb-more-row {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  padding-top: 32px;
+}
+.hero-trust-bar .htb-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #22314d;
+  border-radius: 999px;
+  padding: 9px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #b8c2d1;
+  transition:
+    border-color 200ms ease,
+    color 200ms ease;
+}
+.hero-trust-bar .htb-more:hover {
+  border-color: rgba(212, 255, 60, 0.5);
+  color: #fff;
+}
+.hero-trust-bar .htb-more-chevron {
+  font-size: 15px;
+  line-height: 1;
+  color: #d4ff3c;
+}
+
+/* "When you land on the page, all you see is the hero" (Seb, 28 Jul review).
+
+   `.hero-screen` wraps a page's hero AND its trust bar, and claims exactly one
+   screen so the section below starts off-frame — the "See more" button in the
+   trust bar is the scroll affordance instead.
 
    Zooming in does not change the layout, it shrinks the viewport measured in
-   CSS pixels. So the fit is driven off viewport HEIGHT: the section claims
-   exactly one screen, and the two things that overflow first (the 58px headline
-   and the fixed 457px profile card) step down once the screen gets short.
-   Nothing below 900px of height is touched at a normal 100% desktop zoom, so
-   the signed-off design is unchanged for anyone not zoomed in. */
+   CSS pixels, so the fit is driven off viewport HEIGHT. Below 900px tall the
+   headline and hero visual step down; above it nothing is touched, so the
+   signed-off design is unchanged for anyone at a normal desktop zoom.
+
+   min-height, never height: if a hero genuinely cannot fit (a very short window,
+   a very long headline) it grows and the page scrolls, rather than clipping. */
+@media (min-width: 1024px) {
+  .hero-screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: calc(100svh - var(--header-height) - var(--announcement-bar-height));
+
+    /* Consumed by the page stylesheets rather than imposed on them. The service
+       pages style their hero as `.he .hero h1`, which outranks anything
+       `.hero-screen`-prefixed we could write here, so pushing VALUES down as
+       custom properties sidesteps the specificity fight entirely. Each page's
+       own rule keeps a fallback, so a page that has not opted in is unchanged. */
+    --hero-h1-size: clamp(40px, 5.2vw, 60px);
+    --hero-pad-top: 92px;
+    --hero-pad-bottom: 72px;
+  }
+
+  /* Progressive compression as the window gets short — which is what zooming in
+     produces. Each step trims the three things that actually consume the
+     vertical budget: the headline, the hero padding, and the gap above the
+     "See more" button. */
+  @media (max-height: 900px) {
+    .hero-screen {
+      --hero-h1-size: 50px;
+      --hero-pad-top: 56px;
+      --hero-pad-bottom: 40px;
+    }
+    .hero-screen h1 {
+      font-size: var(--hero-h1-size);
+      line-height: 1.05;
+    }
+    .hero-screen .hero-trust-bar .htb-more-row {
+      padding-top: 20px;
+    }
+  }
+  @media (max-height: 780px) {
+    .hero-screen {
+      --hero-h1-size: 42px;
+      --hero-pad-top: 36px;
+      --hero-pad-bottom: 28px;
+    }
+    .hero-screen .hero-trust-bar .htb-more-row {
+      padding-top: 14px;
+    }
+  }
+  @media (max-height: 660px) {
+    .hero-screen {
+      --hero-h1-size: 36px;
+      --hero-pad-top: 20px;
+      --hero-pad-bottom: 16px;
+    }
+    .hero-screen .hero-trust-bar .htb-more-row {
+      padding-top: 10px;
+    }
+  }
+}
+
+/* Home hero — the same idea, plus the profile card (fixed 457px tall) has to
+   scale with it or it is the thing that overflows first. */
 @media (min-width: 1024px) {
   .home-hero {
     display: flex;
     align-items: center;
-    min-height: calc(
-      100svh - var(--header-height) - var(--announcement-bar-height)
-    );
   }
   .home-hero > * {
     width: 100%;

@@ -1,4 +1,7 @@
 import { cn } from '@/components/ui/_utils/cn'
+import { HeroTrustBar } from '@/components/social-proof/hero-trust-bar'
+import { CLIENT_LOGOS, type ClientLogo } from '@/components/social-proof/client-logo-strip'
+import type { Locale } from '@/lib/locale-path'
 import { TypewriterText } from '@/components/motion/typewriter-text'
 import { MegaMenuPillLabel } from '@/components/ui/mega-menu-pill-label'
 
@@ -25,7 +28,9 @@ const CARD_HOVER =
 // italic accents. Nav, announcement bar, mini-CTA and footer are sitewide chrome
 // (not rebuilt here). Every string arrives on the `content` prop.
 
-const BAND = 'mx-auto w-full max-w-[1280px] px-6 xl:px-0'
+// Widened from 1280 on the 28 Jul review so the location pages share the same
+// content band as home and the two service pages.
+const BAND = 'mx-auto w-full max-w-[1440px] px-6 lg:px-[64px]'
 const EYEBROW = 'text-[12px] font-semibold uppercase tracking-[1.8px] text-brand-primary'
 const ACCENT = 'font-serif font-normal italic text-brand-primary'
 const BODY = 'text-[#B8C2D1]'
@@ -48,20 +53,7 @@ export const LOGOS_FALLBACK: LocationLogo[] = [
 ]
 
 // The logo-strip label is locked to two lines for the standard trusted-by copy.
-const LOGOS_LABEL_LINES_FALLBACK = ['Trusted by 300+', 'engineering teams']
-const STANDARD_LOGOS_LABEL = 'trusted by 300+ engineering teams'
 
-function logoLabelLines(content: LocationContent): string[] {
-  const configured = content.logosLabelLines?.length
-    ? content.logosLabelLines
-    : content.logosLabel
-      ? [content.logosLabel]
-      : LOGOS_LABEL_LINES_FALLBACK
-
-  return configured.join(' ').trim().toLowerCase() === STANDARD_LOGOS_LABEL
-    ? LOGOS_LABEL_LINES_FALLBACK
-    : configured
-}
 
 // Time-zone stat-card icons: 20x20 lime line-icons (stroke #D4FF3C, no fill) on
 // a dark navy #1B2A45 tile (set on the AdvantageTile wrapper).
@@ -306,34 +298,36 @@ function Hero({ content }: { content: LocationContent }) {
   )
 }
 
-// ── Logo bar ────────────────────────────────────────────────────────────────
-function LogoStrip({ content }: { content: LocationContent }) {
-  const logos = content.logos?.length ? content.logos : LOGOS_FALLBACK
-  const labelLines = logoLabelLines(content)
+// ── Hero trust bar ────────────────────────────────────────────
+// The location pages used to render their own static logo row. They now use the
+// shared bar, so all three regions close their hero exactly like Hire Engineers.
+/**
+ * Sanity's location logos carry optional dimensions and a boolean `invert`,
+ * where the shared strip wants required dimensions and a `tone`. Cast-free
+ * adapter: real dimensions come from the canonical list when the asset is one
+ * of the seven we ship, so a Sanity entry that omits them cannot cause a
+ * layout shift.
+ */
+function toClientLogos(logos: LocationLogo[]): ClientLogo[] {
+  return logos.map((l) => {
+    const known = CLIENT_LOGOS.find((c) => c.src === l.src)
+    return {
+      name: l.name,
+      src: l.src,
+      width: l.width ?? known?.width ?? 260,
+      height: l.height ?? known?.height ?? 80,
+      tone: l.invert === false ? ('asis' as const) : known?.tone,
+      displayH: l.displayH ?? known?.displayH,
+      displayOpacity: l.displayOpacity ?? known?.displayOpacity,
+    }
+  })
+}
+
+function LogoStrip({ content, locale }: { content: LocationContent; locale: Locale }) {
+  const logos = content.logos?.length ? toClientLogos(content.logos) : CLIENT_LOGOS
   return (
-    <section className={cn(BAND, 'mt-[24px] flex flex-col items-center gap-5 py-[24px] lg:flex-row lg:justify-center lg:gap-8')}>
-      <p className="text-center text-[11px] font-semibold uppercase leading-[1.5] tracking-[1.4px] text-[#7F8CA0] lg:text-left">
-        {labelLines.map((line) => (
-          <span key={line} className="block whitespace-nowrap">
-            {line}
-          </span>
-        ))}
-      </p>
-      <span aria-hidden="true" className="hidden h-6 w-px bg-[#22314D] lg:block" />
-      <ul className="flex flex-nowrap items-center justify-around gap-x-3 overflow-hidden lg:flex-1">
-        {logos.map((l, i) => (
-          <li key={l.name} className="flex shrink-0 items-center gap-x-3">
-            {i > 0 ? <span aria-hidden="true" className="h-6 w-px bg-[#22314D]" /> : null}
-            <img
-              src={l.src}
-              alt={l.name}
-              style={{ height: l.displayH ?? 22, opacity: l.displayOpacity ?? 1 }}
-              className={cn('w-auto', (l.invert ?? true) && '[filter:brightness(0)_invert(1)]')}
-              loading="lazy"
-            />
-          </li>
-        ))}
-      </ul>
+    <section className={cn(BAND, 'pb-[48px] pt-[24px]')}>
+      <HeroTrustBar locale={locale} logos={logos} seeMoreHref="#advantage" />
     </section>
   )
 }
@@ -362,7 +356,7 @@ function AdvantageTile({ card, icon }: { card: AdvantageCard; icon: React.ReactN
 function Advantage({ content }: { content: LocationContent }) {
   const { advantage } = content
   return (
-    <section className={cn(BAND, 'py-[80px]')}>
+    <section id="advantage" className={cn(BAND, 'scroll-mt-[96px] py-[80px]')}>
       <Eyebrow>{advantage.eyebrow}</Eyebrow>
       <div className="mt-3 max-w-[720px]">
         <Heading lead={advantage.titleLead} accent={advantage.titleAccent} />
@@ -974,14 +968,23 @@ function Faq({ content }: { content: LocationContent }) {
   )
 }
 
-export function LocationTemplate({ content }: { content: LocationContent }) {
+export function LocationTemplate({
+  content,
+  locale = 'en-US',
+}: {
+  content: LocationContent
+  locale?: Locale
+}) {
   const isPh = Boolean(content.eor)
   return (
     // overflow-x-CLIP, not hidden: `hidden` makes this element a scroll
     // container, which silently kills the sticky FAQ intro column inside it.
     <main id="main" className="overflow-x-clip">
-      <Hero content={content} />
-      <LogoStrip content={content} />
+      {/* Hero + trust bar claim the first screen together. */}
+      <div className="hero-screen">
+        <Hero content={content} />
+        <LogoStrip content={content} locale={locale} />
+      </div>
       <Advantage content={content} />
       <VideoFeature content={content} />
       {isPh ? (

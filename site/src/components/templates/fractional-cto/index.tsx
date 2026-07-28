@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 
 import { cn } from '@/components/ui/_utils/cn'
 import { TypewriterText } from '@/components/motion/typewriter-text'
 import { ChatLink } from '@/components/shared/chat-link'
-import { ClientLogoStrip } from '@/components/social-proof/client-logo-strip'
+import { HeroTrustBar } from '@/components/social-proof/hero-trust-bar'
 import { CHAT_HREF } from '@/lib/chat'
 import { buildLocalePath, type Locale } from '@/lib/locale-path'
 import { FCTO, type FctoContent } from './content'
@@ -368,7 +368,8 @@ export function FractionalCtoTemplate({
 
   return (
     <main id="main" className="fcto" ref={rootRef}>
-      {/* 1. HERO */}
+      {/* 1. HERO + trust bar together claim the first screen. */}
+      <div className="hero-screen">
       <section className="hero">
         <div className="wrap hero-grid">
           <div>
@@ -404,17 +405,14 @@ export function FractionalCtoTemplate({
         </div>
       </section>
 
-      {/* 2. TRUSTED BY — real client logos, not the company names as text. */}
+      {/* 2. TRUSTED BY — the shared hero trust bar, identical to Hire Engineers.
+          Replaces this page's own label + text-name marquee + AI pill. */}
       <section className="trusted">
-        <div className="wrap trusted-inner">
-          <span className="trusted-label">{content.trusted.label}</span>
-          <span className="trusted-div" />
-          <ClientLogoStrip />
-          <ChatLink href={CHAT_HREF} locale={locale} className="pill-soft ai-pill">
-            <ChatIcon /> {content.trusted.aiPill}
-          </ChatLink>
+        <div className="wrap">
+          <HeroTrustBar locale={locale} seeMoreHref="#how" />
         </div>
       </section>
+      </div>
 
       {/* 3. VIDEO — removed on the 28 Jul review: the tile was a placeholder
           with no filmed video behind it, and Seb asked for it gone until he

@@ -22,30 +22,14 @@ import { useRef, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 
 import { cn } from '@/components/ui/_utils/cn'
-import { HOME_CONTENT, type HomeContent, type HomeLogo } from './content'
+import { ClientLogoImage } from '@/components/social-proof/client-logo-strip'
+import { HOME_CONTENT, type HomeContent } from './content'
 
 const BAND = 'mx-auto w-full max-w-[1440px] px-[22px] sm:px-[32px] lg:px-[64px]'
 const EYEBROW_CLS =
   'text-[12px] font-semibold uppercase leading-[18.6px] tracking-[1.68px] text-brand-primary'
 const MUTED = 'text-[#7F8CA0]'
 
-// Inline logo renderer (mirrors LogoImage in index.tsx; duplicated to keep
-// this 'use client' leaf independent of the parent server component).
-function InlineLogoImage({ logo, className }: { logo: HomeLogo; className?: string }) {
-  const filterCls =
-    logo.invert === false
-      ? '[filter:grayscale(1)_brightness(1.8)] opacity-95'
-      : '[filter:brightness(0)_invert(1)] opacity-100'
-  return (
-    <Image
-      src={logo.src}
-      alt={logo.name}
-      width={logo.width}
-      height={logo.height}
-      className={cn('h-auto w-auto object-contain', filterCls, className)}
-    />
-  )
-}
 
 // Radius of the glow circle (px) and how far the overlay extends past the
 // section's bounding box. Must be large enough for the circle to fade out
@@ -130,7 +114,8 @@ export function ClientStorySection({ content = HOME_CONTENT }: { content?: HomeC
   return (
     <section
       ref={sectionRef}
-      className="relative bg-[#070D18]"
+      id="client-story"
+      className="relative scroll-mt-[96px] bg-[#070D18]"
       style={{ paddingTop: '96px', paddingBottom: '112px', overflow: 'visible' }}
     >
       {/* Glow overlay — extends OVERLAY_INSET past the TOP and BOTTOM of the
@@ -195,7 +180,7 @@ export function ClientStorySection({ content = HOME_CONTENT }: { content?: HomeC
             <div className={cn('text-[15px]', MUTED)}>{clientStory.role}</div>
           </div>
           <span aria-hidden className="mx-[6px] h-[44px] w-px shrink-0 bg-[#22314D]" />
-          <InlineLogoImage logo={clientStory.logo} className="max-h-[22px]" />
+          <ClientLogoImage logo={clientStory.logo} className="max-h-[22px]" />
         </div>
       </div>
     </section>

@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Spotlight } from '@/components/motion/spotlight'
 import { TypewriterText } from '@/components/motion/typewriter-text'
 import { ChatLink } from '@/components/shared/chat-link'
-import { ClientLogoStrip } from '@/components/social-proof/client-logo-strip'
+import { HeroTrustBar } from '@/components/social-proof/hero-trust-bar'
 import { cn } from '@/components/ui/_utils/cn'
 import { parseVideoUrl } from '@/components/ui/video-embed'
 import { CHAT_HREF } from '@/lib/chat'
@@ -17,12 +17,6 @@ import './hire-engineers.css'
 // cover-crop, inherit the tile's rounding. Empty slots keep the CSS placeholder.
 const OFFER_IMG_PLACEHOLDER = 'imgslot offer-img rvl'
 const OFFER_IMG_WITH_PHOTO = 'imgslot offer-img has-img rvl'
-
-// Not on the hireEngineersPage Sanity singleton (its transform maps a fixed set
-// of fields, so a new one would read undefined against live data). Kept as a
-// constant rather than a JSX literal for the UI_STRINGS rule; promote it to
-// Sanity with the next schema pass on this page.
-const TRUSTED_LABEL = 'Trusted by 300+ engineering teams'
 
 const COVER: React.CSSProperties = {
   position: 'absolute',
@@ -637,7 +631,8 @@ export function HireEngineersTemplate({
 
   return (
     <main id="main" className="he" ref={rootRef}>
-      {/* HERO */}
+      {/* HERO + trust bar together claim the first screen (.hero-screen). */}
+      <div className="hero-screen">
       <section className="hero">
         <div className="wrap hero-grid">
           <div>
@@ -697,18 +692,17 @@ export function HireEngineersTemplate({
       </section>
 
       {/* TRUSTED BY — added on the 28 Jul review ("add this bit here to the
-          engineers page. The trusted by."). Same shared strip as Home and
-          Fractional CTO. */}
+          engineers page. The trusted by."). This page is the reference for the
+          pattern; every other marketing hero now closes with the same bar. */}
       <section className="he-trusted">
-        <div className="wrap he-trusted-inner">
-          <span className="he-trusted-label">{TRUSTED_LABEL}</span>
-          <span className="he-trusted-div" />
-          <ClientLogoStrip />
+        <div className="wrap">
+          <HeroTrustBar locale={locale} seeMoreHref="#offer" />
         </div>
       </section>
+      </div>
 
-      {/* OFFERING */}
-      <section className="offer">
+      {/* OFFERING — also the "See more" target from the hero trust bar. */}
+      <section className="offer" id="offer">
         <div className="wrap">
           <span className="eyebrow">{content.offer.eyebrow}</span>
           <h2 className="st">

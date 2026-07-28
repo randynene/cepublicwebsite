@@ -36,12 +36,11 @@ export interface HomeImage {
 
 export interface HomeLogo extends HomeImage {
   name: string
-  /** Default true. Set false for logos whose asset has a non-transparent
-   *  background — uses grayscale+brighten instead of full brightness(0) invert. */
-  invert?: boolean
-  /** Max-height in px for display in TrustedBy. Defaults to 22 if unset. */
+  /** See ClientLogo.tone — 'asis' for assets that are already light-on-dark. */
+  tone?: 'lineart' | 'asis'
+  /** Rendered max-height in px. Defaults to 26 if unset. */
   displayH?: number
-  /** Opacity override for display. Defaults to 1 if unset (e.g. 0.8 for Scorpion). */
+  /** Opacity override for display. Defaults to 1 if unset (e.g. 0.85 for Scorpion). */
   displayOpacity?: number
 }
 

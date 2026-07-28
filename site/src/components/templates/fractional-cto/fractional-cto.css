@@ -58,10 +58,16 @@ html {
 .fcto a:hover {
   color: #fff;
 }
+/* Same widening as .he .wrap — see the note there. */
 .fcto .wrap {
-  max-width: 1200px;
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 0 40px;
+  padding: 0 64px;
+}
+@media (max-width: 900px) {
+  .fcto .wrap {
+    padding: 0 24px;
+  }
 }
 .fcto section {
   position: relative;
@@ -202,7 +208,8 @@ html {
 
 /* HERO */
 .fcto .hero {
-  padding: 80px 0 64px;
+  /* See the note on .he .hero — values come from .hero-screen. */
+  padding: var(--hero-pad-top, 80px) 0 var(--hero-pad-bottom, 64px);
   background: var(--bg);
 }
 .fcto .hero-grid {
@@ -239,7 +246,7 @@ html {
   box-shadow: 0 0 8px var(--lime);
 }
 .fcto .hero h1 {
-  font-size: clamp(40px, 5.2vw, 60px);
+  font-size: var(--hero-h1-size, clamp(40px, 5.2vw, 60px));
   font-weight: 700;
   letter-spacing: -0.035em;
   line-height: 1.03;
@@ -626,8 +633,11 @@ html {
 
 /* TRUSTED BY */
 .fcto .trusted {
-  padding: 8px 0 96px;
+  padding: 8px 0 56px;
   background: var(--bg);
+}
+.fcto .does {
+  scroll-margin-top: 96px;
 }
 .fcto .trusted-inner {
   display: flex;

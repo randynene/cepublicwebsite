@@ -8,6 +8,7 @@ import { Reveal } from '@/components/motion/reveal'
 import { CountUp } from '@/components/motion/count-up'
 import { Spotlight } from '@/components/motion/spotlight'
 import { TypewriterText } from '@/components/motion/typewriter-text'
+import { HeroTrustBar } from '@/components/social-proof/hero-trust-bar'
 import { EngineerMatchQuiz } from '@/components/shared/engineer-match-quiz'
 import { FaqChatCard } from '@/components/shared/faq-chat-card'
 import { STICKY_ASIDE } from '@/components/layout/sticky-aside'
@@ -105,7 +106,8 @@ function Hero({ content, locale }: SectionProps) {
   )
 
   return (
-    <section className="bg-[#070D18] pb-[72px] pt-[88px] lg:pb-[88px] lg:pt-[120px]">
+    // hero-screen: the hero and its trust bar claim the first screen together.
+    <section className="hero-screen bg-[#070D18] pb-[72px] pt-[88px] lg:pb-[88px] lg:pt-[120px]">
       {/* Wider band than the text column so the two cards sit further out,
        * roughly under the nav logo (left) and Schedule-a-Call CTA (right). */}
       <div className="mx-auto w-full max-w-[1512px] px-[22px] sm:px-[32px] lg:px-[48px]">
@@ -124,6 +126,10 @@ function Hero({ content, locale }: SectionProps) {
           <HeroCard person={ana} vetted={hero.vetted} />
           <HeroCard person={reinaldo} vetted={hero.vetted} />
         </div>
+      </div>
+      {/* Same hero trust bar as every other marketing page. */}
+      <div className={cn(BAND, 'pt-[56px]')}>
+        <HeroTrustBar locale={locale} seeMoreHref="#stages" />
       </div>
     </section>
   )

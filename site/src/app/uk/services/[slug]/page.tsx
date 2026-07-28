@@ -67,7 +67,7 @@ export default async function ServiceUkPage({ params }: { params: Promise<RouteP
           description={description}
           faqItems={content.faq.items}
         />
-        <LocationTemplate content={content} />
+        <LocationTemplate content={content} locale="en-GB" />
       </>
     )
   }

@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import Image from 'next/image'
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
@@ -11,7 +11,8 @@ import { TypewriterText } from '@/components/motion/typewriter-text'
 import { Spotlight } from '@/components/motion/spotlight'
 import { ChatLink } from '@/components/shared/chat-link'
 import { FaqChatCard } from '@/components/shared/faq-chat-card'
-import { ClientLogoStrip } from '@/components/social-proof/client-logo-strip'
+import { ClientLogoImage } from '@/components/social-proof/client-logo-strip'
+import { HeroTrustBar } from '@/components/social-proof/hero-trust-bar'
 import { CHAT_FALLBACK_HREF, CHAT_HREF } from '@/lib/chat'
 import { STICKY_ASIDE } from '@/components/layout/sticky-aside'
 
@@ -21,7 +22,6 @@ import {
   HOME_PROCESS_VIDEO_URL,
   toProfileCardPeople,
   type HomeContent,
-  type HomeLogo,
   type HomeReason,
 } from './content'
 import { ProfileCard } from './profile-card'
@@ -39,9 +39,10 @@ import { WhereWeWork } from './where-we-work'
 // string literals). Interactive-looking widgets are STATIC.
 
 const BAND = 'mx-auto w-full max-w-[1440px] px-[22px] sm:px-[32px] lg:px-[64px]'
-/** Hero content grid — widened from the reference 1280px frame to 1360px so the
- *  hero and the trusted-by logo bar sit a little wider (still inside the 1440px band). */
-const HERO_BAND = 'mx-auto w-full max-w-[1360px] px-[22px] sm:px-[32px] lg:px-[64px]'
+/** Hero content grid. Now the same 1440px band as the rest of the page (and as
+ *  the service and location pages) — the old 1360px made the hero and the logo
+ *  bar sit narrower than everything under them. */
+const HERO_BAND = BAND
 const CARD = 'rounded-[20px] border border-[#22314D] bg-[#101B30]'
 const EYEBROW =
   'text-[12px] font-semibold uppercase leading-[18.6px] tracking-[1.68px] text-brand-primary'
@@ -78,34 +79,6 @@ function Eyebrow({ children }: { children: string }) {
   return <p className={EYEBROW}>{children}</p>
 }
 
-// A — conditional filter: line-art logos get brightness(0)+invert(1) → clean
-// white. Logos with non-transparent backgrounds (invert:false) get a gentler
-// grayscale+brighten pass so they read light without becoming a white blob.
-// style prop allows per-logo maxHeight + opacity from displayH/displayOpacity.
-function LogoImage({
-  logo,
-  className,
-  style,
-}: {
-  logo: HomeLogo
-  className?: string
-  style?: CSSProperties
-}) {
-  const filterClass =
-    logo.invert === false
-      ? '[filter:grayscale(1)_brightness(1.8)] opacity-95'
-      : '[filter:brightness(0)_invert(1)] opacity-100'
-  return (
-    <Image
-      src={logo.src}
-      alt={logo.name}
-      width={logo.width}
-      height={logo.height}
-      style={style}
-      className={cn('h-auto w-auto object-contain', filterClass, className)}
-    />
-  )
-}
 
 // #5 — ReasonIcon accepts a size prop so the lead card gets a larger tile
 // (56×56, 16px radius, 28px glyph) and secondary cards get the tighter tile
@@ -294,28 +267,15 @@ function Hero({ content }: SectionProps) {
 // Two-line label: "TRUSTED BY 300+" / "ENGINEERING TEAMS". Per-logo max-heights
 // from displayH in content.ts (Virgin 29, Salmon 22, Hotelplan 20, Willo 22,
 // Travelex 22, Tidal 22, Scorpion 14 at 0.8 opacity).
+// The shared hero trust bar, same as every other marketing page. Home keeps
+// passing its own (Sanity-overridable) logo list; the label, the AI CTA and the
+// "See more" button all come from the shared component.
 function TrustedBy({ content }: SectionProps) {
   const { trustedBy } = content
   return (
-    // Same content width as the hero (1280). Top stays tight to the hero;
-    // bottom opens up so the client story has clear breathing room below.
-    <section className="bg-[#070D18] pb-[96px] pt-[48px]">
-      <Reveal className={cn(HERO_BAND, 'flex items-center gap-[32px]')}>
-        <p
-          className={cn(
-            'w-[148px] shrink-0 text-[12px] font-bold uppercase leading-[16px] tracking-[0.9px]',
-            MUTED,
-          )}
-        >
-          <span className="block whitespace-nowrap">{trustedBy.labelLine1}</span>
-          <span className="block whitespace-nowrap">{trustedBy.labelLine2}</span>
-        </p>
-        <span aria-hidden className="h-[32px] w-px shrink-0 bg-[#22314D]" />
-        {/* Seb picked the moving strip over the static row on the 28 Jul review.
-         * Shared with Fractional CTO and Hire Engineers so the three cannot
-         * drift. Marquee pauses under prefers-reduced-motion, and the logos are
-         * real <img> elements either way. */}
-        <ClientLogoStrip logos={trustedBy.logos} />
+    <section className="bg-[#070D18] pb-[72px] pt-[40px]">
+      <Reveal className={HERO_BAND}>
+        <HeroTrustBar logos={trustedBy.logos} seeMoreHref="#client-story" />
       </Reveal>
     </section>
   )
@@ -518,7 +478,7 @@ function Testimonials({ content }: SectionProps) {
             const textPanel = (
               <div className="flex flex-1 flex-col px-[44px] py-[40px]">
                 <div className="flex flex-wrap items-start justify-between gap-[16px]">
-                  <LogoImage
+                  <ClientLogoImage
                     logo={item.logo}
                     className="shrink-0"
                     style={{ maxHeight: `${logoH}px` }}
@@ -969,8 +929,11 @@ function Faq({ content }: SectionProps) {
 export function HomeTemplate({ content = HOME_CONTENT }: { content?: HomeContent }) {
   return (
     <main id="main" className="bg-[#070D18]">
-      <Hero content={content} />
-      <TrustedBy content={content} />
+      {/* Hero + trust bar claim the first screen together. */}
+      <div className="hero-screen">
+        <Hero content={content} />
+        <TrustedBy content={content} />
+      </div>
       <ClientStorySection content={content} />
       <WhyDifferent content={content} />
       <Process content={content} />
