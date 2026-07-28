@@ -447,10 +447,55 @@ const NAVIGATION_QUERY = /* groq */ `
 }
 `
 
+/**
+ * Canonical order for the talent locations, by URL slug: Eastern Europe, then
+ * Latin America, then Philippines (Seb, 28 Jul).
+ *
+ * Applied in code rather than left to the dataset because the Sanity document
+ * is still in the old order and the fix is a business decision, not an
+ * editorial one. `scripts/static/reorder-locations.ts` puts the DATA into the
+ * same order; once that has run this sort is a no-op, and it can be deleted
+ * if Seb should be free to reorder these in Studio.
+ */
+const LOCATION_ORDER = [
+  'eastern-europe-developers',
+  'latam-developers',
+  'philippines-developers',
+] as const
+
+function locationRank(url: string | null | undefined): number {
+  const i = LOCATION_ORDER.findIndex((slug) => (url ?? '').includes(slug))
+  return i === -1 ? LOCATION_ORDER.length : i
+}
+
+/** Stable sort — anything not in LOCATION_ORDER keeps its authored position,
+ *  after the three known regions. */
+export function orderLocations<T extends { url?: string | null }>(items: T[]): T[] {
+  return items
+    .map((item, i) => ({ item, i, rank: locationRank(item.url) }))
+    .sort((a, b) => a.rank - b.rank || a.i - b.i)
+    .map((entry) => entry.item)
+}
+
 export async function fetchNavigation(): Promise<NavigationDoc | null> {
   const { data } = await sanityFetch({ query: NAVIGATION_QUERY })
   if (data === null || data === undefined) return null
-  return NavigationSchema.parse(data)
+  const nav = NavigationSchema.parse(data)
+
+  const sections = nav.locationsDropdown?.sections
+  if (sections?.length) {
+    return {
+      ...nav,
+      locationsDropdown: {
+        ...nav.locationsDropdown,
+        sections: sections.map((section) => ({
+          ...section,
+          items: section.items ? orderLocations(section.items) : section.items,
+        })),
+      },
+    }
+  }
+  return nav
 }
 
 // Predicate — a primary link has a non-empty dropdown rendered in

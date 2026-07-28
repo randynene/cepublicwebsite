@@ -4,6 +4,7 @@ import { z } from 'zod'
 
 import { sanityFetch } from '@/lib/sanity/live'
 import { stegaEnum } from '@/lib/sanity/stega-enum'
+import { orderLocations } from './navigation'
 
 // MYGRATR-STATIC-2 Step 2 — footer global fetch.
 //
@@ -231,7 +232,18 @@ const FOOTER_QUERY = /* groq */ `
 export async function fetchFooter(): Promise<FooterDoc | null> {
   const { data } = await sanityFetch({ query: FOOTER_QUERY })
   if (data === null || data === undefined) return null
-  return FooterSchema.parse(data)
+  const footer = FooterSchema.parse(data)
+
+  // Same canonical region order as the header dropdown, so the two cannot
+  // disagree. See orderLocations in ./navigation.
+  const items = footer.talentLocations?.items
+  if (items?.length) {
+    return {
+      ...footer,
+      talentLocations: { ...footer.talentLocations, items: orderLocations(items) },
+    }
+  }
+  return footer
 }
 
 // Token substitution for the copyrightText "{year}" placeholder.
