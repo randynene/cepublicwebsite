@@ -598,6 +598,49 @@ Exact on all six at every size. For Engineers needed its own fix — the
 page-level horizontal scroll on any of the six at 1920x1080, 1440x900, 1280x760,
 1152x620, 1024x900 or 420x800.
 
+### 9i. Logo strip anchored low, hero centred above it (28 Jul, supersedes 9h)
+
+Jake, on the exactly-centred version: "that's good but the logos should be lower
+down on the page."
+
+**These two asks are geometrically exclusive and that is worth writing down.**
+With the hero and the strip centred as one group, the strip can never get lower
+than the vertical centre plus half the group. Solving for "logos 150px off the
+bottom" on a 1080 screen needs a 394px gap between hero and logos, which is
+absurd. Increasing the gap moves the logos down by only HALF the amount added,
+because the group re-centres.
+
+So the strip is now anchored at the bottom (44px clear) and the hero is centred
+in the space above it, via auto margins on the hero rather than
+`flex: 1` + `justify-content: center` — **that alternative needs `display: flex`
+on the hero, and the location pages' hero IS a two-column grid, which overriding
+display would have flattened.** Confirmed intact afterwards: `display: grid`,
+`600px 656px`.
+
+Consequence to be aware of: the hero's optical centre sits ~80px above the band's
+true centre on a 1080 screen, because the strip and its clearance sit below it.
+It reads as centred-with-a-footer, which is the standard pattern, but it is not
+the same as 9h's exact centring. If the void between hero and logos ever looks
+too big, the lever is `--hero-gap`.
+
+**Three separate specificity traps hit in this one change**, all the same root
+cause — `.he`, `.fcto` and `.fe2` each open with `.x, .x * { margin: 0; padding: 0 }`,
+which ties with a single-class rule and wins on source order:
+
+- `.hero-screen { padding-bottom: 44px }` was zeroed, so the strip sat flush
+  against the fold on the two service pages.
+- `margin-block: auto` on the hero was zeroed, so nothing centred.
+- Both fixed by doubling the class (`.hero-screen.hero-screen`) for (0,2,0).
+
+Also fixed: a backtick inside a CSS comment I added to `fe2-styles.ts` terminated
+the template literal that file is built from, breaking the build. Caught by tsc.
+
+**Verified:** strip bottom is a consistent 44px off the fold at 1920x1080,
+1512x950, 1440x900, 1440x790, 1280x760 and 1280x700 on all six pages. Location
+hero grid intact. No page-level horizontal scroll at any of nine sizes. The strip
+falls below the fold at 420x800 by design — the whole `.hero-screen` treatment is
+`min-width: 1024px`, and on mobile the hero scrolls normally.
+
 ### Outstanding from this pass
 
 - **Upload `travelex-wordmark.png` to Sanity.** Sanity's Travelex asset is the
