@@ -33,7 +33,12 @@ export function WhereWeWork({
         </div>
       </div>
 
-      <HubPanels panels={hubs} />
+      {/* `.ww-strip-band` lines the strip up with the header and lets it sit 32px
+          past the logo and the Schedule-a-Call CTA on each side, matching the
+          reference. */}
+      <div className="ww-strip-band">
+        <HubPanels panels={hubs} />
+      </div>
     </section>
   )
 }

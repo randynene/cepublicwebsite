@@ -29,11 +29,43 @@
  *      horizontal scroller shifts everything to its right mid-gesture, which is
  *      why the reference does not do it either.
  */
+/* Band for the strip: in line with the header, then 32px further out on each
+   side. Measured off the reference at 1920, where the strip spans 120..1800
+   while the header logo starts at 152 and its CTA ends at 1768.
+ *
+ * The site header is a 1440px CONTENT band plus 64px padding, so it measures
+ * 1440 wide at >=1568 viewport (logo at 240 on a 1920 screen) and
+ * `viewport - 128` below that. Matching that geometry and subtracting 32 from
+ * the padding puts this strip exactly 32px past the logo and the
+ * Schedule-a-Call CTA at every width:
+ *
+ *   1920 -> strip 208..1712 (1504)  vs header 240..1680 (1440)
+ *   1512 -> strip  32..1480 (1448)  vs header  64..1448 (1384)
+ *   1280 -> strip  32..1248 (1216)  vs header  64..1216 (1152)
+ */
+.ww-strip-band {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1568px;
+  margin-inline: auto;
+  padding-inline: 32px;
+}
+@media (max-width: 700px) {
+  .ww-strip-band {
+    padding-inline: 12px;
+  }
+}
+
 .ww-row {
   --ww-lime: #d4ff3c;
-  /* Panel geometry. 300x480 keeps the reference's ~1:1.6 portrait panel. */
-  --ww-h: 480px;
-  --ww-panel-w: 300px;
+  /* Panel geometry, tuned so the panel lands near the reference's 323x500
+     (1.55 height:width) across the desktop range rather than at one width:
+     1920 -> 300x440 (1.47), 1512 -> 290x440 (1.52), 1440 -> 275x440 (1.60).
+     The 270px minimum is what keeps the strip FILLING its band down to 1440
+     instead of overflowing a common laptop width; below ~1400 it clamps and the
+     strip scrolls, which is what the reference does too. */
+  --ww-h: 440px;
+  --ww-panel-w: 270px;
   display: flex;
   gap: 0;
   height: var(--ww-h);
