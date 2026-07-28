@@ -402,6 +402,33 @@ defining the role before the handoff. That is a new funnel stage, not a tweak
 to an existing one, so it is an architecture decision for a brief rather than
 something to invent mid-build.
 
+### 9e. "Where we work" strip reshaped to the customer.io pattern (28 Jul)
+
+Jake's reference: the capabilities strip on customer.io. Our panels were tall
+narrow rectangles sitting apart; his ask was one spread-out, more-square band,
+and horizontal scrolling instead of squashing on narrow screens.
+
+Two things carried it, both in `components/shared/hub-panels/hub-panels.css`:
+
+| Change | Before | After |
+|---|---|---|
+| Band proportion | 1312 x 620 (2.1:1) | 1312 x 400 (**3.28:1**, matching customer.io's ~3.2:1) |
+| Panel at rest | 262 x 620 (1:2.4 portrait) | 262 x 400 (1:1.5) |
+| Panel gaps | 6px gutters, 6px radius per panel | flush, hairline inset divider, 12px radius on the STRIP so it reads as one object |
+| Below 1024px | panels stretched to 76% of viewport — stopped reading as a strip | fixed 240px (200px under 600px) panels, row scrolls sideways, hover-expand dropped |
+
+Height is a single `--ww-h` custom property, stepped 400 / 340 / 300 / 260 down
+the breakpoints, so the band stays landscape everywhere.
+
+**Both consumers changed**, because they are the same visual element and two
+different heights would be the odd outcome: the home "Where we work" section and
+the Philippines location page's three-region strip. Verified at 1920, 900 and
+420 wide plus the hover state. Say so if the Philippines one should stay tall.
+
+Corner radius is 12px on the strip rather than square as customer.io has it -
+square corners would be the only hard-cornered surface on the site. One number
+to change if that is wrong.
+
 ### Outstanding from this pass
 
 - **Upload `travelex-wordmark.png` to Sanity.** Sanity's Travelex asset is the
