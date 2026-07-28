@@ -509,6 +509,49 @@ did not fit and gave the whole page a 90px sideways scroll. Moved to `xl`
 Swept every page for page-level horizontal scroll at 1920x1080, 1440x900,
 1280x760, 1152x620, 1024x900, 768x900 and 420x800: all clean.
 
+### 9g. Strip banded to the header, panels squarer (28 Jul, third pass)
+
+Jake: "in line with the header, the boxes should be in line with the header logo
+and Schedule-a-Call CTA, but a little bit over past the logo and CTA, and the
+shape needs to be more square-like, slightly rectangle."
+
+The previous pass went too far: full-bleed edge to edge. Measuring the reference
+at a WIDE viewport (1920, which is the state Jake's screenshots show) gives the
+banded version, and the exact relationship:
+
+```
+customer.io @1920   strip 120..1800 (1680)   header logo 152, CTA right 1768
+                    -> the strip sits 32px past the header on BOTH sides
+                    panel 323 x 500 = 1.55 height:width
+```
+
+Our header is a 1440px CONTENT band plus 64px padding, so it measures 1440 wide
+at >=1568 viewport and `viewport - 128` below. `.ww-strip-band` mirrors that
+geometry with 32px of padding instead of 64, which lands the 32px overhang at
+every width. Verified:
+
+| Viewport | Strip | Header | Overhang | Panel | Scrolls |
+|---|---|---|---|---|---|
+| 1920 | 208..1712 (1504) | 240..1680 (1440) | **L32 R32** | 301x440 = 1.46 | no |
+| 1680 | 88..1592 (1504) | 120..1560 (1440) | **L32 R32** | 301x440 = 1.46 | no |
+| 1512 | 32..1480 (1448) | 64..1448 (1384) | **L32 R32** | 290x440 = 1.52 | no |
+| 1440 | 32..1408 (1376) | 64..1376 (1312) | **L32 R32** | 275x440 = 1.60 | no |
+| 1366 | 32..1334 (1302) | 64..1302 (1238) | **L32 R32** | 270x440 = 1.63 | yes |
+| 1280 | 32..1248 (1216) | 64..1216 (1152) | **L32 R32** | 270x440 = 1.63 | yes |
+
+Panel geometry is `440px` tall with a `270px` minimum width, chosen so the ratio
+brackets the reference's 1.55 across the desktop range rather than matching at a
+single width, and so the strip still FILLS its band down to 1440 (a common laptop)
+before it starts clamping and scrolling. No page-level horizontal scroll at any
+width.
+
+The heading stays inside the header band, so it is indented 32px from the strip —
+which is how the reference reads too.
+
+Location pages keep the strip inside their own section band (no `.ww-strip-band`
+wrapper), since that section is centre-aligned and an overhang there would look
+like a mistake.
+
 ### Outstanding from this pass
 
 - **Upload `travelex-wordmark.png` to Sanity.** Sanity's Travelex asset is the
