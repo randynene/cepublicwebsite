@@ -59,7 +59,7 @@ export function StoryCard({
             fill
             priority={priority}
             sizes={isFeatured ? FEATURED_SIZES : GRID_SIZES}
-            className="h-full w-full object-cover"
+            className="h-full w-full scale-[1.02] object-cover"
           />
         ) : (
           <div
@@ -73,11 +73,11 @@ export function StoryCard({
         )}
 
         {logo ? (
-          <span className="absolute bottom-4 left-4 flex h-[26px] items-center">
+          <span className="absolute bottom-4 left-4 z-[1] flex h-[28px] items-center rounded-md bg-[#060F1E]/75 px-2.5 backdrop-blur-sm">
             <img
-              src={urlFor(logo as Record<string, unknown>).height(52).fit('max').url()}
+              src={urlFor(logo as Record<string, unknown>).height(56).fit('max').auto('format').url()}
               alt=""
-              className="h-full w-auto object-contain opacity-90 [filter:brightness(0)_invert(1)]"
+              className="h-[18px] w-auto object-contain opacity-100 [filter:brightness(0)_invert(1)]"
               loading="lazy"
             />
           </span>

@@ -11,10 +11,12 @@ import { urlFor } from '@/lib/sanity/image'
 import {
   fetchCustomerStoriesData,
   fetchOurWorkBento,
+  fetchOurWorkPeoplePhotos,
   fetchReviewsData,
   GLASSDOOR_SUMMARY,
   type BentoTile,
 } from '@/lib/sanity/queries/social-proof'
+import { BentoVideo } from './bento-video'
 import { OUR_WORK_CONTENT, type OurWorkContent, type OwStat } from './content'
 
 // Our Work page (/our-work). 1:1 with docs/raw-html/Our Work.html. Its own
@@ -31,12 +33,66 @@ const GLYPH = { star: '★', arrow: '→', play: '▶' } as const
 const SIZE_WIDE = '(min-width: 768px) 50vw, 100vw'
 const SIZE_NARROW = '(min-width: 768px) 25vw, 100vw'
 
+// Curated white-on-dark logo marks (same assets Home uses). Sanity companyLogo
+ // for Travelex is a filled white plate - invert turns it into a blank white
+ // box. These files are the readable versions. Waya has no curated file yet.
+const BENTO_LOGO_BY_SLUG: Record<
+  string,
+  { src: string; invert: boolean; width: number; height: number }
+> = {
+  virgin: { src: '/design/home/logos/virgin.png', invert: true, width: 260, height: 105 },
+  travelx: { src: '/design/home/logos/travelex.png', invert: false, width: 260, height: 75 },
+  'salmon-software': { src: '/design/home/logos/salmon.png', invert: true, width: 260, height: 80 },
+  willo: { src: '/design/home/logos/willo.png', invert: true, width: 260, height: 80 },
+  hotelplan: { src: '/design/home/logos/hotelplan.png', invert: true, width: 260, height: 55 },
+}
+
+// Shared logo chip for every bento tile - same height so Virgin / Travelex /
+ // Salmon / Willo / Waya / Hotelplan read as one set.
+function BentoLogoChip({ slug, fallback }: { slug: string; fallback: BentoTile['companyLogo'] }) {
+  const curated = BENTO_LOGO_BY_SLUG[slug]
+  const src = curated
+    ? curated.src
+    : fallback?.asset
+      ? urlFor(fallback as Record<string, unknown>).height(96).fit('max').auto('format').url()
+      : null
+  if (!src) return null
+
+  const invert = curated ? curated.invert : true
+  return (
+    <span className="absolute bottom-4 left-4 z-[1] flex h-[44px] items-center rounded-lg bg-[#060F1E]/85 px-4 backdrop-blur-sm">
+      {/* eslint-disable-next-line @next/next/no-img-element -- curated public + Sanity CDN marks */}
+      <img
+        src={src}
+        alt=""
+        width={curated?.width ?? 200}
+        height={curated?.height ?? 64}
+        className={cn(
+          'h-[26px] w-auto max-w-[180px] object-contain',
+          invert
+            ? '[filter:brightness(0)_invert(1)] opacity-100'
+            : '[filter:grayscale(1)_brightness(1.8)] opacity-95',
+        )}
+        loading="lazy"
+      />
+    </span>
+  )
+}
+
+function resolvePhotoUrl(imageUrl: string | undefined, fallback: { photo?: unknown } | undefined): string | undefined {
+  if (imageUrl) return imageUrl
+  if (!fallback?.photo || typeof fallback.photo !== 'object') return undefined
+  const photo = fallback.photo as Record<string, unknown>
+  if (!('asset' in photo) || !photo.asset) return undefined
+  return urlFor(photo).width(900).height(900).fit('crop').auto('format').url()
+}
+
 // Striped "customer photo" placeholder, matching the reference's decorative tiles.
-// A real photo (from the ourWorkPage singleton, an optional image slot) replaces the
-// stripes once Seb uploads one; empty keeps the placeholder so nothing breaks.
+// A real photo (ourWorkPage slot, else a customer-story people shot) replaces the
+// stripes once resolved; empty keeps the placeholder so nothing breaks.
 function PhotoTile({ className, imageUrl, alt }: { className?: string; imageUrl?: string; alt?: string }) {
   return (
-    <div className={cn('relative overflow-hidden rounded-[20px] border border-[#22314D] bg-[#1B2A45]', className)}>
+    <div className={cn('relative overflow-hidden rounded-[20px] border border-[#22314D] bg-[#101B30]', className)}>
       {imageUrl ? (
         <img src={imageUrl} alt={alt ?? ''} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
       ) : (
@@ -72,14 +128,22 @@ function PrimaryPill({ href, label }: { href: string; label: string }) {
   )
 }
 
-// One bento tile: image (or placeholder) + logo chip + optional play button, linking
-// to the story. `wide` tiles span 2 columns and are the video slots.
+// One bento tile: image (or ambient video) + logo chip, linking to the story.
+// `wide` tiles span 2 columns and are the video slots (top-right + bottom-left).
 function BentoCell({ tile, wide, locale }: { tile: BentoTile | null; wide: boolean; locale: Locale }) {
-  const logo = tile?.companyLogo?.asset ? tile.companyLogo : null
   const isVideo = wide && Boolean(tile?.videoUrl)
+  const posterUrl = tile?.image?.asset
+    ? urlFor(tile.image as Record<string, unknown>).width(1200).height(800).fit('crop').format('jpg').url()
+    : undefined
   const inner = (
     <>
-      {tile?.image?.asset ? (
+      {isVideo && tile?.videoUrl ? (
+        <BentoVideo
+          videoUrl={tile.videoUrl}
+          posterUrl={posterUrl}
+          title={tile.title ?? tile.companyName ?? OUR_WORK_CONTENT.impact.heading}
+        />
+      ) : tile?.image?.asset ? (
         <Image source={tile.image} alt="" fill sizes={wide ? SIZE_WIDE : SIZE_NARROW} className="h-full w-full object-cover" />
       ) : (
         <>
@@ -89,18 +153,20 @@ function BentoCell({ tile, wide, locale }: { tile: BentoTile | null; wide: boole
       )}
       <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#060F1E]/70 to-transparent" />
       {isVideo ? (
-        <span aria-hidden="true" className="absolute left-1/2 top-1/2 flex h-[54px] w-[54px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-brand-primary text-[18px] text-[#060F1E]">
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute left-1/2 top-1/2 z-[1] flex h-[54px] w-[54px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-brand-primary/90 text-[18px] text-[#060F1E] shadow-[0_0_0_10px_rgba(212,255,60,0.12)]"
+        >
           {GLYPH.play}
         </span>
       ) : null}
-      {logo ? (
-        <span className="absolute bottom-4 left-4 flex h-[24px] items-center rounded-md bg-[#060F1E]/70 px-2.5 backdrop-blur-sm">
-          <img src={urlFor(logo as Record<string, unknown>).height(48).fit('max').url()} alt="" className="h-[16px] w-auto object-contain opacity-90 [filter:brightness(0)_invert(1)]" loading="lazy" />
-        </span>
-      ) : null}
+      {tile ? <BentoLogoChip slug={tile.slug} fallback={tile.companyLogo} /> : null}
     </>
   )
-  const cls = cn('group relative block h-[220px] overflow-hidden rounded-[20px] border border-[#22314D] bg-[#1B2A45] md:h-[300px]', wide && 'md:col-span-2')
+  const cls = cn(
+    'group relative block h-[260px] overflow-hidden rounded-[20px] border border-[#22314D] bg-[#101B30] md:h-[380px]',
+    wide && 'md:col-span-2',
+  )
   return tile ? (
     <Link href={buildLocalePath(`/customer-stories/${tile.slug}`, locale)} className={cls}>{inner}</Link>
   ) : (
@@ -116,7 +182,12 @@ export async function OurWorkTemplate({
   content?: OurWorkContent
 }) {
   const C = content
-  const [stories, reviewsData, bento] = await Promise.all([fetchCustomerStoriesData(), fetchReviewsData(), fetchOurWorkBento()])
+  const [stories, reviewsData, bento, peoplePhotos] = await Promise.all([
+    fetchCustomerStoriesData(),
+    fetchReviewsData(),
+    fetchOurWorkBento(),
+    fetchOurWorkPeoplePhotos(),
+  ])
   // The hero card design overlays the company logo on the photo, so a story with no
   // logo renders as a bare name chip. Travel Tech Client is an anonymised customer
   // with no logo to show (Tech Debt #16), which is why live skips it here and runs
@@ -129,20 +200,22 @@ export async function OurWorkTemplate({
   const reviews = reviewsData?.reviews ?? []
   const ratingValue = `${GLASSDOOR_SUMMARY.rating}/5`
 
-  // Bento: 2 wide video slots + 4 narrow image slots. Videos flagged by videoUrl,
-  // never hardcoded. Fill remaining slots gracefully; never duplicate a doc.
-  const vids = bento.filter((t) => t.videoUrl)
-  const imgs = bento.filter((t) => !t.videoUrl)
-  const wide = [vids[0] ?? null, vids[1] ?? null]
-  const narrowPool = [...imgs, ...vids.slice(2)]
-  const narrow = [0, 1, 2, 3].map((i) => narrowPool[i] ?? null)
+  // Decorative photo tiles: Studio override on ourWorkPage wins; otherwise pull
+  // real customer people shots from the dataset (Willo / Salmon / …).
+  const statsPhotoUrl = resolvePhotoUrl(C.statsPhoto, peoplePhotos[0])
+  const beyondPhotoUrl = resolvePhotoUrl(C.beyondHiring.photo, peoplePhotos[1] ?? peoplePhotos[0])
+  const beyondPhotoAlt = peoplePhotos[1]?.companyName ?? peoplePhotos[0]?.companyName ?? undefined
+  const statsPhotoAlt = peoplePhotos[0]?.companyName ?? undefined
+
+  // Bento locked to live layout (Virgin | Travelex | Salmon-video /
+  // Willo-video | Waya | Hotelplan). fetchOurWorkBento returns that order.
   const bentoSlots: { tile: BentoTile | null; wide: boolean }[] = [
-    { tile: narrow[0], wide: false },
-    { tile: narrow[1], wide: false },
-    { tile: wide[0], wide: true },
-    { tile: wide[1], wide: true },
-    { tile: narrow[2], wide: false },
-    { tile: narrow[3], wide: false },
+    { tile: bento[0] ?? null, wide: false }, // virgin
+    { tile: bento[1] ?? null, wide: false }, // travelx (Travelex)
+    { tile: bento[2] ?? null, wide: true }, // salmon video
+    { tile: bento[3] ?? null, wide: true }, // willo video
+    { tile: bento[4] ?? null, wide: false }, // waya
+    { tile: bento[5] ?? null, wide: false }, // hotelplan
   ]
 
   return (
@@ -167,27 +240,27 @@ export async function OurWorkTemplate({
       </section>
 
       {/* 2. TRUSTED BY */}
-      <section className="mt-[64px] py-[36px]">
+      <section className="mt-[64px] bg-[#070D18] py-[36px]">
         <p className={cn(BAND, 'text-center text-[14px] font-medium text-[#7F8CA0]')}>
           {C.trusted.pre} <span className="font-semibold text-brand-primary">{C.trusted.highlight}</span> {C.trusted.post}
         </p>
         <div className="mt-8">
-          <LogoMarquee logos={logos} showHeading={false} />
+          <LogoMarquee logos={logos} showHeading={false} tone="onDark" />
         </div>
       </section>
 
       {/* 3. STAT STRIP */}
-      <section className={cn(BAND, 'py-[40px]')}>
+      <section className={cn(BAND, 'bg-[#070D18] py-[40px]')}>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard stat={C.statsPrimary[0]} />
           <StatCard stat={C.statsPrimary[1]} />
-          <PhotoTile className="min-h-[160px]" imageUrl={C.statsPhoto} />
+          <PhotoTile className="min-h-[160px]" imageUrl={statsPhotoUrl} alt={statsPhotoAlt} />
           <StatCard stat={C.statsPrimary[2]} />
         </div>
       </section>
 
-      {/* 4. CUSTOMER IMPACT - bento video grid */}
-      <section className="mt-[24px] bg-gradient-to-b from-[#0A1628] to-[#0b1a30] py-[72px]">
+      {/* 4. CUSTOMER IMPACT - bento video grid (taller; videos autoplay TR + BL) */}
+      <section className="mt-[24px] bg-[#070D18] py-[96px]">
         <div className={BAND}>
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
@@ -208,20 +281,20 @@ export async function OurWorkTemplate({
       </section>
 
       {/* 5. IMPACT BEYOND HIRING */}
-      <section className={cn(BAND, 'py-[72px]')}>
+      <section className={cn(BAND, 'bg-[#070D18] py-[72px]')}>
         <h2 className="mb-10 text-[32px] font-semibold leading-[1.1] tracking-[-1.2px] text-white lg:text-[42px] lg:leading-[47px] lg:tracking-[-1.5px]">
           {C.beyondHiring.headingLead} <span className={ACCENT}>{C.beyondHiring.headingAccent}</span>
         </h2>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard stat={C.beyondHiring.stats1525} />
-          <PhotoTile className="min-h-[160px]" imageUrl={C.beyondHiring.photo} />
+          <PhotoTile className="min-h-[160px]" imageUrl={beyondPhotoUrl} alt={beyondPhotoAlt} />
           <StatCard stat={{ value: ratingValue, lead: C.beyondHiring.rating.lead, rest: C.beyondHiring.rating.rest }} />
           <StatCard stat={C.beyondHiring.stats300} />
         </div>
       </section>
 
       {/* 6. WHAT THE DIFFERENCE FEELS LIKE */}
-      <section className="py-[40px]">
+      <section className="bg-[#070D18] py-[40px]">
         <div className={cn(BAND, 'mb-8')}>
           <p className={EYEBROW}>{C.reviews.eyebrow}</p>
           <h2 className="mt-3 text-[34px] font-semibold tracking-[-1.4px] text-white lg:text-[46px] lg:leading-[52px] lg:tracking-[-1.6px]">
@@ -233,20 +306,8 @@ export async function OurWorkTemplate({
         ) : null}
       </section>
 
-      {/* 7. MID CTA CARD */}
-      <section className={cn(BAND, 'py-[40px]')}>
-        <div className="grid grid-cols-1 items-center gap-8 overflow-hidden rounded-[24px] border border-[#22314D] p-8 lg:grid-cols-[1.1fr_0.9fr] lg:p-12" style={{ background: 'linear-gradient(115deg, #122444, #16345C)' }}>
-          <div>
-            <p className={EYEBROW}>{C.midCta.eyebrow}</p>
-            <h2 className="mt-4 max-w-[420px] text-[30px] font-semibold leading-[1.15] tracking-[-1.2px] text-white lg:text-[40px] lg:tracking-[-1.4px]">{C.midCta.heading}</h2>
-            <div className="mt-7 flex flex-wrap items-center gap-4">
-              <PrimaryPill href={buildLocalePath(C.midCta.ctaHref, locale)} label={C.midCta.cta} />
-              <p className={cn('max-w-[220px] text-[13px] leading-[18px]', BODY)}>{C.midCta.micro}</p>
-            </div>
-          </div>
-          <PhotoTile className="hidden min-h-[240px] lg:block" imageUrl={C.midCta.photo} />
-        </div>
-      </section>
+      {/* Mid CTA ("Scalable tech talent…") intentionally removed - the sitewide
+          footer "They're ready to hire your next engineer" band covers the ask. */}
     </main>
   )
 }

@@ -128,28 +128,73 @@ const CUSTOMER_STORIES_QUERY = /* groq */ `{
 }`
 
 // ── Our Work page bento tiles ───────────────────────────────────────────────
-// Same story projection plus videoUrl, so the bento grid can flag which tiles are
-// videos (play button) versus plain images - never hardcoded per company.
+// Locked to the live /our-work Customer Impact layout (screenshot parity):
+//   narrow Virgin | narrow Travelex | wide Salmon (video)
+//   wide Willo (video) | narrow Waya | narrow Hotelplan
+// Draft/"in progress" stories are intentionally included - they hold the
+// product shots + logos that live shows in this grid, even when the written
+// story is unfinished. Videos are pinned to Salmon + Willo (the two Vimeo
+// clips Jake supplied).
 const BentoTileSchema = StoryCardSchema.extend({
   videoUrl: z.string().nullable().optional(),
 })
 export type BentoTile = z.infer<typeof BentoTileSchema>
 
+// Slot order = render order. Wide slots are the video positions.
+const OUR_WORK_BENTO_SLUGS = [
+  'virgin',
+  'travelx',
+  'salmon-software',
+  'willo',
+  'waya',
+  'hotelplan',
+] as const
+
 const OUR_WORK_BENTO_QUERY = /* groq */ `
-*[_type == "customerStory" && ${NOT_RETIRED} && ${REAL_STORY} && (defined(companyPeopleImage) || defined(companyProductImage))]
-  | order(order asc)[0...6]{
-    _id,
-    "slug": slug.current,
-    "title": customerStoryTitle,
-    companyName,
-    companyLogo,
-    "image": coalesce(companyProductImage, companyPeopleImage),
-    videoUrl
-  }`
+*[_type == "customerStory" && ${NOT_RETIRED} && slug.current in $slugs]{
+  _id,
+  "slug": slug.current,
+  "title": customerStoryTitle,
+  companyName,
+  companyLogo,
+  "image": coalesce(companyProductImage, companyPeopleImage),
+  videoUrl
+}`
 
 export async function fetchOurWorkBento(): Promise<BentoTile[]> {
-  const { data } = await sanityFetch({ query: OUR_WORK_BENTO_QUERY })
-  return z.array(BentoTileSchema).parse(data ?? [])
+  const { data } = await sanityFetch({
+    query: OUR_WORK_BENTO_QUERY,
+    params: { slugs: [...OUR_WORK_BENTO_SLUGS] },
+  })
+  const parsed = z.array(BentoTileSchema).parse(data ?? [])
+  const bySlug = new Map(parsed.map((t) => [t.slug, t]))
+  // Preserve the live layout order; drop any slug that has no doc yet.
+  return OUR_WORK_BENTO_SLUGS.map((slug) => bySlug.get(slug)).filter(
+    (t): t is BentoTile => Boolean(t),
+  )
+}
+
+// Decorative "customer photo" tiles on /our-work (stat strip + beyond-hiring).
+// Prefer real people shots over product shots. Returned as Sanity image objects
+// so the template can run them through urlFor (HEIF -> web-safe format).
+const PeoplePhotoSchema = z.object({
+  _id: z.string(),
+  companyName: z.string().nullable().optional(),
+  photo: ImageSchema,
+})
+export type OurWorkPeoplePhoto = z.infer<typeof PeoplePhotoSchema>
+
+const OUR_WORK_PEOPLE_QUERY = /* groq */ `
+*[_type == "customerStory" && ${NOT_RETIRED} && ${REAL_STORY} && defined(companyPeopleImage.asset)]
+  | order(order asc)[0...4]{
+    _id,
+    companyName,
+    "photo": companyPeopleImage
+  }`
+
+export async function fetchOurWorkPeoplePhotos(): Promise<OurWorkPeoplePhoto[]> {
+  const { data } = await sanityFetch({ query: OUR_WORK_PEOPLE_QUERY })
+  return z.array(PeoplePhotoSchema).parse(data ?? [])
 }
 
 export async function fetchCustomerStoriesData(): Promise<CustomerStoriesData | null> {

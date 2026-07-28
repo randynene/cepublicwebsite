@@ -1,3 +1,4 @@
+import { cn } from '@/components/ui/_utils/cn'
 import { urlFor } from '@/lib/sanity/image'
 import type { StoryCard } from '@/lib/sanity/queries/social-proof'
 import { UI_STRINGS } from '@/lib/ui-strings'
@@ -16,7 +17,20 @@ import { UI_STRINGS } from '@/lib/ui-strings'
 // `showHeading` (default true) renders the built-in "Trusted by 300+" line for the
 // hubs. Pages with their own trusted-by copy (e.g. Our Work uses "70+") pass false
 // and render their own heading above the marquee.
-export function LogoMarquee({ logos, showHeading = true }: { logos: StoryCard[]; showHeading?: boolean }) {
+//
+// `tone`:
+//   - `muted` (default) - greyscale wash for hubs that want a quieter strip
+//   - `onDark` - white monochrome marks (brightness+invert) on the dark ground,
+//     matching Home / live CE trusted-by treatment. Used on Our Work.
+export function LogoMarquee({
+  logos,
+  showHeading = true,
+  tone = 'muted',
+}: {
+  logos: StoryCard[]
+  showHeading?: boolean
+  tone?: 'muted' | 'onDark'
+}) {
   const withLogos = logos.filter((l) => l.companyLogo?.asset)
   if (withLogos.length === 0) return null
 
@@ -24,6 +38,7 @@ export function LogoMarquee({ logos, showHeading = true }: { logos: StoryCard[];
   // brand reassurance, and a screen reader announcing 34 duplicated company names is
   // noise, not information.
   const track = [...withLogos, ...withLogos]
+  const onDark = tone === 'onDark'
 
   return (
     <section aria-label={UI_STRINGS['socialProof.trustedByLabel']} className="overflow-hidden py-2">
@@ -41,11 +56,23 @@ export function LogoMarquee({ logos, showHeading = true }: { logos: StoryCard[];
       >
         <div className="flex shrink-0 animate-marquee items-center gap-[64px] pr-[64px] motion-reduce:animate-none motion-reduce:flex-wrap motion-reduce:justify-center">
           {track.map((logo, i) => (
-            <span key={`${logo._id}-${i}`} className="flex h-[36px] shrink-0 items-center">
+            <span
+              key={`${logo._id}-${i}`}
+              className={cn('flex shrink-0 items-center', onDark ? 'h-[40px]' : 'h-[36px]')}
+            >
               <img
-                src={urlFor(logo.companyLogo as Record<string, unknown>).height(72).fit('max').url()}
+                src={urlFor(logo.companyLogo as Record<string, unknown>)
+                  .height(onDark ? 80 : 72)
+                  .fit('max')
+                  .auto('format')
+                  .url()}
                 alt=""
-                className="h-full w-auto object-contain opacity-60 grayscale"
+                className={cn(
+                  'h-full w-auto object-contain',
+                  onDark
+                    ? 'opacity-90 [filter:brightness(0)_invert(1)]'
+                    : 'opacity-60 grayscale',
+                )}
                 loading="lazy"
               />
             </span>

@@ -269,6 +269,11 @@ Goal: honour the mandate that NO page reads hardcoded content.
       (verified). Seeding first hit the Sanity 2,000-attribute dataset limit; **resolved by
       upgrading the project to the Growth plan (10,000 attributes)**, which also covers the
       remaining For Developers rebuild + future bespoke wiring.
+      **28 Jul polish:** brighter logo marquee (full-colour on light chips); customer people
+      photos fill the 8x tile + two beyond-hiring photo tiles (fallback from customerStory
+      `companyPeopleImage` when Studio slots empty); Customer Impact taller with ambient
+      autoplay Vimeo in top-right + bottom-left; page ground unified to `#070D18`; mid-CTA
+      "Scalable tech talent…" removed (sitewide footer "They're ready to hire…" remains).
 - 3.3 Location pages (`/services/latam-developers`, `/services/philippines-developers`,
       `/services/eastern-europe-developers`) - **BUILT + COMMITTED (design done).**
       Bespoke dark/lime `LocationTemplate` (`site/src/components/templates/location/`:
@@ -421,7 +426,7 @@ and looked at. Confirmed list:
 |---|---|---|
 | `/services` (+ `/uk`) | **All 20 service cards are empty tiles**, plus the promo panel = 21 | No image field wired on the card at all |
 | `/` (Where we work) | **6 random stock landscapes** captioned São Paulo, Bogotá, Buenos Aires, Manila, Zagreb, Cape Town | `picsum.photos` stand-ins in `home/content.ts`; all 6 `homePage.whereWeWork` hubs have no uploaded image |
-| `/our-work` (+ `/uk`) | 3 striped tiles captioned "customer photo" | `ourWorkPage.statsPhoto` / `beyondHiring.photo` / `midCta.photo` all null in Sanity |
+| `/our-work` (+ `/uk`) | ~~3 striped tiles captioned "customer photo"~~ **FIXED 28 Jul** - people photos from customer stories fill the 8x + beyond-hiring tiles (Studio overrides still win when set); mid-CTA tile removed with that section | was: `ourWorkPage` photo slots null |
 | `/services/[slug]` + `/technology/[slug]` (~124 pages × 2 locales) | 1 empty tile in the "Schedule a call" band on each | Fixed furniture, never wired (`catalogue/detail.tsx:351`) |
 | `/services/software-engineers` | 4 "Image suggestion" tiles | Placeholder brief; real assets never supplied |
 | `/about-us` (+ `/uk`) | 1 empty tile beside "We started because hiring was broken" | `aboutUsPage.founderImage` unset and static fallback is `''` |
@@ -879,7 +884,7 @@ from the product tracker and should be deleted before launch (scaffold debt).
 | How It Works | `/how-it-works` | No (redesigned) | WIRED-FALLBACK | Phase 6: fill Sanity + kill fallback | 5 |
 | Pricing | `/pricing` | Yes | WIRED-FALLBACK | Phase 6: fill Sanity + calculator embed (D5) | 5 |
 | For Developers | `/for-developers` (+ `/uk`) | Yes | DONE - rebuilt + Sanity-wired, pixel-parity PROVEN (not yet seeded/pushed) | Phase 3.1: tokenise-and-hydrate rebuild of the frozen Figma export; `forDevelopersPage` bespoke singleton + GROQ/Zod/transform + US/UK routes + seed. `npm run static:verify-fe2-parity` asserts byte-identical output. Build green, routes 200. Jake to seed + push. | 2 |
-| Our Work | `/our-work` | Yes | **DONE (WIRE-BESPOKE 23 Jul): `ourWorkPage` reconciled generic -> bespoke (copy + stat numbers + 3 photo tiles); GROQ/Zod/transform + US/UK routes (Sanity-first, static fallback) + seed. Committed `5bd39df`, pushed, Studio deployed, SEEDED to production (verified bespoke doc landed). Fully editable in Studio.** Stories/logos/reviews/bento already Sanity-driven from their own docs. Seb: upload the 3 optional photo tiles in Studio if wanted. | DONE (G2). Optional: photo uploads | 2 |
+| Our Work | `/our-work` | Yes | **DONE (WIRE-BESPOKE 23 Jul) + polish 28 Jul.** Bespoke page + Sanity wiring. Polish: bright logo marquee; people-photo tiles (8x + 2x beyond-hiring); taller Customer Impact with autoplay videos TR/BL; uniform `#070D18` ground; mid-CTA removed. Studio photo slots still optional overrides. | DONE (G2 + polish) | 2 |
 | Location: LATAM | `/services/latam-developers` | Net-new | BUILT + COMMITTED (bespoke `LocationTemplate` + cost calculator + location JSON-LD, dark/lime; 200). G1 + G2 done. **27 Jul:** redesigned shared "What's included" card added after the regional overview with Latin America-specific payroll copy; `locationPage-latam-developers.included` patched in production (published doc only, no draft) so all copy is Studio-editable. | DONE (G1+G2) | 2 |
 | Location: Philippines | `/services/philippines-developers` | Net-new | BUILT + COMMITTED (same `LocationTemplate`; 200). G1 done. G2 wiring code-complete (WIRE-BESPOKE 23 Jul, same as LATAM). Doc IS seeded (page renders Sanity data). **"What's included" section redesigned 27 Jul - DONE** (one bordered card, equal-height columns, two-up "We" list, lime as accent only) per `whats-included-1a.html`; copy rewritten with counted labels + 8 split "We" items + PH-named payroll line; 4 new fields (`youBody`, `youFootnote`, `wePill`, `weBody`) added to schema/GROQ/Zod/seed. **Studio deployed + `npm run static:patch-ph-included` run against production** (published doc patched, no draft existed); verified rendering at 1440/1024/390. **27 Jul polish:** hero CTA contents optically centred; all three benefit facts share one desktop row; trusted-by label is exactly two lines. | DONE (G1+G2) | 2 |
 | Location: Eastern Europe | `/services/eastern-europe-developers` | Net-new | BUILT + COMMITTED (same `LocationTemplate`; 200; net-new slug, no service doc). G1 + G2 done. **27 Jul:** redesigned shared "What's included" card added after the regional overview with Eastern Europe-specific payroll copy; `locationPage-eastern-europe-developers.included` patched in production (published doc only, no draft) so all copy is Studio-editable. | DONE (G1+G2) | 2 |
