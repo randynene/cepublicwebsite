@@ -446,7 +446,7 @@ export const HOME_CONTENT = {
     saving: '$85,200/yr saved',
     badgeSave: 'Save $85,200/yr',
     badgeSub: 'vs hiring in the US',
-    cta: 'Ask our AI',
+    cta: 'Discuss further with AI',
     footnote:
       '*Ranges based on actual placements. Final price confirmed after discovery call.',
   },

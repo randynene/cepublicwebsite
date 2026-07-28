@@ -365,6 +365,43 @@ content in the hero (How It Works flanks its headline with two profile cards;
 the location pages carry a three-card parallax stack), so they run out of budget
 first and the page scrolls rather than clipping.
 
+### 9d. Home calculator CTA + the Clara context blocker (28 Jul)
+
+Jake's ask: after someone sets role / region / seniority and sees the estimate,
+the CTA should read something like "Discuss further with AI", and clicking it
+should take them to the assistant already knowing what they picked, so it can
+talk about THAT estimate and keep qualifying the role.
+
+**Shipped:** label is now "Discuss further with AI" (code fallback + the Sanity
+patch script, which now accepts either of the two previous values so it works
+whether or not the earlier run happened). The button opens the chat.
+
+**BLOCKED, and it is external.** The context handoff cannot be built today.
+Probed the live widget rather than assuming:
+
+| Probe | Result |
+|---|---|
+| `window.ClaraWidget` API surface | `open()`, `close()`, `destroy()` only. No way to pass a message. |
+| Chat iframe URL | `https://clara.cloudemployee.io/chat/<workspace>` with only a `mode` param. |
+| `?message=` / `?q=` / `?prompt=` / `?initial_message=` on the chat URL | All load, all ignored — the input renders empty in a real browser. |
+| `postMessage` into the widget | Only inbound type handled is `clara-close`. |
+
+So the visitor currently arrives at the assistant cold and has to retype what
+they just selected, which is worse than Jake is picturing.
+
+**What would unblock it — one of:**
+1. Clara accepts an opening message, either as `ClaraWidget.open({ message })`
+   or as a `?message=` param on the chat URL. This is a small change on Clara's
+   side and Seb owns that product. It is the cheapest path by a distance.
+2. The bespoke chat page Jake already scoped on the call (his own estimate: a
+   couple of weeks). Owning the chat surface means owning the handoff, and the
+   calculator state can be passed straight into it.
+
+**Not built deliberately:** Jake also floated stepping the visitor through
+defining the role before the handoff. That is a new funnel stage, not a tweak
+to an existing one, so it is an architecture decision for a brief rather than
+something to invent mid-build.
+
 ### Outstanding from this pass
 
 - **Upload `travelex-wordmark.png` to Sanity.** Sanity's Travelex asset is the

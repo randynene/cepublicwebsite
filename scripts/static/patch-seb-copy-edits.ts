@@ -55,7 +55,9 @@ interface Edit {
   doc: string
   /** Dot path, as accepted by patch().set(). */
   path: string
-  from: string
+  /** Values this field is allowed to currently hold. More than one where an
+   *  earlier run of this script may already have changed it. */
+  from: string[]
   to: string
   note: string
 }
@@ -64,21 +66,21 @@ const EDITS: Edit[] = [
   {
     doc: 'homePage',
     path: 'calculator.cta',
-    from: 'Get matched at this rate',
-    to: 'Ask our AI',
-    note: 'the button now opens the chat instead of scrolling to the video',
+    from: ['Get matched at this rate', 'Ask our AI'],
+    to: 'Discuss further with AI',
+    note: 'opens the chat instead of scrolling to the video',
   },
   {
     doc: 'homePage',
     path: 'process.steps[1].body',
-    from: 'Live coding on your stack. Cultural fit, psychometrics, background checks, KYC.',
+    from: ['Live coding on your stack. Cultural fit, psychometrics, background checks, KYC.'],
     to: 'Live coding on your stack. Cultural fit, psychometric testing, background checks, KYC.',
     note: 'Seb: "it is not psychometrics"',
   },
   {
     doc: 'hireEngineersPage',
     path: 'vet.profile.openBtn',
-    from: 'Explore a real profile',
+    from: ['Explore a real profile'],
     to: 'Tell our AI what you need',
     note: 'the profile CTA now opens the chat',
   },
@@ -121,15 +123,15 @@ async function main() {
       console.log(`  DONE  ${label} — already "${edit.to}"`)
       continue
     }
-    if (current !== edit.from) {
+    if (typeof current !== 'string' || !edit.from.includes(current)) {
       console.log(`  SKIP  ${label} — changed in Studio, leaving it alone`)
-      console.log(`          expected: "${edit.from}"`)
-      console.log(`          found:    "${String(current)}"`)
+      console.log(`          expected one of: ${edit.from.map((f) => `"${f}"`).join(', ')}`)
+      console.log(`          found:           "${String(current)}"`)
       skipped += 1
       continue
     }
     console.log(`  EDIT  ${label}  (${edit.note})`)
-    console.log(`          "${edit.from}"`)
+    console.log(`          "${current}"`)
     console.log(`       -> "${edit.to}"`)
     toWrite += 1
     if (APPLY) {
