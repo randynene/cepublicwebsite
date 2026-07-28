@@ -250,9 +250,42 @@ body {
     border-color 200ms ease,
     background-color 200ms ease;
 }
+/* Slow breathing glow on the edge, to pull the eye to the one CTA on the page
+   that starts a conversation. Deliberately understated: the border lifts to a
+   soft lime and a wide, low-opacity shadow blooms and fades over 3.4s, rather
+   than anything that reads as a flashing button.
+
+   Kept on box-shadow and border-color only — both are cheap to composite and
+   neither affects layout, so the bar cannot shift as it pulses. */
+@keyframes htb-ai-glow {
+  0%,
+  100% {
+    border-color: #2a3a55;
+    box-shadow: 0 0 6px 0 rgba(212, 255, 60, 0.05);
+  }
+  50% {
+    border-color: rgba(212, 255, 60, 0.38);
+    box-shadow:
+      0 0 15px 1px rgba(212, 255, 60, 0.17),
+      0 0 3px 0 rgba(212, 255, 60, 0.2);
+  }
+}
+.hero-trust-bar .htb-ai {
+  animation: htb-ai-glow 3.4s ease-in-out infinite;
+}
+/* Hover is a deliberate state and should win outright. Cancelling the animation
+   (rather than pausing it) lets the hover border-color apply — a paused
+   animation still overrides normal declarations and would freeze mid-pulse. */
 .hero-trust-bar .htb-ai:hover {
+  animation: none;
   border-color: rgba(212, 255, 60, 0.5);
   background: #16233b;
+  box-shadow: 0 0 18px 1px rgba(212, 255, 60, 0.26);
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-trust-bar .htb-ai {
+    animation: none;
+  }
 }
 .hero-trust-bar .htb-ai-arrow {
   color: #d4ff3c;
