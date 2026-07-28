@@ -324,16 +324,52 @@ rather than by eye.
 Net lint effect: **one fewer warning than `main`** (30 errors / 46 warnings vs
 the 30 / 47 baseline). tsc clean, build clean.
 
+### 9c. Third pass - See more removed, For Engineers added
+
+Jake's follow-up after reviewing the preview: drop the "See more" button
+everywhere. The hero and the logo strip ARE the whole first screen, at any zoom
+level, and the logos are the bottom of the hero rather than something you scroll
+past a button to reach. Also add the logo strip to For Engineers, but without
+the Ask-our-AI CTA.
+
+| Change | Detail |
+|---|---|
+| See more removed | Gone from `HeroTrustBar` and from all six call sites. For Engineers had its own separate `fe2-seemore` button with a bobbing chevron; that and its CSS are gone too. |
+| For Engineers | Now closes its hero with the shared strip. `HeroTrustBar` gained `showAi` (default true); this page passes `false`, because the assistant is a buyer-side tool and that page speaks to candidates. Banded to the same 1440/64 width inside the page's fixed 1920px Figma canvas. |
+| Better fit as a result | Losing the button freed ~70px of vertical budget. Generic compression added on top: `.hero-screen > section` padding now comes from the shared custom properties, and hero visuals carry a `hero-visual` class that scales with `zoom`. |
+| `zoom`, not `transform: scale` | A transform shrinks the pixels but leaves the original box in the layout, so the page keeps the height it was trying to save. The earlier `.home-hero-card` rule had this flaw; it is now the shared `.hero-visual`. |
+
+**Measured first-screen fit** (trust bar bottom vs viewport, headless, six
+viewport sizes):
+
+| Page | 1920x1080 | 1600x900 | 1440x820 | 1280x760 | 1280x700 | 1152x620 |
+|---|---|---|---|---|---|---|
+| Hire Engineers | fit | fit | fit | fit | fit | fit |
+| Fractional CTO | fit | fit | fit | fit | fit | fit |
+| Home | fit | fit | fit | fit | fit | fit |
+| For Engineers | fit | fit | fit | fit | fit | fit |
+| How It Works | fit | fit | fit | fit | +5px | +69px |
+| Locations | fit | fit | fit | fit | +14px | +69px |
+
+1152x620 is roughly 175% browser zoom. Those two pages have the most fixed
+content in the hero (How It Works flanks its headline with two profile cards;
+the location pages carry a three-card parallax stack), so they run out of budget
+first and the page scrolls rather than clipping.
+
 ### Outstanding from this pass
 
 - **Upload `travelex-wordmark.png` to Sanity.** Sanity's Travelex asset is the
   same broken screenshot, so there is a named exception in
   `client-logo-strip.tsx` (`ASSET_OVERRIDE`) that substitutes the local clean
   file. Remove the exception once Studio holds a proper transparent wordmark.
-- **Which other pages get the bar.** It is on the six pages with a left-text /
-  right-visual hero. Pricing, Services hub, Technology hub, About Us, Contact
-  and Our Work have CENTRED heroes with no right-hand visual, so the pattern
-  does not transfer without a layout decision. Flagged rather than guessed.
+- **Which other pages get the bar.** It is now on seven: Home, Hire Engineers,
+  Fractional CTO, How It Works, the three location pages, and For Engineers.
+  Pricing, Services hub, Technology hub, About Us, Contact and Our Work have
+  CENTRED heroes with no right-hand visual, so the pattern does not transfer
+  without a layout decision. Flagged rather than guessed.
+- `forEngineersPage.hero.seeMore` is now an unused field on the content type and
+  in Sanity. Left in place so the Sanity contract is unchanged; drop it at the
+  next schema pass on that page.
 
 ---
 
