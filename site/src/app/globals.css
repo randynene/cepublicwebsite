@@ -333,18 +333,25 @@ body {
   .hero-screen {
     display: flex;
     flex-direction: column;
-    /* PERFECTLY centred, at any zoom level. Two things are needed for that and
-       only one of them is `center`:
-         1. `justify-content: center` puts the slack above and below the group.
-         2. The children carry NO vertical padding of their own (the vars below
-            are zeroed and the `> *` rule strips the Tailwind ones), so the group
-            is symmetric and the space above genuinely equals the space below.
-            While each child kept its own unequal padding — 92px on top of the
-            hero, 56px under the trust bar — `center` centred the BOX but the
-            content still read 36px low.
-       Space between the hero and the trust bar comes from `gap`, which sits
-       inside the group and so does not affect the centring. */
-    justify-content: center;
+    /* Hero centred, logo strip low, at any zoom level.
+     *
+     * Those two asks are in tension: centring the hero AND the strip as one
+     * group means pushing the strip down also pushes the hero up, and pinning
+     * the strip to the bottom while centring the hero in the FULL band lets a
+     * tall hero collide with it (the location pages came within 14px at 790px
+     * tall, because their left column runs to 496px).
+     *
+     * Resolved by giving the hero `flex: 1` and letting it centre its own
+     * content: the strip stays at the bottom at every height, the hero is
+     * centred in the space above it, and `gap` guarantees a minimum separation
+     * so they can never meet. No breakpoint decides between two behaviours and
+     * nothing is taken out of the flow.
+     *
+     * The children also carry NO vertical padding of their own (the vars below
+     * are zeroed and the `> *` rule strips the Tailwind ones); while each kept
+     * its own unequal padding — 92px above the hero, 56px under the strip — the
+     * hero read 36px low even when the maths said it was centred. */
+    justify-content: flex-start;
     gap: var(--hero-gap);
     min-height: calc(100svh - var(--header-height) - var(--announcement-bar-height));
 
@@ -372,8 +379,30 @@ body {
      the hero section rather than a wrapper around one. Its `lg:pt-[120px]` /
      `lg:pb-[88px]` left the group sitting 32px low. Doubled class for (0,2,0),
      which beats the utility outright rather than relying on source order. */
+  /* Doubled class throughout this block, for (0,2,0). The Hire Engineers,
+     Fractional CTO and For Engineers stylesheets all open with
+     `.x, .x * { margin: 0; padding: 0 }`, which ties with a single-class rule and
+     wins on source order — so a plain `.hero-screen { padding-bottom }` or
+     `margin-block: auto` is silently zeroed on exactly the pages that need it. */
   .hero-screen.hero-screen {
-    padding-block: 0;
+    padding-top: 0;
+    /* Breathing room under the strip, which now sits at the bottom. */
+    padding-bottom: 44px;
+  }
+
+  /* Auto margins on the hero absorb the leftover height equally above and below
+     it, which centres it in the space above the strip; the strip keeps its
+     natural height and stays at the bottom.
+     Auto margins rather than `flex: 1` + `justify-content: center`, because that
+     needs `display: flex` on the hero — and the location pages' hero IS a
+     two-column grid, which overriding display would flatten. */
+  .hero-screen.hero-screen > *:first-child {
+    flex: 0 0 auto;
+    margin-block: auto;
+  }
+  .hero-screen.hero-screen > *:last-child {
+    flex: 0 0 auto;
+    margin-top: 0;
   }
 
   /* Progressive compression as the window gets short — which is what zooming in
@@ -397,6 +426,16 @@ body {
     }
     .hero-screen .hero-visual {
       zoom: 0.86;
+    }
+  }
+  /* Extra step for the 780-880 band. The logo strip is anchored to the bottom
+     above 780px (see below), so it no longer shrinks the space the hero centres
+     in — and the location pages, whose hero carries a 518px three-card stack,
+     came within 1px of touching it at 790. Compressing the visual a little
+     harder here restores a comfortable gap on every page. */
+  @media (max-height: 880px) {
+    .hero-screen .hero-visual {
+      zoom: 0.78;
     }
   }
   @media (max-height: 780px) {
