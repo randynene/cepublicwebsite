@@ -641,6 +641,34 @@ hero grid intact. No page-level horizontal scroll at any of nine sizes. The stri
 falls below the fold at 420x800 by design — the whole `.hero-screen` treatment is
 `min-width: 1024px`, and on mobile the hero scrolls normally.
 
+### 9j. Hover accordion restored on the hub panels (28 Jul)
+
+Jake: the cards no longer widen to show the full picture on hover. Correct — I
+removed the width accordion in the customer.io pass (9c) on the grounds that
+widening a panel inside a horizontal scroller pushes everything to its right
+mid-gesture. That reasoning was right about the scroller and wrong about the
+component: the reveal is the point of it.
+
+Restored, gated to the widths where the strip already FILLS its band without
+scrolling — 5 x 270px minimum plus the band padding lands the threshold at
+1420px. That gate is what makes it safe: inside it the panels share the row, so
+growing one makes its siblings shrink and the total stays put. Below it the strip
+is a fixed-width scroller and the accordion does not apply, because widening
+there would either scroll the row under the cursor or snap it from scrolling to
+fitting. Hover still fades the veil and un-zooms the photo at every width, so
+the reveal is never lost — only the widening is conditional.
+
+Also gated on `hover: hover` and `pointer: fine`, so a touch device cannot
+trigger a state it can never leave.
+
+**Measured:**
+
+| Viewport | At rest | Hovering panel 3 | Row scrolls? | Veil |
+|---|---|---|---|---|
+| 1920 | 301 x5 | 203, 203, **691**, 203, 203 | no, before and after | fades to 0 |
+| 1512 | 290 x5 | 196, 196, **665**, 196, 196 | no, before and after | fades to 0 |
+| 1280 | 270 x5 | unchanged (below the gate) | yes, unchanged | fades to 0 |
+
 ### Outstanding from this pass
 
 - **Upload `travelex-wordmark.png` to Sanity.** Sanity's Travelex asset is the
