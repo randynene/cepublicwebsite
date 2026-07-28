@@ -214,7 +214,11 @@ html {
 }
 .fcto .hero-grid {
   display: grid;
-  grid-template-columns: 1.05fr 480px;
+  /* Was `1.05fr 480px`, which pinned the "Your match" card to 480px while the
+     text column took 776px — the card read as an afterthought beside it. Now
+     fluid, matching the Hire Engineers hero (1.05fr / 0.95fr) so the two
+     service pages balance the same way. */
+  grid-template-columns: 1.05fr 0.95fr;
   gap: 56px;
   align-items: center;
 }
@@ -446,7 +450,7 @@ html {
 .fcto .mp {
   position: relative;
   width: 100%;
-  max-width: 480px;
+  /* No cap — the grid column now sizes it (see .fcto .hero-grid). */
   margin-left: auto;
   background: linear-gradient(158deg, #12203a, #0c1526);
   border: 1px solid var(--line);

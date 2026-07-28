@@ -333,7 +333,13 @@ body {
   .hero-screen {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    /* space-between, not center. Centring left the content bunched in the middle
+       with ~200px of unused screen split above and below it; spreading puts the
+       hero at the top of the first screen and the logo strip at the bottom,
+       which is what the band is for. Each section's own padding supplies the
+       breathing room, so nothing sits hard against an edge. Degrades to
+       flex-start when the content genuinely overflows. */
+    justify-content: space-between;
     min-height: calc(100svh - var(--header-height) - var(--announcement-bar-height));
 
     /* Consumed by the page stylesheets rather than imposed on them. The service

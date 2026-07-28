@@ -381,12 +381,16 @@ function Stages({ content }: { content: HiwContent }) {
         <div>
           <Eyebrow>{stages.eyebrow}</Eyebrow>
           {/* One line on desktop — slightly reduced from 58px so the full line
-           * fits inside the band; wraps naturally below lg. */}
+           * fits inside the band; wraps naturally below that.
+           * The no-wrap kicks in at xl (1280px), not lg (1024px): the 52px line
+           * needs ~1114px of content width, so between 1024 and 1280 it was
+           * forced onto one line that did not fit and gave the whole page a
+           * 90px horizontal scroll. */}
           <h2
             className={cn(
               'mt-[16px]',
               H2,
-              'lg:whitespace-nowrap lg:text-[52px] lg:leading-[56px] lg:tracking-[-1.6px]',
+              'xl:whitespace-nowrap xl:text-[52px] xl:leading-[56px] xl:tracking-[-1.6px]',
             )}
           >
             {stages.titleLead} <span className={ACCENT}>{stages.titleAccent}</span>
