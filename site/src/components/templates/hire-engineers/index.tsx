@@ -696,7 +696,7 @@ export function HireEngineersTemplate({
           pattern; every other marketing hero now closes with the same bar. */}
       <section className="he-trusted">
         <div className="wrap">
-          <HeroTrustBar locale={locale} seeMoreHref="#offer" />
+          <HeroTrustBar locale={locale} />
         </div>
       </section>
       </div>

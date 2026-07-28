@@ -229,7 +229,7 @@ function Hero({ content }: SectionProps) {
         {/* Right: auto-cycling profile card (client component). Right-aligned in
          * its grid column so the card's right edge sits on the same content-band
          * edge as the trusted-by logo row (aligns with the SCORPION logo). */}
-        <div className="home-hero-card hidden lg:flex lg:justify-end">
+        <div className="hero-visual hidden lg:flex lg:justify-end">
           <ProfileCard profiles={slideshow} />
         </div>
         {/* Mobile fallback — simple single photo, no card stack */}
@@ -275,7 +275,7 @@ function TrustedBy({ content }: SectionProps) {
   return (
     <section className="bg-[#070D18] pb-[72px] pt-[40px]">
       <Reveal className={HERO_BAND}>
-        <HeroTrustBar logos={trustedBy.logos} seeMoreHref="#client-story" />
+        <HeroTrustBar logos={trustedBy.logos} />
       </Reveal>
     </section>
   )

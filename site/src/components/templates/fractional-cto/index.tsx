@@ -409,7 +409,7 @@ export function FractionalCtoTemplate({
           Replaces this page's own label + text-name marquee + AI pill. */}
       <section className="trusted">
         <div className="wrap">
-          <HeroTrustBar locale={locale} seeMoreHref="#how" />
+          <HeroTrustBar locale={locale} />
         </div>
       </section>
       </div>

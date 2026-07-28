@@ -18,6 +18,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 
+import { HeroTrustBar } from '@/components/social-proof/hero-trust-bar'
 import { parseVideoUrl } from '@/components/ui/video-embed'
 import type { Locale } from '@/lib/locale'
 
@@ -541,26 +542,14 @@ export function ForEngineersTemplate({
       <style>{FE2_UI_CSS}</style>
       <div className="fe2-stage" ref={stageRef}>
         <div className="fe2-canvas" ref={canvasRef}>
-          {/* Hero, held to a full viewport height so it is all a visitor sees
-           * on landing; the See-more control scrolls to "Applying is broken". */}
+          {/* Hero, held to a full viewport height so it is all a visitor sees on
+           * landing. The See-more control that used to sit here was cut with the
+           * rest of them; the client logo strip closes the hero instead, same as
+           * every other marketing page. No AI CTA on this one — the assistant is
+           * a buyer-side tool and this page speaks to candidates. */}
           <div className="fe2-hero-vh" ref={heroRef}>
             <div dangerouslySetInnerHTML={{ __html: heroHtml }} />
-            <button
-              type="button"
-              className="fe2-seemore"
-              onClick={() =>
-                document
-                  .getElementById('fe2-after-hero')
-                  ?.scrollIntoView({ behavior: prefersReduced() ? 'auto' : 'smooth', block: 'start' })
-              }
-            >
-              <span className="fe2-seemore-t">{content.hero.seeMore}</span>
-              <span className="fe2-seemore-a" aria-hidden="true">
-                <svg viewBox={V}>
-                  <path d="M12 5v14M6 13l6 6 6-6" />
-                </svg>
-              </span>
-            </button>
+            <HeroTrustBar showAi={false} className="fe2-trust" />
           </div>
           {/* Everything from "Applying is broken" down */}
           <div id="fe2-after-hero" dangerouslySetInnerHTML={{ __html: restHtml }} />

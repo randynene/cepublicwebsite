@@ -273,7 +273,7 @@ function Hero({ content }: { content: LocationContent }) {
       {/* Right column - reuses the home page photo-card stack (same on all three
           regions for now). Desktop = hover-parallax stack; mobile = single photo. */}
       <div className="relative w-full">
-        <div className="hidden lg:block">
+        <div className="hero-visual hidden lg:block">
           <HeroCards profiles={heroProfiles} pills={heroPills} />
         </div>
         {heroMain ? (
@@ -327,7 +327,7 @@ function LogoStrip({ content, locale }: { content: LocationContent; locale: Loca
   const logos = content.logos?.length ? toClientLogos(content.logos) : CLIENT_LOGOS
   return (
     <section className={cn(BAND, 'pb-[48px] pt-[24px]')}>
-      <HeroTrustBar locale={locale} logos={logos} seeMoreHref="#advantage" />
+      <HeroTrustBar locale={locale} logos={logos} />
     </section>
   )
 }

@@ -4,15 +4,18 @@ import { cn } from '@/components/ui/_utils/cn'
 import { CHAT_HREF } from '@/lib/chat'
 import type { Locale } from '@/lib/locale-path'
 
-// The standard band that closes every marketing hero, per Seb's 28 Jul review:
+// The standard band that closes every marketing hero:
 //
 //   TRUSTED BY 300+        [ rotating client logos ]        Ask our AI anything
 //   ENGINEERING TEAMS
-//                             ( See more  v )
 //
 // Every main marketing page gets the same one, so landing on any of them looks
 // like landing on Hire Engineers. Detail pages (blog posts, individual reviews)
 // deliberately do not.
+//
+// There is no "See more" affordance by design: the hero and this bar are sized
+// to be everything on the first screen at any zoom level, and Jake cut the
+// button on the second review pass — the logos ARE the bottom of the hero.
 //
 // WHY THE STYLING LIVES IN globals.css AND NOT IN TAILWIND CLASSES HERE:
 // this component renders inside pages whose scoped stylesheets open with
@@ -27,22 +30,21 @@ import type { Locale } from '@/lib/locale-path'
 const LABEL_LINE_1 = 'TRUSTED BY 300+'
 const LABEL_LINE_2 = 'ENGINEERING TEAMS'
 const ASK_AI = 'Ask our AI anything'
-const SEE_MORE = 'See more'
-const CHEVRON = '\u2304'
 const ARROW = '\u2192'
 
 export function HeroTrustBar({
   locale = 'en-US',
   logos,
   groundColor,
-  /** In-page anchor the "See more" button scrolls to. Omit to hide the button. */
-  seeMoreHref,
+  /** For Engineers shows the logos but not the AI CTA — that page speaks to
+   *  candidates, and the assistant is a buyer-side tool. */
+  showAi = true,
   className,
 }: {
   locale?: Locale
   logos?: ClientLogo[]
   groundColor?: string
-  seeMoreHref?: string
+  showAi?: boolean
   className?: string
 }) {
   return (
@@ -56,24 +58,15 @@ export function HeroTrustBar({
 
         <ClientLogoStrip logos={logos} groundColor={groundColor} />
 
-        <ChatLink href={CHAT_HREF} locale={locale} className="htb-ai">
-          <span aria-hidden className="htb-ai-arrow">
-            {ARROW}
-          </span>
-          {ASK_AI}
-        </ChatLink>
-      </div>
-
-      {seeMoreHref ? (
-        <div className="htb-more-row">
-          <a href={seeMoreHref} className="htb-more">
-            {SEE_MORE}
-            <span aria-hidden className="htb-more-chevron">
-              {CHEVRON}
+        {showAi ? (
+          <ChatLink href={CHAT_HREF} locale={locale} className="htb-ai">
+            <span aria-hidden className="htb-ai-arrow">
+              {ARROW}
             </span>
-          </a>
-        </div>
-      ) : null}
+            {ASK_AI}
+          </ChatLink>
+        ) : null}
+      </div>
     </div>
   )
 }

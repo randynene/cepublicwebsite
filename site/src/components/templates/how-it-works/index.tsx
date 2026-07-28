@@ -113,11 +113,11 @@ function Hero({ content, locale }: SectionProps) {
       <div className="mx-auto w-full max-w-[1512px] px-[22px] sm:px-[32px] lg:px-[48px]">
         {/* Desktop: two cards flank the centered headline */}
         <div className="grid items-center gap-[24px] lg:grid-cols-[minmax(0,310px)_minmax(0,1fr)_minmax(0,310px)] lg:gap-[32px]">
-          <div className="hidden lg:block">
+          <div className="hero-visual hidden lg:block">
             <HeroCard person={ana} vetted={hero.vetted} />
           </div>
           {textStack}
-          <div className="hidden lg:block">
+          <div className="hero-visual hidden lg:block">
             <HeroCard person={reinaldo} vetted={hero.vetted} />
           </div>
         </div>
@@ -128,8 +128,8 @@ function Hero({ content, locale }: SectionProps) {
         </div>
       </div>
       {/* Same hero trust bar as every other marketing page. */}
-      <div className={cn(BAND, 'pt-[56px]')}>
-        <HeroTrustBar locale={locale} seeMoreHref="#stages" />
+      <div className={cn(BAND, 'hero-trust-gap')}>
+        <HeroTrustBar locale={locale} />
       </div>
     </section>
   )

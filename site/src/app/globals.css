@@ -257,35 +257,6 @@ body {
 .hero-trust-bar .htb-ai-arrow {
   color: #d4ff3c;
 }
-.hero-trust-bar .htb-more-row {
-  display: flex;
-  width: 100%;
-  justify-content: center;
-  padding-top: 32px;
-}
-.hero-trust-bar .htb-more {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  border: 1px solid #22314d;
-  border-radius: 999px;
-  padding: 9px 20px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #b8c2d1;
-  transition:
-    border-color 200ms ease,
-    color 200ms ease;
-}
-.hero-trust-bar .htb-more:hover {
-  border-color: rgba(212, 255, 60, 0.5);
-  color: #fff;
-}
-.hero-trust-bar .htb-more-chevron {
-  font-size: 15px;
-  line-height: 1;
-  color: #d4ff3c;
-}
 
 /* "When you land on the page, all you see is the hero" (Seb, 28 Jul review).
 
@@ -318,9 +289,16 @@ body {
   }
 
   /* Progressive compression as the window gets short — which is what zooming in
-     produces. Each step trims the three things that actually consume the
-     vertical budget: the headline, the hero padding, and the gap above the
-     "See more" button. */
+     produces. Each step trims the two things that consume the vertical budget:
+     the headline and the hero padding. */
+  /* Pages that lay their hero out in Tailwind (home, How It Works, locations)
+     get their padding compressed here; pages with a scoped stylesheet read the
+     same custom properties from their own rule. `> section` is (0,1,1), which
+     beats a Tailwind padding utility.
+
+     `zoom`, not `transform: scale`, on the hero visual: a transform shrinks the
+     pixels but leaves the original box in the layout, so the page would keep
+     the height it was trying to save. */
   @media (max-height: 900px) {
     .hero-screen {
       --hero-h1-size: 50px;
@@ -331,8 +309,12 @@ body {
       font-size: var(--hero-h1-size);
       line-height: 1.05;
     }
-    .hero-screen .hero-trust-bar .htb-more-row {
-      padding-top: 20px;
+    .hero-screen > section {
+      padding-top: var(--hero-pad-top);
+      padding-bottom: var(--hero-pad-bottom);
+    }
+    .hero-screen .hero-visual {
+      zoom: 0.86;
     }
   }
   @media (max-height: 780px) {
@@ -341,8 +323,18 @@ body {
       --hero-pad-top: 36px;
       --hero-pad-bottom: 28px;
     }
-    .hero-screen .hero-trust-bar .htb-more-row {
-      padding-top: 14px;
+    .hero-screen .hero-visual {
+      zoom: 0.72;
+    }
+  }
+  @media (max-height: 720px) {
+    .hero-screen {
+      --hero-h1-size: 40px;
+      --hero-pad-top: 26px;
+      --hero-pad-bottom: 20px;
+    }
+    .hero-screen .hero-visual {
+      zoom: 0.64;
     }
   }
   @media (max-height: 660px) {
@@ -351,8 +343,29 @@ body {
       --hero-pad-top: 20px;
       --hero-pad-bottom: 16px;
     }
-    .hero-screen .hero-trust-bar .htb-more-row {
-      padding-top: 10px;
+    .hero-screen .hero-visual {
+      zoom: 0.56;
+    }
+  }
+
+  /* Gap between the hero content and the trust bar, for pages that hold both
+     inside one section (How It Works) rather than as two siblings. */
+  .hero-screen .hero-trust-gap {
+    padding-top: 56px;
+  }
+  @media (max-height: 900px) {
+    .hero-screen .hero-trust-gap {
+      padding-top: 36px;
+    }
+  }
+  @media (max-height: 780px) {
+    .hero-screen .hero-trust-gap {
+      padding-top: 22px;
+    }
+  }
+  @media (max-height: 660px) {
+    .hero-screen .hero-trust-gap {
+      padding-top: 14px;
     }
   }
 }
@@ -377,10 +390,6 @@ body {
       font-size: 50px;
       line-height: 54px;
     }
-    .home-hero-card {
-      scale: 0.88;
-      transform-origin: right center;
-    }
   }
 
   @media (max-height: 760px) {
@@ -392,18 +401,12 @@ body {
       font-size: 42px;
       line-height: 46px;
     }
-    .home-hero-card {
-      scale: 0.74;
-    }
   }
 
   @media (max-height: 620px) {
     .home-hero h1 {
       font-size: 36px;
       line-height: 40px;
-    }
-    .home-hero-card {
-      scale: 0.62;
     }
   }
 }

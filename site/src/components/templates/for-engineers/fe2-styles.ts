@@ -105,15 +105,15 @@ export const FE2_UI_CSS = `
  * (viewport height under the chrome, divided by the canvas zoom factor). The
  * hero centres itself in that space and the See more control pins to the
  * bottom, so "Applying is broken" always starts below the fold. */
-.fe2 .fe2-hero-vh{position:relative;display:flex;flex-direction:column;justify-content:center;padding-bottom:200px}
-.fe2 .fe2-hero-vh > div:first-child{width:100%}
-.fe2 .fe2-seemore{position:absolute;left:50%;bottom:120px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;background:none;border:0;padding:8px 12px;cursor:pointer;color:var(--dim);font:inherit;font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;transition:color .18s ease}
-.fe2 .fe2-seemore:hover{color:var(--lime)}
-.fe2 .fe2-seemore-a{display:grid;place-items:center;width:34px;height:34px;border-radius:999px;border:1px solid var(--line-2);animation:fe2-seemore-bob 2.2s ease-in-out infinite;transition:border-color .18s ease,background .18s ease}
-.fe2 .fe2-seemore:hover .fe2-seemore-a{border-color:var(--lime);background:rgba(212,255,60,.1)}
-.fe2 .fe2-seemore-a svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-@keyframes fe2-seemore-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
-@media(max-width:720px){.fe2 .fe2-seemore{bottom:60px}}
+.fe2 .fe2-hero-vh{position:relative;display:flex;flex-direction:column;justify-content:center;gap:56px;padding-bottom:64px}
+.fe2 .fe2-hero-vh > div:first-child{width:100%}\n  /* Client logo strip closing the hero. The fe2 canvas is a fixed 1920px\n     Figma frame that gets scaled, so the bar is banded to the same 1440/64\n     content width the other marketing pages use. */\n  .fe2-trust{width:100%;max-width:1440px;margin:0 auto;padding:0 64px}
+.fe2 
+.fe2 
+.fe2 
+.fe2 
+.fe2 
+}
+@media(max-width:720px){.fe2 }
 
 /* ---- responsive form ---- */
 @media(max-width:920px){.fe2 .jf-grid{grid-template-columns:1fr;gap:32px}.fe2 .jf-preview{position:static;order:-1}.fe2 .jf-card{padding:30px}}
@@ -125,6 +125,6 @@ export const FE2_UI_CSS = `
 .fe2 [data-fe2-spotlight].fe2-glowing [data-fe2-glow-item]{opacity:1}
 .fe2 [data-fe2-card],.fe2 [data-fe2-cta]{transition:none}
 .fe2 [data-fe2-card]:hover,.fe2 [data-fe2-cta]:hover{transform:none}
-.fe2 .fe2-seemore-a{animation:none}
+.fe2 
 }
 `
