@@ -552,6 +552,52 @@ Location pages keep the strip inside their own section band (no `.ww-strip-band`
 wrapper), since that section is centre-aligned and an overhang there would look
 like a mistake.
 
+### 9h. Hero group perfectly centred at any zoom (28 Jul, supersedes 9f spacing)
+
+Jake, after seeing the spread version at three zoom levels: "make the main hero
+section perfectly centered no matter zoom is on it." `space-between` (9f) put the
+hero at the top and the logos at the bottom, which reads well at 1080 tall and
+turns into a void in the middle when zoomed out. Reverted to centred — but
+properly this time, because `justify-content: center` alone was never enough:
+
+**Why the earlier centred version still looked off-centre.** It centred the
+BOX while the children kept unequal padding of their own — 92px on top of the
+hero, 56px under the trust bar — so the content read 36px low. Measured before:
+79px above / 135px below on Fractional CTO.
+
+Three changes make it exact:
+
+1. `justify-content: center` with `gap: var(--hero-gap)`. The gap sits INSIDE the
+   group, so it spaces the hero from the logos without affecting the centring.
+2. All vertical padding stripped off the children — `--hero-pad-*` and
+   `--hero-trust-pad-*` zeroed for the scoped-stylesheet pages (`.he`, `.fcto`),
+   and `.hero-screen > section, .hero-screen > div { padding-block: 0 }` for the
+   Tailwind ones.
+3. `.hero-screen.hero-screen { padding-block: 0 }` for How It Works, where
+   `.hero-screen` IS the hero section rather than a wrapper and carried
+   `lg:pt-[120px] lg:pb-[88px]` itself. Doubled class for (0,2,0) so it beats the
+   utility outright instead of relying on source order. This was the last 32px.
+
+`--hero-gap` steps down with the window (72 / 48 / 34 / 28 / 22) alongside the
+headline and hero-visual scaling, so the group keeps fitting one screen as you
+zoom in and stays centred rather than starting to overflow.
+
+**Verified — space above vs space below, at six viewport sizes:**
+
+| Page | 1920x1080 | 1512x950 | 1440x820 | 1280x760 | 1280x700 | 1152x620 |
+|---|---|---|---|---|---|---|
+| Home | 192/192 | 127/127 | 106/106 | 107/107 | 80/80 | 34/34 |
+| Hire Engineers | 213/213 | 148/148 | 106/106 | 91/91 | 66/66 | 19/19 |
+| Fractional CTO | 222/222 | 157/157 | 115/115 | 84/84 | 59/59 | 12/12 |
+| How It Works | 181/181 | 116/116 | 91/91 | 68/68 | 44/44 | 15/15 |
+| Locations | 161/161 | 96/96 | 54/54 | 40/40 | 15/15 | 0/0 |
+| For Engineers | 97/97 | 112/112 | 62/62 | 63/63 | 33/33 | 19/19 |
+
+Exact on all six at every size. For Engineers needed its own fix — the
+`padding-bottom: 64px` on `.fe2-hero-vh` was making it bottom-heavy. No
+page-level horizontal scroll on any of the six at 1920x1080, 1440x900, 1280x760,
+1152x620, 1024x900 or 420x800.
+
 ### Outstanding from this pass
 
 - **Upload `travelex-wordmark.png` to Sanity.** Sanity's Travelex asset is the
