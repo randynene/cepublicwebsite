@@ -12,7 +12,7 @@ import { Spotlight } from '@/components/motion/spotlight'
 import { ChatLink } from '@/components/shared/chat-link'
 import { FaqChatCard } from '@/components/shared/faq-chat-card'
 import { ClientLogoStrip } from '@/components/social-proof/client-logo-strip'
-import { CHAT_HREF } from '@/lib/chat'
+import { CHAT_FALLBACK_HREF, CHAT_HREF } from '@/lib/chat'
 import { STICKY_ASIDE } from '@/components/layout/sticky-aside'
 
 import {
@@ -898,7 +898,7 @@ function ReadyToFind({ content }: SectionProps) {
           {readyToFind.talkCtas.map((cta, i) => (
             <ChatLink
               key={cta}
-              href={i === 0 ? CHAT_HREF : '/book-a-call'}
+              href={i === 0 ? CHAT_HREF : CHAT_FALLBACK_HREF}
               className="rounded-full bg-[#16233B] px-[16px] py-[8px] text-[13px] font-semibold text-white transition-colors hover:bg-[#1E2E4A]"
             >
               {cta}

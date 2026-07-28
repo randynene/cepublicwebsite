@@ -8,7 +8,7 @@
  *        Services (compact) / Locations (compact) / Case Studies /
  *        Pricing / For Engineers   (+ the existing Schedule a Call CTA)
  *   2. navigation.servicesDropdown → Hire Talent + Build With Us groups
- *   3. navigation.locationsDropdown → LATAM / Philippines / Eastern Europe
+ *   3. navigation.locationsDropdown → Eastern Europe / LATAM / Philippines
  *   4. footer.talentLocations.items → add Eastern Europe if missing
  *
  * ⚠️ CONFIRM BEFORE/AFTER RUN — two Services destinations have no exact
@@ -127,7 +127,18 @@ const LOCATIONS_DROPDOWN = {
     {
       _key: 'loc-group',
       _type: 'locationsDropdownSection' as const,
+      // Order per Seb, 28 Jul review: Eastern Europe, Latin America,
+      // Philippines. Kept in sync with scripts/static/reorder-locations.ts so
+      // re-running this seed does not undo that reorder.
       items: [
+        {
+          _key: 'loc-ee',
+          _type: 'locationsDropdownItem' as const,
+          label: 'Eastern Europe',
+          subtitle: 'Top-tier technical and AI talent',
+          url: url('/services/eastern-europe-developers'),
+          icon: 'location_on',
+        },
         {
           _key: 'loc-latam',
           _type: 'locationsDropdownItem' as const,
@@ -142,14 +153,6 @@ const LOCATIONS_DROPDOWN = {
           label: 'Philippines',
           subtitle: 'Exceptional English, UK-friendly hours',
           url: url('/services/philippines-developers'),
-          icon: 'location_on',
-        },
-        {
-          _key: 'loc-ee',
-          _type: 'locationsDropdownItem' as const,
-          label: 'Eastern Europe',
-          subtitle: 'Top-tier technical and AI talent',
-          url: url('/services/eastern-europe-developers'),
           icon: 'location_on',
         },
       ],

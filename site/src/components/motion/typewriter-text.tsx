@@ -86,7 +86,6 @@ export function TypewriterText({ segments, className }: TypewriterTextProps) {
     dropHold()
     // Mount-only: the hold must be lifted on the first client paint, and
     // `segments` arrives as a fresh array literal on every parent render.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const startedRef = useRef(false)
