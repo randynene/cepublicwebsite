@@ -104,6 +104,39 @@
 .ww-panel + .ww-panel {
   box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.1);
 }
+
+/* ── Hover accordion: the hovered panel widens and opens its photo ──────────
+ *
+ * Gated to widths where the strip already FILLS its band without scrolling
+ * (5 x 270px min + the band's padding lands at ~1420px). That gate is the whole
+ * trick: inside it the panels can share the row, so growing one makes its
+ * siblings shrink and the total stays put. Below it the strip is a scroller with
+ * fixed-width panels, and widening one there would either force the row to
+ * scroll under the cursor or make it snap from scrolling to fitting — so the
+ * accordion simply does not apply, and hover still fades the veil and un-zooms
+ * the photo in place.
+ *
+ * Also gated on `hover: hover` + `pointer: fine`: a touch device has no hover to
+ * trigger it and would just get a layout that never returns.
+ *
+ * Inside the gate the resting flex goes back to `1 1 0%` — an equal share of the
+ * band, which at these widths is the same width the fixed basis produced, so the
+ * at-rest strip is unchanged. Only `flex-grow` animates. */
+@media (hover: hover) and (pointer: fine) and (min-width: 1420px) {
+  .ww-row .ww-panel {
+    flex: 1 1 0%;
+    min-width: 0;
+    transition: flex-grow 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+  /* Any hover in the row levels every panel to 1, then the hovered one alone
+     jumps to 3.4 and the rest give up the room. */
+  .ww-row:hover .ww-panel {
+    flex-grow: 1;
+  }
+  .ww-row .ww-panel:hover {
+    flex-grow: 3.4;
+  }
+}
 /* A panel with no destination is not clickable, so it must not claim to be. */
 .ww-panel.is-static {
   cursor: default;
