@@ -21,7 +21,9 @@ html {
 
 .fcto {
   --bg: #070d18;
-  --navy: #0a1628;
+  /* One ground colour the whole way down — see the same change on
+     hire-engineers.css. Section separation is carried by the --line borders. */
+  --navy: var(--bg);
   --card: #101b30;
   --card-2: #1b2a45;
   --line: #22314d;
@@ -255,7 +257,9 @@ html {
   font-size: 18.5px;
   line-height: 1.65;
   margin-top: 22px;
-  max-width: 36ch;
+  /* Widened from 36ch on the 28 Jul review — same note as the Hire Engineers
+     hero sub: too narrow under a full-width headline. */
+  max-width: 56ch;
 }
 .fcto .hero-ctas {
   display: flex;

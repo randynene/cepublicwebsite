@@ -21,7 +21,12 @@ html {
 
 .he {
   --bg: #070d18;
-  --navy: #0a1628;
+  /* Was #0a1628, which banded the page dark / lighter / dark per section. Seb
+     killed the alternation on the 28 Jul review: one ground colour the whole
+     way down, section separation carried by the 1px --line borders alone.
+     Kept as a token rather than find-and-replaced so the banding is one edit
+     away if it ever comes back. */
+  --navy: var(--bg);
   --card: #101b30;
   --card-2: #1b2a45;
   --line: #22314d;
@@ -208,7 +213,10 @@ html {
   font-size: 19px;
   line-height: 1.55;
   margin-top: 22px;
-  max-width: 40ch;
+  /* Widened from 40ch on the 28 Jul review — "Tell us the role..." was wrapping
+     into a narrow column under a full-width headline and read as a boxed note
+     rather than the hero's supporting line. */
+  max-width: 58ch;
 }
 .he .hero-ctas {
   display: flex;
@@ -341,6 +349,34 @@ html {
   .he .hero {
     padding: 60px 0 52px;
   }
+}
+
+/* trusted-by strip (28 Jul review) — mirrors the Fractional CTO band so the
+   two service pages read as one family. */
+.he .he-trusted {
+  padding: 8px 0 72px;
+  background: var(--bg);
+}
+.he .he-trusted-inner {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+.he .he-trusted-label {
+  flex: none;
+  max-width: 148px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  line-height: 1.5;
+  color: var(--dim);
+  text-transform: uppercase;
+}
+.he .he-trusted-div {
+  flex: none;
+  width: 1px;
+  height: 34px;
+  background: var(--line);
 }
 
 /* offering */

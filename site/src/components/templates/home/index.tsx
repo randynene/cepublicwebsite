@@ -7,9 +7,12 @@ import { Marquee } from '@/components/ui/marquee'
 import { cn } from '@/components/ui/_utils/cn'
 import { Reveal } from '@/components/motion/reveal'
 import { CountUp } from '@/components/motion/count-up'
-import { DecryptText } from '@/components/motion/decrypt-text'
+import { TypewriterText } from '@/components/motion/typewriter-text'
 import { Spotlight } from '@/components/motion/spotlight'
+import { ChatLink } from '@/components/shared/chat-link'
 import { FaqChatCard } from '@/components/shared/faq-chat-card'
+import { ClientLogoStrip } from '@/components/social-proof/client-logo-strip'
+import { CHAT_HREF } from '@/lib/chat'
 import { STICKY_ASIDE } from '@/components/layout/sticky-aside'
 
 import {
@@ -172,7 +175,12 @@ function Hero({ content }: SectionProps) {
   return (
     // Top 120px matches the reference; bottom stays tighter so the logo bar
     // sits cleanly under the card stack (py-120 on both sides left a dead gap).
-    <section className="bg-[#070D18] pb-[72px] pt-[88px] lg:pb-[80px] lg:pt-[120px]">
+    //
+    // `home-hero` (globals.css) makes the section fill exactly the first screen
+    // on desktop and steps the headline and card down on short viewports, which
+    // is what zooming in produces. Seb's requirement from the 28 Jul review:
+    // whatever the zoom level, the first screen is the headline and the photo.
+    <section className="home-hero bg-[#070D18] pb-[72px] pt-[88px] lg:pb-[80px] lg:pt-[120px]">
       <div className={cn(HERO_BAND, 'grid items-center gap-[64px] lg:grid-cols-[1.05fr_1fr]')}>
         {/* Left: text stack */}
         <div>
@@ -192,12 +200,12 @@ function Hero({ content }: SectionProps) {
             {hero.eyebrow}
           </span>
           {/* C — "by engineers" on its own line via explicit <br/>; the
-              decrypt reveal runs only on the final accent word "engineers". */}
+              typewriter runs only on the final accent word "engineers". */}
           <h1 className={cn('mt-[22px]', H1)}>
             {hero.titleLead}
             <br />
             {BY_PREFIX}
-            <DecryptText segments={[{ text: hero.titleAccent, className: ACCENT }]} />
+            <TypewriterText segments={[{ text: hero.titleAccent, className: ACCENT }]} />
           </h1>
           {/* Paragraph: 19px/28.5px, #B8C2D1, max-w 560px. Renders however many
            * lines paragraphLines holds — hard <br/> only between multiple lines,
@@ -248,7 +256,7 @@ function Hero({ content }: SectionProps) {
         {/* Right: auto-cycling profile card (client component). Right-aligned in
          * its grid column so the card's right edge sits on the same content-band
          * edge as the trusted-by logo row (aligns with the SCORPION logo). */}
-        <div className="hidden lg:flex lg:justify-end">
+        <div className="home-hero-card hidden lg:flex lg:justify-end">
           <ProfileCard profiles={slideshow} />
         </div>
         {/* Mobile fallback — simple single photo, no card stack */}
@@ -303,23 +311,11 @@ function TrustedBy({ content }: SectionProps) {
           <span className="block whitespace-nowrap">{trustedBy.labelLine2}</span>
         </p>
         <span aria-hidden className="h-[32px] w-px shrink-0 bg-[#22314D]" />
-        <div className="flex flex-1 items-center justify-between">
-          {trustedBy.logos.map((logo, i) => (
-            <div key={logo.name} className="flex items-center">
-              {i !== 0 && (
-                <span aria-hidden className="h-[24px] w-px shrink-0 bg-[#22314D]" />
-              )}
-              <LogoImage
-                logo={logo}
-                className="mx-[14px] h-auto w-auto shrink-0 object-contain"
-                style={{
-                  maxHeight: `${logo.displayH ?? 22}px`,
-                  opacity: logo.displayOpacity ?? 1,
-                }}
-              />
-            </div>
-          ))}
-        </div>
+        {/* Seb picked the moving strip over the static row on the 28 Jul review.
+         * Shared with Fractional CTO and Hire Engineers so the three cannot
+         * drift. Marquee pauses under prefers-reduced-motion, and the logos are
+         * real <img> elements either way. */}
+        <ClientLogoStrip logos={trustedBy.logos} />
       </Reveal>
     </section>
   )
@@ -597,21 +593,28 @@ function Testimonials({ content }: SectionProps) {
   )
 }
 
-// #8 — Included: untouched.
+// The "You" / "Us" column labels. Seb asked for these bigger than the 12px
+// eyebrow they shared with every other section label: they are the comparison
+// itself, not a section tag. Tracking drops as the size goes up, because 1.68px
+// letter-spacing reads as a gap once the type is this large.
+const INCLUDED_COLUMN_LABEL =
+  'text-[22px] font-bold uppercase leading-none tracking-[1px] text-brand-primary lg:text-[28px]'
+
 function Included({ content }: SectionProps) {
   const { included } = content
   return (
     <section className="bg-[#070D18] py-[72px] lg:py-[104px]">
       <div className={BAND}>
         <Eyebrow>{included.eyebrow}</Eyebrow>
+        {/* Plain accent, no reveal effect: the typewriter is reserved for page
+            heroes, and two competing text effects on one page read as noise. */}
         <h2 className={cn('mt-[16px]', H2)}>
-          {included.titleLead}{' '}
-          <DecryptText segments={[{ text: included.titleAccent, className: ACCENT }]} />
+          {included.titleLead} <span className={ACCENT}>{included.titleAccent}</span>
         </h2>
 
         <div className="mt-[40px] grid gap-[20px] lg:grid-cols-[0.8fr_1.6fr]">
           <Reveal className={cn(CARD, 'p-[32px]')}>
-            <span className={EYEBROW}>{included.you.label}</span>
+            <span className={INCLUDED_COLUMN_LABEL}>{included.you.label}</span>
             <h3 className="mt-[14px] whitespace-pre-line text-[24px] font-semibold leading-[32px] tracking-[-0.5px] text-white lg:text-[27px] lg:leading-[35px]">
               {included.you.heading}
             </h3>
@@ -630,7 +633,7 @@ function Included({ content }: SectionProps) {
           </Reveal>
 
           <Reveal delay={80} className={cn(CARD, 'p-[32px]')}>
-            <span className={EYEBROW}>{included.us.label}</span>
+            <span className={INCLUDED_COLUMN_LABEL}>{included.us.label}</span>
             <h3 className="mt-[14px] text-[24px] font-semibold leading-[32px] tracking-[-0.5px] text-white lg:text-[27px] lg:leading-[35px]">
               {included.us.heading}
             </h3>
@@ -692,8 +695,7 @@ function RealEngineers({ content }: SectionProps) {
       <div className={BAND}>
         <Eyebrow>{realEngineers.eyebrow}</Eyebrow>
         <h2 className={cn('mt-[16px]', H2)}>
-          {realEngineers.titleLead}{' '}
-          <DecryptText segments={[{ text: realEngineers.titleAccent, className: ACCENT }]} />
+          {realEngineers.titleLead} <span className={ACCENT}>{realEngineers.titleAccent}</span>
         </h2>
       </div>
       <Marquee speed="slow" pauseOnHover className="mt-[40px] pb-[8px]">
@@ -888,15 +890,19 @@ function ReadyToFind({ content }: SectionProps) {
           </div>
         </Reveal>
 
+        {/* These were non-clickable <span>s: the page invited you to "Ask our AI
+            anything" and then did nothing when you did. First CTA opens the chat
+            widget, the rest are ordinary links. */}
         <div className="mt-[24px] flex flex-wrap items-center justify-center gap-[14px]">
           <span className={cn('text-[14px]', MUTED)}>{readyToFind.talkPrompt}</span>
-          {readyToFind.talkCtas.map((cta) => (
-            <span
+          {readyToFind.talkCtas.map((cta, i) => (
+            <ChatLink
               key={cta}
-              className="rounded-full bg-[#16233B] px-[16px] py-[8px] text-[13px] font-semibold text-white"
+              href={i === 0 ? CHAT_HREF : '/book-a-call'}
+              className="rounded-full bg-[#16233B] px-[16px] py-[8px] text-[13px] font-semibold text-white transition-colors hover:bg-[#1E2E4A]"
             >
               {cta}
-            </span>
+            </ChatLink>
           ))}
         </div>
       </div>

@@ -58,6 +58,9 @@ interface ChatTargetProps {
 
 export interface ChatLinkProps extends ChatTargetProps {
   children: ReactNode
+  /** Runs before the chat handling. For callers that need to stop the click
+   *  reaching a clickable ancestor; it cannot suppress opening the chat. */
+  onClick?: (event: MouseEvent<HTMLAnchorElement>) => void
 }
 
 /** Bare anchor. The caller owns all styling. */
@@ -66,12 +69,16 @@ export function ChatLink({
   fallbackHref = CHAT_FALLBACK_HREF,
   locale = 'en-US',
   className,
+  onClick,
   children,
 }: ChatLinkProps) {
   return (
     <a
       href={resolveHref(href, fallbackHref, locale)}
-      onClick={(event) => handleClick(event, href)}
+      onClick={(event) => {
+        onClick?.(event)
+        handleClick(event, href)
+      }}
       className={className}
     >
       {children}

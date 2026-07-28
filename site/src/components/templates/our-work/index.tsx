@@ -2,6 +2,7 @@ import Link from 'next/link'
 
 import { Image } from '@/components/ui/image'
 import { cn } from '@/components/ui/_utils/cn'
+import { TypewriterText } from '@/components/motion/typewriter-text'
 import { CardMarquee } from '@/components/social-proof/card-marquee'
 import { LogoMarquee } from '@/components/social-proof/logo-marquee'
 import { ReviewCard } from '@/components/social-proof/review-card'
@@ -224,7 +225,8 @@ export async function OurWorkTemplate({
       <section className={cn(BAND, 'pt-[56px] text-center lg:pt-[80px]')}>
         <p className={EYEBROW}>{C.hero.eyebrow}</p>
         <h1 className="mx-auto mt-5 max-w-[820px] text-[38px] font-semibold leading-[1.05] tracking-[-1.6px] text-white lg:text-[58px] lg:leading-[62px] lg:tracking-[-2.2px]">
-          {C.hero.titleLead} <span className={ACCENT}>{C.hero.titleAccent}</span> {C.hero.titleRest}
+          {C.hero.titleLead} <TypewriterText segments={[{ text: C.hero.titleAccent, className: ACCENT }]} />{' '}
+          {C.hero.titleRest}
         </h1>
         <p className={cn('mx-auto mt-5 max-w-[620px] text-[16px] leading-[24px]', BODY)}>{C.hero.intro}</p>
         <ul className="mt-12 grid grid-cols-1 gap-6 text-left md:grid-cols-3">

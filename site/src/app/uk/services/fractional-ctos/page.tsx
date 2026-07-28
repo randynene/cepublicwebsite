@@ -24,5 +24,5 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function UkFractionalCtoPage() {
   const data = await fetchFractionalCtoPage()
   const content = data ? toFctoContent(data) : FCTO
-  return <FractionalCtoTemplate content={content} />
+  return <FractionalCtoTemplate content={content} locale="en-GB" />
 }

@@ -11,6 +11,8 @@
 // gate and (b) gives a clean 1:1 shape to swap for a Sanity `homePage` fetch
 // when the editability wiring lands.
 
+import { CLIENT_LOGOS } from '@/components/social-proof/client-logo-strip'
+
 const IMG = '/design/home'
 
 // Seb Hall 90-second overview video (Vimeo). Used by the Process section: it
@@ -281,15 +283,9 @@ export const HOME_CONTENT = {
     label: 'Trusted by 300+ engineering teams',
     labelLine1: 'TRUSTED BY 300+',
     labelLine2: 'ENGINEERING TEAMS',
-    logos: [
-      { name: 'Virgin Experience Days', src: `${IMG}/logos/virgin.png`, width: 260, height: 105, displayH: 36 },
-      { name: 'Salmon', src: `${IMG}/logos/salmon.png`, width: 260, height: 63, displayH: 28 },
-      { name: 'Hotelplan', src: `${IMG}/logos/hotelplan.png`, width: 260, height: 55, displayH: 25 },
-      { name: 'Willo', src: `${IMG}/logos/willo.png`, width: 260, height: 84, displayH: 28 },
-      { name: 'Travelex', src: `${IMG}/logos/travelex.png`, width: 260, height: 75, invert: false, displayH: 28 },
-      { name: 'Tidal', src: `${IMG}/logos/tidal.png`, width: 260, height: 124, displayH: 28 },
-      { name: 'Scorpion', src: `${IMG}/logos/scorpion.png`, width: 260, height: 37, displayH: 18, displayOpacity: 0.8 },
-    ] as HomeLogo[],
+    // Single source for the seven client logos — Fractional CTO and Hire
+    // Engineers render the same strip, and they used to drift.
+    logos: CLIENT_LOGOS as HomeLogo[],
   },
   clientStory: {
     eyebrow: "Jobs boards don't work anymore",
@@ -348,7 +344,7 @@ export const HOME_CONTENT = {
       {
         number: '02',
         title: 'Interviewed by Engineers',
-        body: 'Live coding on your stack. Cultural fit, psychometrics, background checks, KYC.',
+        body: 'Live coding on your stack. Cultural fit, psychometric testing, background checks, KYC.',
         cta: '100+ screened to find your shortlist.',
       },
       {
@@ -451,7 +447,7 @@ export const HOME_CONTENT = {
     saving: '$85,200/yr saved',
     badgeSave: 'Save $85,200/yr',
     badgeSub: 'vs hiring in the US',
-    cta: 'Get matched at this rate',
+    cta: 'Ask our AI',
     footnote:
       '*Ranges based on actual placements. Final price confirmed after discovery call.',
   },

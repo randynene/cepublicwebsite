@@ -161,6 +161,98 @@ body {
   }
 }
 
+/* Typewriter reveal — pre-hydration hold (site/src/components/motion/typewriter-text.tsx).
+   Same contract as the decrypt hold above: the real word is in the server HTML,
+   but a browser that is going to type it out must not paint the finished word
+   first. Identical media gate, so no-JS and reduced-motion never match, and the
+   same 4s failsafe covers a hydration that never arrives. */
+@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+  [data-typewriter-hold] {
+    visibility: hidden;
+    animation: decrypt-hold-failsafe 1ms linear 4s forwards;
+  }
+}
+
+/* Caret. box-shadow rather than border-right so the caret is painted OUTSIDE
+   the character box and cannot nudge the line as it advances. */
+[data-typewriter-caret] {
+  box-shadow: 2px 0 0 0 currentColor;
+}
+[data-typewriter-caret='blink'] {
+  animation: typewriter-caret-blink 900ms steps(1, end) infinite;
+}
+@keyframes typewriter-caret-blink {
+  0%,
+  49% {
+    box-shadow: 2px 0 0 0 currentColor;
+  }
+  50%,
+  100% {
+    box-shadow: none;
+  }
+}
+
+/* Home hero — "whatever the zoom level, the first screen is the headline and
+   the photo" (Seb, 28 Jul review).
+
+   Zooming in does not change the layout, it shrinks the viewport measured in
+   CSS pixels. So the fit is driven off viewport HEIGHT: the section claims
+   exactly one screen, and the two things that overflow first (the 58px headline
+   and the fixed 457px profile card) step down once the screen gets short.
+   Nothing below 900px of height is touched at a normal 100% desktop zoom, so
+   the signed-off design is unchanged for anyone not zoomed in. */
+@media (min-width: 1024px) {
+  .home-hero {
+    display: flex;
+    align-items: center;
+    min-height: calc(
+      100svh - var(--header-height) - var(--announcement-bar-height)
+    );
+  }
+  .home-hero > * {
+    width: 100%;
+  }
+
+  @media (max-height: 900px) {
+    .home-hero {
+      padding-top: 64px;
+      padding-bottom: 48px;
+    }
+    .home-hero h1 {
+      font-size: 50px;
+      line-height: 54px;
+    }
+    .home-hero-card {
+      scale: 0.88;
+      transform-origin: right center;
+    }
+  }
+
+  @media (max-height: 760px) {
+    .home-hero {
+      padding-top: 40px;
+      padding-bottom: 32px;
+    }
+    .home-hero h1 {
+      font-size: 42px;
+      line-height: 46px;
+    }
+    .home-hero-card {
+      scale: 0.74;
+    }
+  }
+
+  @media (max-height: 620px) {
+    .home-hero h1 {
+      font-size: 36px;
+      line-height: 40px;
+    }
+    .home-hero-card {
+      scale: 0.62;
+    }
+  }
+}
+
 /* Card hover-lift — independent of the reveal system above (direct user
    interaction, not an on-load animation), but still reduced-motion aware. */
 .hover-lift {

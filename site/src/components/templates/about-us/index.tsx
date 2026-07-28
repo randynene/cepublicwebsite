@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
 import { Spotlight } from '@/components/motion/spotlight'
+import { TypewriterText } from '@/components/motion/typewriter-text'
 import { CardMarquee } from '@/components/social-proof/card-marquee'
 import { LogoMarquee } from '@/components/social-proof/logo-marquee'
 import { ReviewCard } from '@/components/social-proof/review-card'
@@ -121,7 +122,7 @@ export async function AboutUsTemplate({
       <section className={cn(BAND, 'pt-[56px] text-center lg:pt-[80px]')}>
         <p className={EYEBROW}>{C.hero.eyebrow}</p>
         <h1 className="mx-auto mt-5 max-w-[860px] text-[38px] font-semibold leading-[1.05] tracking-[-1.6px] text-white lg:text-[58px] lg:leading-[62px] lg:tracking-[-2.2px]">
-          {C.hero.titleLead} <span className={ACCENT}>{C.hero.titleAccent}</span>
+          {C.hero.titleLead} <TypewriterText segments={[{ text: C.hero.titleAccent, className: ACCENT }]} />
         </h1>
         <p className={cn('mx-auto mt-5 max-w-[640px] text-[16px] leading-[24px]', BODY)}>{C.hero.intro}</p>
         <div className="mt-10 flex justify-center">

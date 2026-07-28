@@ -244,7 +244,7 @@ export const HE: HireEngineersContent = {
         { sn: 'AI ability', w: 91, sp: '91%' },
       ],
       openTitle: 'This is what you receive - not a CV.',
-      openBtn: 'Explore a real profile',
+      openBtn: 'Tell our AI what you need',
     },
     tour: 'Or watch the 90-second tour',
     modalStrong: 'Sample talent profile opens here.',

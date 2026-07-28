@@ -3,9 +3,11 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 
 import { cn } from '@/components/ui/_utils/cn'
-import { parseVideoUrl } from '@/components/ui/video-embed'
+import { TypewriterText } from '@/components/motion/typewriter-text'
 import { ChatLink } from '@/components/shared/chat-link'
+import { ClientLogoStrip } from '@/components/social-proof/client-logo-strip'
 import { CHAT_HREF } from '@/lib/chat'
+import { buildLocalePath, type Locale } from '@/lib/locale-path'
 import { FCTO, type FctoContent } from './content'
 import './fractional-cto.css'
 
@@ -49,14 +51,6 @@ function CalendarIcon() {
     </svg>
   )
 }
-function PlayTri() {
-  return (
-    <svg viewBox="0 0 24 24">
-      <path d="M8 5v14l11-7z" />
-    </svg>
-  )
-}
-
 // Hero "Your match" panel row icons, keyed by FctoMatchRow.icon.
 const MATCH_ROW_ICONS: Record<string, ReactNode> = {
   trend: (
@@ -189,109 +183,9 @@ function HeroMatchPanel({ match }: { match: FctoContent['hero']['match'] }) {
   )
 }
 
-// ── Logo marquee: content rendered twice for the seamless -50% CSS loop ──
-function LogoMarquee({ logos: names }: { logos: string[] }) {
-  const logos = [...names, ...names]
-  return (
-    <div className="marquee">
-      <div className="marquee-track" id="logoTrack">
-        {logos.map((name, i) => (
-          <span key={`${name}-${i}`} className="logo-name">
-            {name}
-          </span>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-// Build a provider embed URL (autoplay) from a parsed YouTube/Vimeo/Loom link.
-function fctoEmbedSrc(parsed: NonNullable<ReturnType<typeof parseVideoUrl>>): string {
-  if (parsed.provider === 'youtube') {
-    return `https://www.youtube-nocookie.com/embed/${parsed.id}?autoplay=1&rel=0`
-  }
-  if (parsed.provider === 'vimeo') {
-    return `https://player.vimeo.com/video/${parsed.id}?autoplay=1`
-  }
-  if (parsed.provider === 'linkedin') {
-    return `https://www.linkedin.com/embed/feed/update/urn:li:share:${parsed.id}`
-  }
-  return `https://www.loom.com/embed/${parsed.id}?autoplay=1`
-}
-
-// ── Video tile: when a real videoUrl is set, play toggles a provider iframe.
-// Otherwise it falls back to the source's stylised placeholder (progress bar). ──
-function VideoTile({ video }: { video: FctoContent['video'] }) {
-  const [playing, setPlaying] = useState(false)
-  const barRef = useRef<HTMLElement>(null)
-
-  const parsed = video.videoUrl ? parseVideoUrl(video.videoUrl) : null
-  // Thumbnail: explicit poster wins; otherwise auto-use the YouTube still.
-  const poster =
-    video.poster ||
-    (parsed?.provider === 'youtube' ? `https://img.youtube.com/vi/${parsed.id}/hqdefault.jpg` : '')
-
-  function toggle() {
-    if (parsed) {
-      setPlaying(true)
-      return
-    }
-    const next = !playing
-    setPlaying(next)
-    const bar = barRef.current
-    if (bar) {
-      bar.style.transition = next ? 'width 90s linear' : 'width .3s ease'
-      bar.style.width = next ? '100%' : '0'
-    }
-  }
-
-  if (playing && parsed) {
-    return (
-      <div className="video-shell">
-        <div className="video-tile playing" id="videoTile">
-          <iframe
-            src={fctoEmbedSrc(parsed)}
-            title={video.title}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
-          />
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="video-shell">
-      <div className={cn('video-tile', playing && 'playing')} id="videoTile">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        {poster ? <img src={poster} alt={video.title} /> : null}
-        <div className="scrim" />
-        <div className="video-tag">
-          <span className="rec" /> {video.tag}
-        </div>
-        <div className="video-name">
-          <div className="n">{video.name}</div>
-          <div className="r">{video.role}</div>
-        </div>
-        <button className="video-play" id="videoPlay" type="button" onClick={toggle}>
-          <span className="tri">
-            <PlayTri />
-          </span>
-          {video.play}
-        </button>
-      </div>
-      <div className="video-caption">
-        <span>{video.timeStart}</span>
-        <span className="bar">
-          <i id="videoBar" ref={barRef} />
-        </span>
-        <span>{video.timeEnd}</span>
-        <span id="videoState">{playing ? video.statePlaying : video.stateIdle}</span>
-      </div>
-    </div>
-  )
-}
+// The text-name logo marquee and the placeholder VideoTile that used to live
+// here were removed on the 28 Jul review: the strip is now the real shared
+// ClientLogoStrip, and the video section is gone until Seb films one.
 
 // ── Statement cursor-follow glow: pointer tracked across the whole section ──
 function StatementGlow({ statement }: { statement: FctoContent['statement'] }) {
@@ -360,7 +254,7 @@ function DeriskRow({ seq, dir }: { seq: readonly string[]; dir: 'l' | 'r' }) {
 }
 
 // ── Multi-step match form ──
-function MatchForm({ mf }: { mf: FctoContent['matchform'] }) {
+function MatchForm({ mf, locale }: { mf: FctoContent['matchform']; locale: Locale }) {
   const [step, setStep] = useState(0)
   const [selected, setSelected] = useState<number | null>(0)
 
@@ -418,15 +312,16 @@ function MatchForm({ mf }: { mf: FctoContent['matchform'] }) {
           </button>
         </div>
       </div>
+      {/* Both pills were <button type="button"> with no handler. */}
       <div className="mf-reassure">
         <div className="mf-talk">
           <span className="lbl">{mf.reassureLabel}</span>
-          <button className="pill-soft" type="button">
+          <ChatLink href={CHAT_HREF} locale={locale} className="pill-soft">
             <ChatIcon /> {mf.pillAi}
-          </button>
-          <button className="pill-soft" type="button">
+          </ChatLink>
+          <a className="pill-soft" href={buildLocalePath('/book-a-call', locale)}>
             <CalendarIcon /> {mf.pillBook}
-          </button>
+          </a>
         </div>
         <div className="trust-row" style={{ justifyContent: 'center', marginTop: 0 }}>
           {mf.trust.map((t) => (
@@ -440,7 +335,13 @@ function MatchForm({ mf }: { mf: FctoContent['matchform'] }) {
   )
 }
 
-export function FractionalCtoTemplate({ content = FCTO }: { content?: FctoContent }) {
+export function FractionalCtoTemplate({
+  content = FCTO,
+  locale = 'en-US',
+}: {
+  content?: FctoContent
+  locale?: Locale
+}) {
   const rootRef = useRef<HTMLElement>(null)
 
   // Scroll reveal: add `.in` to `.rvl` elements as they enter view (source
@@ -476,7 +377,8 @@ export function FractionalCtoTemplate({ content = FCTO }: { content?: FctoConten
               <span className="eyebrow">{content.hero.eyebrow}</span>
             </span>
             <h1>
-              {content.hero.h1Lead} <em>{content.hero.h1Em}</em>
+              {content.hero.h1Lead}{' '}
+              <TypewriterText segments={[{ text: content.hero.h1Em, em: true }]} />
             </h1>
             <p className="hero-sub">{content.hero.sub}</p>
             <div className="hero-ctas">
@@ -502,29 +404,25 @@ export function FractionalCtoTemplate({ content = FCTO }: { content?: FctoConten
         </div>
       </section>
 
-      {/* 2. TRUSTED BY */}
+      {/* 2. TRUSTED BY — real client logos, not the company names as text. */}
       <section className="trusted">
         <div className="wrap trusted-inner">
           <span className="trusted-label">{content.trusted.label}</span>
           <span className="trusted-div" />
-          <LogoMarquee logos={content.trusted.logos} />
-          <button className="pill-soft ai-pill" type="button">
+          <ClientLogoStrip />
+          <ChatLink href={CHAT_HREF} locale={locale} className="pill-soft ai-pill">
             <ChatIcon /> {content.trusted.aiPill}
-          </button>
+          </ChatLink>
         </div>
       </section>
 
-      {/* 3. VIDEO */}
-      <section className="video" id="how">
-        <div className="wrap">
-          <span className="eyebrow">{content.video.eyebrow}</span>
-          <h2 className="section-title">{content.video.title}</h2>
-          <VideoTile video={content.video} />
-        </div>
-      </section>
+      {/* 3. VIDEO — removed on the 28 Jul review: the tile was a placeholder
+          with no filmed video behind it, and Seb asked for it gone until he
+          records one. `id="how"` moves to the next section so the hero's
+          "see how it works" link still lands somewhere real. */}
 
       {/* 4. WHAT THEY DO */}
-      <section className="does">
+      <section className="does" id="how">
         <div className="wrap">
           <div className="head">
             <span className="eyebrow">{content.does.eyebrow}</span>
@@ -626,7 +524,7 @@ export function FractionalCtoTemplate({ content = FCTO }: { content?: FctoConten
             </h2>
             <p className="lead">{content.matchform.lead}</p>
           </div>
-          <MatchForm mf={content.matchform} />
+          <MatchForm mf={content.matchform} locale={locale} />
         </div>
       </section>
 

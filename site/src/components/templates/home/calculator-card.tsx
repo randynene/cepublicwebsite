@@ -5,6 +5,8 @@ import { useState } from 'react'
 import { cn } from '@/components/ui/_utils/cn'
 import { CountUp } from '@/components/motion/count-up'
 import { Reveal } from '@/components/motion/reveal'
+import { ChatLink } from '@/components/shared/chat-link'
+import { CHAT_HREF } from '@/lib/chat'
 import {
   computeNextHireCost,
   NEXT_HIRE_REGION_OPTIONS,
@@ -33,6 +35,8 @@ const MUTED = 'text-[#7F8CA0]'
 
 /** Down-chevron glyph, matching the static markup this card replaced. */
 const CHEVRON = '\u2304'
+/** Trailing arrow on the chat CTA — Seb asked for the arrow on the 28 Jul call. */
+const ARROW = '\u2192'
 
 const SENIORITY_LABELS: Record<string, string> = {
   Senior: 'Senior level',
@@ -182,12 +186,16 @@ export function HomeCalculatorCard({ calculator }: { calculator: HomeContent['ca
           <span className="text-[13px] font-medium opacity-70">{calculator.comparison}</span>
           <span className="text-[15px] font-bold tabular-nums">{saving}</span>
         </div>
-        <a
-          href="#process"
-          className="mt-[24px] inline-flex w-full items-center justify-center rounded-full bg-[#060F1E] px-[18px] py-[14px] text-[15px] font-bold text-white"
+        {/* This used to scroll to #process (the video), which is not what the
+         * label promised. It now opens the chat, which is where a visitor who
+         * wants a figure they can trust actually gets one. */}
+        <ChatLink
+          href={CHAT_HREF}
+          className="mt-[24px] inline-flex w-full items-center justify-center gap-[8px] rounded-full bg-[#060F1E] px-[18px] py-[14px] text-[15px] font-bold text-white transition-colors hover:bg-[#0D1A31]"
         >
           {calculator.cta}
-        </a>
+          <span aria-hidden>{ARROW}</span>
+        </ChatLink>
       </div>
 
       {/* Save badge: tilted 6deg, popped in, sits proud of the card corner */}

@@ -3,8 +3,13 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 
 import { Spotlight } from '@/components/motion/spotlight'
+import { TypewriterText } from '@/components/motion/typewriter-text'
+import { ChatLink } from '@/components/shared/chat-link'
+import { ClientLogoStrip } from '@/components/social-proof/client-logo-strip'
 import { cn } from '@/components/ui/_utils/cn'
 import { parseVideoUrl } from '@/components/ui/video-embed'
+import { CHAT_HREF } from '@/lib/chat'
+import { buildLocalePath, type Locale } from '@/lib/locale-path'
 import { CALC, HE, type HireEngineersContent } from './content'
 import './hire-engineers.css'
 
@@ -12,6 +17,12 @@ import './hire-engineers.css'
 // cover-crop, inherit the tile's rounding. Empty slots keep the CSS placeholder.
 const OFFER_IMG_PLACEHOLDER = 'imgslot offer-img rvl'
 const OFFER_IMG_WITH_PHOTO = 'imgslot offer-img has-img rvl'
+
+// Not on the hireEngineersPage Sanity singleton (its transform maps a fixed set
+// of fields, so a new one would read undefined against live data). Kept as a
+// constant rather than a JSX literal for the UI_STRINGS rule; promote it to
+// Sanity with the next schema pass on this page.
+const TRUSTED_LABEL = 'Trusted by 300+ engineering teams'
 
 const COVER: React.CSSProperties = {
   position: 'absolute',
@@ -83,73 +94,127 @@ const OFFER_ICONS: ReactNode[] = [
   </svg>,
 ]
 
-// Role-card icons, in section order (matches roles.items). DevOps -> spin
-// (process loop), AI/ML -> twinkle (sparkle), QA's checkmark and the
-// catch-all's arrow -> draw (trace-in); the rest default to bob.
-const ROLE_ICONS: ReactNode[] = [
-  <svg key="r0" viewBox="0 0 24 24" className="icon-motion icon-motion--bob">
-    <path d="M8 6l-4 6 4 6M16 6l4 6-4 6" />
-  </svg>,
-  <svg key="r1" viewBox="0 0 24 24" className="icon-motion icon-motion--spin">
-    <path d="M12 3v18M3 12h18" />
-  </svg>,
-  <svg key="r2" viewBox="0 0 24 24">
-    <path className="icon-motion icon-motion--draw" d="M9 11l3 3 8-8" pathLength={100} />
-    <path d="M20 12v6a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h9" />
-  </svg>,
-  <svg key="r3" viewBox="0 0 24 24" className="icon-motion icon-motion--bob">
-    <rect x="7" y="3" width="10" height="18" rx="2" />
-    <path d="M11 18h2" />
-  </svg>,
-  <svg key="r4" viewBox="0 0 24 24" className="icon-motion icon-motion--bob">
-    <path d="M4 4h16v12H4z" />
-    <path d="M8 20h8M12 16v4" />
-  </svg>,
-  <svg key="r5" viewBox="0 0 24 24" className="icon-motion icon-motion--twinkle">
-    <circle cx="12" cy="12" r="3" />
-    <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
-  </svg>,
-  <svg key="r6" viewBox="0 0 24 24" className="icon-motion icon-motion--bob">
-    <path d="M12 2l3 6 6 1-4.5 4 1 6-5.5-3-5.5 3 1-6L3 9l6-1z" />
-  </svg>,
-  <svg key="r7" viewBox="0 0 24 24">
-    <path className="icon-motion icon-motion--draw" d="M5 12h14M13 6l6 6-6 6" pathLength={100} />
-  </svg>,
+// Role icons, keyed by WHAT THE ROLE IS rather than by its position in the
+// list.
+//
+// These used to be two positional arrays indexed with `ICONS[i]`, so every icon
+// silently drifted onto the wrong role as the copy changed: DevOps carried a
+// plus sign, Data Engineers a desktop monitor, Fractional CTOs a star, and
+// Backend a sun. Seb caught it on the 28 Jul review ("the icons do not fully
+// match exactly what the roles are"). Keying on the label means the mapping
+// survives a reorder or a rename in Sanity, and an unrecognised role falls back
+// to the neutral arrow instead of borrowing whichever icon sat at that index.
+const ROLE_ICON_RULES: { match: RegExp; icon: ReactNode }[] = [
+  {
+    // Backend before the generic "engineer" catch-alls.
+    match: /back[- ]?end/i,
+    icon: (
+      <svg viewBox="0 0 24 24" className="icon-motion icon-motion--bob">
+        <rect x="3" y="4" width="18" height="6" rx="1.5" />
+        <rect x="3" y="14" width="18" height="6" rx="1.5" />
+        <path d="M6.5 7h.01M6.5 17h.01" />
+      </svg>
+    ),
+  },
+  {
+    match: /front[- ]?end/i,
+    icon: (
+      <svg viewBox="0 0 24 24" className="icon-motion icon-motion--bob">
+        <rect x="3" y="4" width="18" height="16" rx="2" />
+        <path d="M3 9h18M6.5 6.5h.01M9.5 6.5h.01" />
+      </svg>
+    ),
+  },
+  {
+    // Full-stack and plain "Software Engineers" share the code-brackets mark.
+    match: /full[- ]?stack|software/i,
+    icon: (
+      <svg viewBox="0 0 24 24" className="icon-motion icon-motion--bob">
+        <path d="M8 6l-4 6 4 6M16 6l4 6-4 6" />
+      </svg>
+    ),
+  },
+  {
+    match: /dev[- ]?ops|platform|infra/i,
+    icon: (
+      // Continuous-delivery loop, which is what DevOps actually means.
+      <svg viewBox="0 0 24 24" className="icon-motion icon-motion--spin">
+        <path d="M3 12a9 9 0 0115.7-6M21 12a9 9 0 01-15.7 6" />
+        <path d="M18 3v3h-3M6 21v-3h3" />
+      </svg>
+    ),
+  },
+  {
+    match: /\bqa\b|test/i,
+    icon: (
+      <svg viewBox="0 0 24 24">
+        <path className="icon-motion icon-motion--draw" d="M9 11l3 3 8-8" pathLength={100} />
+        <path d="M20 12v6a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h9" />
+      </svg>
+    ),
+  },
+  {
+    match: /mobile|ios|android/i,
+    icon: (
+      <svg viewBox="0 0 24 24" className="icon-motion icon-motion--bob">
+        <rect x="7" y="3" width="10" height="18" rx="2" />
+        <path d="M11 18h2" />
+      </svg>
+    ),
+  },
+  {
+    match: /\bdata\b/i,
+    icon: (
+      // Database cylinder, replacing a desktop monitor.
+      <svg viewBox="0 0 24 24" className="icon-motion icon-motion--bob">
+        <ellipse cx="12" cy="6" rx="8" ry="3" />
+        <path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6" />
+        <path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3" />
+      </svg>
+    ),
+  },
+  {
+    match: /\bai\b|machine learning|\bml\b/i,
+    icon: (
+      // The sparkle is the mark people now read as "AI" — Seb asked for it by
+      // name ("should that be the little AI logo?").
+      <svg viewBox="0 0 24 24" className="icon-motion icon-motion--twinkle">
+        <path d="M10 3l1.6 4.4L16 9l-4.4 1.6L10 15l-1.6-4.4L4 9l4.4-1.6z" />
+        <path d="M17.5 14l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z" />
+      </svg>
+    ),
+  },
+  {
+    match: /cto|lead|principal|architect/i,
+    icon: (
+      // Compass: direction and technical strategy, not a gold star.
+      <svg viewBox="0 0 24 24" className="icon-motion icon-motion--bob">
+        <circle cx="12" cy="12" r="9" />
+        <path d="M15.5 8.5l-2.2 4.8-4.8 2.2 2.2-4.8z" />
+      </svg>
+    ),
+  },
+  {
+    match: /security|cyber/i,
+    icon: (
+      <svg viewBox="0 0 24 24" className="icon-motion icon-motion--bob">
+        <path d="M12 3l8 4v6c0 5-3.5 7.5-8 8-4.5-.5-8-3-8-8V7z" />
+        <path d="M9.5 12l1.8 1.8L15 10" />
+      </svg>
+    ),
+  },
 ]
 
-// Step-0 role-option icons, in order (matches find.step0.opts). Same
-// motion logic as ROLE_ICONS: AI/ML -> twinkle, DevOps -> spin, rest bob.
-const STEP0_ICONS: ReactNode[] = [
-  <svg key="s0" viewBox="0 0 24 24" className="icon-motion icon-motion--bob">
-    <circle cx="12" cy="12" r="3" />
-    <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
-  </svg>,
-  <svg key="s1" viewBox="0 0 24 24" className="icon-motion icon-motion--bob">
-    <rect x="3" y="4" width="18" height="14" rx="2" />
-    <path d="M3 9h18" />
-  </svg>,
-  <svg key="s2" viewBox="0 0 24 24" className="icon-motion icon-motion--bob">
-    <path d="M8 6l-4 6 4 6M16 6l4 6-4 6" />
-  </svg>,
-  <svg key="s3" viewBox="0 0 24 24" className="icon-motion icon-motion--twinkle">
-    <circle cx="12" cy="12" r="3" />
-    <path d="M12 2v4M12 18v4M4 12H2M22 12h-2" />
-  </svg>,
-  <svg key="s4" viewBox="0 0 24 24" className="icon-motion icon-motion--bob">
-    <path d="M4 4h16v12H4z" />
-    <path d="M8 20h8" />
-  </svg>,
-  <svg key="s5" viewBox="0 0 24 24" className="icon-motion icon-motion--spin">
-    <path d="M12 3v18M3 12h18" />
-  </svg>,
-  <svg key="s6" viewBox="0 0 24 24" className="icon-motion icon-motion--bob">
-    <rect x="7" y="3" width="10" height="18" rx="2" />
-    <path d="M11 18h2" />
-  </svg>,
-  <svg key="s7" viewBox="0 0 24 24" className="icon-motion icon-motion--bob">
-    <path d="M12 2l3 6 6 1-4.5 4 1 6-5.5-3-5.5 3 1-6L3 9l6-1z" />
-  </svg>,
-]
+/** Neutral catch-all: "Something else?" and any role we do not recognise. */
+const ROLE_ICON_FALLBACK: ReactNode = (
+  <svg viewBox="0 0 24 24">
+    <path className="icon-motion icon-motion--draw" d="M5 12h14M13 6l6 6-6 6" pathLength={100} />
+  </svg>
+)
+
+function roleIcon(label: string): ReactNode {
+  return ROLE_ICON_RULES.find((r) => r.match.test(label))?.icon ?? ROLE_ICON_FALLBACK
+}
 
 // ── Pricing cost calculator (source <script> engine, verbatim tables) ──
 const fmt = (n: number) => '$' + Math.round(n).toLocaleString('en-US')
@@ -247,7 +312,16 @@ function Calculator({ price }: { price: HireEngineersContent['price'] }) {
 }
 
 // ── Multi-step "find your engineer" form ──
-function OptionGroup({ options, icons, single }: { options: readonly string[]; icons?: ReactNode[]; single?: boolean }) {
+function OptionGroup({
+  options,
+  iconFor,
+  single,
+}: {
+  options: readonly string[]
+  /** Resolve the icon from the option LABEL, not its index — see roleIcon. */
+  iconFor?: (label: string) => ReactNode
+  single?: boolean
+}) {
   const [sel, setSel] = useState<Set<number>>(new Set())
   function toggle(i: number) {
     setSel((prev) => {
@@ -262,7 +336,7 @@ function OptionGroup({ options, icons, single }: { options: readonly string[]; i
     <div className="opts">
       {options.map((o, i) => (
         <button key={o} type="button" className={cn('opt', 'icon-card', sel.has(i) && 'sel')} onClick={() => toggle(i)}>
-          {icons ? <span className="ic">{icons[i]}</span> : null}
+          {iconFor ? <span className="ic">{iconFor(o)}</span> : null}
           <span className="on">{o}</span>
         </button>
       ))}
@@ -293,7 +367,7 @@ function FindForm({ find }: { find: HireEngineersContent['find'] }) {
       <div className={stepClass(0)}>
         <div className="q">{find.step0.q}</div>
         <div className="q-hint">{find.step0.hint}</div>
-        <OptionGroup options={find.step0.opts} icons={STEP0_ICONS} single />
+        <OptionGroup options={find.step0.opts} iconFor={roleIcon} single />
       </div>
 
       <div className={stepClass(1)}>
@@ -369,7 +443,13 @@ function FindForm({ find }: { find: HireEngineersContent['find'] }) {
 // The "90-second tour" link plays a real embed when vet.tourVideoUrl is set
 // (optional vet.tourPoster shows as the still); otherwise it stays inert, as in
 // the source design.
-function ProfileExplorer({ vet }: { vet: HireEngineersContent['vet'] }) {
+function ProfileExplorer({
+  vet,
+  locale,
+}: {
+  vet: HireEngineersContent['vet']
+  locale: Locale
+}) {
   const [open, setOpen] = useState(false)
   const [tourOpen, setTourOpen] = useState(false)
   const [tourPlaying, setTourPlaying] = useState(false)
@@ -433,11 +513,20 @@ function ProfileExplorer({ vet }: { vet: HireEngineersContent['vet'] }) {
               ))}
             </div>
           </div>
+          {/* Seb liked the profile widget itself and wanted only its CTA
+              re-pointed: the bar now opens the chat rather than the sample
+              profile modal. stopPropagation keeps the card's own click (which
+              expands the sample) from firing underneath it. */}
           <div className="prof-open">
             <span className="po-t">{p.openTitle}</span>
-            <span className="po-b">
+            <ChatLink
+              href={CHAT_HREF}
+              locale={locale}
+              className="po-b"
+              onClick={(e) => e.stopPropagation()}
+            >
               {p.openBtn} <Arrow className="icon-motion icon-motion--draw" />
-            </span>
+            </ChatLink>
           </div>
         </div>
       </div>
@@ -514,7 +603,13 @@ function ProfileExplorer({ vet }: { vet: HireEngineersContent['vet'] }) {
   )
 }
 
-export function HireEngineersTemplate({ content = HE }: { content?: HireEngineersContent }) {
+export function HireEngineersTemplate({
+  content = HE,
+  locale = 'en-US',
+}: {
+  content?: HireEngineersContent
+  locale?: Locale
+}) {
   const rootRef = useRef<HTMLElement>(null)
 
   // Reveal-on-scroll: add `.in` to `.rvl` elements as they enter view (source
@@ -549,7 +644,7 @@ export function HireEngineersTemplate({ content = HE }: { content?: HireEngineer
             <span className="eyebrow">{content.hero.eyebrow}</span>
             <h1>
               {content.hero.h1Lead}{' '}
-              <em>{content.hero.h1Em}</em>
+              <TypewriterText segments={[{ text: content.hero.h1Em, em: true }]} />
             </h1>
             <p className="hero-sub">{content.hero.sub}</p>
             <div className="hero-ctas">
@@ -601,6 +696,17 @@ export function HireEngineersTemplate({ content = HE }: { content?: HireEngineer
         </div>
       </section>
 
+      {/* TRUSTED BY — added on the 28 Jul review ("add this bit here to the
+          engineers page. The trusted by."). Same shared strip as Home and
+          Fractional CTO. */}
+      <section className="he-trusted">
+        <div className="wrap he-trusted-inner">
+          <span className="he-trusted-label">{TRUSTED_LABEL}</span>
+          <span className="he-trusted-div" />
+          <ClientLogoStrip />
+        </div>
+      </section>
+
       {/* OFFERING */}
       <section className="offer">
         <div className="wrap">
@@ -649,9 +755,9 @@ export function HireEngineersTemplate({ content = HE }: { content?: HireEngineer
             <em>{content.roles.h2Em}</em>
           </h2>
           <div className="roles-grid">
-            {content.roles.items.map((r, i) => (
+            {content.roles.items.map((r) => (
               <a key={r.rn} className="role icon-card rvl">
-                <span className="ri">{ROLE_ICONS[i]}</span>
+                <span className="ri">{roleIcon(r.rn)}</span>
                 <div className="rn">{r.rn}</div>
                 <div className="rd">{r.rd}</div>
               </a>
@@ -710,7 +816,7 @@ export function HireEngineersTemplate({ content = HE }: { content?: HireEngineer
                 ))}
               </div>
             </div>
-            <ProfileExplorer vet={content.vet} />
+            <ProfileExplorer vet={content.vet} locale={locale} />
           </div>
         </div>
       </section>
@@ -816,15 +922,17 @@ export function HireEngineersTemplate({ content = HE }: { content?: HireEngineer
             </div>
           </div>
 
+          {/* Both of these were href="#": the page offered to put you in front
+              of the AI or a human and then did nothing when clicked. */}
           <div className="talk">
             <span className="lbl">{content.find.talkLabel}</span>
-            <a href="#">
+            <ChatLink href={CHAT_HREF} locale={locale}>
               <svg viewBox="0 0 24 24" className="icon-motion icon-motion--twinkle">
                 <path d="M4 5h16v11H9l-4 3z" />
               </svg>{' '}
               {content.find.talkAi}
-            </a>
-            <a href="#">
+            </ChatLink>
+            <a href={buildLocalePath('/book-a-call', locale)}>
               <svg viewBox="0 0 24 24" className="icon-motion icon-motion--bob">
                 <path d="M4 4h4l2 5-3 2a11 11 0 006 6l2-3 5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 011-2z" />
               </svg>{' '}

@@ -25,5 +25,5 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function UkHireEngineersPage() {
   const data = await fetchHireEngineersPage()
   const content = data ? toHireEngineersContent(data) : HE
-  return <HireEngineersTemplate content={content} />
+  return <HireEngineersTemplate content={content} locale="en-GB" />
 }

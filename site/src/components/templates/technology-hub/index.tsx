@@ -1,4 +1,5 @@
 import { cn } from '@/components/ui/_utils/cn'
+import { TypewriterText } from '@/components/motion/typewriter-text'
 import { STICKY_ASIDE } from '@/components/layout/sticky-aside'
 import { type Technology } from '@/data/technologies'
 import type { TechnologyHubContent } from '@/lib/catalogue/hub-content'
@@ -40,7 +41,7 @@ export function TechnologyHubTemplate({ content, pathPrefix = '' }: { content: T
           {h.hero.eyebrow}
         </span>
         <h1 className="mx-auto mt-6 max-w-[900px] text-[42px] font-semibold leading-[1.03] tracking-[-2px] text-white lg:text-[64px] lg:leading-[68px] lg:tracking-[-2.4px]">
-          {h.hero.titleLead} <span className={ACCENT}>{h.hero.titleAccent}</span>
+          {h.hero.titleLead} <TypewriterText segments={[{ text: h.hero.titleAccent, className: ACCENT }]} />
         </h1>
         <p className={cn('mx-auto mt-5 max-w-[560px] text-[18px] leading-[28px]', BODY)}>{h.hero.lead}</p>
         <form action={`${pathPrefix}/technology`} className="mx-auto mt-8 flex max-w-[520px] items-center gap-2">

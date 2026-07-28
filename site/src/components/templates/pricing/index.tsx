@@ -2,6 +2,7 @@ import { BlogBand } from '@/components/blog/container'
 import { Marquee } from '@/components/ui/marquee'
 import { FaqToggleGlyph } from '@/components/ui/faq-list'
 import { cn } from '@/components/ui/_utils/cn'
+import { TypewriterText } from '@/components/motion/typewriter-text'
 import { FaqChatCard } from '@/components/shared/faq-chat-card'
 import { STICKY_ASIDE } from '@/components/layout/sticky-aside'
 import { HeroCards } from '@/components/templates/home/hero-cards'
@@ -99,7 +100,7 @@ function Hero({ content }: { content: PricingContent }) {
       <div>
         <Eyebrow>{hero.eyebrow}</Eyebrow>
         <h1 className="mt-5 text-[42px] font-semibold leading-[1.03] tracking-[-1.8px] text-white lg:text-[64px] lg:leading-[66px] lg:tracking-[-2.4px]">
-          {hero.titleLead} <span className={ACCENT}>{hero.titleAccent}</span>
+          {hero.titleLead} <TypewriterText segments={[{ text: hero.titleAccent, className: ACCENT }]} />
         </h1>
         <p className="mt-6 max-w-[540px] text-[18px] leading-[28px] text-text-default/70">{hero.paragraph}</p>
         <ul className="mt-8 flex flex-wrap gap-x-8 gap-y-3">

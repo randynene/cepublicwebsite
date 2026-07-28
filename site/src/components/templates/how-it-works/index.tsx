@@ -7,6 +7,7 @@ import { cn } from '@/components/ui/_utils/cn'
 import { Reveal } from '@/components/motion/reveal'
 import { CountUp } from '@/components/motion/count-up'
 import { Spotlight } from '@/components/motion/spotlight'
+import { TypewriterText } from '@/components/motion/typewriter-text'
 import { EngineerMatchQuiz } from '@/components/shared/engineer-match-quiz'
 import { FaqChatCard } from '@/components/shared/faq-chat-card'
 import { STICKY_ASIDE } from '@/components/layout/sticky-aside'
@@ -72,7 +73,7 @@ function Hero({ content, locale }: SectionProps) {
       <h1 className={cn('mt-[22px]', H1)}>
         {hero.titleLead}
         <br />
-        <span className={ACCENT}>{hero.titleAccent}</span>
+        <TypewriterText segments={[{ text: hero.titleAccent, className: ACCENT }]} />
       </h1>
       <p className="mx-auto mt-[22px] max-w-[440px] text-[17px] font-normal leading-[26px] tracking-[-0.08px] text-[#B8C2D1] lg:text-[19px] lg:leading-[28.5px]">
         {hero.paragraph}

@@ -1,4 +1,5 @@
 import { cn } from '@/components/ui/_utils/cn'
+import { TypewriterText } from '@/components/motion/typewriter-text'
 import { MegaMenuPillLabel } from '@/components/ui/mega-menu-pill-label'
 
 import type { AdvantageCard, EngineerProfile, HubCard, LocationContent, LocationLogo, StartCard } from './content'
@@ -244,7 +245,7 @@ function Hero({ content }: { content: LocationContent }) {
         <h1 className="mt-6 text-[38px] font-extrabold leading-[1.06] tracking-[-1.4px] text-white lg:text-[46px] lg:leading-[52px] lg:tracking-[-1.6px]">
           {hero.titleLead}
           <br />
-          {hero.titleConnector} <span className={ACCENT}>{hero.titleAccent}</span>
+          {hero.titleConnector} <TypewriterText segments={[{ text: hero.titleAccent, className: ACCENT }]} />
         </h1>
         <p className={cn('mt-6 max-w-[540px] text-[18px] leading-[28px]', BODY)}>{hero.paragraph}</p>
         <div className="mt-8 flex flex-wrap items-center gap-[14px]">

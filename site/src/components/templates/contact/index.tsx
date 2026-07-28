@@ -1,4 +1,5 @@
 import { cn } from '@/components/ui/_utils/cn'
+import { TypewriterText } from '@/components/motion/typewriter-text'
 import { MaterialIcon } from '@/components/ui/icon'
 import { HubSpotFormEmbed } from '@/components/ui/hubspot-form-embed'
 import type { Locale } from '@/lib/locale'
@@ -126,7 +127,7 @@ export function ContactTemplate({
         <div>
           <p className={EYEBROW}>{C.hero.eyebrow}</p>
           <h1 className="mt-5 max-w-[560px] text-[38px] font-semibold leading-[1.05] tracking-[-1.6px] text-white lg:text-[58px] lg:leading-[62px] lg:tracking-[-2.2px]">
-            {C.hero.titleLead} <span className={ACCENT}>{C.hero.titleAccent}</span>
+            {C.hero.titleLead} <TypewriterText segments={[{ text: C.hero.titleAccent, className: ACCENT }]} />
           </h1>
           <div className="mt-6 flex max-w-[560px] flex-col gap-4">
             {C.hero.paragraphs.map((paragraph) => (

@@ -130,10 +130,11 @@ export function ProcessVideo({
         }}
       />
 
-      {/* Caption (top) */}
-      <div className="relative flex items-center gap-[10px]">
-        <span aria-hidden="true" className="h-[8px] w-[8px] rounded-full bg-brand-primary" />
-        <p className="text-[13px] font-normal leading-[20.15px] tracking-[-0.08px] text-white">
+      {/* Caption (top). Sized up on the 28 Jul review — at 13px the "90-second
+       * explainer" framing was unreadable over the moving footage. */}
+      <div className="relative flex items-center gap-[12px]">
+        <span aria-hidden="true" className="h-[10px] w-[10px] rounded-full bg-brand-primary" />
+        <p className="text-[16px] font-medium leading-[24px] tracking-[-0.08px] text-white lg:text-[19px] lg:leading-[28px]">
           {video.caption}
         </p>
       </div>
@@ -149,10 +150,15 @@ export function ProcessVideo({
       {/* Name / role (bottom-left) + CTA pushed to the far right, same level */}
       <div className="relative flex flex-col items-start gap-[16px] lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <div className="text-[22px] font-semibold leading-[28px] text-white">{video.name}</div>
-          <div className="text-[13px] font-normal text-white/70">{video.roleLine}</div>
+          <div className="text-[26px] font-semibold leading-[32px] text-white lg:text-[30px] lg:leading-[36px]">
+            {video.name}
+          </div>
+          <div className="text-[15px] font-normal text-white/70 lg:text-[16px]">
+            {video.roleLine}
+          </div>
         </div>
-        <span className="inline-flex items-center gap-[8px] rounded-full bg-brand-primary px-[18px] py-[12px] text-[14px] font-bold text-[#060F1E]">
+        {/* The CTA is the whole point of the card, so it carries the size. */}
+        <span className="inline-flex items-center gap-[10px] rounded-full bg-brand-primary px-[26px] py-[16px] text-[16px] font-bold text-[#060F1E] lg:text-[18px]">
           <span aria-hidden="true">{GLYPH_PLAY}</span>
           {video.cta}
         </span>
