@@ -269,6 +269,15 @@ Two idempotent scripts, dry-run by default, `--apply` to write:
    Studio survives. `patch-nav-simple-dropdowns.ts` was updated to the same order
    so re-running the older seed cannot undo it (the Tech Debt #37 lesson).
 
+   **NOTE (28 Jul, third pass):** the rendered order is now also pinned in code,
+   because the dropdown was still showing the old order on the preview and the
+   agent has no write token. `orderLocations()` in
+   `site/src/lib/sanity/queries/navigation.ts` sorts by URL slug and is applied
+   in both `fetchNavigation()` and `fetchFooter()`, so the header and the footer
+   cannot disagree. Unknown entries keep their authored position, after the three
+   known regions. Once the script above has run the sort is a no-op; delete it
+   if Seb should be free to reorder these in Studio.
+
 2. `npx tsx scripts/static/patch-seb-copy-edits.ts --apply`
    **Three copy changes that a code edit alone does not deliver.** Home and Hire
    Engineers read their copy from Sanity and only fall back to `content.ts` when
