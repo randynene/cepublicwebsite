@@ -279,6 +279,64 @@ Two idempotent scripts, dry-run by default, `--apply` to write:
    `hireEngineersPage.vet.profile.openBtn`, and skips any field Seb has since
    edited in Studio rather than overwriting it.
 
+---
+
+## 9b. HERO BAND PASS - 28 Jul, second round
+
+Jake reviewed the preview and sent annotated screenshots of the Hire Engineers
+hero: arrows pointing outward on the headline, the shortlist card and the
+trusted-by row ("too internal"), and "FIX" on the logo strip ("all squished and
+crammed in"). The instruction was to make every main marketing page land like
+Hire Engineers: headline left, visual right, trusted-by far left, rotating logos
+in the middle, Ask-our-AI far right, See more underneath, all on the first
+screen. Verified by rendering each page at 1920x1080 in a headless browser
+rather than by eye.
+
+### Two real bugs behind what Jake saw
+
+1. **The bands were too narrow.** Hire Engineers and Fractional CTO were on a
+   1200px band with 40px padding, so at 1920 the content sat between x=360 and
+   x=1560 with 360px of dead margin each side. All marketing pages are now on
+   the same 1440/64 band as home (content 240 to 1680).
+
+2. **`.he, .he *` sets `margin: 0; padding: 0`.** That reset has the SAME
+   specificity as a single-class Tailwind utility and loads after it, so every
+   Tailwind margin and padding class is silently dead inside `.he` and `.fcto`.
+   The logo spacing was in the HTML and in the compiled CSS and still computed
+   to `margin: 0px` - measured gap between logos was **1px**. This is a trap for
+   anything dropped into those two pages; the shared components now avoid
+   margin and padding utilities entirely and carry their own two-class rules in
+   globals.css.
+
+### Shipped
+
+| Item | Detail |
+|---|---|
+| `HeroTrustBar` | New shared component: label, rotating logos, Ask-our-AI CTA, and a centred See-more button. Now on Home, Hire Engineers, Fractional CTO, How It Works and all three location pages. Styling lives in a `.hero-trust-bar` block in globals.css so it renders identically inside scoped-CSS pages. |
+| `ClientLogoStrip` rebuilt | Spacing from fixed 188px cells rather than margins (reset-proof), per-logo optical caps plus a 132px width cap so one wide mark cannot dominate, and gradient masks at each end so logos no longer hard-cut mid-wordmark. |
+| Travelex asset | `travelex.png` is a scraped screenshot of a two-tone card, not a logo. Under the line-art filter it rendered as a solid white rectangle in the middle of the row. `travelex-wordmark.png` is that wordmark lifted onto transparency, generated from the original (which is untouched). |
+| Logo normalisation | Home and the location pages hold their own Sanity-editable logo lists, served as CDN URLs, so a path match could not reach them. `normalise()` matches on logo NAME and applies the canonical treatment; unrecognised logos pass through so a new client added in Studio still renders. |
+| `.hero-screen` | Wraps hero + trust bar and claims exactly one screen, so the next section starts off-frame and See more is the scroll affordance. |
+| Zoom fit | Driven off viewport HEIGHT, since zooming in is what makes the window short. Values are pushed down as CSS custom properties (`--hero-h1-size`, `--hero-pad-top/bottom`) which the page stylesheets consume, because `.he .hero h1` outranks anything `.hero-screen`-prefixed. Measured: fits at 1920x1080, 1600x900, 1440x820, 1280x760 and 1280x700. At 1152x620 (about 175% zoom) it still overflows by ~35px and the page scrolls, which is the documented limit. |
+| Headline wrap bug | The typewriter made every character an inline-block, so a wrapping headline could break mid-word - Fractional CTO rendered "Matche / d in days". Characters are now grouped into nowrap word boxes, so breaks only happen at spaces. |
+| Duplicate renderers removed | Two hand-copied logo renderers in `home/index.tsx` and `home/client-story.tsx` now use the shared `ClientLogoImage`. |
+
+Net lint effect: **one fewer warning than `main`** (30 errors / 46 warnings vs
+the 30 / 47 baseline). tsc clean, build clean.
+
+### Outstanding from this pass
+
+- **Upload `travelex-wordmark.png` to Sanity.** Sanity's Travelex asset is the
+  same broken screenshot, so there is a named exception in
+  `client-logo-strip.tsx` (`ASSET_OVERRIDE`) that substitutes the local clean
+  file. Remove the exception once Studio holds a proper transparent wordmark.
+- **Which other pages get the bar.** It is on the six pages with a left-text /
+  right-visual hero. Pricing, Services hub, Technology hub, About Us, Contact
+  and Our Work have CENTRED heroes with no right-hand visual, so the pattern
+  does not transfer without a layout decision. Flagged rather than guessed.
+
+---
+
 ### Found while building, not fixed (not on the approved list)
 
 - **Two more dead links on Hire Engineers**, both pre-existing and unrelated to
