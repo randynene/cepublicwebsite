@@ -333,13 +333,19 @@ body {
   .hero-screen {
     display: flex;
     flex-direction: column;
-    /* space-between, not center. Centring left the content bunched in the middle
-       with ~200px of unused screen split above and below it; spreading puts the
-       hero at the top of the first screen and the logo strip at the bottom,
-       which is what the band is for. Each section's own padding supplies the
-       breathing room, so nothing sits hard against an edge. Degrades to
-       flex-start when the content genuinely overflows. */
-    justify-content: space-between;
+    /* PERFECTLY centred, at any zoom level. Two things are needed for that and
+       only one of them is `center`:
+         1. `justify-content: center` puts the slack above and below the group.
+         2. The children carry NO vertical padding of their own (the vars below
+            are zeroed and the `> *` rule strips the Tailwind ones), so the group
+            is symmetric and the space above genuinely equals the space below.
+            While each child kept its own unequal padding — 92px on top of the
+            hero, 56px under the trust bar — `center` centred the BOX but the
+            content still read 36px low.
+       Space between the hero and the trust bar comes from `gap`, which sits
+       inside the group and so does not affect the centring. */
+    justify-content: center;
+    gap: var(--hero-gap);
     min-height: calc(100svh - var(--header-height) - var(--announcement-bar-height));
 
     /* Consumed by the page stylesheets rather than imposed on them. The service
@@ -348,17 +354,34 @@ body {
        custom properties sidesteps the specificity fight entirely. Each page's
        own rule keeps a fallback, so a page that has not opted in is unchanged. */
     --hero-h1-size: clamp(40px, 5.2vw, 60px);
-    --hero-pad-top: 92px;
-    --hero-pad-bottom: 72px;
+    --hero-gap: 72px;
+    --hero-pad-top: 0px;
+    --hero-pad-bottom: 0px;
+    --hero-trust-pad-top: 0px;
+    --hero-trust-pad-bottom: 0px;
+  }
+  /* Strips the Tailwind `py-*` off the hero and trust sections on the pages that
+     lay themselves out in Tailwind (home, How It Works, locations). (0,1,1)
+     beats a utility class; the scoped-stylesheet pages read the vars above. */
+  .hero-screen > section,
+  .hero-screen > div {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  /* ...and off the container itself, for How It Works, where `.hero-screen` IS
+     the hero section rather than a wrapper around one. Its `lg:pt-[120px]` /
+     `lg:pb-[88px]` left the group sitting 32px low. Doubled class for (0,2,0),
+     which beats the utility outright rather than relying on source order. */
+  .hero-screen.hero-screen {
+    padding-block: 0;
   }
 
   /* Progressive compression as the window gets short — which is what zooming in
      produces. Each step trims the two things that consume the vertical budget:
      the headline and the hero padding. */
-  /* Pages that lay their hero out in Tailwind (home, How It Works, locations)
-     get their padding compressed here; pages with a scoped stylesheet read the
-     same custom properties from their own rule. `> section` is (0,1,1), which
-     beats a Tailwind padding utility.
+  /* As the window gets short — which is what zooming IN produces — the headline,
+     the hero visual and the gap all step down together, so the group keeps
+     fitting one screen and stays centred rather than starting to overflow.
 
      `zoom`, not `transform: scale`, on the hero visual: a transform shrinks the
      pixels but leaves the original box in the layout, so the page would keep
@@ -366,16 +389,11 @@ body {
   @media (max-height: 900px) {
     .hero-screen {
       --hero-h1-size: 50px;
-      --hero-pad-top: 56px;
-      --hero-pad-bottom: 40px;
+      --hero-gap: 48px;
     }
     .hero-screen h1 {
       font-size: var(--hero-h1-size);
       line-height: 1.05;
-    }
-    .hero-screen > section {
-      padding-top: var(--hero-pad-top);
-      padding-bottom: var(--hero-pad-bottom);
     }
     .hero-screen .hero-visual {
       zoom: 0.86;
@@ -384,8 +402,7 @@ body {
   @media (max-height: 780px) {
     .hero-screen {
       --hero-h1-size: 42px;
-      --hero-pad-top: 36px;
-      --hero-pad-bottom: 28px;
+      --hero-gap: 34px;
     }
     .hero-screen .hero-visual {
       zoom: 0.72;
@@ -394,8 +411,7 @@ body {
   @media (max-height: 720px) {
     .hero-screen {
       --hero-h1-size: 40px;
-      --hero-pad-top: 26px;
-      --hero-pad-bottom: 20px;
+      --hero-gap: 28px;
     }
     .hero-screen .hero-visual {
       zoom: 0.64;
@@ -404,8 +420,7 @@ body {
   @media (max-height: 660px) {
     .hero-screen {
       --hero-h1-size: 36px;
-      --hero-pad-top: 20px;
-      --hero-pad-bottom: 16px;
+      --hero-gap: 22px;
     }
     .hero-screen .hero-visual {
       zoom: 0.56;

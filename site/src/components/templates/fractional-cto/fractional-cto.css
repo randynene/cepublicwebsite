@@ -637,7 +637,8 @@ html {
 
 /* TRUSTED BY */
 .fcto .trusted {
-  padding: 8px 0 56px;
+  /* See the note on .he .he-trusted. */
+  padding: var(--hero-trust-pad-top, 8px) 0 var(--hero-trust-pad-bottom, 56px);
   background: var(--bg);
 }
 .fcto .does {

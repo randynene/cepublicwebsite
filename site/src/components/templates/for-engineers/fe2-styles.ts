@@ -105,7 +105,7 @@ export const FE2_UI_CSS = `
  * (viewport height under the chrome, divided by the canvas zoom factor). The
  * hero centres itself in that space and the See more control pins to the
  * bottom, so "Applying is broken" always starts below the fold. */
-.fe2 .fe2-hero-vh{position:relative;display:flex;flex-direction:column;justify-content:center;gap:56px;padding-bottom:64px}
+.fe2 .fe2-hero-vh{position:relative;display:flex;flex-direction:column;justify-content:center;gap:56px}
 .fe2 .fe2-hero-vh > div:first-child{width:100%}\n  /* Client logo strip closing the hero. The fe2 canvas is a fixed 1920px\n     Figma frame that gets scaled, so the bar is banded to the same 1440/64\n     content width the other marketing pages use. */\n  .fe2-trust{width:100%;max-width:1440px;margin:0 auto;padding:0 64px}
 .fe2 
 .fe2 

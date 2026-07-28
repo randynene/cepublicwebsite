@@ -367,7 +367,9 @@ html {
    `scroll-margin-top` on the offer section keeps the "See more" jump clear of
    the fixed header. */
 .he .he-trusted {
-  padding: 8px 0 56px;
+  /* Zeroed by .hero-screen so the hero group centres exactly; the fallbacks
+     apply anywhere this page is not inside a .hero-screen. */
+  padding: var(--hero-trust-pad-top, 8px) 0 var(--hero-trust-pad-bottom, 56px);
   background: var(--bg);
 }
 .he .offer {
