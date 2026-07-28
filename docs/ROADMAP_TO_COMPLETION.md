@@ -4,7 +4,20 @@
 > it live on staging, ready for a zero-loss crossover. If any other doc disagrees
 > with this file about "what is done", this file wins until launch.
 >
-> Owner: Jake. Author of record: planning brain. Last updated: 27 Jul 2026.
+> Owner: Jake. Author of record: planning brain. Last updated: 28 Jul 2026.
+>
+> **28 Jul - Seb page-by-page review.** The whole call is consolidated, tagged
+> and mapped to real files in `docs/briefs/active/SEB-CALL-EDITS-28JUL.md`. The
+> unambiguous items are BUILT (see §9 of that file for the build record); the
+> ambiguous ones are written as 16 numbered questions for Seb in §7 and are
+> still open. Two Sanity patch scripts are staged for Jake to run:
+> `scripts/static/reorder-locations.ts` and
+> `scripts/static/patch-seb-copy-edits.ts` (both dry-run by default).
+>
+> **The lesson worth carrying:** editing `content.ts` on a Sanity-wired page
+> changes nothing on the live site. The Sanity value wins and the code is only a
+> fallback for when the document is missing. Copy edits need a data patch, not
+> just a commit.
 
 ---
 

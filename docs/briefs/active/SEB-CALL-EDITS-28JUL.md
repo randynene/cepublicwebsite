@@ -1,8 +1,11 @@
 # Seb call - consolidated edit list (28 Jul 2026)
 
 > Source: `Meet-f169f595-fa1f.pdf`, Jake + Seb page-by-page review, 28 Jul 2026.
-> Status: INVENTORY. Nothing here is approved for build yet. Jake decides in/out
-> per row, and answers the OPEN QUESTIONS block before anything ships.
+>
+> **STATUS: the CLEAR items are BUILT (28 Jul).** See §9 for exactly what
+> shipped, what still needs a Sanity patch run by Jake, and what is still
+> waiting on an answer. The AMBIGUOUS / UNDECIDED / BLOCKED rows below are
+> untouched and still need §7 answered.
 >
 > Every row is mapped to a real file, verified against the codebase on 28 Jul.
 > Where the call left something genuinely undecided it is tagged AMBIGUOUS and
@@ -216,3 +219,76 @@ either **removed** or **left as they are**, not to move the date.
 7. **Calculator currency by locale** (6.3).
 8. **`llms.txt`** (N5).
 9. Everything else waits on answers or on Seb.
+
+---
+
+## 9. BUILD RECORD - 28 Jul 2026
+
+Branch `cursor/seb-call-edit-consolidation-2b4c`. `tsc` clean; `npm run lint` at
+the exact pre-existing baseline (30 errors / 47 warnings, all Tech Debt #36 -
+zero added); `npm run build` clean at 707 pages; runtime smoke test against
+`next start`.
+
+### Shipped in code
+
+| # | Item | Where |
+|---|---|---|
+| 1-4 | **Every dead AI CTA is now live.** Home `talkCtas` were non-clickable `<span>`s, Hire Engineers `talkAi`/`talkBook` were `href="#"`, Fractional CTO `aiPill`/`pillAi`/`pillBook` were handler-less `<button>`s. All now render `ChatLink`, which is a real anchor to `/book-a-call` that upgrades the click to the Clara widget when it is mounted. No CTA can be dead again by construction. | `home/index.tsx`, `hire-engineers/index.tsx`, `fractional-cto/index.tsx` |
+| 12 | Home calculator CTA opens the chat instead of scrolling to the video, and gained the trailing arrow Seb asked for. | `home/calculator-card.tsx` |
+| 5-6 | **`TypewriterText`** replaces the decrypt/scramble reveal on the hero accent word, and is rolled out to all 11 heroes that have one: home, how-it-works, pricing, about-us, contact, our-work, services hub, technology hub, location, hire-engineers, fractional-cto. Same SSR contract as the effect it replaces - the real word ships in the server HTML (verified: `<h1>` reads "Hire engineers vetted by engineers" with no JS), `aria-label` carries the phrase, zero layout shift, static under reduced motion. The two mid-page home headings that used the scramble now render plain, per the "one text effect per page" call. | `motion/typewriter-text.tsx`, `globals.css`, 11 templates |
+| 7-8 | Home video card: caption 13 -> 16/19px, name 22 -> 26/30px, CTA pill 14 -> 16/18px with more padding. | `home/process-video.tsx` |
+| 9 | "You" / "Us" labels 12px eyebrow -> 22/28px bold. | `home/index.tsx` |
+| 10 | Home client logos: static row -> moving marquee. | `home/index.tsx` |
+| 11 | **Home hero fits the first screen at any zoom.** Zooming in shrinks the viewport in CSS pixels, so the fit is driven off viewport height: the hero claims `100svh` minus chrome, and the headline and profile card step down at 900 / 760 / 620px of height. Nothing changes at a normal desktop zoom, so the signed-off design is untouched. | `globals.css` `.home-hero`, `home/index.tsx` |
+| 13, 18 | Hero sub-paragraph widened: Hire Engineers 40 -> 58ch, Fractional CTO 36 -> 56ch. | both `.css` files |
+| 14, 19 | **One dark ground per page.** `--navy` (`#0a1628`) now resolves to `--bg` (`#070d18`) on both service pages, killing the dark/lighter banding. Section separation is carried by the existing 1px borders. Kept as a token so it is one line to restore. | both `.css` files |
+| 15 | **Role icons are keyed by role name, not list position.** This was the actual bug: two positional arrays indexed by `i`, so icons drifted as copy changed (DevOps had a plus sign, Data Engineers a monitor, Fractional CTOs a star, Backend a sun). Now a matcher with a neutral arrow fallback, covering backend / frontend / full-stack / DevOps / QA / mobile / data / AI-ML / CTO / security. AI/ML gets the sparkle mark Seb asked for by name. Applies to both the roles grid and the form's step-0 options. | `hire-engineers/index.tsx` |
+| 17 | "Explore a real profile" -> "Tell our AI what you need", opening the chat. The widget itself is untouched - Seb liked it. | `hire-engineers/index.tsx` + content |
+| 20 | Fractional CTO video section removed. It was a placeholder tile with no video behind it. `id="how"` moved to the next section so the hero's "see how it works" link still lands. Dead `VideoTile` / `fctoEmbedSrc` / `PlayTri` deleted. | `fractional-cto/index.tsx` |
+| 21 | **Shared `ClientLogoStrip`.** Fractional CTO rendered the seven companies as text names while home had real images. There is now one component and one logo list, used by home, Fractional CTO and Hire Engineers. | `social-proof/client-logo-strip.tsx` |
+| 22 | Fractional CTO match-form reassurance pills wired to chat / book-a-call. | `fractional-cto/index.tsx` |
+| 24 | **`/llms.txt`** - the plain-text brief for AI assistants, answering the questions Seb listed (cost, fee structure, timeline, differentiation) plus the authoritative page list. Hostname-gated exactly like `robots.ts`, so staging returns 404. Deliberately NOT prerendered: a static build would bake in whichever side of the gate was true at build time. Verified 200 with the canonical host set, 404 without. | `app/llms.txt/route.ts` |
+
+**Also done, beyond the 24-item list:** Seb asked on the call to "add this bit
+here to the engineers page - the trusted by". Hire Engineers had no logo strip
+at all, so one was added under the hero using the same shared component. Flagged
+because it adds a section rather than editing one.
+
+**Locale correctness:** both service templates now take a `locale` prop, so the
+UK mirrors point at `/uk/book-a-call` rather than the US page. Verified in the
+rendered HTML.
+
+### Needs Jake to run (no write token in the agent environment)
+
+Two idempotent scripts, dry-run by default, `--apply` to write:
+
+1. `npx tsx scripts/static/reorder-locations.ts --apply`
+   Item 23. Reorders `navigation.locationsDropdown` and `footer.talentLocations`
+   to Eastern Europe / Latin America / Philippines. It **reorders the existing
+   items** rather than rewriting them, so any label or subtitle Seb has edited in
+   Studio survives. `patch-nav-simple-dropdowns.ts` was updated to the same order
+   so re-running the older seed cannot undo it (the Tech Debt #37 lesson).
+
+2. `npx tsx scripts/static/patch-seb-copy-edits.ts --apply`
+   **Three copy changes that a code edit alone does not deliver.** Home and Hire
+   Engineers read their copy from Sanity and only fall back to `content.ts` when
+   the doc is missing. Both docs exist, so the Sanity value wins. Confirmed at
+   runtime: the home calculator button still rendered "Get matched at this rate"
+   after the code change. The script patches `homePage.calculator.cta`,
+   `homePage.process.steps[1].body` (psychometrics -> psychometric testing) and
+   `hireEngineersPage.vet.profile.openBtn`, and skips any field Seb has since
+   edited in Studio rather than overwriting it.
+
+### Found while building, not fixed (not on the approved list)
+
+- **Two more dead links on Hire Engineers**, both pre-existing and unrelated to
+  the AI CTAs: "See our full process" (`.how-more`) is `href="#"`, and the
+  90-second tour link falls back to `href="#"` because `vet.tourVideoUrl` is
+  empty. Same bug class as items 1-4. Worth a follow-up.
+- **Fractional CTO's match form still submits nowhere.** Item 22 wired its
+  reassurance pills; the multi-step form itself is still client-side only. That
+  is Q11 / F8 territory - whether the form survives at all is undecided.
+- The other three "Get matched at this rate" buttons (Hire Engineers, Pricing,
+  Location) were left alone: unlike the home one they point at real destinations
+  (`#find`, `/start-hiring`), so they are not broken. Worth a consistency
+  decision alongside Q4.
