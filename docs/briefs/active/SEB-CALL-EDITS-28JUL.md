@@ -471,6 +471,44 @@ which made the whole page draggable sideways:
 Corner radius: the strip is now full-bleed so it carries no radius, matching the
 reference.
 
+### 9f. Fractional CTO hero spacing + card size (28 Jul)
+
+Jake: "space these out on the Fractional CTO page to be positioned better, and
+the YOUR MATCH card should maybe be a better size to fit the page." Measured
+before changing anything, at 1512x950:
+
+| | Fractional CTO (before) | Hire Engineers |
+|---|---|---|
+| Hero grid | `1.05fr 480px` -> 776 / **480** | `1.05fr 0.95fr` -> 657 / **595** |
+| Match card | 480 x 360, capped by `max-width: 480px` | 595 x 288, uncapped |
+| Dead space in the hero band | **79px above, 135px below** (214px of the first screen unused) | 70 / 126 |
+
+Two fixes:
+
+1. **The card was pinned.** Fractional CTO's right column was a fixed 480px
+   while the text column took 776px, so the card read as an afterthought beside
+   it. Grid is now `1.05fr 0.95fr` and the `max-width: 480px` cap is gone, which
+   puts it at 597 x 342 — the same balance as Hire Engineers. Both pages now
+   compute to the same column widths (659/597 vs 657/595).
+
+2. **`.hero-screen` is `justify-content: space-between`, not `center`.** Centring
+   left ~200px of unused screen split above and below the content, which is the
+   bunched-in-the-middle look Jake's two arrows were pointing at. Spreading puts
+   the hero at the top of the first screen and the logo strip at the bottom; each
+   section's own padding still supplies the breathing room, so nothing sits hard
+   against an edge. Applies to all six `.hero-screen` pages, because the same
+   dead space existed on all of them. Degrades to flex-start when content
+   genuinely overflows, so the short-viewport fit table above is unchanged.
+
+**Found and fixed while verifying:** the How It Works "Stages" H2 forced
+`whitespace-nowrap` at 52px from `lg` (1024px) upward, but that line needs
+~1114px of content width — so between 1024 and 1280 it was held on one line that
+did not fit and gave the whole page a 90px sideways scroll. Moved to `xl`
+(1280px). Pre-existing, unrelated to this work, caught by the overflow sweep.
+
+Swept every page for page-level horizontal scroll at 1920x1080, 1440x900,
+1280x760, 1152x620, 1024x900, 768x900 and 420x800: all clean.
+
 ### Outstanding from this pass
 
 - **Upload `travelex-wordmark.png` to Sanity.** Sanity's Travelex asset is the
