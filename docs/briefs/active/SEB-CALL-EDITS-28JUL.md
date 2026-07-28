@@ -425,9 +425,51 @@ different heights would be the odd outcome: the home "Where we work" section and
 the Philippines location page's three-region strip. Verified at 1920, 900 and
 420 wide plus the hover state. Say so if the Philippines one should stay tall.
 
-Corner radius is 12px on the strip rather than square as customer.io has it -
-square corners would be the only hard-cornered surface on the site. One number
-to change if that is wrong.
+**Second pass on the same component.** Jake: "it should be more positioned like
+customer.io". The proportions from the first pass were already right; what was
+wrong was the POSITIONING. Measured the live reference at a 1512px viewport
+instead of eyeballing the screenshot:
+
+| | customer.io | Ours (first pass) |
+|---|---|---|
+| Scroller | 1512 wide, starts at x=0, `overflow-x: auto` | 1312, inset in the content band |
+| Row inside it | **1560 — wider than the screen** | fits exactly, no scroll |
+| Panels | 5 x 299 x 500, all equal, no gap, no radius | 5 x 262 x 400, accordion on hover |
+
+Three things followed, none of which were true of ours:
+
+1. **Full bleed.** `.ww` is now a full-width section and only the heading is
+   banded (`.ww-band`), so the strip runs edge to edge. Done structurally rather
+   than with negative `100vw` margins, which risk giving the page its own
+   sideways scrollbar.
+2. **Always a sideways scroller**, at desktop too — that is the affordance, not
+   a mobile fallback.
+3. **Equal fixed-width panels; the width accordion is gone.** `flex: 1 0 300px`
+   means panels share the space when there is room (so the strip fills a wide
+   monitor) and clamp at their minimum when there is not (so it overflows and
+   scrolls), with no breakpoint choosing between the two. Widening a panel
+   inside a horizontal scroller shifts everything to its right mid-gesture,
+   which is why the reference does not do it either. Hover still fades the veil,
+   un-zooms the photo and flips the glyph to the lime arrow.
+
+Measured after: 1920 -> 5 x 384, fills, no scroll. 1512 -> 5 x 302, fills.
+1024 -> 5 x 300, scrolls. 420 -> 5 x 200, scrolls. No page-level horizontal
+scroll at 1920 / 1512 / 1024 / 768 / 420 / 360.
+
+**Two pre-existing overflow bugs found and fixed while verifying this**, both of
+which made the whole page draggable sideways:
+
+- `components/motion/spotlight.tsx` set its glow overlay to `inset: -320px`, so
+  the overlay was 640px wider than its section. Home could be scrolled 320px
+  sideways. Now bleeds vertically only, with the X offset mapping 1:1 — exactly
+  what `home/client-story.tsx` (the section Spotlight was generalised from)
+  always did and documented.
+- The hero trust bar could not fit label + logos + CTA on one line below ~760px
+  and overflowed a 420px viewport by 23px. It now wraps to label / logos /
+  CTA stacked.
+
+Corner radius: the strip is now full-bleed so it carries no radius, matching the
+reference.
 
 ### Outstanding from this pass
 
