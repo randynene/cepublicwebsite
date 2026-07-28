@@ -12,6 +12,8 @@
  * (--font-inter / --font-source-serif) instead of re-loading Google Fonts.
  */
 
+/* The SECTION is full width. Only `.ww-band` is constrained, so the panel strip
+   inside can run edge to edge (see where-we-work.tsx). */
 .ww {
   --ww-lime: #d4ff3c;
   box-sizing: border-box;
@@ -19,19 +21,25 @@
   flex-direction: column;
   gap: 44px;
   width: 100%;
-  /* Constrain the content to the site chrome band (max 1440px, centred) with
-     the same horizontal padding as the Header/Footer (16px mobile, 64px
-     desktop) so the header text + panels line up with the Cloud Employee logo.
-     The dark ground still reads full-bleed because <main> is #070D18. */
+  background: #070d18;
+  padding: 64px 0 80px;
+  font-family: var(--font-inter), system-ui, sans-serif;
+}
+/* Banded content — same 1440px / 64px geometry as the Header and Footer, so the
+   heading still lines up with the Cloud Employee logo. */
+.ww-band {
+  box-sizing: border-box;
+  width: 100%;
   max-width: 1440px;
   margin-inline: auto;
-  background: #070d18;
-  padding: 64px 16px 80px;
-  font-family: var(--font-inter), system-ui, sans-serif;
+  padding-inline: 16px;
 }
 @media (min-width: 1024px) {
   .ww {
-    padding: 88px 64px 104px;
+    padding: 88px 0 104px;
+  }
+  .ww-band {
+    padding-inline: 64px;
   }
 }
 .ww *,

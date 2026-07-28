@@ -13,51 +13,64 @@
  * `.ww`), so the row works anywhere this file is imported.
  */
 
-/* Proportions follow the customer.io capabilities strip (Jake's reference,
-   28 Jul): ONE continuous landscape band rather than a row of tall separate
-   rectangles. Two changes carry that — the band is much shorter relative to its
-   width (~3.2:1 rather than ~2:1), and the panels are flush with a hairline
-   divider instead of sitting apart with 6px gutters and their own rounding. */
+/* Built to the customer.io capabilities strip Jake pointed at (28 Jul).
+ * Measured from the live page at a 1512px viewport, rather than eyeballed:
+ *
+ *   scroller  1512 wide (full viewport, starts at x=0), overflow-x auto
+ *   row       1560 wide  — WIDER THAN THE SCREEN on purpose
+ *   panels    5 x 299 x 500, all equal, no gap, no radius
+ *
+ * Three things follow from that and none of them were true of our version:
+ *   1. It is FULL BLEED, not inset in the text column.
+ *   2. It ALWAYS overflows and scrolls sideways, at desktop too — that is the
+ *      affordance, not a mobile fallback.
+ *   3. Panels are EQUAL and FIXED. There is no width accordion; hovering
+ *      reveals the photo and the caption in place. Widening a panel inside a
+ *      horizontal scroller shifts everything to its right mid-gesture, which is
+ *      why the reference does not do it either.
+ */
 .ww-row {
   --ww-lime: #d4ff3c;
-  /* One knob for the band height. Landscape at every breakpoint. */
-  --ww-h: 400px;
+  /* Panel geometry. 300x480 keeps the reference's ~1:1.6 portrait panel. */
+  --ww-h: 480px;
+  --ww-panel-w: 300px;
   display: flex;
   gap: 0;
   height: var(--ww-h);
-  /* Rounding lives on the strip, not the panels, so it reads as one object.
-     Kept modest rather than square so it still belongs on a site whose other
-     surfaces are rounded. */
-  border-radius: 12px;
-  overflow: hidden;
+  /* Always a scroller. `scroll-padding-inline-start` keeps the first panel off
+     the very edge at rest while still letting it scroll flush. */
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+/* Hide the scrollbar: the strip runs off the edge, which is the cue to drag it.
+   A visible bar under a photo band reads as a rendering bug. */
+.ww-row::-webkit-scrollbar {
+  display: none;
 }
 .ww-row *,
 .ww-row *::before,
 .ww-row *::after {
   box-sizing: border-box;
 }
+/* `1 0 <min>`: panels SHARE the space when there is enough of it, so the strip
+   fills the screen edge to edge on a wide monitor, and clamp at their minimum
+   when there is not, so the row overflows and scrolls. One rule covers both,
+   with no breakpoint deciding which behaviour applies. */
 .ww-panel {
   position: relative;
   overflow: hidden;
-  min-width: 0;
-  flex: 1 1 0%;
-  flex-grow: 1;
+  flex: 1 0 var(--ww-panel-w);
+  scroll-snap-align: start;
   cursor: pointer;
   text-decoration: none;
-  transition: flex-grow 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 /* Hairline between flush panels, so the strip still reads as separate hubs.
    An inset shadow rather than a border, which would eat a pixel of the photo. */
 .ww-panel + .ww-panel {
   box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.1);
-}
-/* Accordion: any hover in the row levels every panel to grow:1, then the
-   hovered panel alone jumps to 3.4 — siblings shrink to make room. */
-.ww-row:hover .ww-panel {
-  flex-grow: 1;
-}
-.ww-row .ww-panel:hover {
-  flex-grow: 3.4;
 }
 /* A panel with no destination is not clickable, so it must not claim to be. */
 .ww-panel.is-static {
@@ -180,39 +193,16 @@
   color: rgba(255, 255, 255, 0.72);
 }
 
-/* Narrower band, same shape. */
-@media (max-width: 1280px) {
-  .ww-row {
-    --ww-h: 340px;
-  }
-}
-
-/* ── below desktop: the strip scrolls sideways ──────────────────────────────
-   Panels keep a FIXED width and the row scrolls, rather than each panel
-   stretching to fill the viewport. That is the behaviour Jake asked for: the
-   band stays the same shape and you drag it left and right, instead of the
-   panels turning into full-width slides that no longer read as a strip.
-   Hover-expand is dropped here — there is no hover on touch, and an accordion
-   inside a scroller fights the gesture. */
+/* Smaller screens: same strip, smaller panels. Nothing switches behaviour —
+   it was already a sideways scroller at every width. */
 @media (max-width: 1023px) {
   .ww-row {
-    --ww-h: 300px;
-    overflow-x: auto;
-    scroll-snap-type: x proximity;
-    -webkit-overflow-scrolling: touch;
-    /* Room for the scrollbar without it overlapping the captions. */
-    scrollbar-width: thin;
+    --ww-h: 380px;
+    --ww-panel-w: 240px;
   }
-  .ww-row .ww-panel,
-  .ww-row .ww-panel:hover,
-  .ww-row:hover .ww-panel {
-    flex: 0 0 240px;
-    scroll-snap-align: start;
-  }
-  /* Veil dimmed + image un-zoomed so the photos read while swiping: with no
-     hover there is nothing to reveal them otherwise. */
+  /* No hover on touch, so the photos have to read at rest. */
   .ww-veil {
-    opacity: 0.4;
+    opacity: 0.45;
   }
   .ww-img {
     transform: scale(1);
@@ -231,12 +221,8 @@
 }
 @media (max-width: 600px) {
   .ww-row {
-    --ww-h: 260px;
-  }
-  .ww-row .ww-panel,
-  .ww-row .ww-panel:hover,
-  .ww-row:hover .ww-panel {
-    flex: 0 0 200px;
+    --ww-h: 320px;
+    --ww-panel-w: 200px;
   }
 }
 

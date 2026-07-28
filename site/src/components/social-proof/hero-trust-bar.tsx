@@ -56,7 +56,7 @@ export function HeroTrustBar({
         </p>
         <span aria-hidden className="htb-divider" />
 
-        <ClientLogoStrip logos={logos} groundColor={groundColor} />
+        <ClientLogoStrip logos={logos} groundColor={groundColor} className="htb-logos" />
 
         {showAi ? (
           <ChatLink href={CHAT_HREF} locale={locale} className="htb-ai">

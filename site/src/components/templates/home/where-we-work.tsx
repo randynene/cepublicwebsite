@@ -17,13 +17,20 @@ export function WhereWeWork({
 }) {
   const { eyebrow, titleLead, titleAccent, paragraph, hubs } = content
   return (
+    // The section is full width and only the HEADING is banded, so the panel
+    // strip can run edge to edge and off both sides of the screen — the
+    // customer.io capabilities pattern Jake pointed at. Bleeding this way
+    // (rather than with negative `100vw` margins) means no risk of the page
+    // itself gaining a horizontal scrollbar.
     <section className="ww">
-      <div className="ww-head">
-        <div className="ww-eb">{eyebrow}</div>
-        <h2 className="ww-title">
-          {titleLead} <span className="ww-ser">{titleAccent}</span>
-        </h2>
-        <p className="ww-sub">{paragraph}</p>
+      <div className="ww-band">
+        <div className="ww-head">
+          <div className="ww-eb">{eyebrow}</div>
+          <h2 className="ww-title">
+            {titleLead} <span className="ww-ser">{titleAccent}</span>
+          </h2>
+          <p className="ww-sub">{paragraph}</p>
+        </div>
       </div>
 
       <HubPanels panels={hubs} />

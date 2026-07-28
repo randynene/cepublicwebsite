@@ -291,6 +291,31 @@ body {
   color: #d4ff3c;
 }
 
+/* Narrow screens: the row cannot hold label + logos + pill on one line, and it
+   was overflowing the viewport by ~23px at 420px wide (which gave the whole page
+   a sideways scroll). Stack it instead: label, then the logo strip full width,
+   then the CTA. */
+@media (max-width: 760px) {
+  .hero-trust-bar .htb-row {
+    flex-wrap: wrap;
+    gap: 14px 18px;
+  }
+  .hero-trust-bar .htb-divider {
+    display: none;
+  }
+  .hero-trust-bar .htb-label {
+    order: 1;
+    width: auto;
+  }
+  .hero-trust-bar .htb-logos {
+    order: 2;
+    flex: 1 1 100%;
+  }
+  .hero-trust-bar .htb-ai {
+    order: 3;
+  }
+}
+
 /* "When you land on the page, all you see is the hero" (Seb, 28 Jul review).
 
    `.hero-screen` wraps a page's hero AND its trust bar, and claims exactly one

@@ -45,7 +45,9 @@ export function Spotlight({
       const glow = glowRef.current
       if (!section || !glow) return
       const rect = section.getBoundingClientRect()
-      const ox = e.clientX - rect.left + OVERLAY_INSET
+      // The overlay bleeds vertically only, so X maps 1:1 to the section and
+      // only Y carries the inset offset. See the overlay style below.
+      const ox = e.clientX - rect.left
       const oy = e.clientY - rect.top + OVERLAY_INSET
       glow.style.background = `radial-gradient(circle ${GLOW_R}px at ${ox}px ${oy}px, rgba(212,255,60,.16), transparent 72%)`
       glow.style.opacity = '1'
@@ -74,10 +76,26 @@ export function Spotlight({
 
   return (
     <section ref={sectionRef} className={cn('relative overflow-visible bg-[#070D18]', className)}>
+      {/* Bleeds above and below the section so the glow circle fades past those
+          edges instead of being hard-clipped. Left and right stay FLUSH: this
+          used to be `inset: -320px`, which made the overlay 640px wider than
+          the section and gave the whole home page a 320px sideways scroll.
+          home/client-story.tsx — the section this component was generalised
+          from — always had it this way and documented the reason. */}
       <div
         ref={glowRef}
         aria-hidden="true"
-        style={{ position: 'absolute', inset: -OVERLAY_INSET, pointerEvents: 'none', opacity: 0, transition: 'opacity 0.5s ease', zIndex: 0 }}
+        style={{
+          position: 'absolute',
+          top: -OVERLAY_INSET,
+          bottom: -OVERLAY_INSET,
+          left: 0,
+          right: 0,
+          pointerEvents: 'none',
+          opacity: 0,
+          transition: 'opacity 0.5s ease',
+          zIndex: 0,
+        }}
       />
       <div className="relative z-[1]">{children}</div>
     </section>
