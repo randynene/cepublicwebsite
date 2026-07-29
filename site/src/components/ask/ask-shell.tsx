@@ -95,7 +95,11 @@ export function AskShell({
   const { split, drag, commit } = useSplit()
 
   const chatColumn = (
-    <div className="flex min-h-0 flex-col px-[28px] @max-[62rem]:px-0">
+    // `flex-1` matters in the stacked phone layout: without it the column only
+    // takes its content height, so the thread stops being bottom-anchored and the
+    // composer floats mid-screen instead of docking. It is inert in the desktop
+    // grid, where the column is a stretched grid item.
+    <div className="flex min-h-0 flex-1 flex-col px-[28px] @max-[62rem]:px-0">
       <ChatThread
         entries={screen.entries}
         onSchedule={openBooking}

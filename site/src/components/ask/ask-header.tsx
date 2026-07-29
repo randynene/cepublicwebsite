@@ -3,6 +3,7 @@
 import Link from 'next/link'
 
 import { MegaMenuPillLabel } from '@/components/ui/mega-menu-pill-label'
+import { cn } from '@/components/ui/_utils/cn'
 import { buildLocalePath, type Locale } from '@/lib/locale-path'
 
 import { ASK_LABELS, GLYPH } from './content'
@@ -38,15 +39,12 @@ function ScheduleCallButton({
       leadingArrow
       leadingGlyph={GLYPH.arrow}
       label={label}
-      className={[
-        '!text-[14px]',
+      className={cn(
         // Once the brief is strong the design puts a soft lime halo behind the
         // pill rather than changing its shape or colour.
-        emphasised ? 'shadow-[0_0_0_4px_rgba(212,255,60,0.14)]' : '',
-        className ?? '',
-      ]
-        .filter(Boolean)
-        .join(' ')}
+        emphasised && 'shadow-[0_0_0_4px_rgba(212,255,60,0.14)]',
+        className,
+      )}
     />
   )
 }
@@ -84,18 +82,22 @@ export function AskHeader({
         </span>
       ) : (
         <>
+          {/* `size="cta"` is the canonical CE pill, but its `pr-3.5` resolves to
+              28px against this project's 0.5rem spacing scalar - wider than the
+              reference's 18px. Trimmed here rather than in the shared primitive,
+              which every other CTA on the site depends on. */}
           <ScheduleCallButton
             label={ASK_LABELS.scheduleCall}
             emphasised={emphasised}
             onSchedule={onSchedule}
-            className="hidden @min-[62rem]:inline-flex"
+            className="hidden !pr-[18px] !text-[14px] @min-[62rem]:inline-flex"
           />
           {/* The phone frame shortens the label; the control is the same one. */}
           <ScheduleCallButton
             label={ASK_LABELS.scheduleCallShort}
             emphasised={emphasised}
             onSchedule={onSchedule}
-            className="!text-[12.5px] @min-[62rem]:hidden"
+            className="!pr-[13px] !text-[12.5px] @min-[62rem]:hidden"
           />
         </>
       )}

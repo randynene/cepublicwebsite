@@ -939,10 +939,12 @@ body.ask-page {
 }
 
 /* Voice waveform bars. Each bar keeps its full height in layout and only scales
-   on the Y axis, so the recording panel cannot change height as it animates. */
-.ask-wave-bar {
-  transform: scaleY(0.18);
-}
+   on the Y axis, so the recording panel cannot change height as it animates.
+
+   No resting transform is declared, which means suppressing the animation leaves
+   each bar at its own authored height - a static but still varied level meter.
+   Pinning the rest state to the animation's minimum instead would collapse the
+   whole thing to a dotted line under reduced motion. */
 @media (prefers-reduced-motion: no-preference) {
   .ask-wave-bar {
     animation: ask-wave 1.05s ease-in-out infinite;

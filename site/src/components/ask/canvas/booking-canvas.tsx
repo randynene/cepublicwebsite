@@ -57,7 +57,10 @@ function EventPanel() {
           className="block h-[19px] w-auto opacity-35"
         />
       </div>
-      <div className="flex flex-1 flex-col gap-[13px] px-[24px] pb-[18px] pt-[22px]">
+      {/* Scrolls rather than clips: the reference fits this column at exactly
+          900px tall, and any font-metric difference would otherwise put the legal
+          links out of reach. */}
+      <div className="flex flex-1 flex-col gap-[13px] overflow-y-auto px-[24px] pb-[18px] pt-[22px]">
         <h3 className="text-[23px] font-bold leading-[1.2] tracking-[-0.7px] text-white">
           {BOOKING_PLACEHOLDER.eventTitle}
         </h3>
