@@ -1,186 +1,216 @@
-# Ask Clara page - Claude Design brief (living hiring brief)
+# Ask AI anything - Claude Design brief (living hiring brief)
 
-> **Feed this file into Claude Design.**  
-> Owner: Jake. Status: Design now (29 Jul 2026).  
-> Parent system: `LEAD_CONVERSION_SYSTEM_UX.md` + `LEAD_CONVERSION_EXECUTION_PLAN.md`.  
-> This is the full-page M2 experience (dedicated route), not the tiny widget.
+> **Feed this whole file into Claude Design.**  
+> Owner: Jake. Status: **LOCKED for Design** (29 Jul 2026).  
+> Parent: `LEAD_CONVERSION_SYSTEM_UX.md` + `LEAD_CONVERSION_EXECUTION_PLAN.md`.  
+> Wireframe intent: Jake Stage 1 / Stage 2 sketches (chat LEFT, visual RIGHT).  
+> This is a full-page CE experience, not Clara’s floating widget.
 
 ---
 
 ## 0. One-sentence brief
 
-A full-page CE experience: visitor chats with Clara on the **right**; on the
-**left**, marketing proof first, then a **living hiring brief** that builds into
-a strong visual profile (or a team collage) as they talk - always one click from
-Schedule a Call.
+Visitor lands on **Ask AI anything**: chats with **Clara on the left**; on the
+**right**, full marketing until a clear hiring signal, then a living hiring brief
+builds on top while marketing drops to a smaller rotating strip - dark/lime CE
+skin, soft handoff to a human when the brief is strong (no fake “we matched you”).
 
 ---
 
-## 1. Architecture (locked for design - do not invent a different split)
+## 1. Locked decisions (Jake 29 Jul 2026)
+
+| # | Decision |
+|---|---|
+| Layout | **Chat LEFT · visual RIGHT** |
+| Page label | **Ask AI anything** (route suggestion `/ask`) |
+| Skin | **CE dark/lime** (not the light-grey sketch, not Clara widget chrome) |
+| Stage flip | **Stage 1 → Stage 2 on first clear hiring signal** |
+| Match copy | **Option A only** - “Your brief is strong enough for a human shortlist.” Never imply live database matches. |
+| Chrome | Top: **Cloud Employee logo + Schedule a Call** (and existing site header norms). No extra conversion clutter in the hero of this page. |
+| Hide | User can **hide / show the whole right column** |
+| Big team | If headcount **≥ 5** OR **≥ 3 distinct roles** → recommend working with a human rather than over-building the collage |
+| Voice | **Primary nudge** in empty chat (design the mic / dictation affordance) |
+| Attach | Paperclip may appear as a light secondary control; not the hero of v1 |
+| In-page Book a Call | **Not pushed on arrival.** Soft offer in chat / on brief when Stage 2 brief looks strong. Header Schedule a Call always remains. |
+
+---
+
+## 2. Architecture (for Design context - do not invent another split)
 
 | Layer | Owner | Job |
 |---|---|---|
-| Page chrome, left visual, right chat shell, CTAs | **Cloud Employee Next.js** | What the visitor sees |
-| Pre-chat marketing copy / proof assets | **Sanity** (static content) | Empty-state left rail |
-| Chat conversation (talking) | **Clara API** (headless) | Answers, streaming text |
-| Structured brief fields (roles, count, stacks, region…) | **Clara emits** structured updates; **CE stores + renders** | Living brief |
-| Live session brief document | **Not Sanity** | Ephemeral session state (client + Clara session); HubSpot only on book/save |
+| Page, chat shell, right visual, hide control, CTAs | **CE Next.js** | What the visitor sees |
+| Stage 1 marketing (testimonials, Did you know, case studies) | **Sanity** (static) | Right rail before hiring signal |
+| Chat talking | **Clara API** (headless, later) | Streaming answers |
+| Structured brief fields | **Clara emits**; **CE renders** | Living brief |
+| Live brief mid-session | **Not Sanity** | Session state; HubSpot only on book/save |
 
-**Plain English:** Clara does the talking and the understanding. The CE site draws
-the picture. Sanity holds the marketing panels shown before anyone has spoken.
-Sanity does **not** hold the live hiring profile mid-chat.
-
-Design the UI as if the left panel receives a clean JSON brief that updates over
-time. Do not design scraping of chat bubbles.
+Design the right panel as if it receives a clean JSON brief over time. Do not
+design scraping of chat bubbles.
 
 ---
 
-## 2. Route + entry
+## 3. Two visual stages (mandatory frames)
 
-- Primary route to design: `/ask` (name can be “Ask Clara” / “Build your brief” -
-  final slug can flex; design for a dedicated full page).
-- Entry points later: Pricing after calculator, Hire Engineers “get matched”,
-  header/helper “Ask AI”, Home interest spikes.
-- Escape hatch always visible: **Schedule a Call** → `/book-a-call`.
-- Secondary: **Contact** → `/contact`.
-
----
-
-## 3. Layout (desktop) - one composition
+### Stage 1 - General questions (no clear hiring signal yet)
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  Header (existing CE chrome)         [Schedule a Call]      │
-├────────────────────────────┬────────────────────────────────┤
-│  LEFT (~55%)               │  RIGHT (~45%)                  │
-│  Living visual stage       │  Clara chat                    │
-│                            │                                │
-│  BEFORE first user message │  Welcome + suggested prompts   │
-│  → marketing materials     │  Input always ready            │
-│                            │                                │
-│  AFTER signals appear      │  Streaming replies             │
-│  → hiring brief builds     │  Book a call sticky in chat    │
-└────────────────────────────┴────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│  [CE logo]                              [Schedule a Call]    │
+├─────────────────────────────┬────────────────────────────────┤
+│  LEFT - Clara chat          │  RIGHT - FULL marketing        │
+│                             │                                │
+│  Clara avatar + welcome:    │  Rotating:                     │
+│  “Hi, I’m Clara…”           │  - Testimonials                │
+│  Suggested question chips   │  - Did you know…               │
+│  Composer + voice nudge     │  - Case study bites            │
+│                             │                                │
+│  (Pricing / terms / general │  No profile card yet           │
+│   Q&A stays here forever    │                                │
+│   if they never hire-signal)│  [Hide panel]                  │
+└─────────────────────────────┴────────────────────────────────┘
 ```
 
-**Mobile:** chat primary; brief is a sheet / stacked panel above or below that
-updates as they type - not a second competing app.
+**Stage 1 rules**
+- Entire right column = promotional / proof content with **rotating animation**.
+- Chat can fully answer non-hiring questions (terms, pricing explainers, how it works).
+- Do **not** invent a half-empty profile. No fake progress.
+- Soft control in chat is OK: “Are we asking too many questions?” (tone: visitor in control).
 
-**Hard rules**
-- One composition, not a dashboard of cards.
-- Brand / CE signal strong in first viewport (logo + headline + lime accent).
-- No fake “we matched you an engineer” from chat alone.
-- Book a Call always one click away (header + in-panel).
-- Dark/lime CE visual language (not Clara’s default widget look).
-- Do **not** draw Clara’s floating bubble / iframe chrome.
+### Stage 2 - Clear hiring signal detected
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  [CE logo]                              [Schedule a Call]    │
+├─────────────────────────────┬────────────────────────────────┤
+│  LEFT - Clara chat          │  RIGHT TOP - Living brief      │
+│  keeps probing gently       │  Profile OR team collage       │
+│  “Too many questions?”      │  grows as they answer          │
+│                             ├────────────────────────────────┤
+│  When brief is strong:      │  RIGHT BOTTOM - Marketing      │
+│  soft human handoff in chat │  (shrunken rotating strip)     │
+│  (see §6)                   │  [Hide whole right column]     │
+└─────────────────────────────┴────────────────────────────────┘
+```
+
+**Flip trigger:** first clear hiring signal  
+Examples: “I need a senior React dev”, “hire 3 engineers in PH”, “replace our agency squad”.  
+Non-triggers: “What are your terms?”, “How does pricing work?”, “Where are you based?”
+
+**Motion:** one calm morph - marketing full-bleed → brief takes the upper right,
+marketing compresses to the lower strip. Not a hard page reload feel.
 
 ---
 
-## 4. Left rail states (this is the product)
+## 4. Left - Clara chat (both stages)
 
-### State A - Before they speak (marketing)
-Show why CE is worth talking to. Examples (design 3–5 modules, not all at once):
-- Short value line (“Embedded engineers that feel in-house”)
-- Proof: vetting / deep profiles / psychometrics (sweetener strip)
-- Sample anonymised profile silhouette (labelled **example**)
-- Soft prompt: “Tell Clara who you’re hiring - your brief builds here”
+Must include:
+- Clara logo / avatar
+- Opening: **“Hi, my name is Clara…”** + one light probe (“What’s on your mind - a hire, pricing, or how we work?”)
+- **Templated example question chips** (3–5). Mix general + hiring so Stage 1 and Stage 2 are both reachable.
+- Streaming bubbles (design CE dark chat, not Clara’s default widget)
+- Composer: text input, **voice/mic prominent**, send
+- Helper line OK: voice dictation hint
+- Control: **“Are we asking too many questions?”** → Clara backs off / offers to summarise or stop probing
+- Visitor feels in control; no interrogating form energy
 
-Empty left must still feel premium, not a blank void.
+**Do not** put a giant Schedule a Call button inside the chat on landing.
+Header CTA is enough until §6.
 
-### State B - Single hire (exactly 1 role / 1 person intent)
-Build **one strong profile card** live:
+---
+
+## 5. Right - living brief (Stage 2 top)
+
+### Mode B - Single hire (1 person / 1 role intent)
+One strong **hiring brief / role profile** card that fills live:
 - Role title
 - Seniority
 - Tech stack chips
-- Region / timezone preference
-- Engagement (full-time / part-time / contract length if known)
-- Team context (joins existing team / greenfield) if known
-- Progress meter: “Brief strength” (not a quiz score)
-- Label truthfully: **Your hiring brief** (never “Matched engineer”)
+- Region / timezone
+- Engagement (full-time / duration) if known
+- Short scope line (“What they’re hiring for”)
+- Brief strength / completeness (progress, not a quiz score)
+- Label: **Your hiring brief** - never “Matched engineer”
 
-### State C - Team hire (2+ people)
-Do **not** stamp out many fake headshots. Build a **team collage / scope board**:
-- Headcount (e.g. “3 engineers”)
-- Role mix if known (2 backend, 1 frontend)
-- Shared + per-role tech stacks
+### Mode C - Team (2+ people, below “big” threshold)
+**Team collage / scope board** (not many fake headshots):
+- Headcount
+- Role mix
+- Stacks
 - Regions
-- Timeline / start
-- One visual composition that densifies as they talk
+- Timeline
+- Visual densifies as fields arrive
 
-**Switch rule for design:** if count = 1 → State B; if count ≥ 2 → State C.
-If count unknown, stay in a soft hybrid until Clara clarifies.
+### Mode D - Big team (recommend human)
+If **headcount ≥ 5** OR **≥ 3 distinct roles**:
+- Stop trying to perfect a giant collage
+- Right top becomes a **clear scope summary** + message: best next step is a human working session
+- Chat soft-offers Schedule a Call (still Option A language - no fake matches)
 
-### State D - Brief ready
-- Left reaches a “Ready to review with a human” completeness
-- Primary CTA: Schedule a Call (brief context implied)
-- Optional: Continue refining in chat
-
----
-
-## 5. Right rail - chat (Clara-powered later)
-
-Design CE-owned chat UI:
-- Agent name: Clara (or workspace display name)
-- Welcome message + 3–4 suggested chips (“Hire one senior React”, “Build a squad
-  of 3”, “Replace an agency”, “Not sure - help me scope”)
-- Streaming assistant bubbles
-- Sticky composer
-- Persistent mini CTA: “Skip - book a call”
-- No HubSpot fields in the chat for v1; identity at book/save only
+**Switch rules**
+- count unknown → soft skeleton until Clara clarifies 1 vs many  
+- count = 1 → Mode B  
+- count 2–4 (and &lt; 3 distinct roles) → Mode C  
+- big threshold → Mode D  
 
 ---
 
-## 6. Brief fields the visual should anticipate
+## 6. Human handoff (when brief looks good)
 
-Design empty → partial → filled treatments for:
+Only after the brief is meaningfully filled (Stage 2, strong):
 
-| Field | Notes |
-|---|---|
-| `headcount` | 1 vs ≥2 drives State B vs C |
-| `roles[]` | title, seniority, count per role |
-| `tech_stacks[]` | chips |
-| `regions[]` | PH / EE / LATAM / mixed |
-| `engagement` | full-time, part-time, duration |
-| `timeline` | ASAP / date / exploratory |
-| `company_context` | optional, late |
-| `goals` | short plain text |
+Clara tone (Option A):
+> “This brief looks solid. Want to get put in touch with a human? We’ve got
+> enough to run a proper shortlist conversation.”
 
-Unknown fields stay as subtle placeholders, not errors.
+- Primary action: **Schedule a Call**
+- Secondary: keep refining in chat
+- **Forbidden:** “I’m already seeing matched profiles in our database” (unless
+  later product can show real anonymised inventory - out of scope now)
 
 ---
 
-## 7. Motion (2–3 intentional)
+## 7. Hide control
 
-1. First structured signal: left morphs marketing → brief skeleton.
-2. Each field fill: chip/card settles in (short, calm - not confetti).
-3. 1 → team switch: profile card expands into collage (one morph, not a hard cut).
-
----
-
-## 8. What Design must deliver
-
-Frames:
-1. Desktop empty (State A + chat welcome)
-2. Desktop single-hire mid-brief (State B)
-3. Desktop team collage mid-brief (State C)
-4. Desktop brief-ready + Book a Call emphasis (State D)
-5. Mobile stacked equivalent of B or C
-
-Also annotate: always-visible Schedule a Call; no fake match copy.
+- Control toggles **the entire right column** (marketing and/or brief).
+- Chat remains full-width when right is hidden.
+- Easy to bring the panel back.
 
 ---
 
-## 9. Out of scope for this design pass
+## 8. Motion (2–3 intentional)
 
-- Building the Clara `hiring_brief` API (engineering after design)
+1. Stage 1 → 2: right column morphs; marketing slides/compresses to bottom strip.
+2. Each brief field fill: calm chip/card settle.
+3. Mode B ↔ C ↔ D: one morph when headcount/role mix changes - not a jarring cut.
+
+---
+
+## 9. Frames Claude Design must deliver
+
+1. **Stage 1 desktop** - chat left + full marketing right + header logo/CTA + voice nudge + chips  
+2. **Stage 2 desktop - single hire** - brief building top-right, marketing strip bottom-right  
+3. **Stage 2 desktop - team collage** - same split, Mode C  
+4. **Stage 2 desktop - big team / human recommend** - Mode D + soft Schedule a Call in chat  
+5. **Stage 2 desktop - right column hidden** - chat expanded  
+6. **Mobile** - chat primary; brief as sheet/stack that appears after hiring signal  
+
+Also annotate: Option A handoff copy; no fake match; dark/lime.
+
+---
+
+## 10. Out of scope for this design pass
+
+- Clara `hiring_brief` API implementation
 - HubSpot property mapping
-- Replacing every demo form sitewide (placement comes after page exists)
-- Talent / For Developers join flow
+- Real talent-inventory matching
+- Replacing every sitewide demo form (placement after this page exists)
+- For Developers / talent join
 
 ---
 
-## 10. Build note (for later - not for Design)
+## 11. Build note (not for Design)
 
-V2 can ship the shell with guided chips and local brief state.  
-V3 wires Clara chat + structured brief events into the same shells.
-Do not wait on V3 to design; design the end state now.
+Shell can ship with guided chips + local brief state first.  
+Clara headless chat + structured brief events wire into the **same** shells later.
+Design the end state now.
