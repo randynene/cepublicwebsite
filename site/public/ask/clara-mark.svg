@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" role="img" aria-hidden="true">
+  <!-- Stand-in mark for Clara, sitting on the lime avatar disc. Four-point
+       spark: the conventional "assistant" glyph, drawn in the ink used on every
+       lime fill (#060F1E) so it inherits the palette's contrast rule.
+       Replace with Clara's real mark when CE supplies the asset. -->
+  <path
+    d="M8 0.8c.28 2.34.86 3.9 1.74 4.78.88.88 2.44 1.46 4.78 1.74v1.36c-2.34.28-3.9.86-4.78 1.74-.88.88-1.46 2.44-1.74 4.78H6.64c-.28-2.34-.86-3.9-1.74-4.78C4.02 9.54 2.46 8.96.12 8.68V7.32c2.34-.28 3.9-.86 4.78-1.74C5.78 4.7 6.36 3.14 6.64.8H8Z"
+    fill="#060F1E"
+  />
+</svg>
