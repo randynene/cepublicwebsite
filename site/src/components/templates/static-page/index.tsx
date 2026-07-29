@@ -81,13 +81,18 @@ function HeroImage({
 export default function StaticPageTemplate({
   page,
   breadcrumbs,
+  showBreadcrumbs = true,
 }: {
   page: StaticPage
   breadcrumbs: BreadcrumbItem[]
+  /** Hide the `> …` breadcrumb row (book-a-call keeps the lime eyebrow only). */
+  showBreadcrumbs?: boolean
 }) {
   return (
     <Container as="div" className="pb-16 pt-8 lg:pb-24 lg:pt-12">
-      <Breadcrumbs items={breadcrumbs} className="mb-6" />
+      {showBreadcrumbs ? (
+        <Breadcrumbs items={breadcrumbs} className="mb-6" />
+      ) : null}
 
       <header className="mb-12 flex flex-col gap-4 lg:mb-16">
         {page.eyebrow ? (

@@ -84,6 +84,7 @@ export async function renderStaticPage(
   usPath: string,
   locale: Locale,
   breadcrumbName: string,
+  options?: { showBreadcrumbs?: boolean },
 ) {
   const page = await fetchStaticPage(id)
 
@@ -109,7 +110,11 @@ export async function renderStaticPage(
 
   return (
     <main id="main">
-      <StaticPageTemplate page={page} breadcrumbs={breadcrumbs} />
+      <StaticPageTemplate
+        page={page}
+        breadcrumbs={breadcrumbs}
+        showBreadcrumbs={options?.showBreadcrumbs}
+      />
     </main>
   )
 }
