@@ -890,3 +890,105 @@ body {
     transition: none;
   }
 }
+
+/* ===========================================================================
+   ASK CLARA (/ask) — see docs/design/lead-conversion/ASK_CLARA_EXECUTION_PLAN.md.
+
+   `/ask` is a full-height app shell, not a scrolling marketing page, so it opts
+   out of the sitewide sticky-chrome padding reserved at the top of this file.
+   The class is set on <body> by the root layout for /ask and /uk/ask only.
+   =========================================================================== */
+body.ask-page {
+  padding-top: 0;
+}
+
+/* Rotating proof panel. Timings transcribed from the reference frames: a fixed
+   24s cycle in which each card holds for 6%-30% of the loop, with the call site
+   staggering the delay by 24s/count so exactly one card is ever legible.
+
+   Base opacity is 0 and the active card is opacity 1, so when the animation is
+   suppressed (reduced motion) the stack collapses to a single readable card
+   instead of painting every card on top of the last. */
+.ask-rotator-card {
+  opacity: 0;
+}
+.ask-rotator-card[data-active='true'] {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ask-rotator-card[data-rotating='true'] {
+    animation: ask-rotate 24s ease-in-out infinite;
+  }
+}
+@keyframes ask-rotate {
+  0%,
+  2% {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  6%,
+  30% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  36%,
+  100% {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+}
+
+/* Voice waveform bars. Each bar keeps its full height in layout and only scales
+   on the Y axis, so the recording panel cannot change height as it animates. */
+.ask-wave-bar {
+  transform: scaleY(0.18);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ask-wave-bar {
+    animation: ask-wave 1.05s ease-in-out infinite;
+  }
+}
+@keyframes ask-wave {
+  0%,
+  100% {
+    transform: scaleY(0.18);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+/* "Recording" indicator dot. */
+@media (prefers-reduced-motion: no-preference) {
+  .ask-pulse-dot {
+    animation: ask-pulse 1.4s ease-in-out infinite;
+  }
+}
+@keyframes ask-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.6);
+  }
+}
+
+/* Streaming caret at the end of a Clara turn still being written. */
+@media (prefers-reduced-motion: no-preference) {
+  .ask-caret {
+    animation: ask-caret 900ms steps(1, end) infinite;
+  }
+}
+@keyframes ask-caret {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
