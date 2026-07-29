@@ -3,6 +3,7 @@ import Link from 'next/link'
 import {
   forwardRef,
   type AnchorHTMLAttributes,
+  type ButtonHTMLAttributes,
   type HTMLAttributes,
   type ReactNode,
 } from 'react'
@@ -42,12 +43,18 @@ import { cn } from '../_utils/cn'
 //                         data untouched.
 //
 // `as` prop discriminates rendering:
-//   - "a"     → next/link <Link href> for client-side nav (default
-//               for section pills that ARE clickable links to
-//               category pages, e.g. /services).
-//   - "span"  → non-link decorative pill (used when Sanity provides
-//               no sectionLink — confirmed for "Staff Augmentation"
-//               left-column pill in audit-output/static-2/navigation.json).
+//   - "a"      → next/link <Link href> for client-side nav (default
+//                for section pills that ARE clickable links to
+//                category pages, e.g. /services).
+//   - "span"   → non-link decorative pill (used when Sanity provides
+//                no sectionLink — confirmed for "Staff Augmentation"
+//                left-column pill in audit-output/static-2/navigation.json).
+//   - "button" → in-page action that does not navigate. ADDITIVE
+//                (ASK-CLARA P1): `/ask` opens the booking canvas in
+//                place rather than routing to /book-a-call, so its
+//                Schedule-a-Call control has to be a real <button> for
+//                keyboard and screen-reader users. Mirrors the same
+//                escape hatch CtaButton already carries.
 //
 // `hasArrow` adds a trailing arrow glyph (sprite icon → next/link).
 // Footer section labels (Our Expertise / Learn more) use hasArrow.
@@ -161,7 +168,11 @@ type SpanProps = CommonProps
   & HTMLAttributes<HTMLSpanElement>
   & { as?: 'span'; href?: never }
 
-export type MegaMenuPillLabelProps = AnchorProps | SpanProps
+type ButtonProps = CommonProps
+  & ButtonHTMLAttributes<HTMLButtonElement>
+  & { as: 'button'; href?: never; external?: never }
+
+export type MegaMenuPillLabelProps = AnchorProps | SpanProps | ButtonProps
 
 function ArrowGlyph() {
   // Sprite-based chevron-right rotated -45deg to read as ↗ (NE arrow).
@@ -256,7 +267,7 @@ function htmlAttrs(
 }
 
 export const MegaMenuPillLabel = forwardRef<
-  HTMLAnchorElement | HTMLSpanElement,
+  HTMLAnchorElement | HTMLSpanElement | HTMLButtonElement,
   MegaMenuPillLabelProps
 >((props, ref) => {
   const {
@@ -296,6 +307,21 @@ export const MegaMenuPillLabel = forwardRef<
     sweepVariant && ['sf', sweepVariant],
     className,
   )
+
+  if (props.as === 'button') {
+    const buttonAttrs = htmlAttrs(props) as ButtonHTMLAttributes<HTMLButtonElement>
+    return (
+      <button
+        ref={ref as React.Ref<HTMLButtonElement>}
+        type={props.type ?? 'button'}
+        style={styleProp}
+        className={pillClass}
+        {...buttonAttrs}
+      >
+        {inner}
+      </button>
+    )
+  }
 
   if (props.as === 'a') {
     const anchorAttrs = htmlAttrs(props, ['href', 'external']) as AnchorHTMLAttributes<HTMLAnchorElement>
