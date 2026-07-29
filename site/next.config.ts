@@ -98,6 +98,11 @@ const lockedRules: Redirect[] = [
   { source: '/compare', destination: '/alternatives', permanent: true },
   { source: '/uk/compare', destination: '/uk/alternatives', permanent: true },
 
+  // Dead booking path found by Screaming Frog (internal links + CTAs). Canonical
+  // booking URL is /book-a-call. Not present in the Webflow redirect export.
+  { source: '/schedule-a-call', destination: '/book-a-call', permanent: true },
+  { source: '/uk/schedule-a-call', destination: '/uk/book-a-call', permanent: true },
+
   { source: '/sourcing', destination: '/how-it-works', permanent: true },
   { source: '/embedding', destination: '/how-it-works', permanent: true },
   { source: '/retention', destination: '/how-it-works', permanent: true },
@@ -114,6 +119,12 @@ const config: NextConfig = {
   turbopack: {
     root: __dirname,
   },
+  // Next streams async metadata after <head> for browsers. Screaming Frog (and
+  // other HTML-limited crawlers) then report "missing canonical" even when
+  // generateMetadata set one. Custom htmlLimitedBots REPLACES the default list,
+  // so keep Next's defaults and add Screaming Frog.
+  htmlLimitedBots:
+    /[\w-]+-Google|Google-[\w-]+|Chrome-Lighthouse|Slurp|DuckDuckBot|baiduspider|yandex|sogou|bitlybot|tumblr|vkShare|quora link preview|redditbot|ia_archiver|Bingbot|BingPreview|applebot|facebookexternalhit|facebookcatalog|Twitterbot|LinkedInBot|Slackbot|Discordbot|WhatsApp|SkypeUriPreview|Yeti|googleweblight|Screaming Frog/i,
   images: {
     // E1 Image defaults to quality 80 (probe-grounded; see image/index.tsx).
     // Next.js 16 requires explicit listing of allowed quality values.

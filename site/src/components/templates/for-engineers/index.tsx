@@ -68,6 +68,16 @@ function prefersReduced(): boolean {
   return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
+// Figma export wraps the hero title in a <span>. Screaming Frog (and Google)
+// need a real <h1>. Promote that outer title span after hydrate so FE2_PRE_HTML
+// stays byte-identical for the parity verifier.
+function promoteHeroTitleToH1(html: string): string {
+  return html.replace(
+    /<span( style="[^"]*font-size: 52px;[^"]*")>([\s\S]*?)<\/span>(?=<span style="position: relative; width: 500px)/,
+    '<h1$1>$2</h1>',
+  )
+}
+
 // Split the frozen export body after its FIRST top-level <div> (the hero), so
 // the hero can be given its own full-viewport wrapper and everything from
 // "Applying is broken" down starts below the fold. Depth-counts <div>/</div>;
@@ -372,7 +382,9 @@ export function ForEngineersTemplate({
   // The frozen-export body is stored tokenised in fe2-body.ts; hydrate fills
   // every text node + photo from `content` (Sanity, or the static fallback),
   // reproducing the export byte-for-byte when nothing is overridden.
-  const preHtml = hydrateFe2(FE2_PRE_HTML, content)
+  // H1 promotion runs after hydrate so verify-fe2-parity still sees a clean
+  // hydrate(template, defaults) === export match.
+  const preHtml = promoteHeroTitleToH1(hydrateFe2(FE2_PRE_HTML, content))
   const postHtml = hydrateFe2(FE2_POST_HTML, content)
   const [heroHtml, restHtml] = splitHeroBlock(preHtml)
 

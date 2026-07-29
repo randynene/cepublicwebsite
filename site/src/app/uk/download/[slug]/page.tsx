@@ -5,6 +5,7 @@ import DownloadTemplate from '@/components/templates/download'
 import { DownloadJsonLd } from '@/components/templates/download/json-ld'
 import { generateCanonical, generateHreflang } from '@/lib/locale'
 import { urlFor } from '@/lib/sanity/image'
+import { resolvePageTitle } from '@/lib/seo/page-title'
 import {
   fetchDownload,
   fetchDownloadMeta,
@@ -47,7 +48,7 @@ export async function generateMetadata({
     : '/og-default.png'
 
   return {
-    title,
+    title: resolvePageTitle(title),
     description: download.metaDescription,
     alternates: { canonical, languages: hreflang },
     openGraph: {

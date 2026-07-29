@@ -7,6 +7,7 @@ import { mapTechnologyToContent } from '@/lib/catalogue/content'
 import { generateCanonical, generateHreflang } from '@/lib/locale'
 import { fetchAllTechnologySlugs, fetchTechnology, fetchTechnologyMeta } from '@/lib/sanity/queries/technology'
 import { fetchSharedServiceFaqs } from '@/lib/sanity/queries/shared-faqs'
+import { resolvePageTitle } from '@/lib/seo/page-title'
 
 type RouteParams = { slug: string }
 
@@ -25,7 +26,7 @@ export async function generateMetadata({ params }: { params: Promise<RouteParams
     // metaTitle already carries the full live title (incl. "| Cloud Employee"),
     // so render it verbatim rather than letting the root layout append its
     // "%s | Cloud Employee" template and double-brand the page.
-    title: metaTitle ? { absolute: metaTitle } : meta.technologyName,
+    title: resolvePageTitle(metaTitle ? metaTitle  : meta.technologyName),
     description: meta.metaDescription?.trim() || undefined,
     alternates: { canonical: generateCanonical(usPath, 'en-GB'), languages: generateHreflang(usPath) },
   }

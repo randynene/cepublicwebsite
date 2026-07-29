@@ -39,12 +39,20 @@ export {
 
 import type { Locale } from '@/lib/locale-path'
 
+function localePrefixedPath(path: string, locale: Locale): string {
+  const usPath = stripLocalePrefix(path)
+  if (locale !== 'en-GB') return usPath
+  // Homepage must be `/uk`, not `/uk/`. Concatenating `/uk` + `/` produced a
+  // trailing slash that fought Next's trailingSlash:false redirect and made
+  // Screaming Frog report Canonicalised + Redirected on the UK home.
+  if (usPath === '/') return '/uk'
+  return `/uk${usPath}`
+}
+
 // Generates the canonical URL for a given path + locale.
 export function generateCanonical(path: string, locale: Locale): string {
   const base = env.NEXT_PUBLIC_SITE_URL
-  const usPath = stripLocalePrefix(path)
-  const localePath = locale === 'en-GB' ? `/uk${usPath}` : usPath
-  return `${base}${localePath}`
+  return `${base}${localePrefixedPath(path, locale)}`
 }
 
 // Generates the hreflang alternates object for Next.js metadata.
@@ -52,8 +60,8 @@ export function generateHreflang(usPath: string): Record<string, string> {
   const base = env.NEXT_PUBLIC_SITE_URL
   const normalisedUsPath = stripLocalePrefix(usPath)
   return {
-    'en-US': `${base}${normalisedUsPath}`,
-    'en-GB': `${base}/uk${normalisedUsPath}`,
-    'x-default': `${base}${normalisedUsPath}`,
+    'en-US': `${base}${localePrefixedPath(normalisedUsPath, 'en-US')}`,
+    'en-GB': `${base}${localePrefixedPath(normalisedUsPath, 'en-GB')}`,
+    'x-default': `${base}${localePrefixedPath(normalisedUsPath, 'en-US')}`,
   }
 }

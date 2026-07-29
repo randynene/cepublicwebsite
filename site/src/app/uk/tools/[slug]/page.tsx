@@ -5,6 +5,7 @@ import ToolTemplate from '@/components/templates/tool'
 import { ToolJsonLd } from '@/components/templates/tool/json-ld'
 import { generateCanonical, generateHreflang } from '@/lib/locale'
 import { urlFor } from '@/lib/sanity/image'
+import { resolvePageTitle } from '@/lib/seo/page-title'
 import {
   fetchTool,
   fetchToolMeta,
@@ -42,7 +43,7 @@ export async function generateMetadata({
     : '/og-default.png'
 
   return {
-    title,
+    title: resolvePageTitle(title),
     description: tool.metaDescription,
     alternates: { canonical, languages: hreflang },
     openGraph: {

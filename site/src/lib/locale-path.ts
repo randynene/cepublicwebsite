@@ -23,8 +23,12 @@ export function getLocaleFromPath(path: string): Locale {
  * before the prefix is re-applied, so calling this twice is harmless.
  */
 export function buildLocalePath(path: string, locale: Locale): string {
-  if (locale === 'en-US') return stripLocalePrefix(path)
-  return `/uk${stripLocalePrefix(path)}`
+  const usPath = stripLocalePrefix(path)
+  if (locale === 'en-US') return usPath
+  // Homepage must be `/uk`, not `/uk/` — Next default is trailingSlash:false,
+  // and a trailing slash here fights the redirect + canonical pair.
+  if (usPath === '/') return '/uk'
+  return `/uk${usPath}`
 }
 
 /**

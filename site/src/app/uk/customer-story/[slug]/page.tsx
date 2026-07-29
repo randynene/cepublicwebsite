@@ -5,6 +5,7 @@ import CustomerStoryTemplate from '@/components/templates/customer-story'
 import { CustomerStoryJsonLd } from '@/components/templates/customer-story/json-ld'
 import { generateCanonical, generateHreflang } from '@/lib/locale'
 import { urlFor } from '@/lib/sanity/image'
+import { resolvePageTitle } from '@/lib/seo/page-title'
 import {
   fetchAllCustomerStorySlugs,
   fetchCustomerStory,
@@ -52,7 +53,7 @@ export async function generateMetadata({
     : '/og-default.png'
 
   return {
-    title,
+    title: resolvePageTitle(title),
     description,
     alternates: { canonical, languages: hreflang },
     openGraph: {

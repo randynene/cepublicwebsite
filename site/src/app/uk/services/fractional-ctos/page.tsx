@@ -4,6 +4,7 @@ import { FractionalCtoTemplate } from '@/components/templates/fractional-cto'
 import { FCTO, FRACTIONAL_CTO_META } from '@/components/templates/fractional-cto/content'
 import { generateCanonical, generateHreflang } from '@/lib/locale'
 import { fetchFractionalCtoPage, toFctoContent } from '@/lib/sanity/queries/fractional-cto-page'
+import { resolvePageTitle } from '@/lib/seo/page-title'
 
 // /uk/services/fractional-ctos - UK locale mirror of the Fractional CTO
 // landing page. Takes precedence over the /uk/services/[slug] Sanity route.
@@ -12,7 +13,7 @@ import { fetchFractionalCtoPage, toFctoContent } from '@/lib/sanity/queries/frac
 export async function generateMetadata(): Promise<Metadata> {
   const data = await fetchFractionalCtoPage()
   return {
-    title: { absolute: data?.metaTitle ?? FRACTIONAL_CTO_META.title },
+    title: resolvePageTitle(data?.metaTitle ?? FRACTIONAL_CTO_META.title ),
     description: data?.metaDescription ?? FRACTIONAL_CTO_META.description,
     alternates: {
       canonical: generateCanonical('/services/fractional-ctos', 'en-GB'),

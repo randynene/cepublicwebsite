@@ -4,6 +4,7 @@ import { ContactTemplate } from '@/components/templates/contact'
 import { CONTACT_CONTENT, CONTACT_META } from '@/components/templates/contact/content'
 import { generateCanonical, generateHreflang } from '@/lib/locale'
 import { fetchContactPage, toContactContent } from '@/lib/sanity/queries/contact-page'
+import { resolvePageTitle } from '@/lib/seo/page-title'
 
 // /contact — bespoke Contact page (WP-05). Hero prose, quick-contact strip,
 // the real HubSpot enquiry form, and the offices grid all come from the
@@ -12,7 +13,7 @@ import { fetchContactPage, toContactContent } from '@/lib/sanity/queries/contact
 export async function generateMetadata(): Promise<Metadata> {
   const data = await fetchContactPage()
   return {
-    title: { absolute: data?.metaTitle ?? CONTACT_META.title },
+    title: resolvePageTitle(data?.metaTitle ?? CONTACT_META.title ),
     description: data?.metaDescription ?? CONTACT_META.description,
     alternates: {
       canonical: generateCanonical('/contact', 'en-US'),

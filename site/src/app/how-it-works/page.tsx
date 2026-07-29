@@ -5,11 +5,12 @@ import { HowItWorksTemplate } from '@/components/templates/how-it-works'
 import { HowItWorksJsonLd } from '@/components/templates/how-it-works/json-ld'
 import { generateCanonical, generateHreflang } from '@/lib/locale'
 import { fetchHowItWorksPage, toHiwContent } from '@/lib/sanity/queries/how-it-works-page'
+import { resolvePageTitle } from '@/lib/seo/page-title'
 
 export async function generateMetadata(): Promise<Metadata> {
   const data = await fetchHowItWorksPage()
   return {
-    title: data?.metaTitle ?? HIW_META.title,
+    title: resolvePageTitle(data?.metaTitle ?? HIW_META.title),
     description: data?.metaDescription ?? HIW_META.description,
     alternates: {
       canonical: generateCanonical('/how-it-works', 'en-US'),

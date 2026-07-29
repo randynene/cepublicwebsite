@@ -8,6 +8,7 @@ import StaticPageTemplate from '@/components/templates/static-page'
 import { buildLocalePath, generateCanonical, generateHreflang, type Locale } from '@/lib/locale'
 import { fetchStaticPage, type StaticPageId } from '@/lib/sanity/queries/static-page'
 import { urlFor } from '@/lib/sanity/image'
+import { resolvePageTitle } from '@/lib/seo/page-title'
 
 // Shared metadata + render for the static marketing pages, so that fourteen route
 // files (7 pages x 2 locales) cannot drift apart on canonical tags, hreflang or
@@ -45,7 +46,8 @@ export async function buildStaticPageMetadata(
 
   const noindex = NOINDEX.has(id)
 
-  const title = page.metaTitle ?? page.title
+  const rawTitle = page.metaTitle ?? page.title
+  const title = resolvePageTitle(rawTitle)
   const canonical = generateCanonical(usPath, locale)
   const description = page.metaDescription ?? undefined
 
@@ -54,7 +56,7 @@ export async function buildStaticPageMetadata(
     : null
 
   return {
-    title,
+    ...(title ? { title } : {}),
     ...(description ? { description } : {}),
     ...(noindex ? { robots: { index: false, follow: true } } : {}),
     alternates: {
@@ -62,7 +64,7 @@ export async function buildStaticPageMetadata(
       languages: generateHreflang(usPath),
     },
     openGraph: {
-      title,
+      ...(rawTitle ? { title: rawTitle } : {}),
       ...(description ? { description } : {}),
       url: canonical,
       type: 'website',
@@ -70,7 +72,7 @@ export async function buildStaticPageMetadata(
     },
     twitter: {
       card: 'summary_large_image',
-      title,
+      ...(rawTitle ? { title: rawTitle } : {}),
       ...(description ? { description } : {}),
       ...(ogImage ? { images: [ogImage] } : {}),
     },

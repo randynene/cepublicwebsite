@@ -5,6 +5,7 @@ import { PricingTemplate } from '@/components/templates/pricing'
 import { PricingJsonLd } from '@/components/templates/pricing/json-ld'
 import { generateCanonical, generateHreflang } from '@/lib/locale'
 import { fetchPricingPage, toPricingContent } from '@/lib/sanity/queries/pricing-page'
+import { resolvePageTitle } from '@/lib/seo/page-title'
 
 // /pricing
 //
@@ -16,7 +17,7 @@ import { fetchPricingPage, toPricingContent } from '@/lib/sanity/queries/pricing
 export async function generateMetadata(): Promise<Metadata> {
   const doc = await fetchPricingPage()
   return {
-    title: doc?.metaTitle ?? PRICING_META.title,
+    title: resolvePageTitle(doc?.metaTitle ?? PRICING_META.title),
     description: doc?.metaDescription ?? PRICING_META.description,
     alternates: {
       canonical: generateCanonical('/pricing', 'en-US'),
