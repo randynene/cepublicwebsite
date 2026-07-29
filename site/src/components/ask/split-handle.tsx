@@ -1,10 +1,11 @@
 'use client'
 
-import { useCallback, useRef, useState, useSyncExternalStore } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
 import { cn } from '@/components/ui/_utils/cn'
 
 import { ASK_LABELS } from './content'
+import { createPersistedStore } from './use-persisted'
 
 // The draggable divider between chat and canvas.
 //
@@ -23,62 +24,28 @@ function clampSplit(value: number): number {
   return Math.min(SPLIT_MAX, Math.max(SPLIT_MIN, value))
 }
 
-// ─── Remembered split, as an external store ──────────────────────────────────
-// localStorage is external state, so it is read through useSyncExternalStore
-// rather than copied into React state inside an effect. That gives the correct
-// server snapshot (the default) for hydration, one render instead of two, and no
-// setState-in-effect cascade.
-
-const listeners = new Set<() => void>()
-let cached: number | null = null
-
-function readStored(): number {
-  if (cached !== null) return cached
-  try {
-    const raw = window.localStorage.getItem(SPLIT_STORAGE_KEY)
-    const parsed = raw === null ? Number.NaN : Number.parseFloat(raw)
-    cached = Number.isFinite(parsed) ? clampSplit(parsed) : SPLIT_DEFAULT
-  } catch {
-    // Private-browsing modes can throw on access. A forgotten split is not worth
-    // breaking the page over.
-    cached = SPLIT_DEFAULT
-  }
-  return cached
-}
-
-function writeStored(value: number): void {
-  cached = clampSplit(value)
-  try {
-    window.localStorage.setItem(SPLIT_STORAGE_KEY, String(Math.round(cached)))
-  } catch {
-    // Same as above: keep the in-memory value, drop the persistence.
-  }
-  for (const listener of listeners) listener()
-}
-
-function subscribe(listener: () => void): () => void {
-  listeners.add(listener)
-  return () => {
-    listeners.delete(listener)
-  }
-}
-
-function serverSnapshot(): number {
-  return SPLIT_DEFAULT
-}
+const splitStore = createPersistedStore<number>({
+  key: SPLIT_STORAGE_KEY,
+  fallback: SPLIT_DEFAULT,
+  decode: (raw) => {
+    const parsed = Number.parseFloat(raw)
+    return Number.isFinite(parsed) ? clampSplit(parsed) : null
+  },
+  encode: (value) => String(Math.round(value)),
+})
 
 /**
  * Owns the split position. `split` is the live value (the drag position while
  * dragging, otherwise the remembered one); `commit` persists.
  */
 export function useSplit() {
-  const stored = useSyncExternalStore(subscribe, readStored, serverSnapshot)
+  const stored = splitStore.use()
   /** Non-null only mid-drag, so a drag never writes to localStorage per frame. */
   const [dragging, setDragging] = useState<number | null>(null)
 
   const commit = useCallback((value: number) => {
     setDragging(null)
-    writeStored(value)
+    splitStore.set(clampSplit(value))
   }, [])
 
   const drag = useCallback((value: number) => {

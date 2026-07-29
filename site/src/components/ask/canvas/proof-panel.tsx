@@ -1,6 +1,11 @@
-import { cn } from '@/components/ui/_utils/cn'
+'use client'
 
-import { MicroLabel } from '../primitives'
+import { cn } from '@/components/ui/_utils/cn'
+import { Icon } from '@/components/ui/icon'
+
+import { ASK_LABELS } from '../content'
+import { FOCUS_RING, MicroLabel } from '../primitives'
+import { createPersistedStore } from '../use-persisted'
 import type { ProofItem, ProofPanel as ProofPanelData } from '@/lib/ask/types'
 
 // The proof canvas: client stories and did-you-knows, cross-fading.
@@ -134,6 +139,37 @@ function ProofCard({
   )
 }
 
+// The proof band is dismissible once the brief owns the canvas: by that point the
+// visitor is working, and a rotating testimonial beside their own brief is the
+// thing most likely to be in the way. The choice is remembered, so it stays shut
+// for the rest of the session rather than reappearing on the next state change.
+//
+// The full-height S1/S2 panel is deliberately NOT dismissible - closing it would
+// leave an empty canvas with nothing to replace it.
+const proofDismissed = createPersistedStore<boolean>({
+  key: 'ask.proofDismissed',
+  fallback: false,
+  decode: (raw) => raw === '1',
+  encode: (value) => (value ? '1' : '0'),
+})
+
+function DismissProofButton({ className }: { className?: string }) {
+  return (
+    <button
+      type="button"
+      aria-label={ASK_LABELS.dismissProof}
+      onClick={() => proofDismissed.set(true)}
+      className={cn(
+        'absolute z-[2] inline-flex size-[24px] items-center justify-center rounded-full border border-border-subtle bg-[#101B30]/80 text-text-tertiary transition-colors duration-reveal ease-reveal hover:border-brand-primary hover:text-white motion-reduce:transition-none',
+        FOCUS_RING,
+        className,
+      )}
+    >
+      <Icon name="close" size="sm" className="size-[10px]" />
+    </button>
+  )
+}
+
 function Dots({ count, activeIndex }: { count: number; activeIndex: number }) {
   return (
     <div aria-hidden="true" className="flex gap-[6px]">
@@ -205,11 +241,15 @@ export function ProofStrip({
   height: number
 }) {
   const cycle = 24 / Math.max(1, proof.items.length)
+  const dismissed = proofDismissed.use()
+  if (dismissed) return null
+
   return (
     <div
       className="relative shrink-0 overflow-hidden border-t border-[#1a2740] bg-[#0E1A2E]"
       style={{ height }}
     >
+      <DismissProofButton className="right-[16px] top-[14px]" />
       {proof.items.map((item, index) => (
         <ProofCard
           key={item.id}
@@ -228,8 +268,12 @@ export function ProofStrip({
 /** Compact proof card that sits above the thread on a phone (S9). */
 export function ProofCardMobile({ proof }: { proof: ProofPanelData }) {
   const cycle = 24 / Math.max(1, proof.items.length)
+  const dismissed = proofDismissed.use()
+  if (dismissed) return null
+
   return (
     <div className="relative mx-[12px] mt-[12px] h-[118px] shrink-0 overflow-hidden rounded-[14px] border border-[#1a2740] bg-[#0E1A2E]">
+      <DismissProofButton className="right-[10px] top-[10px]" />
       {proof.items.map((item, index) => (
         <ProofCard
           key={item.id}
