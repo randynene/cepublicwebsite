@@ -43,7 +43,7 @@ const DC = {
   ctaAccent: "We'll handle the rest.",
   ctaBodyPre: 'Two vetted',
   ctaBodyPost: 'in front of you within 7 working days. No job boards, no CVs, no time wasted.',
-  scheduleCta: 'Schedule a call',
+  scheduleCta: 'Talk to a human',
   customersEyebrow: 'Proof, not promises',
   customersLead: 'Hear from our',
   customersAccent: 'customers',

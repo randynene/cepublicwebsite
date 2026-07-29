@@ -939,7 +939,56 @@ from the product tracker and should be deleted before launch (scaffold debt).
 | Fractional CTO | `/services/fractional-ctos` (+ `/uk`) | Net-new | BUILT + COMMITTED 22 Jul (`2951a2c`); **G2 wiring code-complete (WIRE-BESPOKE 23 Jul): `fractionalCtoPage` singleton (all copy editable + `video.videoUrl`) + GROQ/Zod/transform + US/UK routes (Sanity-first, static `FCTO` fallback) + seed; tsc/build/routes-200 green.** No photos by design (anonymised CTO cards, text-name logos, stylised video tile) - only media control is the video URL. OPEN: Jake deploys Studio + runs `npm run static:seed-fractional-cto-page`. | Deploy Studio + run seed; then DONE (confirm canonical URL vs planned `/fractional-cto` separately) | 4 |
 | Software Engineers (Hire Engineers) | `/services/software-engineers` (+ `/uk`) | Net-new (nav "Hire Engineers") | BUILT + COMMITTED 22 Jul (`a9cf250`; bespoke dark/lime `templates/hire-engineers/`). **G2 wiring code-complete (WIRE-BESPOKE 23 Jul): `hireEngineersPage` singleton (all copy editable + every image slot editable - hero avatars, offer/proof/form photos, sample-profile + author avatars, match photos - + 90-second tour `videoUrl`/`poster`) + GROQ/Zod/transform (splices calculator option keys, stega-cleans tour URL) + US/UK routes (Sanity-first, static `HE` fallback) + seed; tsc/build/routes-200 green.** Calculator numeric tables stay code-driven. SEEDED to production 23 Jul (after the Growth plan upgrade; verified `hireEngineersPage` landed with all sections), Studio deployed. Fully editable in Studio. Seb: upload image slots + paste the 90-second tour video URL if wanted. | DONE (G2). Optional: image/video uploads (confirm `/hire/software-engineers` redirect target + nav link) | 4 |
 | Managed Pods | `/managed-pods` | Net-new | NOT-BUILT | Phase 5.2 | 4 |
+| Ask Clara | `/ask` (+ `/uk/ask`) | Net-new (no live equivalent) | **P1 DONE (29 Jul) - FRONTEND SHELL ONLY.** UI built to `docs/design/lead-conversion/ask-clara-reference/Ask_Clara_Page_standalone.html`: chat left / canvas right, draggable 35-65% divider persisted to `localStorage`, and all 10 designed states (S1-S10) from hard-coded `Brief` fixtures. Reviewable via `?askDebug=1`. **Jake's 29 Jul revisions applied:** bespoke chrome - Cloud Employee logo left (30px), `Back to site` + `Talk to a human` right as an equal-size pair (190x46 desktop) on the sitewide `.cta-sweep` archetype, nothing else (no sitewide nav, no announcement bar, no footer); the brief region scrolls independently with the Download / Email / Book-a-call bar pinned below it, so it holds an arbitrarily deep brief; the client-story band carries a dismiss X and stays dismissed; and the composer's paperclip opens a real multi-file picker (CV, doc, spreadsheet, image) with removable chips. **Still nothing connected:** no Clara API, no HubSpot, no microphone, files are selected but not uploaded or read, S7's Calendly is a static placeholder, and Download / Email are affordances rather than controls. | P2 mock SSE transport -> P3 real Clara (`brief_update` + CORS + proxy + attachment analysis) -> P4 voice -> P5 Calendly + HubSpot + brief PDF, which is what turns Download and Email into working buttons. Per `docs/design/lead-conversion/ASK_CLARA_EXECUTION_PLAN.md`. | Not in a launch wave - `/ask` is a net-new conversion surface, not a parity page |
 | 404 | any bad URL | n/a | DONE (dark/lime re-skin 22 Jul) | none | - |
+
+> **`/ask` (Ask Clara) - what P1 does and does not include.** P1 is deliberately a
+> frontend-only pass so the composition could be signed off before any token spend.
+>
+> **SITEWIDE CTA RENAME (29 Jul).** "Schedule a Call" becomes **"Talk to a human"**
+> everywhere. Code occurrences are done (the `/ask` header and its in-page booking
+> CTAs, the location-page static fallback, the service/technology detail pages, the
+> seed fallbacks). **Four Sanity fields still need it and are Jake's to run:**
+> `navigation.ctaButton.label` (the sitewide header CTA) plus
+> `start.cards[start-1].cta` on the three `locationPage` docs. Dry-run and apply via
+> `npm run static:patch-cta-talk-to-a-human`; `npm run static:scan-schedule-a-call`
+> regenerates the full picture. **Deliberately excluded pending a decision:** 6
+> `bookACall.metaTitle` values and `bookACallPage.title` (page titles on indexed
+> pages - renaming those mid-migration is the trap the hub H1s were kept out of, see
+> Tech Debt #43b), and 10 portable-text runs inside blogPost / compareBlog /
+> customerStory bodies (migrated article copy held for live parity).
+>
+> **Complete:** routes `/ask` + `/uk/ask`; bespoke chrome (logo, `Back to site`,
+> `Talk to a human` - the header CTA opens the booking canvas in place rather than
+> routing to `/book-a-call`, and `Back to site` exists because stripping the nav
+> otherwise leaves the page a dead end); the two CTAs are an equal-size pair carrying
+> the same `.cta-sweep` hover language as the sitewide header CTA, verified to cause
+> no layout shift on hover and no horizontal overflow from 360px up; no sitewide nav,
+> announcement bar or
+> footer, so the shell claims the whole viewport; the floating Clara widget
+> suppressed on this page only, with all analytics still loading (`/ask` IS Clara, so
+> a second floating Clara chat on the same screen was a contradiction); the chat
+> column (thread, composer, voice
+> panel, file attachments); the canvas in all of its shapes (rotating proof,
+> single-hire brief, team brief, product brief, brief-ready, in-canvas booking,
+> booked); the brief region scrolling independently of a pinned action bar so it can
+> keep deepening; a dismissible client-story band; responsive stacked layout on
+> phones; `prefers-reduced-motion` respected throughout; a screen-reader H1
+> ("Ask AI anything") since the design shows no visible headline; and the
+> `?askDebug=1` state switcher, which also carries a `DEEP` growth-test state that
+> deliberately overflows the canvas.
+>
+> **The brief is the deliverable.** Everything on the right-hand side exists so a
+> CloudEmployee lead or CTO can review a real brief with the prospect later - which
+> is why it has to grow without limit, why it is takeable away (download / email),
+> and why booking a call to walk through it is always one click from it.
+>
+> **Outstanding:** everything behind the UI (P2-P5). Specifically: Download and
+> Email are affordances, not buttons, until the PDF and HubSpot work lands in P5;
+> attached files are listed but never uploaded or read until P3 sends them to Clara
+> for analysis. Plus two decisions for Jake - whether `/ask` should be indexable (it
+> currently is, per the plan's non-blocking default) and whether it belongs in the
+> sitemap.
 
 ### Funnels / utility (built, not standard marketing pages)
 | Page | URL | Status | Work needed | Wave |

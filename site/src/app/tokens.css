@@ -149,6 +149,11 @@
   --font-base: var(--font-inter);
   --font-serif: var(--font-source-serif);
 
+  /* ASK-CLARA P1: IBM Plex Mono, for the /ask canvas micro-labels. Deliberately
+   * NOT --font-mono — overriding that would restyle every <code> block in
+   * portable text sitewide. Generates the `font-plex` utility. */
+  --font-plex: var(--font-ibm-plex-mono);
+
   /* Type scale — LIVE "Updated type scale, across all pages" (spec §2,
    * Inter Semi Bold). The superseded Extra Bold draft is NOT used.
    * Tailwind v4 pairs size with line-height / letter-spacing / weight via

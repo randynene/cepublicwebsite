@@ -161,7 +161,7 @@ const navigation = {
   ],
   ctaButton: {
     _type: 'object',
-    label: normalize('Schedule a Call'),
+    label: normalize('Talk to a human'),
     link: url('/contact'),
     type: 'calendly',
   },
