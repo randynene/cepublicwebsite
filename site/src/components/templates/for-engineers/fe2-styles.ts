@@ -105,7 +105,7 @@ export const FE2_UI_CSS = `
  * (viewport height under the chrome, divided by the canvas zoom factor). The
  * hero centres itself in that space and the See more control pins to the
  * bottom, so "Applying is broken" always starts below the fold. */
-.fe2 .fe2-hero-vh{position:relative;display:flex;flex-direction:column;justify-content:center;gap:56px}\n  /* Hero centres in the space above the strip, strip sits at the bottom - same\n     treatment as .hero-screen in globals.css. Doubled class for (0,2,0), which\n     the .fe2 star reset above (margin:0;padding:0) would otherwise beat. */\n  .fe2-hero-vh.fe2-hero-vh{justify-content:flex-start;padding-bottom:44px}\n  .fe2-hero-vh.fe2-hero-vh > div:first-child{flex:0 0 auto;margin-block:auto}\n  .fe2-hero-vh.fe2-hero-vh > .hero-trust-bar{flex:0 0 auto;margin-top:0}
+.fe2 .fe2-hero-vh{position:relative;display:flex;flex-direction:column;justify-content:center;gap:56px}\n  /* Hero centres in the space above the strip, strip sits at the bottom - same\n     treatment as .hero-screen in globals.css. Doubled class for (0,2,0), which\n     the .fe2 star reset above (margin:0;padding:0) would otherwise beat. */\n  .fe2-hero-vh.fe2-hero-vh{justify-content:flex-start;padding-bottom:var(--hero-strip-bottom,44px)}\n  .fe2-hero-vh.fe2-hero-vh > div:first-child{flex:0 0 auto;margin-block:auto}\n  .fe2-hero-vh.fe2-hero-vh > .hero-trust-bar{flex:0 0 auto;margin-top:0}
 .fe2 .fe2-hero-vh > div:first-child{width:100%}\n  /* Client logo strip closing the hero. The fe2 canvas is a fixed 1920px\n     Figma frame that gets scaled, so the bar is banded to the same 1440/64\n     content width the other marketing pages use. */\n  .fe2-trust{width:100%;max-width:1440px;margin:0 auto;padding:0 64px}
 .fe2 
 .fe2 

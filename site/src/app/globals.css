@@ -384,10 +384,37 @@ body {
      `.x, .x * { margin: 0; padding: 0 }`, which ties with a single-class rule and
      wins on source order — so a plain `.hero-screen { padding-bottom }` or
      `margin-block: auto` is silently zeroed on exactly the pages that need it. */
+  /* Clearance under the logo strip. On :root rather than on .hero-screen so the
+     For Engineers hero, which uses its own container, reads the same value and
+     the two cannot drift. Steps down as the window shortens, so raising the
+     strip on a big screen does not push the hero off the fold when zoomed in. */
+  :root {
+    --hero-strip-bottom: 132px;
+  }
+  @media (max-height: 900px) {
+    :root {
+      --hero-strip-bottom: 96px;
+    }
+  }
+  @media (max-height: 780px) {
+    :root {
+      --hero-strip-bottom: 60px;
+    }
+  }
+  @media (max-height: 700px) {
+    :root {
+      --hero-strip-bottom: 44px;
+    }
+  }
+  @media (max-height: 660px) {
+    :root {
+      --hero-strip-bottom: 32px;
+    }
+  }
+
   .hero-screen.hero-screen {
     padding-top: 0;
-    /* Breathing room under the strip, which now sits at the bottom. */
-    padding-bottom: 44px;
+    padding-bottom: var(--hero-strip-bottom);
   }
 
   /* Auto margins on the hero absorb the leftover height equally above and below
