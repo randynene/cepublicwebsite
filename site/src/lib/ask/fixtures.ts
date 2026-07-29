@@ -658,7 +658,7 @@ export const ASK_SCREENS: Record<AskScreenId, AskScreen> = {
     id: 'S6',
     label: 'Brief ready',
     trigger: 'Required fields captured',
-    canvasNote: 'Full brief + Schedule a Call emphasis',
+    canvasNote: 'Full brief + Talk to a human emphasis',
     viewport: 'desktop',
     entries: [
       {
@@ -676,7 +676,7 @@ export const ASK_SCREENS: Record<AskScreenId, AskScreen> = {
         id: 's6-offer',
         title: 'Book 30 minutes to review your brief',
         body: 'Your brief comes with you - no forms, no repeating yourself.',
-        ctaLabel: 'Schedule a Call',
+        ctaLabel: 'Talk to a human',
       },
       {
         kind: 'suggestions',
@@ -698,7 +698,7 @@ export const ASK_SCREENS: Record<AskScreenId, AskScreen> = {
         strengthLabel: 'Brief strength',
         title: 'Ready to review this with a human',
         body: '30 minutes, no obligation. We bring candidates that match this brief.',
-        ctaLabel: 'Schedule a Call',
+        ctaLabel: 'Talk to a human',
         secondary: 'or keep refining in chat',
       },
     },
@@ -707,7 +707,7 @@ export const ASK_SCREENS: Record<AskScreenId, AskScreen> = {
   S7: {
     id: 'S7',
     label: 'Booking open',
-    trigger: 'Schedule a Call clicked anywhere',
+    trigger: 'Talk to a human clicked anywhere',
     canvasNote: 'Calendly embed, brief pinned above it',
     viewport: 'desktop',
     entries: [

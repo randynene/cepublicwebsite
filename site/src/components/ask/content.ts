@@ -31,7 +31,13 @@ export const GLYPH = {
 export const ASK_LABELS = {
   /** Accessible name for the CE wordmark, which links home. */
   logoHome: 'Cloud Employee home',
-  scheduleCall: 'Schedule a Call',
+  /**
+   * The primary conversion CTA, sitewide as of 29 Jul (was "Schedule a Call").
+   * Every booking entry point on this page uses this one string, so the header, the
+   * offer card in the chat, the brief's action bar and the brief-ready panel cannot
+   * drift apart.
+   */
+  talkToHuman: 'Talk to a human',
   /** The only route out of this page, since /ask carries no site nav. */
   backToSite: 'Back to site',
   claraAvatarAlt: 'Clara',
@@ -81,7 +87,6 @@ export const ASK_LABELS = {
     'Reviewed with you by a CloudEmployee lead, not scored by a machine.',
   downloadBrief: 'Download',
   emailBrief: 'Email it to me',
-  bookToReview: 'Book a call',
   briefVersion: 'Brief version',
 
   /** Accessible name for the X that closes the rotating proof band. */

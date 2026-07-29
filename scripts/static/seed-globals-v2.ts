@@ -533,7 +533,7 @@ function buildNavigationDoc(ctx: NavigationBuildContext): { _id: string; _type: 
   // CTA was already canonical-fallback to this URL; we use the same here)
   const ctaButton = {
     _type: 'object' as const,
-    label: normalize(cap.ctaButton.label || 'Schedule a Call'),
+    label: normalize(cap.ctaButton.label || 'Talk to a human'),
     link: cap.ctaButton.url || 'https://calendly.com/d/cwwf-6k5-2qy/intro-call-cloud-employee',
     type: 'calendly' as const,
   }

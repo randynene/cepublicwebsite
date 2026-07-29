@@ -52,7 +52,7 @@ export function BriefActions({
           size="cta"
           leadingArrow
           leadingGlyph={GLYPH.arrow}
-          label={ASK_LABELS.bookToReview}
+          label={ASK_LABELS.talkToHuman}
           className="!pr-[16px] !text-[12.5px]"
           // Version is what a human would quote back on the call, so it is worth
           // exposing to assistive tech rather than leaving it purely decorative.
