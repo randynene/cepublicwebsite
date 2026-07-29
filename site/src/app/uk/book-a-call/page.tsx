@@ -20,5 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function BookACallUkPage() {
-  return renderStaticPage('bookACallPage', '/book-a-call', 'en-GB', 'Book A Call')
+  return renderStaticPage('bookACallPage', '/book-a-call', 'en-GB', 'Book A Call', {
+    showBreadcrumbs: false,
+  })
 }

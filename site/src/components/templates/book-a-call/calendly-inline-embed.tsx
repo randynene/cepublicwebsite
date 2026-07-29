@@ -13,6 +13,14 @@ import { useEffect, useRef } from 'react'
 const CALENDLY_CSS_URL = 'https://assets.calendly.com/assets/external/widget.css'
 const CALENDLY_JS_URL = 'https://assets.calendly.com/assets/external/widget.js'
 
+// CE dark/lime skin for the Calendly iframe. Hex without `#` — Calendly's
+// supported embed theme params. Layout stays Calendly's canonical UI.
+const CE_CALENDLY_THEME = {
+  background_color: '101B30',
+  text_color: 'ffffff',
+  primary_color: 'D4FF3C',
+} as const
+
 type CalendlyInlineApi = {
   initInlineWidget: (options: {
     url: string
@@ -20,6 +28,19 @@ type CalendlyInlineApi = {
     prefill?: Record<string, string>
     utm?: Record<string, string>
   }) => void
+}
+
+/** Append CE theme params unless the URL already sets them (Studio override). */
+export function withCalendlyCeTheme(url: string): string {
+  try {
+    const parsed = new URL(url)
+    for (const [key, value] of Object.entries(CE_CALENDLY_THEME)) {
+      if (!parsed.searchParams.has(key)) parsed.searchParams.set(key, value)
+    }
+    return parsed.toString()
+  } catch {
+    return url
+  }
 }
 
 function getCalendlyInlineApi(): CalendlyInlineApi | undefined {
@@ -55,6 +76,7 @@ export interface CalendlyInlineEmbedProps {
 /** Inline Calendly scheduler — self-loads Calendly's script + stylesheet. */
 export function CalendlyInlineEmbed({ url, className }: CalendlyInlineEmbedProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const themedUrl = withCalendlyCeTheme(url)
 
   useEffect(() => {
     const parent = containerRef.current
@@ -73,7 +95,7 @@ export function CalendlyInlineEmbed({ url, className }: CalendlyInlineEmbedProps
       if (cancelled) return
       const calendly = getCalendlyInlineApi()
       if (calendly) {
-        calendly.initInlineWidget({ url, parentElement: parent })
+        calendly.initInlineWidget({ url: themedUrl, parentElement: parent })
         return
       }
       attempts += 1
@@ -87,13 +109,22 @@ export function CalendlyInlineEmbed({ url, className }: CalendlyInlineEmbedProps
       cancelled = true
       window.clearTimeout(timer)
     }
-  }, [url])
+  }, [themedUrl])
 
   return (
     <div
       ref={containerRef}
       className={className}
-      style={{ minWidth: 320, height: 700 }}
+      // Outer plate = page ground (#070D18). Inner Calendly UI stays #101B30
+      // via CE_CALENDLY_THEME. color-scheme:light stops the browser forcing
+      // an opaque white iframe fill on a dark host page.
+      style={{
+        minWidth: 320,
+        width: '100%',
+        height: 900,
+        backgroundColor: '#070D18',
+        colorScheme: 'light',
+      }}
     />
   )
 }

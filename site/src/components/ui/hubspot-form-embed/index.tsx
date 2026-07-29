@@ -88,6 +88,8 @@ declare global {
           formId: string
           region?: string
           target: string
+          /** Extra CSS HubSpot injects into the form (often iframe). */
+          css?: string
           onFormSubmit?: ($form: HTMLFormElement) => void
           onFormReady?: () => void
         }) => void
@@ -116,6 +118,25 @@ export interface HubSpotFormEmbedProps {
   /** Callback when load fails or times out. */
   onError?: (error: Error) => void
   className?: string
+  /**
+   * CSS injected into HubSpot's form document after mount. Needed when HubSpot
+   * renders inside `iframe.hs-form-iframe` (parent Tailwind cannot reach fields).
+   * Also passed as `css` to `hbspt.forms.create` for HubSpot's own injection path.
+   */
+  frameCss?: string
+}
+
+function injectFrameCss(targetId: string, frameCss: string) {
+  if (typeof document === 'undefined' || !frameCss.trim()) return
+  const root = document.getElementById(targetId)
+  if (!root) return
+  const iframe = root.querySelector<HTMLIFrameElement>('iframe.hs-form-iframe')
+  const doc = iframe?.contentDocument
+  if (!doc?.head) return
+  const style = doc.createElement('style')
+  style.setAttribute('data-ce-hubspot-frame-css', 'true')
+  style.textContent = frameCss
+  doc.head.appendChild(style)
 }
 
 export function HubSpotFormEmbed({
@@ -127,6 +148,7 @@ export function HubSpotFormEmbed({
   onReady,
   onError,
   className,
+  frameCss,
 }: HubSpotFormEmbedProps) {
   // Deterministic mount-target id — useId is portable across SSR/CSR.
   // Replace `:` with `_` because HubSpot's `target: '#...'` selector
@@ -179,6 +201,7 @@ export function HubSpotFormEmbed({
         formId,
         region,
         target: `#${targetId}`,
+        ...(frameCss ? { css: frameCss } : {}),
         onFormSubmit: ($form) => {
           if (typeof window !== 'undefined') {
             window.dataLayer?.push({
@@ -190,6 +213,7 @@ export function HubSpotFormEmbed({
           onSubmit?.($form)
         },
         onFormReady: () => {
+          if (frameCss) injectFrameCss(targetId, frameCss)
           setState('ready')
           onReady?.()
         },

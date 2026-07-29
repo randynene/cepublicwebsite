@@ -17,6 +17,7 @@
     "launch:capture-live": "tsx scripts/launch/capture-live-behaviour.ts",
     "launch:verify-parity": "tsx scripts/launch/verify-redirect-parity.ts",
     "launch:verify-hubspot-forms": "tsx scripts/launch/verify-hubspot-forms.ts",
+    "launch:verify-hubspot-forms-staging": "tsx scripts/launch/verify-hubspot-forms-staging.ts",
     "launch:verify-noindex": "tsx scripts/launch/verify-noindex.ts",
     "scaffold:start": "tsx scripts/scaffold/start-scaffold-phase.ts",
     "scaffold:complete": "tsx scripts/scaffold/complete-scaffold-phase.ts",

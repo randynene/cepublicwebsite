@@ -26,20 +26,54 @@ const CARD = 'rounded-[20px] border border-[#22314D] bg-[#101B30]'
 const PILL =
   'inline-flex w-fit items-center gap-2.5 rounded-pill border border-[#22314D] bg-[#101B30] px-5 py-3 text-[14px] font-medium text-white transition-colors hover:border-brand-primary/60 hover:text-brand-primary'
 
-// The enquiry panel is LIGHT on purpose, and it is not a style preference.
-//
-// HubSpot renders this form inside an `<iframe class="hs-form-iframe">`, so the
-// C6 HubSpotFormEmbed chassis (and any [&_.hs-input]:... override we pass it)
-// never reaches the fields — verified in the browser: the mounted document has
-// no .hs-input at all, it lives in the frame. Inside that frame HubSpot applies
-// its own theme, which is ink-on-white (label #212D3A, input #F5F8FA). On the
-// dark card the labels were effectively invisible.
-//
-// Two ways out: turn the form into a raw/unstyled form in HubSpot so it mounts
-// inline and our CSS applies, or give it a light panel. The first is a change to
-// CE's HubSpot account, so it is not the agent's to make. The second is what the
-// live site already looks like. Panel is light; page stays dark.
-const FORM_PANEL = 'rounded-[20px] border border-[#D8DEE7] bg-white'
+// HubSpot mounts this enquiry form inside `<iframe class="hs-form-iframe">`, so
+// parent Tailwind never reaches the fields. The panel is the dark card colour
+// (`#101B30`); field colours are forced via `CONTACT_FORM_FRAME_CSS` injected
+// into the iframe after mount (see HubSpotFormEmbed `frameCss`).
+const FORM_PANEL = CARD
+
+const CONTACT_FORM_FRAME_CSS = `
+  body, .hbspt-form, .hs-form {
+    background-color: #101B30 !important;
+    color: #ffffff !important;
+  }
+  label, .hs-form-field label, .hs-main-font-element {
+    color: #ffffff !important;
+  }
+  .hs-input, input.hs-input, textarea.hs-input, select.hs-input {
+    background-color: #1B2A45 !important;
+    color: #ffffff !important;
+    border: 1px solid #32435F !important;
+    border-radius: 999px !important;
+  }
+  textarea.hs-input {
+    border-radius: 16px !important;
+    min-height: 120px !important;
+  }
+  .hs-input::placeholder, textarea.hs-input::placeholder {
+    color: #7F8CA0 !important;
+  }
+  .hs-button, input.hs-button, .hs-button.primary {
+    background-color: #D4FF3C !important;
+    color: #060F1E !important;
+    border: none !important;
+    border-radius: 999px !important;
+    font-weight: 700 !important;
+  }
+  .legal-consent-container,
+  .legal-consent-container *,
+  .hs-richtext,
+  .hs-richtext p {
+    color: #B8C2D1 !important;
+  }
+  .legal-consent-container a,
+  .hs-richtext a {
+    color: #D4FF3C !important;
+  }
+  .hs-error-msgs label {
+    color: #ff6b6b !important;
+  }
+`
 
 // D5 — icons are chrome, chosen by link kind rather than editable in Studio.
 const KIND_ICON: Record<ContactQuickLink['kind'], string> = {
@@ -150,7 +184,7 @@ export function ContactTemplate({
 
         <div className={cn(FORM_PANEL, 'h-fit p-7 lg:p-9')}>
           {C.form.heading ? (
-            <h2 className="mb-6 text-[24px] font-semibold tracking-[-0.6px] text-[#0A1628]">
+            <h2 className="mb-6 text-[24px] font-semibold tracking-[-0.6px] text-white">
               {C.form.heading}
             </h2>
           ) : null}
@@ -158,6 +192,7 @@ export function ContactTemplate({
             <HubSpotFormEmbed
               formId={C.form.hubspotFormId}
               {...(C.form.portalId ? { portalId: C.form.portalId } : {})}
+              frameCss={CONTACT_FORM_FRAME_CSS}
             />
           ) : null}
         </div>
