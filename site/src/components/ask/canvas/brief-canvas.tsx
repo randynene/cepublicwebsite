@@ -1,3 +1,5 @@
+'use client'
+
 import { cn } from '@/components/ui/_utils/cn'
 
 import { ASK_LABELS, GLYPH } from '../content'
@@ -11,6 +13,7 @@ import {
   ProfileMark,
   StrengthMeter,
 } from '../primitives'
+import { BriefActions } from './brief-actions'
 import { ProofStrip } from './proof-panel'
 import { resolveBriefShape } from '@/lib/ask/brief'
 import type { BriefCanvas as BriefCanvasData } from '@/lib/ask/types'
@@ -383,14 +386,25 @@ const STRIP_HEIGHT = {
   pending: 190,
 } as const
 
-export function BriefCanvas({ canvas }: { canvas: BriefCanvasData }) {
+export function BriefCanvas({
+  canvas,
+  onSchedule,
+}: {
+  canvas: BriefCanvasData
+  onSchedule: () => void
+}) {
   const shape = resolveBriefShape(canvas.brief)
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
+      {/* The brief is the thing that grows. Every turn can add a role, a
+          compliance flag, a must-have or a whole new section, so this region owns
+          its own scrollbar and keeps its scrolling to itself (`overscroll-contain`)
+          rather than handing overflow to the page. The action bar and the proof
+          band below are pinned outside it. */}
       <div
         className={cn(
-          'flex min-h-0 flex-1 flex-col overflow-y-auto px-[32px] py-[26px] @max-[62rem]:px-[16px] @max-[62rem]:py-[16px]',
+          'ask-scroll flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-[32px] py-[26px] @max-[62rem]:px-[16px] @max-[62rem]:py-[16px]',
           shape === 'team' && 'gap-[18px]',
           shape === 'product' && 'gap-[16px]',
           shape !== 'team' && shape !== 'product' && 'gap-[20px]',
@@ -413,6 +427,8 @@ export function BriefCanvas({ canvas }: { canvas: BriefCanvasData }) {
           </p>
         ) : null}
       </div>
+
+      <BriefActions brief={canvas.brief} onSchedule={onSchedule} />
 
       {canvas.strip ? (
         <ProofStrip proof={canvas.strip} height={STRIP_HEIGHT[shape]} />

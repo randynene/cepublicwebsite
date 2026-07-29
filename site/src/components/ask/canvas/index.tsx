@@ -24,7 +24,7 @@ export function AskCanvas({ canvas, onSchedule }: {
     case 'proof':
       return <ProofCanvas proof={canvas.proof} />
     case 'brief':
-      return <BriefCanvas canvas={canvas.brief} />
+      return <BriefCanvas canvas={canvas.brief} onSchedule={onSchedule} />
     case 'brief-ready':
       return (
         <BriefReadyCanvas

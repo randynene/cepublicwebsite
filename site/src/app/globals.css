@@ -898,8 +898,29 @@ body {
    out of the sitewide sticky-chrome padding reserved at the top of this file.
    The class is set on <body> by the root layout for /ask and /uk/ask only.
    =========================================================================== */
-body.ask-page {
-  padding-top: 0;
+/* The brief is designed to grow - every conversation turn can add a role, a
+   compliance flag or a whole section - so its region scrolls independently of the
+   page. A visible-but-quiet scrollbar makes that discoverable; the default
+   overlay scrollbar on a dark panel is close to invisible. */
+.ask-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #32435f transparent;
+}
+.ask-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+.ask-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.ask-scroll::-webkit-scrollbar-thumb {
+  background: #22314d;
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: 999px;
+}
+.ask-scroll:hover::-webkit-scrollbar-thumb {
+  background: #32435f;
+  background-clip: content-box;
 }
 
 /* Rotating proof panel. Timings transcribed from the reference frames: a fixed

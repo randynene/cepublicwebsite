@@ -71,7 +71,51 @@ export const ASK_LABELS = {
   awaitingSignal: 'Clara is still working out what you need',
   /** Accessible name for the P1 static stand-in for the Calendly embed. */
   bookingPlaceholder: 'Booking calendar preview',
+
+  // Brief actions. The brief is the document a CloudEmployee lead reviews on the
+  // call, so it has to be takeable away: downloadable, emailable, and bookable
+  // against. Wording avoids promising a match (Option A).
+  briefActionsTitle: 'Take this brief with you',
+  briefActionsNote:
+    'Reviewed with you by a CloudEmployee lead, not scored by a machine.',
+  downloadBrief: 'Download',
+  emailBrief: 'Email it to me',
+  bookToReview: 'Book a call',
+  briefVersion: 'Brief version',
+
+  /** Accessible name for the X that closes the rotating proof band. */
+  dismissProof: 'Hide the client stories',
+  /** Accessible name for the file picker behind the paperclip. */
+  attachFiles: 'Attach files',
+  /** Prefix for the per-file remove control: "Remove CV.pdf". */
+  removeFile: 'Remove',
 } as const
+
+/**
+ * What the paperclip accepts. Broad on purpose - a CV arrives as a PDF, a Word
+ * doc, or a phone photo of a printout, and refusing the third would be the kind of
+ * friction this page exists to remove.
+ *
+ * P1 selects files and shows them; it uploads nothing. Reading and analysing them
+ * is Clara's job and lands with P3.
+ */
+export const ACCEPTED_FILE_TYPES = [
+  '.pdf',
+  '.doc',
+  '.docx',
+  '.odt',
+  '.rtf',
+  '.txt',
+  '.md',
+  '.csv',
+  '.xls',
+  '.xlsx',
+  '.png',
+  '.jpg',
+  '.jpeg',
+  '.webp',
+  '.heic',
+].join(',')
 
 export const ASK_META = {
   title: 'Ask AI anything',
