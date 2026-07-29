@@ -36,6 +36,7 @@ const SCREENS = [
   ['S8', 'desktop'],
   ['S9', 'mobile'],
   ['S10', 'mobile'],
+  ['DEEP', 'desktop'],
 ]
 
 const VIEWPORTS = {
@@ -66,8 +67,9 @@ for (const [screen, kind] of SCREENS) {
   await page.screenshot({ path: `${OUT}/${screen}-${kind}-switcher.png` })
 
   // The switcher would cover the composer, so it is collapsed for the frame that
-  // gets compared against the design.
-  await page.getByRole('button', { name: 'Hide' }).click()
+  // gets compared against the design. `exact` matters: the proof band's dismiss
+  // control is labelled "Hide the client stories", which a substring match catches.
+  await page.getByRole('button', { name: 'Hide', exact: true }).click()
   await page.waitForTimeout(200)
   await page.screenshot({ path: `${OUT}/${screen}-${kind}.png` })
   await page.close()
