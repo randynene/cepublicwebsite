@@ -77,6 +77,8 @@
     "content:migrate-legal-pages": "tsx scripts/content/migrate-legal-pages.ts",
     "content:seed-start-hiring": "tsx scripts/content/seed-start-hiring-funnel.ts",
     "content:capture-marketing": "tsx scripts/content/capture-marketing-pages.ts",
+    "static:patch-cta-talk-to-a-human": "tsx scripts/static/patch-cta-talk-to-a-human.ts",
+    "static:scan-schedule-a-call": "tsx scripts/static/scan-schedule-a-call.ts",
     "static:seed-globals": "tsx scripts/static/seed-globals.ts",
     "static:seed-globals-v2": "tsx scripts/static/seed-globals-v2.ts",
     "static:verify-2": "tsx scripts/static/verify-static-2.ts",
