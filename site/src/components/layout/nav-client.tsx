@@ -52,10 +52,8 @@ import { CHROME_CONTENT_BAND, CHROME_HEADER_ROW } from './chrome-band'
 // destination path — the stable half of the record. If Seb ever repoints it,
 // it falls back to rendering as a normal nav link rather than disappearing.
 
-const CE_CALENDLY_INTRO_URL =
-  'https://calendly.com/d/cwwf-6k5-2qy/intro-call-cloud-employee'
-
 const ACTION_CLUSTER_PATHS = new Set(['/for-developers'])
+const SCHEDULE_CALL_HREF = '/book-a-call'
 
 function isActionClusterLink(link: PrimaryLink, locale: Locale): boolean {
   const { href, isExternal } = toInternalHref(link.url, locale)
@@ -79,14 +77,6 @@ const NAV_LABEL_CLASS =
 // it here and the padding stops being symmetric and the label drifts down.
 const NAV_ITEM_CLASS =
   'nav-item inline-flex items-center gap-[7px] whitespace-nowrap py-2 tracking-[-0.08px]'
-
-declare global {
-  interface Window {
-    Calendly?: {
-      initPopupWidget: (config: { url: string }) => void
-    }
-  }
-}
 
 type MegaMenuKey = 'services-mega' | 'resources-mega'
 
@@ -153,33 +143,27 @@ function resourcesMobileItems(data: ResourcesMegaMenu, locale: Locale): MobileMe
   })
 }
 
-// Schedule a Call — solid pill. Opens the Calendly popup when the widget has
-// loaded, otherwise follows the Sanity href as a plain link.
-function CalendlyCTA({
+// Schedule a Call — solid pill. Always navigates to /book-a-call (locale-aware).
+// Label still comes from Sanity; destination is fixed so a Studio Calendly URL
+// or old /schedule-a-call link cannot break the header CTA.
+function ScheduleCallCTA({
   label,
-  fallbackHref,
   block,
   className,
   locale,
+  onClick,
 }: {
   label: string
-  fallbackHref: string
   block?: boolean
   className?: string
   locale: Locale
+  onClick?: () => void
 }) {
-  const onClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (typeof window !== 'undefined' && window.Calendly) {
-      e.preventDefault()
-      window.Calendly.initPopupWidget({ url: CE_CALENDLY_INTRO_URL })
-    }
-  }
-  const { href, isExternal } = toInternalHref(fallbackHref, locale)
+  const { href } = toInternalHref(SCHEDULE_CALL_HREF, locale)
   return (
     <CtaButton
       as="a"
       href={href}
-      external={isExternal}
       variant="solid"
       label={label}
       block={block}
@@ -568,11 +552,11 @@ function MobileDrawer({
                 />
               ))}
               {ctaButton?.label ? (
-                <CalendlyCTA
+                <ScheduleCallCTA
                   label={ctaButton.label}
-                  fallbackHref={ctaButton.link ?? '/contact'}
                   locale={locale}
                   block
+                  onClick={closeDrawer}
                 />
               ) : null}
             </div>
@@ -742,11 +726,7 @@ export default function NavClient({
               <ForEngineersCTA key={link._key} link={link} locale={locale} />
             ))}
             {ctaButton?.label ? (
-              <CalendlyCTA
-                label={ctaButton.label}
-                fallbackHref={ctaButton.link ?? '/contact'}
-                locale={locale}
-              />
+              <ScheduleCallCTA label={ctaButton.label} locale={locale} />
             ) : null}
           </div>
         </div>
