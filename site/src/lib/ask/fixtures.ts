@@ -376,6 +376,80 @@ const MOBILE_CANVAS: BriefCanvas = {
   prompts: { stack: 'timeline?' },
 }
 
+// ─── Growth test ─────────────────────────────────────────────────────────────
+// Not a design frame. The brief is meant to keep deepening for as long as the
+// conversation runs, so this is a deliberately overstuffed one that cannot fit the
+// canvas at any realistic window height - the only honest way to check that the
+// brief region really scrolls, that the action bar stays pinned, and that the proof
+// band underneath is still reachable.
+
+const DEEP_BRIEF: Brief = {
+  version: 11,
+  intent: 'product_build',
+  regions: ['PH', 'EE'],
+  engagement: { type: 'contract', durationMonths: 9 },
+  timeline: 'Phased from October, live by March',
+  teamContext: 'Joins a 9-person product org across London and Lisbon',
+  companyContext: 'Series A clinic software, 40 staff, 1,200 clinics onboarded',
+  techStacks: [
+    'Next.js',
+    'Node',
+    'Postgres',
+    'Stripe',
+    'Redis',
+    'Terraform',
+    'AWS',
+    'Playwright',
+    'Datadog',
+    'GitHub Actions',
+  ],
+  mustHaves: [
+    { label: 'Patient booking + reschedule', confirmed: true },
+    { label: 'Clinic availability management', confirmed: true },
+    { label: 'Stripe payments + refunds', confirmed: true },
+    { label: 'Clinician rota import', confirmed: true },
+    { label: 'SMS and email reminders', confirmed: true },
+    { label: 'Waiting-list auto-fill', confirmed: true },
+    { label: 'Insurer claim export', confirmed: true },
+    { label: 'Multi-site reporting', confirmed: true },
+    { label: 'Patient record migration from the legacy system', confirmed: true },
+  ],
+  complianceFlags: [
+    'UK data hosting',
+    'Audit trail',
+    'DPIA complete',
+    'ISO 27001 alignment',
+    'NHS DSPT',
+    'Pen test before launch',
+    'Data processor agreements',
+  ],
+  suggestedPod: [
+    { role: 'Full-stack', count: 2, note: 'Next.js + Node leads' },
+    { role: 'Backend', count: 2, note: 'Payments, claims and data model' },
+    { role: 'Frontend', count: 1, note: 'Clinician and patient surfaces' },
+    { role: 'QA', count: 1, note: 'Automation from week 3' },
+    { role: 'DevOps', count: 0.5, note: 'Terraform and release pipeline' },
+    { role: 'Delivery lead', count: 0.5, note: 'Shared across the pod' },
+  ],
+  goals:
+    '"Replace the legacy booking system without a weekend of downtime, keep every clinic live through the cutover, and come out of it with a platform we can add insurers to without another rebuild."',
+  strength: 88,
+}
+
+const DEEP_CANVAS: BriefCanvas = {
+  brief: DEEP_BRIEF,
+  display: deriveBriefDisplay(DEEP_BRIEF, {
+    headline: 'Clinic platform replacement',
+    regionName: 'PH + Eastern Europe',
+    engagementLine: 'Build pod, 9-12 months',
+  }),
+  prompts: {
+    mustHave: 'Pharmacy integration - in scope for v1?',
+    compliance: 'Cyber Essentials Plus?',
+  },
+  strip: PRODUCT_STRIP,
+}
+
 // ─── Screens ─────────────────────────────────────────────────────────────────
 
 const CTRL_D_HINT = 'Hold Ctrl+D to talk instead of typing'
@@ -390,7 +464,6 @@ export const ASK_SCREENS: Record<AskScreenId, AskScreen> = {
     trigger: 'Landing, no hiring signal',
     canvasNote: 'Rotating client stories + did-you-knows',
     viewport: 'desktop',
-    header: { kind: 'cta' },
     entries: [
       {
         kind: 'clara',
@@ -429,7 +502,6 @@ export const ASK_SCREENS: Record<AskScreenId, AskScreen> = {
     trigger: 'Mic pressed or Ctrl+D held',
     canvasNote: 'Unchanged - waveform sits above the input',
     viewport: 'desktop',
-    header: { kind: 'cta' },
     entries: [
       {
         kind: 'clara',
@@ -463,7 +535,6 @@ export const ASK_SCREENS: Record<AskScreenId, AskScreen> = {
     trigger: 'headcount = 1 and a role is named',
     canvasNote: 'One profile card, fields fill in live',
     viewport: 'desktop',
-    header: { kind: 'cta' },
     entries: [
       {
         kind: 'visitor',
@@ -503,7 +574,6 @@ export const ASK_SCREENS: Record<AskScreenId, AskScreen> = {
     trigger: 'headcount 2 or more',
     canvasNote: 'Grouped profile mark + role mix board',
     viewport: 'desktop',
-    header: { kind: 'cta' },
     entries: [
       {
         kind: 'visitor',
@@ -547,7 +617,6 @@ export const ASK_SCREENS: Record<AskScreenId, AskScreen> = {
     trigger: 'Product intent, no role named',
     canvasNote: 'Scope checklist + suggested pod',
     viewport: 'desktop',
-    header: { kind: 'cta' },
     entries: [
       {
         kind: 'visitor',
@@ -591,7 +660,6 @@ export const ASK_SCREENS: Record<AskScreenId, AskScreen> = {
     trigger: 'Required fields captured',
     canvasNote: 'Full brief + Schedule a Call emphasis',
     viewport: 'desktop',
-    header: { kind: 'cta-emphasised' },
     entries: [
       {
         kind: 'visitor',
@@ -642,7 +710,6 @@ export const ASK_SCREENS: Record<AskScreenId, AskScreen> = {
     trigger: 'Schedule a Call clicked anywhere',
     canvasNote: 'Calendly embed, brief pinned above it',
     viewport: 'desktop',
-    header: { kind: 'cta' },
     entries: [
       { kind: 'visitor', id: 's7-q1', text: 'Let us do the call.' },
       {
@@ -683,7 +750,6 @@ export const ASK_SCREENS: Record<AskScreenId, AskScreen> = {
     trigger: 'Slot confirmed',
     canvasNote: 'Confirmation + brief sent as PDF',
     viewport: 'desktop',
-    header: { kind: 'booked', text: 'Call booked · Wed 29 Jul, 11:00' },
     entries: [
       {
         kind: 'clara',
@@ -745,7 +811,6 @@ export const ASK_SCREENS: Record<AskScreenId, AskScreen> = {
     trigger: 'Small viewport, no brief signal',
     canvasNote: 'Proof card above the thread',
     viewport: 'mobile',
-    header: { kind: 'cta' },
     entries: [
       {
         kind: 'clara',
@@ -777,7 +842,6 @@ export const ASK_SCREENS: Record<AskScreenId, AskScreen> = {
     trigger: 'Small viewport, brief exists',
     canvasNote: 'Brief card pinned above the thread',
     viewport: 'mobile',
-    header: { kind: 'cta' },
     entries: [
       { kind: 'visitor', id: 's10-q1', text: 'Working with our London team.' },
       {
@@ -794,6 +858,39 @@ export const ASK_SCREENS: Record<AskScreenId, AskScreen> = {
     },
     canvas: { kind: 'brief', brief: MOBILE_CANVAS },
   },
+
+  DEEP: {
+    id: 'DEEP',
+    label: 'Deep brief',
+    trigger: 'Growth test - not one of the design frames',
+    canvasNote: 'Overstuffed brief: proves the canvas scrolls and the actions pin',
+    viewport: 'desktop',
+    entries: [
+      {
+        kind: 'visitor',
+        id: 'deep-q1',
+        text: 'One more thing - we also need the insurer claim export, and it has to pass a pen test before launch.',
+      },
+      {
+        kind: 'clara',
+        id: 'deep-a1',
+        text: 'Added both. That is a substantial scope now, so I have sketched a six-person pod rather than trying to fit it into three. A CloudEmployee lead should walk the whole thing through with you.',
+        streaming: true,
+      },
+      {
+        kind: 'brief-update',
+        id: 'deep-update',
+        text: 'Brief updated - claims export, pen test, pod resized',
+      },
+    ],
+    composer: {
+      mode: 'idle',
+      placeholder: PLACEHOLDER,
+      hint: CTRL_D_HINT,
+      status: SAVED_STATUS,
+    },
+    canvas: { kind: 'brief', brief: DEEP_CANVAS },
+  },
 }
 
 export const ASK_SCREEN_ORDER: AskScreenId[] = [
@@ -807,6 +904,7 @@ export const ASK_SCREEN_ORDER: AskScreenId[] = [
   'S8',
   'S9',
   'S10',
+  'DEEP',
 ]
 
 /** The state `/ask` boots into. */

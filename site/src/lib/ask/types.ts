@@ -8,7 +8,11 @@
 import type { Brief } from './brief'
 import type { BriefDisplay } from './display'
 
-/** The ten design frames, per the reference HTML's `data-screen-label`. */
+/**
+ * The ten design frames, per the reference HTML's `data-screen-label`, plus `DEEP`
+ * - a deliberately overstuffed brief used to check that the canvas keeps working as
+ * the brief grows. `DEEP` is a test instrument, not a designed state.
+ */
 export type AskScreenId =
   | 'S1'
   | 'S2'
@@ -20,6 +24,7 @@ export type AskScreenId =
   | 'S8'
   | 'S9'
   | 'S10'
+  | 'DEEP'
 
 // ─── Chat ────────────────────────────────────────────────────────────────────
 
@@ -54,6 +59,20 @@ export type ChatEntry =
     }
   /** A row of tappable follow-up prompts. */
   | { kind: 'suggestions'; id: string; items: string[] }
+
+/**
+ * A file the visitor has attached (a CV, a spec, a job description).
+ *
+ * Holds only what the composer needs to draw a chip. The `File` itself is not kept
+ * here because P1 uploads nothing; when P3 sends attachments to Clara for analysis
+ * this gains the payload (or a storage handle) alongside the display fields.
+ */
+export interface AskAttachment {
+  id: string
+  name: string
+  /** Human-readable size, e.g. "184 KB". */
+  size: string
+}
 
 export type ComposerMode = 'idle' | 'recording'
 
@@ -176,17 +195,12 @@ export interface BriefReadyCta {
   secondary: string
 }
 
-// ─── Header ──────────────────────────────────────────────────────────────────
-
-export type AskHeaderState =
-  /** Logo + Schedule a Call. */
-  | { kind: 'cta' }
-  /** Same, with the lime halo the design puts on it once the brief is ready. */
-  | { kind: 'cta-emphasised' }
-  /** After booking the CTA is replaced by the confirmed slot. */
-  | { kind: 'booked'; text: string }
-
 // ─── A whole screen ──────────────────────────────────────────────────────────
+//
+// No header state here: /ask carries the standard sitewide header, so the frames'
+// per-state header treatments (the lime halo at S6, the confirmed slot at S8) are
+// not ours to draw. The booking confirmation still appears prominently, inside the
+// S8 canvas.
 
 export interface AskScreen {
   id: AskScreenId
@@ -201,7 +215,6 @@ export interface AskScreen {
    * reviewable from a desktop; every other frame is responsive as normal.
    */
   viewport: 'desktop' | 'mobile'
-  header: AskHeaderState
   entries: ChatEntry[]
   composer: ComposerState
   canvas: AskCanvas

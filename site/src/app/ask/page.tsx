@@ -32,5 +32,5 @@ export default async function AskPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
   const { debug, screenId } = resolveAskParams(await searchParams)
-  return <AskTemplate locale="en-US" screenId={screenId} debug={debug} />
+  return <AskTemplate screenId={screenId} debug={debug} />
 }

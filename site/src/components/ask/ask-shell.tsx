@@ -3,19 +3,36 @@
 import { useCallback, useMemo, useState } from 'react'
 
 import { cn } from '@/components/ui/_utils/cn'
-import type { Locale } from '@/lib/locale-path'
 
 import { AskCanvas, AskCanvasMobile } from './canvas'
-import { AskHeader } from './ask-header'
 import { ChatThread } from './chat-thread'
 import { Composer } from './composer'
 import { AskDebugSwitcher } from './debug-switcher'
 import { ASK_DEBUG } from './content'
 import { SplitHandle, useSplit } from './split-handle'
 import { ASK_SCREENS } from '@/lib/ask/fixtures'
-import type { AskScreenId, ComposerState } from '@/lib/ask/types'
+import type { AskAttachment, AskScreenId, ComposerState } from '@/lib/ask/types'
+
+/** "184 KB" / "2.4 MB". Decimal units, to match what an OS file dialog shows. */
+function formatFileSize(bytes: number): string {
+  if (bytes < 1000) return `${bytes} B`
+  if (bytes < 1_000_000) return `${Math.round(bytes / 1000)} KB`
+  return `${(bytes / 1_000_000).toFixed(1)} MB`
+}
 
 // The /ask shell: chat on the left, canvas on the right, one draggable divider.
+//
+// ─── Chrome ──────────────────────────────────────────────────────────────────
+// The sitewide header is mounted by the root layout, same as every other page
+// (Jake, 29 Jul). So this shell owns no header of its own and instead sizes itself
+// to the viewport MINUS the sticky chrome, using the same custom properties
+// globals.css uses to reserve that space. Get this wrong in either direction and
+// either the composer falls below the fold or the page grows a second scrollbar.
+//
+// One consequence worth knowing: the header's Schedule a Call now behaves like it
+// does everywhere else and navigates to /book-a-call. In-page booking is reached
+// from the brief's own action bar and from Clara's offer in the chat, both of which
+// open the booking canvas without leaving /ask.
 //
 // ─── How the two layouts coexist ─────────────────────────────────────────────
 // Both the split layout and the stacked phone layout are rendered, and CONTAINER
@@ -38,6 +55,17 @@ import type { AskScreenId, ComposerState } from '@/lib/ask/types'
 // P2/P3/P4/P5.
 
 /**
+ * Fill the viewport below the sticky header.
+ *
+ * The breakpoints mirror globals.css's `body` padding-top exactly (mobile header
+ * height below 62rem, full height above), because that padding is what decides
+ * where this surface starts. `dvh` rather than `vh` so a phone's collapsing
+ * address bar does not push the docked composer off screen.
+ */
+const ASK_SURFACE_HEIGHT =
+  'h-[calc(100dvh-var(--header-height-mobile)-var(--announcement-bar-height))] lg:h-[calc(100dvh-var(--header-height)-var(--announcement-bar-height))]'
+
+/**
  * The voice panel needs a recording block. Screens designed in the recording state
  * bring their own; when the visitor presses Talk from an idle screen we synthesise
  * one, so the panel is reachable from every state.
@@ -50,16 +78,15 @@ const TALK_RECORDING: NonNullable<ComposerState['recording']> = {
 }
 
 export function AskShell({
-  locale,
   initialScreenId,
   debug,
 }: {
-  locale: Locale
   initialScreenId: AskScreenId
   debug: boolean
 }) {
   const [screenId, setScreenId] = useState<AskScreenId>(initialScreenId)
   const [draft, setDraft] = useState('')
+  const [attachments, setAttachments] = useState<AskAttachment[]>([])
   /** null = follow the fixture; true/false = the visitor pressed Talk. */
   const [talking, setTalking] = useState<boolean | null>(null)
 
@@ -87,10 +114,24 @@ export function AskShell({
     )
   }, [screen.composer.mode])
 
-  // Anywhere Schedule a Call is pressed on this page, booking opens in the canvas
-  // instead of navigating to /book-a-call. Keeping the conversation alive through
-  // the booking is the point of the page.
+  // Booking from inside the page opens the canvas rather than navigating away.
+  // Keeping the conversation alive through the booking is the point of the page.
   const openBooking = useCallback(() => setScreenId('S7'), [])
+
+  const addFiles = useCallback((files: FileList) => {
+    const picked = Array.from(files).map((file) => ({
+      // crypto.randomUUID is available in every browser this site supports and
+      // avoids index-based keys, which break when a chip in the middle is removed.
+      id: crypto.randomUUID(),
+      name: file.name,
+      size: formatFileSize(file.size),
+    }))
+    setAttachments((current) => [...current, ...picked])
+  }, [])
+
+  const removeFile = useCallback((id: string) => {
+    setAttachments((current) => current.filter((item) => item.id !== id))
+  }, [])
 
   const { split, drag, commit } = useSplit()
 
@@ -108,24 +149,25 @@ export function AskShell({
       <Composer
         composer={composer}
         value={draft}
+        attachments={attachments}
         onValueChange={setDraft}
         onToggleRecording={toggleRecording}
         onChip={setDraft}
+        onAddFiles={addFiles}
+        onRemoveFile={removeFile}
       />
     </div>
   )
 
   const shell = (
     <div className="@container flex h-full min-h-0 flex-col bg-bg-primary">
-      <AskHeader header={screen.header} locale={locale} onSchedule={openBooking} />
-
       {/* Desktop: the split. */}
       <div
         className="relative hidden min-h-0 flex-1 @min-[62rem]:grid"
         style={{ gridTemplateColumns: `${split}fr ${100 - split}fr` }}
       >
         {chatColumn}
-        <div className="flex min-h-0 flex-col border-l border-[#1a2740] bg-surface-sweep-dark">
+        <div className="flex min-h-0 flex-col overflow-hidden border-l border-[#1a2740] bg-surface-sweep-dark">
           <AskCanvas canvas={screen.canvas} onSchedule={openBooking} />
         </div>
         <SplitHandle split={split} onDrag={drag} onCommit={commit} />
@@ -155,14 +197,23 @@ export function AskShell({
       {screen.viewport === 'mobile' ? (
         // A designed phone frame. Full-bleed on an actual phone; a 390x844 device
         // frame from `lg` up so it is reviewable on a desktop.
-        <div className="flex h-[100dvh] items-center justify-center bg-[#04080f] lg:p-[32px]">
-          <div className="h-full w-full overflow-hidden lg:h-[844px] lg:w-[390px] lg:rounded-[8px] lg:border lg:border-[#1a2740]">
+        <div
+          className={cn(
+            'flex items-center justify-center bg-[#04080f] lg:p-[32px]',
+            ASK_SURFACE_HEIGHT,
+          )}
+        >
+          {/* 390x844 is the designed phone size, but the surface below the sitewide
+              header is shorter than 844px on a laptop - so the frame takes the
+              smaller of the two rather than pushing the page into a second
+              scrollbar. */}
+          <div className="h-full w-full overflow-hidden lg:h-[min(844px,100%)] lg:w-[390px] lg:rounded-[8px] lg:border lg:border-[#1a2740]">
             {shell}
           </div>
           <span className="sr-only">{ASK_DEBUG.mobileFrameNote}</span>
         </div>
       ) : (
-        <div className="h-[100dvh]">{shell}</div>
+        <div className={ASK_SURFACE_HEIGHT}>{shell}</div>
       )}
 
       {debug ? (

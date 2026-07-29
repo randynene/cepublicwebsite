@@ -1,5 +1,3 @@
-import type { Locale } from '@/lib/locale-path'
-
 import { AskShell } from './ask-shell'
 import { ASK_META } from './content'
 import type { AskScreenId } from '@/lib/ask/types'
@@ -11,20 +9,22 @@ import type { AskScreenId } from '@/lib/ask/types'
 // indexable landing page, and a page with no H1 is both an SEO and an
 // assistive-tech gap. The heading text is the page's real name, "Ask AI anything",
 // not a hidden keyword dump.
+//
+// No `locale` prop yet. Both locales render the same surface in P1, and the
+// canonical/hreflang work happens in each route's generateMetadata. It comes back
+// when P3 needs it for the Clara session.
 
 export function AskTemplate({
-  locale,
   screenId,
   debug,
 }: {
-  locale: Locale
   screenId: AskScreenId
   debug: boolean
 }) {
   return (
     <main>
       <h1 className="sr-only">{ASK_META.title}</h1>
-      <AskShell locale={locale} initialScreenId={screenId} debug={debug} />
+      <AskShell initialScreenId={screenId} debug={debug} />
     </main>
   )
 }
