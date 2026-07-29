@@ -115,9 +115,16 @@ export function CalendlyInlineEmbed({ url, className }: CalendlyInlineEmbedProps
     <div
       ref={containerRef}
       className={className}
-      // color-scheme:light keeps Calendly's transparent iframe bg from being
-      // forced opaque-white by the browser when the host page is dark.
-      style={{ minWidth: 320, height: 700, backgroundColor: '#101B30', colorScheme: 'light' }}
+      // Outer plate = page ground (#070D18). Inner Calendly UI stays #101B30
+      // via CE_CALENDLY_THEME. color-scheme:light stops the browser forcing
+      // an opaque white iframe fill on a dark host page.
+      style={{
+        minWidth: 320,
+        width: '100%',
+        height: 900,
+        backgroundColor: '#070D18',
+        colorScheme: 'light',
+      }}
     />
   )
 }

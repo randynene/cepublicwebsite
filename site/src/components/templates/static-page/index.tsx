@@ -88,49 +88,70 @@ export default function StaticPageTemplate({
   /** Hide the `> …` breadcrumb row (book-a-call keeps the lime eyebrow only). */
   showBreadcrumbs?: boolean
 }) {
-  return (
-    <Container as="div" className="pb-16 pt-8 lg:pb-24 lg:pt-12">
-      {showBreadcrumbs ? (
-        <Breadcrumbs items={breadcrumbs} className="mb-6" />
-      ) : null}
+  const hasCalendly = Boolean(page.calendlyUrl)
+  const hasSections = (page.sections ?? []).length > 0
 
-      <header className="mb-12 flex flex-col gap-4 lg:mb-16">
-        {page.eyebrow ? (
-          <Text
-            as="p"
-            size="small"
-            className="uppercase tracking-wider text-brand-primary font-medium"
-          >
-            {page.eyebrow}
-          </Text>
+  return (
+    <>
+      <Container
+        as="div"
+        className={
+          hasCalendly
+            ? 'pb-8 pt-8 lg:pb-10 lg:pt-12'
+            : 'pb-16 pt-8 lg:pb-24 lg:pt-12'
+        }
+      >
+        {showBreadcrumbs ? (
+          <Breadcrumbs items={breadcrumbs} className="mb-6" />
         ) : null}
 
-        <Heading as="h1">{page.title}</Heading>
+        <header
+          className={
+            hasCalendly
+              ? 'mb-8 flex flex-col gap-4 lg:mb-10'
+              : 'mb-12 flex flex-col gap-4 lg:mb-16'
+          }
+        >
+          {page.eyebrow ? (
+            <Text
+              as="p"
+              size="small"
+              className="uppercase tracking-wider text-brand-primary font-medium"
+            >
+              {page.eyebrow}
+            </Text>
+          ) : null}
 
-        {page.heroDescription && page.heroDescription.length > 0 ? (
-          <div className="max-w-prose text-text-default/80">
-            <PortableText value={page.heroDescription as PortableValue} />
+          <Heading as="h1">{page.title}</Heading>
+
+          {page.heroDescription && page.heroDescription.length > 0 ? (
+            <div className="max-w-prose text-text-default/80">
+              <PortableText value={page.heroDescription as PortableValue} />
+            </div>
+          ) : null}
+        </header>
+
+        <HeroImage image={page.heroImage} title={page.title} />
+
+        {hasSections ? (
+          <div className="flex flex-col gap-12 lg:gap-16">
+            {(page.sections ?? []).map((section, i) => (
+              <Section key={section._key ?? `s-${i}`} section={section} />
+            ))}
           </div>
         ) : null}
-      </header>
+      </Container>
 
-      <HeroImage image={page.heroImage} title={page.title} />
-
-      {/* On /book-a-call this IS the page: a headline over a booking widget, with
-          no prose at all. The thank-you pages carry the same widget below their
-          copy, because the next thing CE wants from someone who just submitted a
-          form is a call in the diary. */}
+      {/* Booking widget: full-bleed band on page ground (#070D18). Calendly's
+          own panel stays the card navy (#101B30) via embed theme params. */}
       {page.calendlyUrl ? (
-        <div className="mb-12 lg:mb-16">
-          <CalendlyInlineEmbed url={page.calendlyUrl} />
+        <div className="w-full bg-bg-primary px-[22px] pb-16 sm:px-8 lg:px-16 lg:pb-24">
+          <CalendlyInlineEmbed
+            url={page.calendlyUrl}
+            className="mx-auto w-full max-w-[1440px]"
+          />
         </div>
       ) : null}
-
-      <div className="flex flex-col gap-12 lg:gap-16">
-        {(page.sections ?? []).map((section, i) => (
-          <Section key={section._key ?? `s-${i}`} section={section} />
-        ))}
-      </div>
-    </Container>
+    </>
   )
 }
