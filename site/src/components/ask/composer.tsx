@@ -1,12 +1,18 @@
 'use client'
 
-import { useId } from 'react'
+import { useId, useRef } from 'react'
 
+import { Icon } from '@/components/ui/icon'
 import { cn } from '@/components/ui/_utils/cn'
 
-import { ASK_LABELS, GLYPH, WAVEFORM_HEIGHTS } from './content'
+import {
+  ACCEPTED_FILE_TYPES,
+  ASK_LABELS,
+  GLYPH,
+  WAVEFORM_HEIGHTS,
+} from './content'
 import { FOCUS_RING } from './primitives'
-import type { ComposerState } from '@/lib/ask/types'
+import type { AskAttachment, ComposerState } from '@/lib/ask/types'
 
 // The composer, in its two shapes: the idle input row, and the voice panel that
 // REPLACES it while recording (rather than sitting beside it, which is what keeps
@@ -57,6 +63,52 @@ function Waveform({ className }: { className?: string }) {
         />
       ))}
     </div>
+  )
+}
+
+/**
+ * Attached files, as removable chips above the input.
+ *
+ * P1 selects and lists them; nothing is uploaded and nothing is read. Sending them
+ * to Clara for analysis (a CV, a spec, a job description) is P3 - the point of
+ * doing the picker now is that the composer has to have room for this without being
+ * redesigned later.
+ */
+function AttachmentChips({
+  attachments,
+  onRemove,
+}: {
+  attachments: AskAttachment[]
+  onRemove: (id: string) => void
+}) {
+  if (attachments.length === 0) return null
+  return (
+    <ul className="mb-[10px] flex flex-wrap gap-[6px]">
+      {attachments.map((attachment) => (
+        <li
+          key={attachment.id}
+          className="inline-flex max-w-full items-center gap-[8px] rounded-pill border border-[#2c3f33] bg-[#0F1B12] py-[6px] pl-[11px] pr-[6px]"
+        >
+          <span className="truncate text-[12px] font-medium leading-none text-white">
+            {attachment.name}
+          </span>
+          <span className="shrink-0 font-plex text-[10.5px] leading-none text-text-tertiary">
+            {attachment.size}
+          </span>
+          <button
+            type="button"
+            aria-label={`${ASK_LABELS.removeFile} ${attachment.name}`}
+            onClick={() => onRemove(attachment.id)}
+            className={cn(
+              'inline-flex size-[18px] shrink-0 items-center justify-center rounded-full text-text-tertiary transition-colors duration-reveal ease-reveal hover:bg-surface-tertiary hover:text-white motion-reduce:transition-none',
+              FOCUS_RING,
+            )}
+          >
+            <Icon name="close" size="sm" className="size-[9px]" />
+          </button>
+        </li>
+      ))}
+    </ul>
   )
 }
 
@@ -189,17 +241,24 @@ function VoicePanel({
 export function Composer({
   composer,
   value,
+  attachments,
   onValueChange,
   onToggleRecording,
   onChip,
+  onAddFiles,
+  onRemoveFile,
 }: {
   composer: ComposerState
   value: string
+  attachments: AskAttachment[]
   onValueChange: (value: string) => void
   onToggleRecording: () => void
   onChip: (value: string) => void
+  onAddFiles: (files: FileList) => void
+  onRemoveFile: (id: string) => void
 }) {
   const inputId = useId()
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const isRecording = composer.mode === 'recording'
 
   return (
@@ -226,6 +285,7 @@ export function Composer({
         <VoicePanel recording={composer.recording} onStop={onToggleRecording} />
       ) : (
         <div className="rounded-[18px] border border-[#2b3a56] bg-[#0E1A2E] px-[14px] pb-[10px] pt-[14px] @max-[62rem]:rounded-[16px] @max-[62rem]:px-[12px] @max-[62rem]:pb-[9px] @max-[62rem]:pt-[12px]">
+          <AttachmentChips attachments={attachments} onRemove={onRemoveFile} />
           <label className="sr-only" htmlFor={inputId}>
             {composer.placeholder}
           </label>
@@ -238,10 +298,25 @@ export function Composer({
             className="block w-full bg-transparent px-[4px] pb-[16px] pt-[4px] text-[15.5px] leading-none text-white outline-none placeholder:text-[#5f6b7d] @max-[62rem]:pb-[13px] @max-[62rem]:text-[14.5px]"
           />
           <div className="flex items-center justify-end gap-[10px] @max-[62rem]:gap-[9px]">
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept={ACCEPTED_FILE_TYPES}
+              aria-label={ASK_LABELS.attachFiles}
+              className="sr-only"
+              onChange={(event) => {
+                const { files } = event.target
+                if (files && files.length > 0) onAddFiles(files)
+                // Reset so picking the same file twice in a row still fires change.
+                event.target.value = ''
+              }}
+            />
             <RoundButton
-              label={ASK_LABELS.attach}
+              label={ASK_LABELS.attachFiles}
               glyph={GLYPH.attach}
               tone="outline"
+              onClick={() => fileInputRef.current?.click()}
               className="size-[32px] text-[14px] @max-[62rem]:size-[30px] @max-[62rem]:text-[13px]"
             />
             <button
