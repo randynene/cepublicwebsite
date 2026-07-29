@@ -669,6 +669,31 @@ trigger a state it can never leave.
 | 1512 | 290 x5 | 196, 196, **665**, 196, 196 | no, before and after | fades to 0 |
 | 1280 | 270 x5 | unchanged (below the gate) | yes, unchanged | fades to 0 |
 
+### 9k. Logo strip raised off the fold (29 Jul)
+
+Jake wanted the strip higher than the 44px clearance set in 9i. Clearance is now
+`--hero-strip-bottom`, stepped by viewport height so raising it on a big screen
+cannot push the hero off the fold when zoomed in:
+
+| Viewport height | Clearance |
+|---|---|
+| > 900 | 132px |
+| <= 900 | 96px |
+| <= 780 | 60px |
+| <= 700 | 44px |
+| <= 660 | 32px |
+
+Declared on `:root` rather than on `.hero-screen`, because For Engineers uses its
+own hero container and would otherwise drift from the other five.
+
+Knock-on worth knowing: the hero centres in the space ABOVE the strip, so raising
+the strip by 88px also lifts the hero by ~44px. That is inherent to the two being
+stacked, not a separate change.
+
+Verified identical on all six hero pages at seven viewport sizes. The location
+pages still drop the strip below the fold at 1152x620 (~175% zoom) — pre-existing
+from 9i, their hero left column runs to 496px.
+
 ### Outstanding from this pass
 
 - **Upload `travelex-wordmark.png` to Sanity.** Sanity's Travelex asset is the
