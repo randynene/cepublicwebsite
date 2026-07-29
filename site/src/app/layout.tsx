@@ -157,7 +157,7 @@ export default async function RootLayout({
           refreshOnReconnect={isDraftMode}
         />
         {isDraftMode && <VisualEditing />}
-        <GlobalScripts />
+        <GlobalScripts suppressChatWidget={isAskPage} />
       </body>
     </html>
   )

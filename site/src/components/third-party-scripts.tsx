@@ -75,7 +75,16 @@ export function GtmNoScript() {
 
 // Remaining global scripts. Each renders only when its identifier is
 // confirmed from audit output.
-export function GlobalScripts() {
+export function GlobalScripts({
+  // ASK-CLARA P1: /ask IS the Clara conversation, full-page. Loading the floating
+  // widget there would offer a second, separate Clara chat on the same screen and
+  // park its launcher on top of the composer. Only the chat widget is skipped -
+  // GTM, LinkedIn, Hotjar, Facebook and HubSpot tracking all still load, so the
+  // page is measured like every other.
+  suppressChatWidget = false,
+}: {
+  suppressChatWidget?: boolean
+} = {}) {
   // Off on the real live domain, on everywhere else (staging review waves).
   const showMarker = !isCanonicalProductionSite()
 
@@ -101,7 +110,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);`}
         </Script>
       )}
 
-      {CLARA_WORKSPACE_ID && (
+      {CLARA_WORKSPACE_ID && !suppressChatWidget && (
         <Script
           id="clara-chat"
           src="https://clara.cloudemployee.io/widget.js"
