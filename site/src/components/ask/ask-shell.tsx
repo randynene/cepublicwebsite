@@ -3,8 +3,10 @@
 import { useCallback, useMemo, useState } from 'react'
 
 import { cn } from '@/components/ui/_utils/cn'
+import type { Locale } from '@/lib/locale-path'
 
 import { AskCanvas, AskCanvasMobile } from './canvas'
+import { AskHeader } from './ask-header'
 import { ChatThread } from './chat-thread'
 import { Composer } from './composer'
 import { AskDebugSwitcher } from './debug-switcher'
@@ -23,16 +25,9 @@ function formatFileSize(bytes: number): string {
 // The /ask shell: chat on the left, canvas on the right, one draggable divider.
 //
 // ─── Chrome ──────────────────────────────────────────────────────────────────
-// The sitewide header is mounted by the root layout, same as every other page
-// (Jake, 29 Jul). So this shell owns no header of its own and instead sizes itself
-// to the viewport MINUS the sticky chrome, using the same custom properties
-// globals.css uses to reserve that space. Get this wrong in either direction and
-// either the composer falls below the fold or the page grows a second scrollbar.
-//
-// One consequence worth knowing: the header's Schedule a Call now behaves like it
-// does everywhere else and navigates to /book-a-call. In-page booking is reached
-// from the brief's own action bar and from Clara's offer in the chat, both of which
-// open the booking canvas without leaving /ask.
+// /ask carries its own header (logo, Back to site, Schedule a Call) and no footer,
+// so the surface takes the whole viewport. The root layout drops the sitewide nav
+// and the body padding that would otherwise reserve space for it.
 //
 // ─── How the two layouts coexist ─────────────────────────────────────────────
 // Both the split layout and the stacked phone layout are rendered, and CONTAINER
@@ -55,15 +50,11 @@ function formatFileSize(bytes: number): string {
 // P2/P3/P4/P5.
 
 /**
- * Fill the viewport below the sticky header.
- *
- * The breakpoints mirror globals.css's `body` padding-top exactly (mobile header
- * height below 62rem, full height above), because that padding is what decides
- * where this surface starts. `dvh` rather than `vh` so a phone's collapsing
- * address bar does not push the docked composer off screen.
+ * The surface claims the whole viewport: /ask has its own header inside the shell
+ * and no footer under it. `dvh` rather than `vh` so a phone's collapsing address bar
+ * does not push the docked composer off screen.
  */
-const ASK_SURFACE_HEIGHT =
-  'h-[calc(100dvh-var(--header-height-mobile)-var(--announcement-bar-height))] lg:h-[calc(100dvh-var(--header-height)-var(--announcement-bar-height))]'
+const ASK_SURFACE_HEIGHT = 'h-[100dvh]'
 
 /**
  * The voice panel needs a recording block. Screens designed in the recording state
@@ -78,9 +69,11 @@ const TALK_RECORDING: NonNullable<ComposerState['recording']> = {
 }
 
 export function AskShell({
+  locale,
   initialScreenId,
   debug,
 }: {
+  locale: Locale
   initialScreenId: AskScreenId
   debug: boolean
 }) {
@@ -161,6 +154,8 @@ export function AskShell({
 
   const shell = (
     <div className="@container flex h-full min-h-0 flex-col bg-bg-primary">
+      <AskHeader locale={locale} onSchedule={openBooking} />
+
       {/* Desktop: the split. */}
       <div
         className="relative hidden min-h-0 flex-1 @min-[62rem]:grid"

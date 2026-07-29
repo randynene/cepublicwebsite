@@ -14,6 +14,7 @@
 /** Decorative glyphs. Constants, not JSX literals. */
 export const GLYPH = {
   arrow: '→',
+  arrowLeft: '←',
   arrowUp: '↑',
   attach: '⎘',
   caret: '▍',
@@ -28,11 +29,11 @@ export const GLYPH = {
 } as const
 
 export const ASK_LABELS = {
-  /** Accessible name for the CE wordmark in the minimal header. */
-  logoAlt: 'Cloud Employee',
+  /** Accessible name for the CE wordmark, which links home. */
+  logoHome: 'Cloud Employee home',
   scheduleCall: 'Schedule a Call',
-  /** Mobile header shortens the CTA. */
-  scheduleCallShort: 'Book a call',
+  /** The only route out of this page, since /ask carries no site nav. */
+  backToSite: 'Back to site',
   claraAvatarAlt: 'Clara',
   /** aria-label for the draggable split handle. */
   resizeHandle: 'Resize the chat and canvas panels',

@@ -18,6 +18,7 @@ import { env } from '@/lib/env'
 import { isAskPath } from '@/lib/ask/routes'
 import Footer from '@/components/layout/footer'
 import Nav from '@/components/layout/nav'
+import { cn } from '@/components/ui/_utils/cn'
 import { MotionReady } from '@/components/motion/motion-ready'
 import { SanityLive } from '@/lib/sanity/live'
 import { getLocaleFromPath } from '@/lib/locale'
@@ -86,15 +87,13 @@ export default async function RootLayout({
   const isDraftMode = (await draftMode()).isEnabled
   const pathname = (await headers()).get('x-pathname') ?? '/'
   const lang = getLocaleFromPath(pathname)
-  // ASK-CLARA — /ask keeps the standard sitewide header (Jake, 29 Jul: "the same
-  // header that is on every single page"), which supersedes the minimal
-  // logo-plus-CTA chrome the execution plan originally specified.
+  // ASK-CLARA — /ask carries its own chrome: logo, Back to site, Schedule a Call,
+  // and nothing else (Jake, 29 Jul). No sitewide nav, no announcement bar, no
+  // footer. It is a full-height conversation surface, and the sitewide chrome gives
+  // the visitor five ways to leave it before they have said anything.
   //
-  // The footer stays off. /ask is a full-height app surface that sizes itself to
-  // the viewport below the sticky header; a footer underneath would add a second
-  // scroll region with nothing above it worth scrolling past. App Router cannot
-  // subtract a parent's chrome from a nested layout, so the opt-out is decided
-  // here, off the pathname the middleware already surfaces.
+  // App Router cannot subtract a parent's chrome from a nested layout, so the
+  // opt-out is decided here, off the pathname the middleware already surfaces.
   const isAskPage = isAskPath(pathname)
 
   return (
@@ -127,7 +126,7 @@ export default async function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap"
         />
       </head>
-      <body className="min-h-full flex flex-col">
+      <body className={cn('min-h-full flex flex-col', isAskPage && 'ask-page')}>
         {/* Sitewide motion-layer gate — see globals.css motion-layer block.
          * Adds `motion-ready` to <html> on mount so reveal/pulse CSS never
          * activates before hydration or without JS. Renders no DOM. */}
@@ -145,7 +144,7 @@ export default async function RootLayout({
               * and footer render US links on every UK page, throwing the visitor
               * out of their locale on any nav click and pointing ~290 UK pages'
               * navigation at the US cluster. */}
-            <Nav locale={lang} />
+            {!isAskPage && <Nav locale={lang} />}
             {children}
             {!isAskPage && <Footer locale={lang} />}
           </TooltipProvider>

@@ -898,6 +898,13 @@ body {
    out of the sitewide sticky-chrome padding reserved at the top of this file.
    The class is set on <body> by the root layout for /ask and /uk/ask only.
    =========================================================================== */
+/* /ask is a full-height app shell with its own header, so it opts out of the
+   sticky-chrome padding reserved at the top of this file. The class is set on
+   <body> by the root layout for /ask and /uk/ask only. */
+body.ask-page {
+  padding-top: 0;
+}
+
 /* The brief is designed to grow - every conversation turn can add a role, a
    compliance flag or a whole section - so its region scrolls independently of the
    page. A visible-but-quiet scrollbar makes that discoverable; the default

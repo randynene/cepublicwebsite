@@ -25,5 +25,5 @@ export default async function AskUkPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
   const { debug, screenId } = resolveAskParams(await searchParams)
-  return <AskTemplate screenId={screenId} debug={debug} />
+  return <AskTemplate locale="en-GB" screenId={screenId} debug={debug} />
 }
