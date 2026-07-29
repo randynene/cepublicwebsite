@@ -338,11 +338,22 @@ function OptionGroup({
   )
 }
 
-function FindForm({ find }: { find: HireEngineersContent['find'] }) {
+function FindForm({
+  find,
+  locale,
+}: {
+  find: HireEngineersContent['find']
+  locale: Locale
+}) {
   const [step, setStep] = useState(0)
   const next = () => setStep((s) => (s < 3 ? s + 1 : s))
   const back = () => setStep((s) => (s > 0 ? s - 1 : s))
-  const sendLead = () => {}
+  // This match form is a guided demo (no HubSpot form on live either). Final
+  // CTA must still send people into a real lead path — Book a Call — not a
+  // no-op that looks like a submit.
+  const sendLead = () => {
+    window.location.assign(buildLocalePath('/book-a-call', locale))
+  }
 
   const stepClass = (i: number) => (i === step ? 'step active' : 'step')
   const stpClass = (i: number) => (i === step ? 'stp active' : i < step ? 'stp done' : 'stp')
@@ -777,7 +788,7 @@ export function HireEngineersTemplate({
               </div>
             ))}
           </div>
-          <a href="#" className="how-more">
+          <a href={buildLocalePath('/how-it-works', locale)} className="how-more">
             {content.how.more}{' '}
             <svg viewBox="0 0 24 24">
               <path className="icon-motion icon-motion--draw" d="M5 12h14M13 6l6 6-6 6" pathLength={100} />
@@ -904,7 +915,7 @@ export function HireEngineersTemplate({
           </div>
 
           <div className="ff-layout">
-            <FindForm find={content.find} />
+            <FindForm find={content.find} locale={locale} />
             <div className="imgslot ff-img rvl">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               {content.find.img.image ? <img src={content.find.img.image} alt={content.find.img.t} style={COVER} /> : null}

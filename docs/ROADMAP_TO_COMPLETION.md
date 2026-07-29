@@ -661,18 +661,28 @@ side note.
    which can stay as CTAs out to Book a Call / Start Hiring.
 
 **Agent / staging verify (after Jake's map):**
-- [ ] `NEXT_PUBLIC_HUBSPOT_PORTAL_ID=22809822` set on Vercel Production + Preview
-      (and `site/.env.local`). Without this, **every** form silently renders empty.
-- [ ] `npm run launch:verify-hubspot-forms` PASS — every form id the site renders
-      resolves on HubSpot (portal `22809822`).
-- [ ] Extend that verifier to cover Contact + any newly wired forms (WP-05).
+- [x] `NEXT_PUBLIC_HUBSPOT_PORTAL_ID=22809822` set on Vercel Production (staging
+      host) — proven inlined in the HubSpotFormEmbed client chunk (Jul 2026).
+      Still required in `site/.env.local` for local dev.
+- [x] Every **real** HubSpot form id on staging resolves on portal `22809822`
+      (contact, footer newsletter, all start-hiring steps US+UK). Verified via
+      `npm run launch:verify-hubspot-forms-staging` (HTML crawl, no Sanity token).
+      Same GUIDs as the HubSpot-backed live paths (live Webflow also shows bridge
+      GUIDs `fb70845a…` / `deac2450…` in markup — those 404 on HubSpot; we use the
+      real forms, matching what live actually submits through).
+- [x] Contact covered by staging verifier + Sanity verifier (`contactPage.form.hubspotFormId`).
 - [ ] Manually submit one test lead per funnel path on staging; confirm it appears
-      in HubSpot and the thank-you / next-step redirect matches the map.
-- [ ] Calendly: Book-a-call detail pages + Contact intro-call URL load and book.
-- [ ] Start-hiring: all 8 steps order/progress match HubSpot redirects (already
-      burned us once — see verifier comments).
-- [ ] No primary CTA left as `href="#"` on pages that look like they submit leads.
+      in HubSpot and the thank-you / next-step redirect matches the map. **Jake.**
+- [ ] Calendly: Book-a-call detail pages + Contact intro-call URL load and book. **Jake.**
+- [x] Start-hiring step form ids match seed/HubSpot; US `get-started` redirects to
+      `contact-info`; UK `get-started` is a real page.
+- [x] Hire Engineers dead final CTA (`sendLead = () => {}`) and `how-more` `#` link
+      fixed → `/book-a-call` + `/how-it-works` (Jul 2026 forms pass).
 - [ ] Thank-you / confirmed pages remain noindex; lead-capture pages behave as live.
+
+**Not HubSpot (do not invent forms):** For Developers join UI, Fractional CTO match
+UI, Pricing calculator — demos / Book-a-Call paths per lead-conversion plan. Talent
+join stays a separate system.
 
 **Gate:** Jake signs the funnel map; every path on the map has a green staging test;
 verifier PASS recorded in the cutover folder.
