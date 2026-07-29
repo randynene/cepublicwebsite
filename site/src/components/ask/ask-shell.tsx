@@ -25,7 +25,7 @@ function formatFileSize(bytes: number): string {
 // The /ask shell: chat on the left, canvas on the right, one draggable divider.
 //
 // ─── Chrome ──────────────────────────────────────────────────────────────────
-// /ask carries its own header (logo, Back to site, Schedule a Call) and no footer,
+// /ask carries its own header (logo, Back to site, Talk to a human) and no footer,
 // so the surface takes the whole viewport. The root layout drops the sitewide nav
 // and the body padding that would otherwise reserve space for it.
 //
@@ -44,7 +44,7 @@ function formatFileSize(bytes: number): string {
 // hidden copy is `display: none`, so assistive tech skips it.
 //
 // ─── What P1 wires and what it does not ──────────────────────────────────────
-// Wired: state selection, the split divider, Schedule a Call opening the booking
+// Wired: state selection, the split divider, Talk to a human opening the booking
 // canvas, chips loading the composer, Talk toggling the voice panel.
 // Not wired: sending anything. No Clara call, no HubSpot, no microphone. Those are
 // P2/P3/P4/P5.

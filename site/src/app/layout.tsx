@@ -87,7 +87,7 @@ export default async function RootLayout({
   const isDraftMode = (await draftMode()).isEnabled
   const pathname = (await headers()).get('x-pathname') ?? '/'
   const lang = getLocaleFromPath(pathname)
-  // ASK-CLARA — /ask carries its own chrome: logo, Back to site, Schedule a Call,
+  // ASK-CLARA — /ask carries its own chrome: logo, Back to site, Talk to a human,
   // and nothing else (Jake, 29 Jul). No sitewide nav, no announcement bar, no
   // footer. It is a full-height conversation surface, and the sitewide chrome gives
   // the visitor five ways to leave it before they have said anything.
