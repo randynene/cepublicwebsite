@@ -5,6 +5,7 @@ import { CatalogueJsonLd } from '@/components/templates/catalogue/json-ld'
 import { mapServicesHubData } from '@/lib/catalogue/hub-content'
 import { fetchServicesHubData } from '@/lib/sanity/queries/catalogue-hub'
 import { generateCanonical, generateHreflang } from '@/lib/locale'
+import { resolvePageTitle } from '@/lib/seo/page-title'
 
 const TITLE = 'Staff Augmentation Services'
 
@@ -12,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const data = await fetchServicesHubData()
   const content = mapServicesHubData(data)
   return {
-    title: data.hub?.metaTitle ? { absolute: data.hub.metaTitle } : TITLE,
+    title: resolvePageTitle(data.hub?.metaTitle ?? TITLE),
     description: data.hub?.metaDescription ?? content.hero.lead,
     alternates: { canonical: generateCanonical('/services', 'en-US'), languages: generateHreflang('/services') },
   }

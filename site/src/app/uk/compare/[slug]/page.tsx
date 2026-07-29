@@ -5,6 +5,7 @@ import CompareTemplate from '@/components/templates/compare'
 import { CompareJsonLd } from '@/components/templates/compare/json-ld'
 import { generateCanonical, generateHreflang } from '@/lib/locale'
 import { urlFor } from '@/lib/sanity/image'
+import { resolvePageTitle } from '@/lib/seo/page-title'
 import {
   fetchCompareBlog,
   fetchCompareBlogMeta,
@@ -41,7 +42,7 @@ export async function generateMetadata({
     : '/og-default.png'
 
   return {
-    title: post.metaTitle,
+    title: resolvePageTitle(post.metaTitle),
     description: post.metaDescription,
     alternates: { canonical, languages: hreflang },
     openGraph: {

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 
 import StartHiringTemplate from '@/components/templates/start-hiring'
 import { generateCanonical, generateHreflang } from '@/lib/locale'
+import { resolvePageTitle } from '@/lib/seo/page-title'
 import {
   fetchStartHiringStep,
   fetchStartHiringStepParams,
@@ -39,7 +40,7 @@ export async function generateMetadata({
   const usPath = `/start-hiring/${slug}`
 
   return {
-    title: step.metaTitle ?? step.heading,
+    title: resolvePageTitle(step.metaTitle ?? step.heading),
     ...(step.metaDescription ? { description: step.metaDescription } : {}),
     robots: { index: false, follow: true },
     alternates: {

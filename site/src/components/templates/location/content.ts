@@ -460,7 +460,7 @@ export const LATAM_CONTENT: LocationContent = {
         title: 'Talk to a CTO.',
         body: "30-minute call. We'll help you figure out which LATAM country and seniority level fits your team.",
         cta: 'Schedule a call',
-        ctaHref: '/schedule-a-call',
+        ctaHref: '/book-a-call',
       },
       {
         eyebrow: 'Have questions',
@@ -716,7 +716,7 @@ export const EASTERN_EUROPE_CONTENT: LocationContent = {
         title: 'Talk to a CTO.',
         body: "30-minute call. We'll help you figure out which country and seniority level fits your team.",
         cta: 'Schedule a call',
-        ctaHref: '/schedule-a-call',
+        ctaHref: '/book-a-call',
       },
       {
         eyebrow: 'Have questions',
@@ -1031,7 +1031,7 @@ export const PHILIPPINES_CONTENT: LocationContent = {
         title: 'Talk to a CTO.',
         body: "30-minute call. We'll help you figure out the seniority and stack that fit your team.",
         cta: 'Schedule a call',
-        ctaHref: '/schedule-a-call',
+        ctaHref: '/book-a-call',
       },
       {
         eyebrow: 'Have questions',

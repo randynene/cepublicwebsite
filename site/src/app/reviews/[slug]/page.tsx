@@ -12,6 +12,7 @@ import {
   fetchReviewParams,
 } from '@/lib/sanity/queries/review'
 import { fetchSiteSettingsForJsonLd } from '@/lib/sanity/queries/site-settings'
+import { resolvePageTitle } from '@/lib/seo/page-title'
 
 type RouteParams = { slug: string }
 
@@ -45,7 +46,7 @@ export async function generateMetadata({
     : '/og-default.png'
 
   return {
-    title: review.metaTitle,
+    title: resolvePageTitle(review.metaTitle),
     description: review.metaDescription,
     alternates: { canonical, languages: hreflang },
     openGraph: {

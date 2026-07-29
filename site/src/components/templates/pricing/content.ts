@@ -330,7 +330,7 @@ export const PRICING_CONTENT: PricingContent = {
     breakdownTotalLabel: 'Total monthly cost',
     breakdownSavedTemplate: 'vs. hiring in the US: {amount}/yr saved',
     breakdownCta: 'Get matched at this rate',
-    breakdownCtaHref: '/schedule-a-call',
+    breakdownCtaHref: '/book-a-call',
     model: {
       // Default cell (Eastern Europe / United Kingdom / GBP) reproduces the
       // design: CE GBP 3,770-6,786 vs UK GBP 8,099-14,356.
@@ -408,7 +408,7 @@ export const PRICING_CONTENT: PricingContent = {
       'No surprises',
     ],
     cta: 'Talk to an expert',
-    ctaHref: '/schedule-a-call',
+    ctaHref: '/book-a-call',
     disclaimer:
       'All figures presented are estimates based on publicly available market data and internal benchmarks at the time of publication. Exact rates depend on role, requirements and more. This tool is intended for general informational purposes only and does not constitute a formal quote, offer, financial advice, or guarantee of actual costs. Figures such as salaries, taxes, benefits, insurance contributions, and holidays may change without notice, and Cloud Employee does not warrant the accuracy or completeness of the data over time. Users are solely responsible for any decisions made based on the information provided herein. Cloud Employee disclaims all liability for any loss, direct or indirect, arising from use of this tool beyond its intended purpose.',
   },

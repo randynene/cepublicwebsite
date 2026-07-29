@@ -746,6 +746,20 @@ no crawl traps. Speed is part of SEO/AEO — slow pages get timed out by AI craw
 **Gate for 7.10:** Screaming Frog crawl notes filed; Lighthouse SEO 100 on sample
 set; Tier 1 checklist green; known Perf debt listed (not ignored) with owner.
 
+**SEO cutover P0 pack (Jul 2026, branch `cursor/seo-cutover-fixes-3404`) — code
+shipped, needs Jake re-crawl on staging to close:**
+- `/schedule-a-call` (+ UK) → `/book-a-call` locked redirect + CTA href fixes
+- Double `| Cloud Employee` titles via `resolvePageTitle()` (absolute when brand
+  already in string)
+- `/uk` vs `/uk/` canonical/redirect fight fixed (`localePrefixedPath`)
+- Hub pagination `?page=N` → `noindex,follow` + canonical to page 1
+- Screaming Frog "missing canonical" = Next streaming metadata; `htmlLimitedBots`
+  extended with Screaming Frog (defaults kept)
+- `/for-developers` hero span → real `<h1>` post-hydrate (FE2 parity fixture unchanged)
+- `/services/ai-product-builds` already has template `<h1>` from Sanity name
+- Retired `/team/shawnee-*` + `/team/jimmy-*` 404s match live (intentional; no redirect)
+- `/live-job-role/*` stays Webflow-export exact list (no catch-all)
+
 ### PHASE 8 - Staging sign-off + Marker.io full rollout
 Goal: the whole team reviews the finished site on staging via Marker.io.
 

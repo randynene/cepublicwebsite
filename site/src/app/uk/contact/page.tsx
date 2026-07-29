@@ -4,13 +4,14 @@ import { ContactTemplate } from '@/components/templates/contact'
 import { CONTACT_CONTENT, CONTACT_META } from '@/components/templates/contact/content'
 import { generateCanonical, generateHreflang } from '@/lib/locale'
 import { fetchContactPage, toContactContent } from '@/lib/sanity/queries/contact-page'
+import { resolvePageTitle } from '@/lib/seo/page-title'
 
 // /uk/contact — same contactPage singleton as the US route.
 
 export async function generateMetadata(): Promise<Metadata> {
   const data = await fetchContactPage()
   return {
-    title: { absolute: data?.metaTitle ?? CONTACT_META.title },
+    title: resolvePageTitle(data?.metaTitle ?? CONTACT_META.title ),
     description: data?.metaDescription ?? CONTACT_META.description,
     alternates: {
       canonical: generateCanonical('/contact', 'en-GB'),

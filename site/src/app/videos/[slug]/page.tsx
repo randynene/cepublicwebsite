@@ -5,6 +5,7 @@ import VideoTemplate from '@/components/templates/video'
 import { VideoJsonLd } from '@/components/templates/video/json-ld'
 import { generateCanonical, generateHreflang } from '@/lib/locale'
 import { urlFor } from '@/lib/sanity/image'
+import { resolvePageTitle } from '@/lib/seo/page-title'
 import {
   fetchVideo,
   fetchVideoMeta,
@@ -42,7 +43,7 @@ export async function generateMetadata({
     : '/og-default.png'
 
   return {
-    title,
+    title: resolvePageTitle(title),
     description: video.metaDescription,
     alternates: { canonical, languages: hreflang },
     openGraph: {

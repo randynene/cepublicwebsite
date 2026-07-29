@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import BookACallTemplate from '@/components/templates/book-a-call'
 import { BookACallJsonLd } from '@/components/templates/book-a-call/json-ld'
 import { generateCanonical, generateHreflang } from '@/lib/locale'
+import { resolvePageTitle } from '@/lib/seo/page-title'
 import {
   fetchBookACall,
   fetchBookACallMeta,
@@ -36,7 +37,7 @@ export async function generateMetadata({
   const hreflang = generateHreflang(usPath)
 
   return {
-    title: page.metaTitle,
+    title: resolvePageTitle(page.metaTitle),
     description: page.metaDescription,
     alternates: { canonical, languages: hreflang },
     openGraph: {

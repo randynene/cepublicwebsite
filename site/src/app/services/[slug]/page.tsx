@@ -11,6 +11,7 @@ import { mapServiceToContent } from '@/lib/catalogue/content'
 import { generateCanonical, generateHreflang } from '@/lib/locale'
 import { fetchAllServiceSlugs, fetchService, fetchServiceMeta } from '@/lib/sanity/queries/service'
 import { fetchSharedServiceFaqs } from '@/lib/sanity/queries/shared-faqs'
+import { resolvePageTitle } from '@/lib/seo/page-title'
 
 type RouteParams = { slug: string }
 
@@ -33,7 +34,7 @@ export async function generateMetadata({ params }: { params: Promise<RouteParams
     // Sanity-first, code registry as fallback (WIRE-BESPOKE).
     const data = await fetchLocationPage(slug)
     return {
-      title: data?.metaTitle ?? loc.metaTitle,
+      title: resolvePageTitle(data?.metaTitle ?? loc.metaTitle),
       description: data?.metaDescription ?? loc.metaDescription,
       alternates: { canonical: generateCanonical(usPath, 'en-US'), languages: generateHreflang(usPath) },
     }
@@ -41,12 +42,8 @@ export async function generateMetadata({ params }: { params: Promise<RouteParams
 
   const meta = await fetchServiceMeta(slug)
   if (!meta) return {}
-  const metaTitle = meta.metaTitle?.trim()
   return {
-    // metaTitle already carries the full live title (incl. "| Cloud Employee"),
-    // so render it verbatim rather than letting the root layout append its
-    // "%s | Cloud Employee" template and double-brand the page.
-    title: metaTitle ? { absolute: metaTitle } : meta.name,
+    title: resolvePageTitle(meta.metaTitle?.trim() || meta.name),
     description: meta.metaDescription?.trim() || undefined,
     alternates: { canonical: generateCanonical(usPath, 'en-US'), languages: generateHreflang(usPath) },
   }

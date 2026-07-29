@@ -5,6 +5,7 @@ import { CatalogueJsonLd } from '@/components/templates/catalogue/json-ld'
 import { mapTechnologyHubData } from '@/lib/catalogue/hub-content'
 import { fetchTechnologyHubData } from '@/lib/sanity/queries/catalogue-hub'
 import { generateCanonical, generateHreflang } from '@/lib/locale'
+import { resolvePageTitle } from '@/lib/seo/page-title'
 
 const TITLE = 'Technologies we build with'
 
@@ -12,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const data = await fetchTechnologyHubData()
   const content = mapTechnologyHubData(data)
   return {
-    title: data.hub?.metaTitle ? { absolute: data.hub.metaTitle } : TITLE,
+    title: resolvePageTitle(data.hub?.metaTitle ?? TITLE),
     description: data.hub?.metaDescription ?? content.hero.lead,
     alternates: { canonical: generateCanonical('/technology', 'en-GB'), languages: generateHreflang('/technology') },
   }

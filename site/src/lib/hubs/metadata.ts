@@ -2,10 +2,10 @@ import 'server-only'
 
 import type { Metadata } from 'next'
 
-import { env } from '@/lib/env'
 import { parsePageParam } from '@/lib/hubs/pagination'
 import { generateCanonical, generateHreflang, type Locale } from '@/lib/locale'
 import { urlFor } from '@/lib/sanity/image'
+import { resolvePageTitle } from '@/lib/seo/page-title'
 import {
   fetchHubSingleton,
   fetchSiteDefaultOgImage,
@@ -49,14 +49,9 @@ export async function buildHubMetadata(
   // it is safe to invoke here.
   const currentPage = parsePageParam(searchParams.page)
 
-  // generateCanonical and generateHreflang take the US path and apply the
-  // locale prefix themselves (see the CONTRACT note in lib/locale.ts), so this
-  // stays unprefixed. `openGraph.url` below does need the prefix, and gets it
-  // from `canonical` rather than being rebuilt from the US path.
-  const pagedPath =
-    currentPage === 1 ? cfg.basePath : `${cfg.basePath}?page=${currentPage}`
-
-  const canonical = generateCanonical(pagedPath, locale)
+  // Page 2+ stays crawlable via follow links but must not compete with page 1
+  // in the index (duplicate titles). Canonical points at page 1.
+  const canonical = generateCanonical(cfg.basePath, locale)
   // hreflang alternates point at the base URL (not the paginated URL)
   // because Google treats /page=2 as a distinct page, and hreflang
   // alternates pair distinct content units.
@@ -69,16 +64,18 @@ export async function buildHubMetadata(
     : null
 
   const ogImages = ogImageUrl ? [{ url: ogImageUrl, width: 1200, height: 630 }] : undefined
+  const title = resolvePageTitle(hub.metaTitle)
 
   return {
-    title: hub.metaTitle,
+    ...(title ? { title } : {}),
     description: hub.metaDescription,
+    ...(currentPage > 1 ? { robots: { index: false, follow: true } } : {}),
     alternates: {
       canonical,
       languages: hreflang,
     },
     openGraph: {
-      title: hub.metaTitle,
+      ...(hub.metaTitle ? { title: hub.metaTitle } : {}),
       description: hub.metaDescription,
       // `canonical`, not a re-derived US path: on a UK hub, og:url must point at
       // the UK URL. Rebuilding it from pagedPath would have every UK hub declare
@@ -89,7 +86,7 @@ export async function buildHubMetadata(
     },
     twitter: {
       card: 'summary_large_image',
-      title: hub.metaTitle,
+      ...(hub.metaTitle ? { title: hub.metaTitle } : {}),
       description: hub.metaDescription,
       ...(ogImageUrl ? { images: [ogImageUrl] } : {}),
     },

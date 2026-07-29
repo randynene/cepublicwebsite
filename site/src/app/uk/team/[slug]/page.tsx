@@ -12,6 +12,7 @@ import {
   fetchTeamMemberParams,
 } from '@/lib/sanity/queries/team-member'
 import { fetchSiteSettingsForJsonLd } from '@/lib/sanity/queries/site-settings'
+import { resolvePageTitle } from '@/lib/seo/page-title'
 
 // UK locale mirror — same document, same render, /uk/ prefix.
 // Single-document strategy per TEMPLATE-BLOG; locale derives from route only.
@@ -46,7 +47,7 @@ export async function generateMetadata({
     : '/og-default.png'
 
   return {
-    title: member.metaTitle,
+    title: resolvePageTitle(member.metaTitle),
     description: member.metaDescription,
     alternates: { canonical, languages: hreflang },
     openGraph: {

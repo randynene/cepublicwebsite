@@ -4,6 +4,7 @@ import { HireEngineersTemplate } from '@/components/templates/hire-engineers'
 import { HE, HIRE_ENGINEERS_META } from '@/components/templates/hire-engineers/content'
 import { generateCanonical, generateHreflang } from '@/lib/locale'
 import { fetchHireEngineersPage, toHireEngineersContent } from '@/lib/sanity/queries/hire-engineers-page'
+import { resolvePageTitle } from '@/lib/seo/page-title'
 
 // /uk/services/software-engineers - UK locale mirror of the Hire Engineers
 // landing page. Declared destination of the /uk/hire/software-engineers redirect.
@@ -13,7 +14,7 @@ import { fetchHireEngineersPage, toHireEngineersContent } from '@/lib/sanity/que
 export async function generateMetadata(): Promise<Metadata> {
   const data = await fetchHireEngineersPage()
   return {
-    title: { absolute: data?.metaTitle ?? HIRE_ENGINEERS_META.title },
+    title: resolvePageTitle(data?.metaTitle ?? HIRE_ENGINEERS_META.title ),
     description: data?.metaDescription ?? HIRE_ENGINEERS_META.description,
     alternates: {
       canonical: generateCanonical('/services/software-engineers', 'en-GB'),
