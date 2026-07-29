@@ -3,15 +3,16 @@
 Use these files together:
 
 1. `LEAD_CONVERSION_EXECUTION_PLAN.md`
-   - Start here in a new implementation chat.
-   - Contains the locked decisions, page matrix, phases, Clara architecture, and handoff prompt.
+   - Sitewide M1/M2/M4 placement plan (older system brief).
 2. `LEAD_CONVERSION_SYSTEM_UX.md`
-   - Feed this into Claude Design.
-   - Contains the sitewide visual and placement brief.
+   - Feed into Claude Design for sitewide placement.
 3. `PRICING_LEAD_CONVERSION_UX.md`
-   - Pricing-specific M2 detail: guided questions, living brief, CRM contract, analytics, privacy, and accessibility.
+   - Pricing-specific M2 detail.
 4. `LEAD_CONVERSION_AUDIT_2026-07-26.md`
-   - Evidence-backed audit of the plan and Clara integration.
-   - Records corrections and outstanding gates.
+   - Clara audit + gates.
+5. **`ASK_CLARA_EXECUTION_PLAN.md`** — **master plan for `/ask`** (who owns chat vs brief, phases P1–P5).
+6. **`ASK_CLARA_AGENT_KICKOFF.md`** — paste into a **new** cloud agent to start P1.
+7. `ASK_CLARA_PAGE_UX.md` — product UX decisions (chat left / brief right).
+8. `ask-clara-reference/Ask_Clara_Page_standalone.html` — visual SoT (S1–S10).
 
 Master launch status remains in `docs/ROADMAP_TO_COMPLETION.md`.

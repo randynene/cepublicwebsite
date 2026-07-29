@@ -1,0 +1,1753 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="97d7f691-968c-40a0-a6cc-5b1f236b5be8"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<style>/* cyrillic-ext */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("e7e095fa-40ee-45dd-b1d1-1de64ab332f3") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("f1da8339-2eb1-4572-b90d-e1eb1f2e9732") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("d77067fd-6afe-4cea-b842-7926fad72eec") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("bbe0e39b-9faa-4239-a60b-1b54fd95ff60") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("0194524b-68b0-47dd-9c00-7e1f218fced9") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("1a367cce-6ed2-4b08-a774-8e4d3008575f") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("37a6b327-b4c9-4d82-b6be-58d10a62c2b1") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("d9755efe-ba76-4596-b8ad-6b5001bb1b5d") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("c787f76b-fcd7-4985-bd2d-7c82dfdac0bb") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("b8e6697c-9b37-4b0d-a084-f715668b6672") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("10c4fe6a-982f-473e-9737-863baad3db05") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("36dff67c-aeee-443d-9631-f07a7facbc4b") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("3677e629-53df-4f06-9016-87a0062e54af") format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("228bea2b-9b25-480c-a851-9d5f86397040") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("43a386aa-2943-4278-a073-4593675e869a") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("aa4fffba-e348-4681-a385-bc917dfae92c") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("9f03ba7e-9877-494b-bc8c-a94a4d9434d3") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("10c4fe6a-982f-473e-9737-863baad3db05") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("36dff67c-aeee-443d-9631-f07a7facbc4b") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("3677e629-53df-4f06-9016-87a0062e54af") format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("228bea2b-9b25-480c-a851-9d5f86397040") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("43a386aa-2943-4278-a073-4593675e869a") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("aa4fffba-e348-4681-a385-bc917dfae92c") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("9f03ba7e-9877-494b-bc8c-a94a4d9434d3") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("10c4fe6a-982f-473e-9737-863baad3db05") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("36dff67c-aeee-443d-9631-f07a7facbc4b") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("3677e629-53df-4f06-9016-87a0062e54af") format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("228bea2b-9b25-480c-a851-9d5f86397040") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("43a386aa-2943-4278-a073-4593675e869a") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("aa4fffba-e348-4681-a385-bc917dfae92c") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("9f03ba7e-9877-494b-bc8c-a94a4d9434d3") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("10c4fe6a-982f-473e-9737-863baad3db05") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("36dff67c-aeee-443d-9631-f07a7facbc4b") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("3677e629-53df-4f06-9016-87a0062e54af") format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("228bea2b-9b25-480c-a851-9d5f86397040") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("43a386aa-2943-4278-a073-4593675e869a") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("aa4fffba-e348-4681-a385-bc917dfae92c") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("9f03ba7e-9877-494b-bc8c-a94a4d9434d3") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("4c8a08c1-0daa-4352-af1e-207b26b7d8b3") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("3c0151cd-2a28-45ff-8b4c-77e91912eb90") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("431e2abe-8262-4727-9a19-428d8c1a5fe1") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("d0165ff6-438b-4946-b933-30cfc000cdf7") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("3cbdabd1-3f7b-4eef-9afb-4c1b0501981f") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("dbd6a597-ee42-4d87-bcc2-2d9d49fa3b25") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url("4c8a08c1-0daa-4352-af1e-207b26b7d8b3") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url("3c0151cd-2a28-45ff-8b4c-77e91912eb90") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url("431e2abe-8262-4727-9a19-428d8c1a5fe1") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url("d0165ff6-438b-4946-b933-30cfc000cdf7") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url("3cbdabd1-3f7b-4eef-9afb-4c1b0501981f") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url("dbd6a597-ee42-4d87-bcc2-2d9d49fa3b25") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+</style>
+<meta name="design_doc_mode" content="canvas">
+<style>
+  body { margin:0; background:#05090F; font-family:'Inter',sans-serif; }
+  a { color:#D4FF3C; text-decoration:none; }
+  a:hover { color:#e6ff7a; }
+  @keyframes ceRotate {
+    0%,2% { opacity:0; transform:translateY(14px); }
+    6%,30% { opacity:1; transform:translateY(0); }
+    36%,100% { opacity:0; transform:translateY(-14px); }
+  }
+  @keyframes ceWave { 0%,100% { transform:scaleY(.18); } 50% { transform:scaleY(1); } }
+  @keyframes cePulse { 0%,100% { opacity:.35; transform:scale(1); } 50% { opacity:1; transform:scale(1.6); } }
+</style>
+</helmet>
+
+<section style="position:relative;height:4060px;">
+
+<div id="2a" style="position:absolute;left:0px;top:-52px;display:flex;align-items:center;gap:12px;">
+  <span style="background:#D4FF3C;color:#060F1E;font:700 12px/1 'Inter';letter-spacing:.4px;padding:6px 10px;border-radius:6px;">2a</span>
+  <span style="font:600 12px/1 'Inter';letter-spacing:1.4px;text-transform:uppercase;color:#5b6577;">Ask Clara · every state, chat left / canvas right</span>
+</div>
+<!-- ================= STATE INDEX ================= -->
+<div style="position:absolute;left:3120px;top:1000px;width:880px;">
+  <div style="font:600 12px/1 'Inter';letter-spacing:1.4px;text-transform:uppercase;color:#5b6577;margin-bottom:14px;">State index</div>
+  <div style="background:#0B1424;border:1px solid #22314D;border-radius:12px;padding:26px 28px;">
+    <div style="font-weight:600;font-size:22px;line-height:1.2;letter-spacing:-.7px;color:#fff;margin-bottom:6px;">Ask Clara · 10 states</div>
+    <div style="font-size:13.5px;line-height:21px;color:#7F8CA0;margin-bottom:18px;">Chat is always the left column. The right column is the canvas, and it only ever shows one of three things: proof, the brief, or the booking.</div>
+    <div style="display:grid;grid-template-columns:52px 1.1fr 1.3fr 1.3fr;gap:16px;padding-bottom:6px;">
+      <span style="font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:#5b6577;">State</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:#5b6577;">Name</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:#5b6577;">Entered when</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:#5b6577;">Canvas shows</span>
+    </div>
+      <div style="display:grid;grid-template-columns:52px 1.1fr 1.3fr 1.3fr;gap:16px;padding:12px 0;border-top:1px solid #1a2740;">
+        <span style="font-weight:700;font-size:13px;color:#D4FF3C;">S1</span>
+        <span style="font-weight:600;font-size:13px;color:#fff;">Discovery</span>
+        <span style="font-size:12.5px;line-height:1.5;color:#B8C2D1;">Page load, or only general questions so far</span>
+        <span style="font-size:12.5px;line-height:1.5;color:#7F8CA0;">Rotating client stories + did-you-knows</span>
+      </div>
+      <div style="display:grid;grid-template-columns:52px 1.1fr 1.3fr 1.3fr;gap:16px;padding:12px 0;border-top:1px solid #1a2740;">
+        <span style="font-weight:700;font-size:13px;color:#D4FF3C;">S2</span>
+        <span style="font-weight:600;font-size:13px;color:#fff;">Voice active</span>
+        <span style="font-size:12.5px;line-height:1.5;color:#B8C2D1;">Mic pressed or Ctrl+D held</span>
+        <span style="font-size:12.5px;line-height:1.5;color:#7F8CA0;">Unchanged - waveform sits above the input</span>
+      </div>
+      <div style="display:grid;grid-template-columns:52px 1.1fr 1.3fr 1.3fr;gap:16px;padding:12px 0;border-top:1px solid #1a2740;">
+        <span style="font-weight:700;font-size:13px;color:#D4FF3C;">S3</span>
+        <span style="font-weight:600;font-size:13px;color:#fff;">Single hire</span>
+        <span style="font-size:12.5px;line-height:1.5;color:#B8C2D1;">headcount = 1 and a role is named</span>
+        <span style="font-size:12.5px;line-height:1.5;color:#7F8CA0;">One profile card, fields fill in live</span>
+      </div>
+      <div style="display:grid;grid-template-columns:52px 1.1fr 1.3fr 1.3fr;gap:16px;padding:12px 0;border-top:1px solid #1a2740;">
+        <span style="font-weight:700;font-size:13px;color:#D4FF3C;">S4</span>
+        <span style="font-weight:600;font-size:13px;color:#fff;">Team / squad</span>
+        <span style="font-size:12.5px;line-height:1.5;color:#B8C2D1;">headcount 2 or more</span>
+        <span style="font-size:12.5px;line-height:1.5;color:#7F8CA0;">Grouped profile mark + role mix board</span>
+      </div>
+      <div style="display:grid;grid-template-columns:52px 1.1fr 1.3fr 1.3fr;gap:16px;padding:12px 0;border-top:1px solid #1a2740;">
+        <span style="font-weight:700;font-size:13px;color:#D4FF3C;">S5</span>
+        <span style="font-weight:600;font-size:13px;color:#fff;">Product / MVP</span>
+        <span style="font-size:12.5px;line-height:1.5;color:#B8C2D1;">Product intent, no role named</span>
+        <span style="font-size:12.5px;line-height:1.5;color:#7F8CA0;">Scope checklist + suggested pod</span>
+      </div>
+      <div style="display:grid;grid-template-columns:52px 1.1fr 1.3fr 1.3fr;gap:16px;padding:12px 0;border-top:1px solid #1a2740;">
+        <span style="font-weight:700;font-size:13px;color:#D4FF3C;">S6</span>
+        <span style="font-weight:600;font-size:13px;color:#fff;">Brief ready</span>
+        <span style="font-size:12.5px;line-height:1.5;color:#B8C2D1;">Required fields captured</span>
+        <span style="font-size:12.5px;line-height:1.5;color:#7F8CA0;">Full brief + Schedule a Call emphasis</span>
+      </div>
+      <div style="display:grid;grid-template-columns:52px 1.1fr 1.3fr 1.3fr;gap:16px;padding:12px 0;border-top:1px solid #1a2740;">
+        <span style="font-weight:700;font-size:13px;color:#D4FF3C;">S7</span>
+        <span style="font-weight:600;font-size:13px;color:#fff;">Booking open</span>
+        <span style="font-size:12.5px;line-height:1.5;color:#B8C2D1;">Schedule a Call clicked anywhere</span>
+        <span style="font-size:12.5px;line-height:1.5;color:#7F8CA0;">Calendly embed, brief pinned above it</span>
+      </div>
+      <div style="display:grid;grid-template-columns:52px 1.1fr 1.3fr 1.3fr;gap:16px;padding:12px 0;border-top:1px solid #1a2740;">
+        <span style="font-weight:700;font-size:13px;color:#D4FF3C;">S8</span>
+        <span style="font-weight:600;font-size:13px;color:#fff;">Booked</span>
+        <span style="font-size:12.5px;line-height:1.5;color:#B8C2D1;">Slot confirmed</span>
+        <span style="font-size:12.5px;line-height:1.5;color:#7F8CA0;">Confirmation + brief sent as PDF</span>
+      </div>
+      <div style="display:grid;grid-template-columns:52px 1.1fr 1.3fr 1.3fr;gap:16px;padding:12px 0;border-top:1px solid #1a2740;">
+        <span style="font-weight:700;font-size:13px;color:#D4FF3C;">S9</span>
+        <span style="font-weight:600;font-size:13px;color:#fff;">Mobile discovery</span>
+        <span style="font-size:12.5px;line-height:1.5;color:#B8C2D1;">Small viewport, no brief signal</span>
+        <span style="font-size:12.5px;line-height:1.5;color:#7F8CA0;">Proof card above the thread</span>
+      </div>
+      <div style="display:grid;grid-template-columns:52px 1.1fr 1.3fr 1.3fr;gap:16px;padding:12px 0;border-top:1px solid #1a2740;">
+        <span style="font-weight:700;font-size:13px;color:#D4FF3C;">S10</span>
+        <span style="font-weight:600;font-size:13px;color:#fff;">Mobile brief</span>
+        <span style="font-size:12.5px;line-height:1.5;color:#B8C2D1;">Small viewport, brief exists</span>
+        <span style="font-size:12.5px;line-height:1.5;color:#7F8CA0;">Brief card pinned above the thread</span>
+      </div>
+    <div style="border-top:1px solid #1a2740;margin-top:16px;padding-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div><div style="font-weight:600;font-size:13px;color:#fff;margin-bottom:6px;">Never</div><div style="font-size:12.5px;line-height:1.5;color:#7F8CA0;">No claim of a matched engineer, no invented headshots, no HubSpot form inside the chat.</div></div>
+      <div><div style="font-weight:600;font-size:13px;color:#fff;margin-bottom:6px;">Always</div><div style="font-size:12.5px;line-height:1.5;color:#7F8CA0;">Schedule a Call reachable in one click; unknown fields render as dashed placeholders; the split is draggable (handle appears on hover, 35-65% range).</div></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ================= B1 · STAGE 1 - GENERAL QUESTIONS ================= -->
+<div style="position:absolute;left:0px;top:0px;width:1440px;">
+  <div style="font:600 12px/1 'Inter';letter-spacing:1.4px;text-transform:uppercase;color:#5b6577;margin-bottom:14px;">S1 · Discovery - general questions, no brief signal yet</div>
+  <div data-screen-label="S1 Discovery" style="height:900px;background:#070D18;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.25);display:flex;flex-direction:column;">
+
+    <div style="height:60px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-bottom:1px solid #1a2740;">
+      <img src="9e62048d-3f85-486f-8c5d-1b5076d77a19" alt="CloudEmployee" style="height:22px;width:auto;display:block;">
+      <a href="#" style="display:inline-flex;align-items:center;gap:9px;background:#D4FF3C;color:#060F1E;border-radius:999px;padding:6px 18px 6px 6px;font:700 14px/1 'Inter';">
+        <span style="width:26px;height:26px;border-radius:999px;background:#060F1E;display:flex;align-items:center;justify-content:center;color:#D4FF3C;font-size:12px;">→</span>Schedule a Call
+      </a>
+    </div>
+
+    <div style="flex:1;display:grid;grid-template-columns:44fr 56fr;min-height:0;position:relative;">
+
+      <div style="position:absolute;left:44%;top:0;bottom:0;width:16px;margin-left:-8px;display:flex;align-items:center;justify-content:center;z-index:3;cursor:col-resize;">
+        <span style="width:3px;height:48px;border-radius:999px;background:#4a586e;display:block;"></span>
+      </div>
+
+      <!-- CHAT (left) -->
+      <div style="display:flex;flex-direction:column;min-height:0;padding:0 28px;">
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:22px;padding:28px 0;min-height:0;">
+          <div style="display:flex;gap:13px;">
+            <span style="width:28px;height:28px;border-radius:999px;background:#D4FF3C;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+              <img src="b15948b5-d17f-4d48-8ba2-5d80a0327e0f" alt="Clara" style="width:14px;height:14px;display:block;">
+            </span>
+            <div style="flex:1;font:400 15.5px/25px 'Inter';color:#E6ECF5;padding-top:2px;">Hi, I'm Clara - CloudEmployee's hiring assistant. Ask me anything about how embedded engineering works, or tell me who you're hiring and I'll build a brief on the right.</div>
+          </div>
+          <div style="align-self:flex-end;max-width:78%;background:#1B2A45;border-radius:16px 16px 4px 16px;padding:13px 17px;font:400 15px/23px 'Inter';color:#fff;">How is this different from an agency?</div>
+          <div style="display:flex;gap:13px;">
+            <span style="width:28px;height:28px;border-radius:999px;background:#D4FF3C;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+              <img src="b15948b5-d17f-4d48-8ba2-5d80a0327e0f" alt="Clara" style="width:14px;height:14px;display:block;">
+            </span>
+            <div style="flex:1;font:400 15.5px/25px 'Inter';color:#E6ECF5;padding-top:2px;">You get the engineer, not a project team. They join your standups, your repo and your tooling, and they stay on your team - we handle recruitment, payroll, equipment and retention in the background.<span style="color:#D4FF3C;">▍</span></div>
+          </div>
+        </div>
+
+        <div style="flex-shrink:0;padding-bottom:24px;">
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px;">
+            <span style="border:1px solid #22314D;color:#B8C2D1;font:500 12.5px/1 'Inter';padding:8px 12px;border-radius:999px;">Hire one senior React engineer</span>
+            <span style="border:1px solid #22314D;color:#B8C2D1;font:500 12.5px/1 'Inter';padding:8px 12px;border-radius:999px;">Build a squad of 3</span>
+            <span style="border:1px solid #22314D;color:#B8C2D1;font:500 12.5px/1 'Inter';padding:8px 12px;border-radius:999px;">Not sure - help me scope</span>
+          </div>
+          <div style="background:#0E1A2E;border:1px solid #2b3a56;border-radius:18px;padding:14px 14px 10px;overflow:hidden;">
+            <div style="font:400 15.5px/1 'Inter';color:#5f6b7d;padding:4px 4px 16px;">Ask Clara...</div>
+            <div style="display:flex;align-items:center;justify-content:flex-end;">
+              <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+                <span style="width:32px;height:32px;border-radius:999px;border:1px solid #22314D;color:#7F8CA0;display:flex;align-items:center;justify-content:center;font-size:14px;">⎘</span>
+                <span style="display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 13px 0 11px;border-radius:999px;border:1px solid #2c3f33;background:#0F1B12;"><span style="position:relative;width:12px;height:17px;display:block;flex-shrink:0;"><span style="position:absolute;left:2.5px;top:0;width:7px;height:10px;border-radius:999px;background:#D4FF3C;display:block;"></span><span style="position:absolute;left:0;top:6px;width:12px;height:6px;border:1.5px solid #D4FF3C;border-top:none;border-radius:0 0 9px 9px;display:block;"></span><span style="position:absolute;left:5px;top:13px;width:2px;height:4px;background:#D4FF3C;display:block;"></span></span><span style="font:600 12.5px/1 'Inter';color:#D4FF3C;">Talk</span></span>
+                <span style="width:34px;height:34px;border-radius:999px;background:#D4FF3C;color:#060F1E;display:flex;align-items:center;justify-content:center;font-size:14px;">↑</span>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 6px 0;">
+            <span style="font:400 11.5px/1 'Inter';color:#5f6b7d;">Hold Ctrl+D to talk instead of typing</span>
+            <span style="font:600 11.5px/1 'Inter';color:#7F8CA0;">Skip - book a call</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CANVAS (right) - rotating proof -->
+      <div style="border-left:1px solid #1a2740;background:#0B1424;display:flex;flex-direction:column;min-height:0;padding:26px 34px 30px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+          <span style="font:500 10.5px/1 'IBM Plex Mono';letter-spacing:1.4px;text-transform:uppercase;color:#7F8CA0;">While we talk</span>
+          <div style="display:flex;gap:6px;">
+            <span style="width:5px;height:5px;border-radius:999px;background:#D4FF3C;display:block;"></span>
+            <span style="width:5px;height:5px;border-radius:999px;background:#22314D;display:block;"></span>
+            <span style="width:5px;height:5px;border-radius:999px;background:#22314D;display:block;"></span>
+            <span style="width:5px;height:5px;border-radius:999px;background:#22314D;display:block;"></span>
+          </div>
+        </div>
+
+        <div style="position:relative;flex:1;min-height:0;margin-top:22px;">
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:26px;animation:ceRotate 24s ease-in-out infinite;">
+            <span style="font:500 10.5px/1 'IBM Plex Mono';letter-spacing:1.4px;text-transform:uppercase;color:#D4FF3C;">Client story</span>
+            <div style="font-family:'Source Serif 4';font-style:italic;font-weight:400;font-size:34px;line-height:46px;color:#fff;letter-spacing:-.5px;max-width:600px;text-wrap:pretty;">"We interviewed four suppliers. CloudEmployee was the only one whose engineers asked about our roadmap before they asked about the rate."</div>
+            <div style="display:flex;align-items:center;gap:16px;">
+              <div style="width:44px;height:44px;border-radius:999px;background:#1B2A45;border:1px solid #22314D;"></div>
+              <div>
+                <div style="font:600 15px/1 'Inter';color:#fff;margin-bottom:6px;">Alex Prentice</div>
+                <div style="font:400 13.5px/1 'Inter';color:#7F8CA0;">CTO, Salmon Software</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:26px;animation:ceRotate 24s ease-in-out -6s infinite;">
+            <span style="font:500 10.5px/1 'IBM Plex Mono';letter-spacing:1.4px;text-transform:uppercase;color:#D4FF3C;">Did you know</span>
+            <div style="font:600 34px/46px 'Inter';letter-spacing:-1.1px;color:#fff;max-width:600px;text-wrap:pretty;">Only <span style="color:#D4FF3C;">4.1%</span> of applicants clear our vetting. The other 95.9% never reach your inbox.</div>
+            <div style="font:400 15px/24px 'Inter';color:#B8C2D1;max-width:520px;">Five stages: technical screen, live build, code review, psychometrics, and an English fluency call.</div>
+          </div>
+
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:26px;animation:ceRotate 24s ease-in-out -12s infinite;">
+            <span style="font:500 10.5px/1 'IBM Plex Mono';letter-spacing:1.4px;text-transform:uppercase;color:#D4FF3C;">Client story</span>
+            <div style="font-family:'Source Serif 4';font-style:italic;font-weight:400;font-size:34px;line-height:46px;color:#fff;letter-spacing:-.5px;max-width:600px;text-wrap:pretty;">"Our first hire shipped to production in week two. Eighteen months on, he runs the payments squad."</div>
+            <div style="display:flex;align-items:center;gap:16px;">
+              <div style="width:44px;height:44px;border-radius:999px;background:#1B2A45;border:1px solid #22314D;"></div>
+              <div>
+                <div style="font:600 15px/1 'Inter';color:#fff;margin-bottom:6px;">Kirsty Bell</div>
+                <div style="font:400 13.5px/1 'Inter';color:#7F8CA0;">Head of Engineering, Willo</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:26px;animation:ceRotate 24s ease-in-out -18s infinite;">
+            <span style="font:500 10.5px/1 'IBM Plex Mono';letter-spacing:1.4px;text-transform:uppercase;color:#D4FF3C;">Client story</span>
+            <div style="font-family:'Source Serif 4';font-style:italic;font-weight:400;font-size:34px;line-height:46px;color:#fff;letter-spacing:-.5px;max-width:600px;text-wrap:pretty;">"By month three it stopped feeling like outsourcing. Nobody on the team calls them the offshore guys - they're just the team."</div>
+            <div style="display:flex;align-items:center;gap:16px;">
+              <div style="width:44px;height:44px;border-radius:999px;background:#1B2A45;border:1px solid #22314D;"></div>
+              <div>
+                <div style="font:600 15px/1 'Inter';color:#fff;margin-bottom:6px;">Dan Merrow</div>
+                <div style="font:400 13.5px/1 'Inter';color:#7F8CA0;">Founder, Event Connections</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="flex-shrink:0;display:flex;align-items:center;gap:22px;border-top:1px solid #1a2740;padding-top:20px;">
+          <span style="font:400 13px/1.4 'Inter';color:#7F8CA0;flex:1;">Six weeks is our typical time from brief to embedded engineer.</span>
+          <span style="font:600 13px/1 'Inter';color:#D4FF3C;white-space:nowrap;">See customer stories ›</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <sc-if value="{{ showAnnotations }}" hint-placeholder-val="{{ true }}">
+  <div style="display:flex;gap:26px;margin-top:12px;">
+    <span style="font:400 12px/1.4 'IBM Plex Mono';color:#5b6577;">· header is logo + Schedule a Call only, no nav</span>
+    <span style="font:400 12px/1.4 'IBM Plex Mono';color:#5b6577;">· proof panel cross-fades every 6s: 3 client stories + 1 did-you-know</span>
+  </div>
+  </sc-if>
+</div>
+
+<!-- ================= B2 · STAGE 1 - VOICE LISTENING ================= -->
+<div style="position:absolute;left:1560px;top:0px;width:1440px;">
+  <div style="font:600 12px/1 'Inter';letter-spacing:1.4px;text-transform:uppercase;color:#5b6577;margin-bottom:14px;">S2 · Voice input active - transcribing into the brief</div>
+  <div data-screen-label="S2 Voice active" style="height:900px;background:#070D18;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.25);display:flex;flex-direction:column;">
+
+    <div style="height:60px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-bottom:1px solid #1a2740;">
+      <img src="9e62048d-3f85-486f-8c5d-1b5076d77a19" alt="CloudEmployee" style="height:22px;width:auto;display:block;">
+      <a href="#" style="display:inline-flex;align-items:center;gap:9px;background:#D4FF3C;color:#060F1E;border-radius:999px;padding:6px 18px 6px 6px;font:700 14px/1 'Inter';">
+        <span style="width:26px;height:26px;border-radius:999px;background:#060F1E;display:flex;align-items:center;justify-content:center;color:#D4FF3C;font-size:12px;">→</span>Schedule a Call
+      </a>
+    </div>
+
+    <div style="flex:1;display:grid;grid-template-columns:44fr 56fr;min-height:0;position:relative;">
+
+      <div style="position:absolute;left:44%;top:0;bottom:0;width:16px;margin-left:-8px;display:flex;align-items:center;justify-content:center;z-index:3;cursor:col-resize;">
+        <span style="width:3px;height:48px;border-radius:999px;background:#4a586e;display:block;"></span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;min-height:0;padding:0 28px;">
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:22px;padding:28px 0;min-height:0;">
+          <div style="display:flex;gap:13px;">
+            <span style="width:28px;height:28px;border-radius:999px;background:#D4FF3C;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+              <img src="b15948b5-d17f-4d48-8ba2-5d80a0327e0f" alt="Clara" style="width:14px;height:14px;display:block;">
+            </span>
+            <div style="flex:1;font:400 15.5px/25px 'Inter';color:#E6ECF5;padding-top:2px;">Easier to say it than type it - go ahead, I'm listening.</div>
+          </div>
+          <div style="align-self:flex-end;max-width:78%;border:1px dashed #2c3f33;border-radius:16px 16px 4px 16px;padding:13px 17px;font:400 15px/23px 'Inter';color:#B8C2D1;">So we've got a React app, and I need someone senior who can own the frontend while my team focuses on<span style="color:#D4FF3C;">▍</span></div>
+        </div>
+
+        <div style="flex-shrink:0;padding-bottom:24px;">
+          <div style="background:#0F1B12;border:1px solid #D4FF3C;border-radius:18px;padding:16px 16px 12px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+              <div style="display:flex;align-items:center;gap:11px;">
+                <span style="width:8px;height:8px;border-radius:999px;background:#D4FF3C;display:block;animation:cePulse 1.4s ease-in-out infinite;"></span>
+                <span style="font:600 12.5px/1 'Inter';letter-spacing:.4px;color:#D4FF3C;">Transcribing as you speak</span>
+                <span style="font:500 12.5px/1 'IBM Plex Mono';color:#7F8CA0;">0:14</span>
+              </div>
+              <span style="font:500 12px/1 'Inter';color:#7F8CA0;">Release Ctrl+D to send</span>
+            </div>
+            <div style="height:38px;display:flex;align-items:center;margin-bottom:14px;">{{ waveform }}</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font:400 13.5px/1 'Inter';color:#7F8CA0;">Your words land in the brief, not just the chat</span>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="border:1px solid #2c3f33;color:#B8C2D1;font:500 12.5px/1 'Inter';padding:8px 14px;border-radius:999px;">Cancel</span>
+                <span style="width:34px;height:34px;border-radius:999px;background:#D4FF3C;color:#060F1E;display:flex;align-items:center;justify-content:center;font-size:13px;">■</span>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 6px 0;">
+            <span style="font:400 11.5px/1 'Inter';color:#5f6b7d;">Voice is transcribed on-device, then sent as text</span>
+            <span style="font:600 11.5px/1 'Inter';color:#7F8CA0;">Skip - book a call</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="border-left:1px solid #1a2740;background:#0B1424;display:flex;flex-direction:column;justify-content:center;gap:26px;min-height:0;padding:26px 34px;">
+        <span style="font:500 10.5px/1 'IBM Plex Mono';letter-spacing:1.4px;text-transform:uppercase;color:#D4FF3C;">Did you know</span>
+        <div style="font:600 34px/46px 'Inter';letter-spacing:-1.1px;color:#fff;max-width:600px;text-wrap:pretty;">Manila runs <span style="color:#D4FF3C;">four hours</span> ahead of London - so standups happen live, not in a thread.</div>
+        <div style="font:400 15px/24px 'Inter';color:#B8C2D1;max-width:520px;">Eastern Europe gives you a full working-day overlap; LATAM covers US hours.</div>
+        <div style="display:flex;gap:6px;margin-top:8px;">
+          <span style="width:5px;height:5px;border-radius:999px;background:#22314D;display:block;"></span>
+          <span style="width:5px;height:5px;border-radius:999px;background:#D4FF3C;display:block;"></span>
+          <span style="width:5px;height:5px;border-radius:999px;background:#22314D;display:block;"></span>
+          <span style="width:5px;height:5px;border-radius:999px;background:#22314D;display:block;"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <sc-if value="{{ showAnnotations }}" hint-placeholder-val="{{ true }}">
+  <div style="margin-top:12px;font:400 12px/1.4 'IBM Plex Mono';color:#5b6577;">· waveform sits directly above the input, replacing the composer while recording; live transcript appears as a dashed draft bubble</div>
+  </sc-if>
+</div>
+
+<!-- ================= B3 · STAGE 2 - SINGLE HIRE ================= -->
+<div style="position:absolute;left:0px;top:1000px;width:1440px;">
+  <div style="font:600 12px/1 'Inter';letter-spacing:1.4px;text-transform:uppercase;color:#5b6577;margin-bottom:14px;">S3 · Brief building - single hire (one named role)</div>
+  <div data-screen-label="S3 Brief single hire" style="height:900px;background:#070D18;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.25);display:flex;flex-direction:column;">
+
+    <div style="height:60px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-bottom:1px solid #1a2740;">
+      <img src="9e62048d-3f85-486f-8c5d-1b5076d77a19" alt="CloudEmployee" style="height:22px;width:auto;display:block;">
+      <a href="#" style="display:inline-flex;align-items:center;gap:9px;background:#D4FF3C;color:#060F1E;border-radius:999px;padding:6px 18px 6px 6px;font:700 14px/1 'Inter';">
+        <span style="width:26px;height:26px;border-radius:999px;background:#060F1E;display:flex;align-items:center;justify-content:center;color:#D4FF3C;font-size:12px;">→</span>Schedule a Call
+      </a>
+    </div>
+
+    <div style="flex:1;display:grid;grid-template-columns:44fr 56fr;min-height:0;position:relative;">
+
+      <div style="position:absolute;left:44%;top:0;bottom:0;width:16px;margin-left:-8px;display:flex;align-items:center;justify-content:center;z-index:3;cursor:col-resize;">
+        <span style="width:3px;height:48px;border-radius:999px;background:#4a586e;display:block;"></span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;min-height:0;padding:0 28px;">
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:20px;padding:28px 0;min-height:0;">
+          <div style="align-self:flex-end;max-width:78%;background:#1B2A45;border-radius:16px 16px 4px 16px;padding:13px 17px;font:400 15px/23px 'Inter';color:#fff;">I need one senior React dev to join our product team in London.</div>
+          <div style="display:flex;gap:13px;">
+            <span style="width:28px;height:28px;border-radius:999px;background:#D4FF3C;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+              <img src="b15948b5-d17f-4d48-8ba2-5d80a0327e0f" alt="Clara" style="width:14px;height:14px;display:block;">
+            </span>
+            <div style="flex:1;font:400 15.5px/25px 'Inter';color:#E6ECF5;padding-top:2px;">Started your brief on the right. Is TypeScript part of the stack, and would Next.js experience matter?</div>
+          </div>
+          <div style="align-self:flex-end;max-width:78%;background:#1B2A45;border-radius:16px 16px 4px 16px;padding:13px 17px;font:400 15px/23px 'Inter';color:#fff;">Both, yes.</div>
+          <div style="display:flex;gap:13px;">
+            <span style="width:28px;height:28px;border-radius:999px;background:#D4FF3C;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+              <img src="b15948b5-d17f-4d48-8ba2-5d80a0327e0f" alt="Clara" style="width:14px;height:14px;display:block;">
+            </span>
+            <div style="flex:1;font:400 15.5px/25px 'Inter';color:#E6ECF5;padding-top:2px;">Added. The Philippines gives you around four hours of London overlap, which suits a live standup. When would you want them starting<span style="color:#D4FF3C;">▍</span></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;padding-left:41px;">
+            <span style="width:5px;height:5px;border-radius:999px;background:#D4FF3C;display:block;"></span>
+            <span style="font:400 12.5px/1 'Inter';color:#7F8CA0;">Brief updated - stack, region</span>
+          </div>
+        </div>
+
+        <div style="flex-shrink:0;padding-bottom:24px;">
+          <div style="background:#0E1A2E;border:1px solid #2b3a56;border-radius:18px;padding:14px 14px 10px;">
+            <div style="font:400 15.5px/1 'Inter';color:#5f6b7d;padding:4px 4px 16px;">Ask Clara...</div>
+            <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;">
+              <span style="width:32px;height:32px;border-radius:999px;border:1px solid #22314D;color:#7F8CA0;display:flex;align-items:center;justify-content:center;font-size:14px;">⎘</span>
+              <span style="display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 13px 0 11px;border-radius:999px;border:1px solid #2c3f33;background:#0F1B12;"><span style="position:relative;width:12px;height:17px;display:block;flex-shrink:0;"><span style="position:absolute;left:2.5px;top:0;width:7px;height:10px;border-radius:999px;background:#D4FF3C;display:block;"></span><span style="position:absolute;left:0;top:6px;width:12px;height:6px;border:1.5px solid #D4FF3C;border-top:none;border-radius:0 0 9px 9px;display:block;"></span><span style="position:absolute;left:5px;top:13px;width:2px;height:4px;background:#D4FF3C;display:block;"></span></span><span style="font:600 12.5px/1 'Inter';color:#D4FF3C;">Talk</span></span>
+              <span style="width:34px;height:34px;border-radius:999px;background:#D4FF3C;color:#060F1E;display:flex;align-items:center;justify-content:center;font-size:14px;">↑</span>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 6px 0;">
+            <span style="font:400 11.5px/1 'Inter';color:#5f6b7d;">Hold Ctrl+D to talk instead of typing</span>
+            <span style="font:600 11.5px/1 'Inter';color:#7F8CA0;">Skip - book a call</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CANVAS: brief (top) + proof strip (bottom) -->
+      <div style="border-left:1px solid #1a2740;background:#0B1424;display:flex;flex-direction:column;min-height:0;">
+        <div style="flex:1;padding:26px 32px;display:flex;flex-direction:column;gap:20px;min-height:0;">
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;">
+            <div>
+              <div style="display:flex;align-items:center;gap:9px;margin-bottom:9px;">
+                <span style="width:6px;height:6px;border-radius:999px;background:#D4FF3C;display:block;"></span>
+                <span style="font:600 10.5px/1 'IBM Plex Mono';letter-spacing:1.4px;text-transform:uppercase;color:#D4FF3C;">Your hiring brief · live</span>
+              </div>
+              <div style="font:600 24px/1.15 'Inter';letter-spacing:-.8px;color:#fff;">One engineer, embedded</div>
+            </div>
+            <div style="width:180px;">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
+                <span style="font:500 11px/1 'Inter';letter-spacing:.6px;text-transform:uppercase;color:#7F8CA0;">Brief strength</span>
+                <span style="font:600 12px/1 'Inter';color:#D4FF3C;">58%</span>
+              </div>
+              <div style="height:5px;border-radius:999px;background:#1B2A45;overflow:hidden;"><div style="height:5px;width:58%;border-radius:999px;background:#D4FF3C;"></div></div>
+            </div>
+          </div>
+
+          <div style="background:#101B30;border:1px solid #2c3f33;border-radius:18px;padding:24px 26px;">
+            <div style="display:flex;gap:20px;align-items:center;margin-bottom:22px;">
+              <div style="width:76px;height:76px;border-radius:18px;background:#16223A;border:1px solid #2c3f33;flex-shrink:0;position:relative;overflow:hidden;">
+                <span style="position:absolute;left:50%;top:18px;width:26px;height:26px;margin-left:-13px;border-radius:999px;background:#D4FF3C;display:block;"></span>
+                <span style="position:absolute;left:50%;top:50px;width:48px;height:34px;margin-left:-24px;border-radius:24px 24px 0 0;background:#D4FF3C;display:block;opacity:.85;"></span>
+              </div>
+              <div style="flex:1;">
+                <div style="font:600 24px/1.15 'Inter';letter-spacing:-.7px;color:#fff;margin-bottom:10px;">Senior React Engineer</div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <span style="background:#D4FF3C;color:#060F1E;font:700 11.5px/1 'Inter';padding:6px 11px;border-radius:999px;">Senior · 5-8 yrs</span>
+                  <span style="font:400 13px/1 'Inter';color:#7F8CA0;">1 hire · full-time</span>
+                </div>
+              </div>
+            </div>
+            <div style="margin-bottom:20px;">
+              <div style="font:500 10px/1 'IBM Plex Mono';letter-spacing:1.2px;text-transform:uppercase;color:#7F8CA0;margin-bottom:10px;">Tech stack</div>
+              <div style="display:flex;flex-wrap:wrap;gap:7px;">
+                <span style="background:#1B2A45;border:1px solid #2c3f33;color:#fff;font:500 12.5px/1 'Inter';padding:8px 12px;border-radius:999px;">React</span>
+                <span style="background:#1B2A45;border:1px solid #2c3f33;color:#fff;font:500 12.5px/1 'Inter';padding:8px 12px;border-radius:999px;">TypeScript</span>
+                <span style="background:#1B2A45;border:1px solid #2c3f33;color:#fff;font:500 12.5px/1 'Inter';padding:8px 12px;border-radius:999px;">Next.js</span>
+                <span style="border:1px dashed #2b3a56;color:#5f6b7d;font:500 12.5px/1 'Inter';padding:8px 12px;border-radius:999px;">testing?</span>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 24px;border-top:1px solid #22314D;padding-top:20px;">
+              <div><div style="font:500 10px/1 'IBM Plex Mono';letter-spacing:1.2px;text-transform:uppercase;color:#7F8CA0;margin-bottom:7px;">Region / overlap</div><div style="font:600 15px/1.3 'Inter';color:#fff;">Philippines · 4h with London</div></div>
+              <div><div style="font:500 10px/1 'IBM Plex Mono';letter-spacing:1.2px;text-transform:uppercase;color:#7F8CA0;margin-bottom:7px;">Team context</div><div style="font:600 15px/1.3 'Inter';color:#fff;">Joins 4-person product team</div></div>
+              <div><div style="font:500 10px/1 'IBM Plex Mono';letter-spacing:1.2px;text-transform:uppercase;color:#7F8CA0;margin-bottom:7px;">Engagement</div><div style="font:600 15px/1.3 'Inter';color:#fff;">Full-time, ongoing</div></div>
+              <div><div style="font:500 10px/1 'IBM Plex Mono';letter-spacing:1.2px;text-transform:uppercase;color:#7F8CA0;margin-bottom:7px;">Timeline</div><div style="display:inline-flex;border:1px dashed #2b3a56;border-radius:9px;padding:5px 11px;font:400 13px/1.3 'Inter';color:#5f6b7d;">Clara will ask next</div></div>
+            </div>
+          </div>
+
+          <div style="margin-top:auto;font:400 12.5px/1.5 'Inter';color:#5f6b7d;">A brief, not a match. A CloudEmployee lead reviews it with you and brings real candidates.</div>
+        </div>
+
+        <!-- proof strip -->
+        <div style="flex-shrink:0;height:190px;border-top:1px solid #1a2740;background:#0E1A2E;position:relative;overflow:hidden;">
+          <div style="position:absolute;inset:0;padding:24px 32px;display:flex;flex-direction:column;justify-content:center;gap:16px;animation:ceRotate 24s ease-in-out infinite;">
+            <span style="font:500 10px/1 'IBM Plex Mono';letter-spacing:1.4px;text-transform:uppercase;color:#D4FF3C;">Client story</span>
+            <div style="font-family:'Source Serif 4';font-style:italic;font-weight:400;font-size:21px;line-height:31px;color:#fff;max-width:560px;">"Our first hire shipped to production in week two. Eighteen months on, he runs the payments squad."</div>
+            <div style="font:400 13px/1 'Inter';color:#7F8CA0;">Kirsty Bell · Head of Engineering, Willo</div>
+          </div>
+          <div style="position:absolute;inset:0;padding:24px 32px;display:flex;flex-direction:column;justify-content:center;gap:16px;animation:ceRotate 24s ease-in-out -8s infinite;">
+            <span style="font:500 10px/1 'IBM Plex Mono';letter-spacing:1.4px;text-transform:uppercase;color:#D4FF3C;">Did you know</span>
+            <div style="font:600 21px/31px 'Inter';letter-spacing:-.6px;color:#fff;max-width:560px;">Senior React engineers in Manila cost roughly a third of London - with the same code review standards.</div>
+            <div style="font:400 13px/1 'Inter';color:#7F8CA0;">Open the live price calculator ›</div>
+          </div>
+          <div style="position:absolute;inset:0;padding:24px 32px;display:flex;flex-direction:column;justify-content:center;gap:16px;animation:ceRotate 24s ease-in-out -16s infinite;">
+            <span style="font:500 10px/1 'IBM Plex Mono';letter-spacing:1.4px;text-transform:uppercase;color:#D4FF3C;">Client story</span>
+            <div style="font-family:'Source Serif 4';font-style:italic;font-weight:400;font-size:21px;line-height:31px;color:#fff;max-width:560px;">"We asked for one React engineer. We kept her, then hired two more from the same team."</div>
+            <div style="font:400 13px/1 'Inter';color:#7F8CA0;">Alex Prentice · CTO, Salmon Software</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <sc-if value="{{ showAnnotations }}" hint-placeholder-val="{{ true }}">
+  <div style="display:flex;gap:26px;margin-top:12px;">
+    <span style="font:400 12px/1.4 'IBM Plex Mono';color:#5b6577;">· no invented headshots - a designed profile mark stands in for the hire</span>
+    <span style="font:400 12px/1.4 'IBM Plex Mono';color:#5b6577;">· proof keeps rotating in the lower strip once the brief takes the top</span>
+  </div>
+  </sc-if>
+</div>
+
+<!-- ================= B4 · STAGE 2 - TEAM HIRE ================= -->
+<div style="position:absolute;left:1560px;top:1000px;width:1440px;">
+  <div style="font:600 12px/1 'Inter';letter-spacing:1.4px;text-transform:uppercase;color:#5b6577;margin-bottom:14px;">S4 · Brief building - team / squad (2+ hires)</div>
+  <div data-screen-label="S4 Brief team" style="height:900px;background:#070D18;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.25);display:flex;flex-direction:column;">
+
+    <div style="height:60px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-bottom:1px solid #1a2740;">
+      <img src="9e62048d-3f85-486f-8c5d-1b5076d77a19" alt="CloudEmployee" style="height:22px;width:auto;display:block;">
+      <a href="#" style="display:inline-flex;align-items:center;gap:9px;background:#D4FF3C;color:#060F1E;border-radius:999px;padding:6px 18px 6px 6px;font:700 14px/1 'Inter';">
+        <span style="width:26px;height:26px;border-radius:999px;background:#060F1E;display:flex;align-items:center;justify-content:center;color:#D4FF3C;font-size:12px;">→</span>Schedule a Call
+      </a>
+    </div>
+
+    <div style="flex:1;display:grid;grid-template-columns:44fr 56fr;min-height:0;position:relative;">
+
+      <div style="position:absolute;left:44%;top:0;bottom:0;width:16px;margin-left:-8px;display:flex;align-items:center;justify-content:center;z-index:3;cursor:col-resize;">
+        <span style="width:3px;height:48px;border-radius:999px;background:#4a586e;display:block;"></span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;min-height:0;padding:0 28px;">
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:20px;padding:28px 0;min-height:0;">
+          <div style="align-self:flex-end;max-width:78%;background:#1B2A45;border-radius:16px 16px 4px 16px;padding:13px 17px;font:400 15px/23px 'Inter';color:#fff;">Actually it's a squad, not one person - two backend, one frontend.</div>
+          <div style="display:flex;gap:13px;">
+            <span style="width:28px;height:28px;border-radius:999px;background:#D4FF3C;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+              <img src="b15948b5-d17f-4d48-8ba2-5d80a0327e0f" alt="Clara" style="width:14px;height:14px;display:block;">
+            </span>
+            <div style="flex:1;font:400 15.5px/25px 'Inter';color:#E6ECF5;padding-top:2px;">Reshaped your brief into a 3-person squad. Node and Postgres on the backend side - does anyone need to own infrastructure, or does your team keep that?</div>
+          </div>
+          <div style="align-self:flex-end;max-width:78%;background:#1B2A45;border-radius:16px 16px 4px 16px;padding:13px 17px;font:400 15px/23px 'Inter';color:#fff;">We keep infra, but AWS familiarity matters. Phased start from September.</div>
+          <div style="display:flex;gap:13px;">
+            <span style="width:28px;height:28px;border-radius:999px;background:#D4FF3C;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+              <img src="b15948b5-d17f-4d48-8ba2-5d80a0327e0f" alt="Clara" style="width:14px;height:14px;display:block;">
+            </span>
+            <div style="flex:1;font:400 15.5px/25px 'Inter';color:#E6ECF5;padding-top:2px;">Noted. Last scope question: do you want QA or platform cover inside the squad, or all three as product engineers<span style="color:#D4FF3C;">▍</span></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;padding-left:41px;">
+            <span style="width:5px;height:5px;border-radius:999px;background:#D4FF3C;display:block;"></span>
+            <span style="font:400 12.5px/1 'Inter';color:#7F8CA0;">Brief updated - headcount 1 → 3, role mix, start</span>
+          </div>
+        </div>
+
+        <div style="flex-shrink:0;padding-bottom:24px;">
+          <div style="background:#0E1A2E;border:1px solid #2b3a56;border-radius:18px;padding:14px 14px 10px;">
+            <div style="font:400 15.5px/1 'Inter';color:#5f6b7d;padding:4px 4px 16px;">Ask Clara...</div>
+            <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;">
+              <span style="width:32px;height:32px;border-radius:999px;border:1px solid #22314D;color:#7F8CA0;display:flex;align-items:center;justify-content:center;font-size:14px;">⎘</span>
+              <span style="display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 13px 0 11px;border-radius:999px;border:1px solid #2c3f33;background:#0F1B12;"><span style="position:relative;width:12px;height:17px;display:block;flex-shrink:0;"><span style="position:absolute;left:2.5px;top:0;width:7px;height:10px;border-radius:999px;background:#D4FF3C;display:block;"></span><span style="position:absolute;left:0;top:6px;width:12px;height:6px;border:1.5px solid #D4FF3C;border-top:none;border-radius:0 0 9px 9px;display:block;"></span><span style="position:absolute;left:5px;top:13px;width:2px;height:4px;background:#D4FF3C;display:block;"></span></span><span style="font:600 12.5px/1 'Inter';color:#D4FF3C;">Talk</span></span>
+              <span style="width:34px;height:34px;border-radius:999px;background:#D4FF3C;color:#060F1E;display:flex;align-items:center;justify-content:center;font-size:14px;">↑</span>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 6px 0;">
+            <span style="font:400 11.5px/1 'Inter';color:#5f6b7d;">Hold Ctrl+D to talk instead of typing</span>
+            <span style="font:600 11.5px/1 'Inter';color:#7F8CA0;">Skip - book a call</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="border-left:1px solid #1a2740;background:#0B1424;display:flex;flex-direction:column;min-height:0;">
+        <div style="flex:1;padding:26px 32px;display:flex;flex-direction:column;gap:18px;min-height:0;">
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;">
+            <div>
+              <div style="display:flex;align-items:center;gap:9px;margin-bottom:9px;">
+                <span style="width:6px;height:6px;border-radius:999px;background:#D4FF3C;display:block;"></span>
+                <span style="font:600 10.5px/1 'IBM Plex Mono';letter-spacing:1.4px;text-transform:uppercase;color:#D4FF3C;">Your hiring brief · live</span>
+              </div>
+              <div style="font:600 24px/1.15 'Inter';letter-spacing:-.8px;color:#fff;">Three engineers, one squad</div>
+            </div>
+            <div style="width:180px;">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
+                <span style="font:500 11px/1 'Inter';letter-spacing:.6px;text-transform:uppercase;color:#7F8CA0;">Brief strength</span>
+                <span style="font:600 12px/1 'Inter';color:#D4FF3C;">74%</span>
+              </div>
+              <div style="height:5px;border-radius:999px;background:#1B2A45;overflow:hidden;"><div style="height:5px;width:74%;border-radius:999px;background:#D4FF3C;"></div></div>
+            </div>
+          </div>
+
+          <div style="background:#101B30;border:1px solid #2c3f33;border-radius:18px;padding:22px 24px;display:flex;align-items:center;gap:22px;">
+            <div style="width:112px;height:64px;flex-shrink:0;position:relative;">
+              <span style="position:absolute;left:0;top:14px;width:38px;height:38px;border-radius:999px;background:#1B2A45;border:2px solid #0B1424;display:block;"></span>
+              <span style="position:absolute;left:26px;top:8px;width:44px;height:44px;border-radius:999px;background:#D4FF3C;border:2px solid #0B1424;display:block;"></span>
+              <span style="position:absolute;left:58px;top:14px;width:38px;height:38px;border-radius:999px;background:#1B2A45;border:2px solid #0B1424;display:block;"></span>
+            </div>
+            <div style="flex:1;">
+              <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:8px;">
+                <span style="font:600 34px/1 'Inter';letter-spacing:-1.4px;color:#fff;">3</span>
+                <span style="font:600 17px/1 'Inter';letter-spacing:-.4px;color:#fff;">engineers</span>
+                <span style="font:400 14px/1 'Inter';color:#7F8CA0;">· 2 backend, 1 frontend</span>
+              </div>
+              <div style="font:400 13.5px/1.4 'Inter';color:#7F8CA0;">Hired as one squad so they onboard together.</div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px;">
+            <div style="background:#101B30;border:1px solid #2c3f33;border-radius:14px;padding:16px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;">
+                <span style="font:600 11px/1 'Inter';letter-spacing:.8px;text-transform:uppercase;color:#D4FF3C;">Backend</span>
+                <span style="font:700 11px/1 'Inter';color:#060F1E;background:#D4FF3C;padding:4px 7px;border-radius:5px;">×2</span>
+              </div>
+              <div style="font:600 15px/1.25 'Inter';color:#fff;margin-bottom:11px;">Mid-senior Node</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                <span style="background:#1B2A45;color:#B8C2D1;font:500 11.5px/1 'Inter';padding:6px 9px;border-radius:999px;">Node.js</span>
+                <span style="background:#1B2A45;color:#B8C2D1;font:500 11.5px/1 'Inter';padding:6px 9px;border-radius:999px;">Postgres</span>
+                <span style="background:#1B2A45;color:#B8C2D1;font:500 11.5px/1 'Inter';padding:6px 9px;border-radius:999px;">AWS</span>
+              </div>
+            </div>
+            <div style="background:#101B30;border:1px solid #2c3f33;border-radius:14px;padding:16px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;">
+                <span style="font:600 11px/1 'Inter';letter-spacing:.8px;text-transform:uppercase;color:#D4FF3C;">Frontend</span>
+                <span style="font:700 11px/1 'Inter';color:#060F1E;background:#D4FF3C;padding:4px 7px;border-radius:5px;">×1</span>
+              </div>
+              <div style="font:600 15px/1.25 'Inter';color:#fff;margin-bottom:11px;">Senior React</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                <span style="background:#1B2A45;color:#B8C2D1;font:500 11.5px/1 'Inter';padding:6px 9px;border-radius:999px;">React</span>
+                <span style="background:#1B2A45;color:#B8C2D1;font:500 11.5px/1 'Inter';padding:6px 9px;border-radius:999px;">TypeScript</span>
+              </div>
+            </div>
+            <div style="border:1px dashed #2b3a56;border-radius:14px;padding:16px;display:flex;flex-direction:column;">
+              <div style="font:600 11px/1 'Inter';letter-spacing:.8px;text-transform:uppercase;color:#5f6b7d;margin-bottom:11px;">QA / DevOps?</div>
+              <div style="font:400 13px/1.4 'Inter';color:#5f6b7d;">Clara is asking whether the squad needs test or platform cover.</div>
+              <div style="margin-top:auto;font:500 10px/1 'IBM Plex Mono';letter-spacing:.6px;color:#3f4a5c;">awaiting signal</div>
+            </div>
+          </div>
+
+          <div style="background:#101B30;border:1px solid #22314D;border-radius:14px;padding:18px 20px;display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:20px;">
+            <div>
+              <div style="font:500 10px/1 'IBM Plex Mono';letter-spacing:1.2px;text-transform:uppercase;color:#7F8CA0;margin-bottom:9px;">Shared stack</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                <span style="background:#1B2A45;border:1px solid #2c3f33;color:#fff;font:500 12px/1 'Inter';padding:7px 11px;border-radius:999px;">TypeScript</span>
+                <span style="background:#1B2A45;border:1px solid #2c3f33;color:#fff;font:500 12px/1 'Inter';padding:7px 11px;border-radius:999px;">GitHub Actions</span>
+              </div>
+            </div>
+            <div><div style="font:500 10px/1 'IBM Plex Mono';letter-spacing:1.2px;text-transform:uppercase;color:#7F8CA0;margin-bottom:9px;">Regions</div><div style="font:600 14.5px/1.35 'Inter';color:#fff;">PH + Eastern Europe</div></div>
+            <div><div style="font:500 10px/1 'IBM Plex Mono';letter-spacing:1.2px;text-transform:uppercase;color:#7F8CA0;margin-bottom:9px;">Start</div><div style="font:600 14.5px/1.35 'Inter';color:#fff;">Phased, September</div></div>
+          </div>
+        </div>
+
+        <div style="flex-shrink:0;height:170px;border-top:1px solid #1a2740;background:#0E1A2E;position:relative;overflow:hidden;">
+          <div style="position:absolute;inset:0;padding:22px 32px;display:flex;flex-direction:column;justify-content:center;gap:14px;animation:ceRotate 24s ease-in-out infinite;">
+            <span style="font:500 10px/1 'IBM Plex Mono';letter-spacing:1.4px;text-transform:uppercase;color:#D4FF3C;">Client story</span>
+            <div style="font-family:'Source Serif 4';font-style:italic;font-weight:400;font-size:20px;line-height:30px;color:#fff;max-width:560px;">"They built us a four-person squad in seven weeks. Our own UK hiring took five months for one role."</div>
+            <div style="font:400 13px/1 'Inter';color:#7F8CA0;">Dan Merrow · Founder, Event Connections</div>
+          </div>
+          <div style="position:absolute;inset:0;padding:22px 32px;display:flex;flex-direction:column;justify-content:center;gap:14px;animation:ceRotate 24s ease-in-out -12s infinite;">
+            <span style="font:500 10px/1 'IBM Plex Mono';letter-spacing:1.4px;text-transform:uppercase;color:#D4FF3C;">Did you know</span>
+            <div style="font:600 20px/30px 'Inter';letter-spacing:-.5px;color:#fff;max-width:560px;">Squads that onboard together in the same timezone reach full velocity roughly twice as fast as staggered hires.</div>
+            <div style="font:400 13px/1 'Inter';color:#7F8CA0;">From 400+ placements across PH, EE and LATAM</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <sc-if value="{{ showAnnotations }}" hint-placeholder-val="{{ true }}">
+  <div style="margin-top:12px;font:400 12px/1.4 'IBM Plex Mono';color:#5b6577;">· multiple hires read as one grouped profile mark, never as fake individual people</div>
+  </sc-if>
+</div>
+
+<!-- ================= S6 · BRIEF READY ================= -->
+<div style="position:absolute;left:1560px;top:2000px;width:1440px;">
+  <div style="font:600 12px/1 'Inter';letter-spacing:1.4px;text-transform:uppercase;color:#5b6577;margin-bottom:14px;">S6 · Brief ready - Schedule a Call emphasised</div>
+  <div data-screen-label="S6 Brief ready" style="height:900px;background:#070D18;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.25);display:flex;flex-direction:column;">
+
+    <div style="height:60px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-bottom:1px solid #1a2740;">
+      <img src="9e62048d-3f85-486f-8c5d-1b5076d77a19" alt="CloudEmployee" style="height:22px;width:auto;display:block;">
+      <a href="#" style="display:inline-flex;align-items:center;gap:9px;background:#D4FF3C;color:#060F1E;border-radius:999px;padding:6px 18px 6px 6px;font:700 14px/1 'Inter';box-shadow:0 0 0 4px rgba(212,255,60,.14);">
+        <span style="width:26px;height:26px;border-radius:999px;background:#060F1E;display:flex;align-items:center;justify-content:center;color:#D4FF3C;font-size:12px;">→</span>Schedule a Call
+      </a>
+    </div>
+
+    <div style="flex:1;display:grid;grid-template-columns:44fr 56fr;min-height:0;position:relative;">
+
+      <div style="position:absolute;left:44%;top:0;bottom:0;width:16px;margin-left:-8px;display:flex;align-items:center;justify-content:center;z-index:3;cursor:col-resize;">
+        <span style="width:3px;height:48px;border-radius:999px;background:#4a586e;display:block;"></span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;min-height:0;padding:0 28px;">
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:20px;padding:28px 0;min-height:0;">
+          <div style="align-self:flex-end;max-width:78%;background:#1B2A45;border-radius:16px 16px 4px 16px;padding:13px 17px;font:400 15px/23px 'Inter';color:#fff;">Within six weeks ideally. And Playwright for tests.</div>
+          <div style="display:flex;gap:13px;">
+            <span style="width:28px;height:28px;border-radius:999px;background:#D4FF3C;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+              <img src="b15948b5-d17f-4d48-8ba2-5d80a0327e0f" alt="Clara" style="width:14px;height:14px;display:block;">
+            </span>
+            <div style="flex:1;font:400 15.5px/25px 'Inter';color:#E6ECF5;padding-top:2px;">That's everything I need. Your brief is strong enough for a matching conversation - a CloudEmployee lead will bring real candidate options and walk through cost.</div>
+          </div>
+          <div style="margin-left:41px;background:#0F1B12;border:1px solid #2c3f33;border-radius:16px;padding:18px 20px;">
+            <div style="font:600 15px/1.35 'Inter';color:#fff;margin-bottom:6px;">Book 30 minutes to review your brief</div>
+            <div style="font:400 13.5px/20px 'Inter';color:#B8C2D1;margin-bottom:14px;">Your brief comes with you - no forms, no repeating yourself.</div>
+            <a href="#" style="display:inline-flex;align-items:center;gap:9px;background:#D4FF3C;color:#060F1E;border-radius:999px;padding:7px 18px 7px 7px;font:700 14px/1 'Inter';">
+              <span style="width:28px;height:28px;border-radius:999px;background:#060F1E;display:flex;align-items:center;justify-content:center;color:#D4FF3C;font-size:12px;">→</span>Schedule a Call
+            </a>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;padding-left:41px;">
+            <span style="border:1px solid #22314D;color:#B8C2D1;font:500 12.5px/1 'Inter';padding:9px 13px;border-radius:999px;">Add a second role</span>
+            <span style="border:1px solid #22314D;color:#B8C2D1;font:500 12.5px/1 'Inter';padding:9px 13px;border-radius:999px;">Change region</span>
+            <span style="border:1px solid #22314D;color:#B8C2D1;font:500 12.5px/1 'Inter';padding:9px 13px;border-radius:999px;">What does this cost?</span>
+          </div>
+        </div>
+
+        <div style="flex-shrink:0;padding-bottom:24px;">
+          <div style="background:#0E1A2E;border:1px solid #2b3a56;border-radius:18px;padding:14px 14px 10px;">
+            <div style="font:400 15.5px/1 'Inter';color:#5f6b7d;padding:4px 4px 16px;">Ask Clara...</div>
+            <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;">
+              <span style="width:32px;height:32px;border-radius:999px;border:1px solid #22314D;color:#7F8CA0;display:flex;align-items:center;justify-content:center;font-size:14px;">⎘</span>
+              <span style="display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 13px 0 11px;border-radius:999px;border:1px solid #2c3f33;background:#0F1B12;"><span style="position:relative;width:12px;height:17px;display:block;flex-shrink:0;"><span style="position:absolute;left:2.5px;top:0;width:7px;height:10px;border-radius:999px;background:#D4FF3C;display:block;"></span><span style="position:absolute;left:0;top:6px;width:12px;height:6px;border:1.5px solid #D4FF3C;border-top:none;border-radius:0 0 9px 9px;display:block;"></span><span style="position:absolute;left:5px;top:13px;width:2px;height:4px;background:#D4FF3C;display:block;"></span></span><span style="font:600 12.5px/1 'Inter';color:#D4FF3C;">Talk</span></span>
+              <span style="width:34px;height:34px;border-radius:999px;background:#D4FF3C;color:#060F1E;display:flex;align-items:center;justify-content:center;font-size:14px;">↑</span>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 6px 0;">
+            <span style="font:400 11.5px/1 'Inter';color:#5f6b7d;">Hold Ctrl+D to talk instead of typing</span>
+            <span style="font:600 11.5px/1 'Inter';color:#7F8CA0;">Brief saved to this session</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="border-left:1px solid #1a2740;background:radial-gradient(120% 90% at 100% 0%,#101f1a 0%,#0B1424 62%);display:flex;flex-direction:column;min-height:0;padding:26px 32px 30px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+          <div style="display:flex;align-items:center;gap:9px;">
+            <span style="width:17px;height:17px;border-radius:999px;background:#D4FF3C;color:#060F1E;font:700 9.5px/1 'Inter';display:flex;align-items:center;justify-content:center;">✓</span>
+            <span style="font:600 10.5px/1 'IBM Plex Mono';letter-spacing:1.4px;text-transform:uppercase;color:#D4FF3C;">Brief ready to review</span>
+          </div>
+          <span style="font:500 12px/1 'Inter';color:#7F8CA0;">Brief strength 96%</span>
+        </div>
+
+        <div style="margin-top:20px;background:#101B30;border:1px solid #2c3f33;border-radius:18px;padding:24px 26px;">
+          <div style="display:flex;gap:20px;align-items:center;margin-bottom:22px;">
+            <div style="width:72px;height:72px;border-radius:18px;background:#16223A;border:1px solid #2c3f33;flex-shrink:0;position:relative;overflow:hidden;">
+              <span style="position:absolute;left:50%;top:16px;width:24px;height:24px;margin-left:-12px;border-radius:999px;background:#D4FF3C;display:block;"></span>
+              <span style="position:absolute;left:50%;top:46px;width:46px;height:32px;margin-left:-23px;border-radius:23px 23px 0 0;background:#D4FF3C;display:block;opacity:.85;"></span>
+            </div>
+            <div>
+              <div style="font:600 23px/1.15 'Inter';letter-spacing:-.7px;color:#fff;margin-bottom:9px;">Senior React Engineer</div>
+              <div style="font:400 14px/1 'Inter';color:#7F8CA0;">1 hire · full-time · Philippines · start within 6 weeks</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px 22px;border-top:1px solid #22314D;padding-top:20px;">
+            <div><div style="font:500 10px/1 'IBM Plex Mono';letter-spacing:1.2px;text-transform:uppercase;color:#7F8CA0;margin-bottom:7px;">Seniority</div><div style="font:600 14.5px/1.3 'Inter';color:#fff;">Senior, 5-8 yrs</div></div>
+            <div><div style="font:500 10px/1 'IBM Plex Mono';letter-spacing:1.2px;text-transform:uppercase;color:#7F8CA0;margin-bottom:7px;">Overlap</div><div style="font:600 14.5px/1.3 'Inter';color:#fff;">4h with London</div></div>
+            <div><div style="font:500 10px/1 'IBM Plex Mono';letter-spacing:1.2px;text-transform:uppercase;color:#7F8CA0;margin-bottom:7px;">Team context</div><div style="font:600 14.5px/1.3 'Inter';color:#fff;">4-person product team</div></div>
+          </div>
+          <div style="border-top:1px solid #22314D;margin-top:18px;padding-top:18px;">
+            <div style="font:500 10px/1 'IBM Plex Mono';letter-spacing:1.2px;text-transform:uppercase;color:#7F8CA0;margin-bottom:10px;">Tech stack</div>
+            <div style="display:flex;flex-wrap:wrap;gap:7px;">
+              <span style="background:#1B2A45;border:1px solid #2c3f33;color:#fff;font:500 12.5px/1 'Inter';padding:8px 12px;border-radius:999px;">React</span>
+              <span style="background:#1B2A45;border:1px solid #2c3f33;color:#fff;font:500 12.5px/1 'Inter';padding:8px 12px;border-radius:999px;">TypeScript</span>
+              <span style="background:#1B2A45;border:1px solid #2c3f33;color:#fff;font:500 12.5px/1 'Inter';padding:8px 12px;border-radius:999px;">Next.js</span>
+              <span style="background:#1B2A45;border:1px solid #2c3f33;color:#fff;font:500 12.5px/1 'Inter';padding:8px 12px;border-radius:999px;">GraphQL</span>
+              <span style="background:#1B2A45;border:1px solid #2c3f33;color:#fff;font:500 12.5px/1 'Inter';padding:8px 12px;border-radius:999px;">Playwright</span>
+            </div>
+          </div>
+          <div style="border-top:1px solid #22314D;margin-top:18px;padding-top:18px;">
+            <div style="font:500 10px/1 'IBM Plex Mono';letter-spacing:1.2px;text-transform:uppercase;color:#7F8CA0;margin-bottom:8px;">Goal, in your words</div>
+            <div style="font:400 14.5px/23px 'Inter';color:#B8C2D1;max-width:600px;">"Ship the customer portal rewrite without pulling the London team off roadmap work."</div>
+          </div>
+        </div>
+
+        <div style="margin-top:auto;background:#0F1B12;border:1px solid #D4FF3C;border-radius:18px;padding:22px 24px;display:flex;align-items:center;gap:24px;">
+          <div style="flex:1;">
+            <div style="font:600 20px/1.25 'Inter';letter-spacing:-.6px;color:#fff;margin-bottom:7px;">Ready to review this with a human</div>
+            <div style="font:400 13.5px/20px 'Inter';color:#B8C2D1;max-width:380px;">30 minutes, no obligation. We bring candidates that match this brief.</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px;">
+            <a href="#" style="display:inline-flex;align-items:center;gap:11px;background:#D4FF3C;color:#060F1E;border-radius:999px;padding:9px 24px 9px 9px;font:700 15.5px/1 'Inter';white-space:nowrap;">
+              <span style="width:34px;height:34px;border-radius:999px;background:#060F1E;display:flex;align-items:center;justify-content:center;color:#D4FF3C;font-size:14px;">→</span>Schedule a Call
+            </a>
+            <span style="font:500 12.5px/1 'Inter';color:#7F8CA0;">or keep refining in chat</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <sc-if value="{{ showAnnotations }}" hint-placeholder-val="{{ true }}">
+  <div style="margin-top:12px;font:400 12px/1.4 'IBM Plex Mono';color:#5b6577;">· identity captured at book/save only · copy never claims a matched engineer</div>
+  </sc-if>
+</div>
+
+<!-- ================= MOBILE ================= -->
+<div style="position:absolute;left:3120px;top:0px;width:390px;">
+  <div style="font:600 12px/1 'Inter';letter-spacing:1.4px;text-transform:uppercase;color:#5b6577;margin-bottom:14px;">S9 · Mobile - discovery + voice</div>
+  <div data-screen-label="S9 Mobile discovery" style="height:844px;background:#070D18;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;">
+    <div style="height:54px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid #1a2740;">
+      <img src="9e62048d-3f85-486f-8c5d-1b5076d77a19" alt="CloudEmployee" style="height:19px;width:auto;display:block;">
+      <a href="#" style="display:inline-flex;align-items:center;gap:7px;background:#D4FF3C;color:#060F1E;border-radius:999px;padding:5px 13px 5px 5px;font:700 12.5px/1 'Inter';">
+        <span style="width:22px;height:22px;border-radius:999px;background:#060F1E;display:flex;align-items:center;justify-content:center;color:#D4FF3C;font-size:10px;">→</span>Book a call
+      </a>
+    </div>
+
+    <div style="flex-shrink:0;margin:12px 12px 0;background:#0E1A2E;border:1px solid #1a2740;border-radius:14px;padding:16px;position:relative;height:118px;overflow:hidden;">
+      <div style="position:absolute;inset:0;padding:16px;display:flex;flex-direction:column;justify-content:center;gap:10px;animation:ceRotate 24s ease-in-out infinite;">
+        <span style="font:500 9.5px/1 'IBM Plex Mono';letter-spacing:1.3px;text-transform:uppercase;color:#D4FF3C;">Client story</span>
+        <div style="font-family:'Source Serif 4';font-style:italic;font-weight:400;font-size:15px;line-height:23px;color:#fff;">"Our first hire shipped to production in week two."</div>
+        <div style="font:400 11.5px/1 'Inter';color:#7F8CA0;">Kirsty Bell · Willo</div>
+      </div>
+      <div style="position:absolute;inset:0;padding:16px;display:flex;flex-direction:column;justify-content:center;gap:10px;animation:ceRotate 24s ease-in-out -12s infinite;">
+        <span style="font:500 9.5px/1 'IBM Plex Mono';letter-spacing:1.3px;text-transform:uppercase;color:#D4FF3C;">Did you know</span>
+        <div style="font:600 15px/23px 'Inter';color:#fff;">Only 4.1% of applicants clear our vetting.</div>
+        <div style="font:400 11.5px/1 'Inter';color:#7F8CA0;">Five stages, including psychometrics</div>
+      </div>
+    </div>
+
+    <div style="flex:1;padding:16px 14px;display:flex;flex-direction:column;justify-content:flex-end;gap:16px;min-height:0;overflow:hidden;">
+      <div style="display:flex;gap:11px;">
+        <span style="width:24px;height:24px;border-radius:999px;background:#D4FF3C;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+          <img src="b15948b5-d17f-4d48-8ba2-5d80a0327e0f" alt="Clara" style="width:12px;height:12px;display:block;">
+        </span>
+        <div style="flex:1;font:400 14.5px/23px 'Inter';color:#E6ECF5;">Tell me who you're hiring - or just talk, I'll write it down.</div>
+      </div>
+      <div style="align-self:flex-end;max-width:80%;border:1px dashed #2c3f33;border-radius:14px 14px 4px 14px;padding:12px 15px;font:400 14.5px/22px 'Inter';color:#B8C2D1;">One senior React dev working with our London team<span style="color:#D4FF3C;">▍</span></div>
+    </div>
+
+    <div style="flex-shrink:0;padding:12px 12px 18px;">
+      <div style="background:#0F1B12;border:1px solid #D4FF3C;border-radius:16px;padding:14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div style="display:flex;align-items:center;gap:9px;">
+            <span style="width:7px;height:7px;border-radius:999px;background:#D4FF3C;display:block;animation:cePulse 1.4s ease-in-out infinite;"></span>
+            <span style="font:600 12px/1 'Inter';color:#D4FF3C;">Transcribing as you speak</span>
+          </div>
+          <span style="font:500 12px/1 'IBM Plex Mono';color:#7F8CA0;">0:09</span>
+        </div>
+        <div style="height:32px;display:flex;align-items:center;margin-bottom:12px;">{{ waveform }}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <span style="font:400 13px/1 'Inter';color:#B8C2D1;">Tap to stop</span>
+          <span style="width:34px;height:34px;border-radius:999px;background:#D4FF3C;color:#060F1E;display:flex;align-items:center;justify-content:center;font-size:13px;">■</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <sc-if value="{{ showAnnotations }}" hint-placeholder-val="{{ true }}">
+  <div style="margin-top:12px;font:400 12px/1.5 'IBM Plex Mono';color:#5b6577;max-width:390px;">· proof card sits above the thread on mobile; it is replaced by the brief card once signals arrive</div>
+  </sc-if>
+</div>
+
+<div style="position:absolute;left:3600px;top:0px;width:390px;">
+  <div style="font:600 12px/1 'Inter';letter-spacing:1.4px;text-transform:uppercase;color:#5b6577;margin-bottom:14px;">S10 · Mobile - brief building</div>
+  <div data-screen-label="S10 Mobile brief" style="height:844px;background:#070D18;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;">
+    <div style="height:54px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid #1a2740;">
+      <img src="9e62048d-3f85-486f-8c5d-1b5076d77a19" alt="CloudEmployee" style="height:19px;width:auto;display:block;">
+      <a href="#" style="display:inline-flex;align-items:center;gap:7px;background:#D4FF3C;color:#060F1E;border-radius:999px;padding:5px 13px 5px 5px;font:700 12.5px/1 'Inter';">
+        <span style="width:22px;height:22px;border-radius:999px;background:#060F1E;display:flex;align-items:center;justify-content:center;color:#D4FF3C;font-size:10px;">→</span>Book a call
+      </a>
+    </div>
+
+    <div style="flex-shrink:0;margin:12px 12px 0;background:#101B30;border:1px solid #2c3f33;border-radius:16px;padding:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="width:6px;height:6px;border-radius:999px;background:#D4FF3C;display:block;"></span>
+          <span style="font:600 10px/1 'IBM Plex Mono';letter-spacing:1.3px;text-transform:uppercase;color:#D4FF3C;">Your hiring brief</span>
+        </div>
+        <span style="font:500 11.5px/1 'Inter';color:#7F8CA0;">Expand ⌃</span>
+      </div>
+      <div style="display:flex;gap:14px;align-items:center;margin-bottom:14px;">
+        <div style="width:52px;height:52px;border-radius:14px;background:#16223A;border:1px solid #2c3f33;flex-shrink:0;position:relative;overflow:hidden;">
+          <span style="position:absolute;left:50%;top:11px;width:18px;height:18px;margin-left:-9px;border-radius:999px;background:#D4FF3C;display:block;"></span>
+          <span style="position:absolute;left:50%;top:33px;width:34px;height:24px;margin-left:-17px;border-radius:17px 17px 0 0;background:#D4FF3C;display:block;opacity:.85;"></span>
+        </div>
+        <div>
+          <div style="font:600 17px/1.2 'Inter';letter-spacing:-.4px;color:#fff;margin-bottom:5px;">Senior React Engineer</div>
+          <div style="font:400 12.5px/1 'Inter';color:#7F8CA0;">1 hire · full-time · PH</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;">
+        <span style="background:#1B2A45;border:1px solid #2c3f33;color:#fff;font:500 11.5px/1 'Inter';padding:7px 10px;border-radius:999px;">React</span>
+        <span style="background:#1B2A45;border:1px solid #2c3f33;color:#fff;font:500 11.5px/1 'Inter';padding:7px 10px;border-radius:999px;">TypeScript</span>
+        <span style="border:1px dashed #2b3a56;color:#5f6b7d;font:500 11.5px/1 'Inter';padding:7px 10px;border-radius:999px;">timeline?</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="flex:1;height:5px;border-radius:999px;background:#1B2A45;overflow:hidden;"><div style="height:5px;width:58%;border-radius:999px;background:#D4FF3C;"></div></div>
+        <span style="font:500 11px/1 'Inter';color:#7F8CA0;">58%</span>
+      </div>
+    </div>
+
+    <div style="flex:1;padding:16px 14px;display:flex;flex-direction:column;justify-content:flex-end;gap:14px;min-height:0;overflow:hidden;">
+      <div style="align-self:flex-end;max-width:80%;background:#1B2A45;border-radius:14px 14px 4px 14px;padding:12px 15px;font:400 14.5px/22px 'Inter';color:#fff;">Working with our London team.</div>
+      <div style="display:flex;gap:11px;">
+        <span style="width:24px;height:24px;border-radius:999px;background:#D4FF3C;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+          <img src="b15948b5-d17f-4d48-8ba2-5d80a0327e0f" alt="Clara" style="width:12px;height:12px;display:block;">
+        </span>
+        <div style="flex:1;font:400 14.5px/23px 'Inter';color:#E6ECF5;">Added - Manila gives you about four hours of London overlap. When would they start<span style="color:#D4FF3C;">▍</span></div>
+      </div>
+    </div>
+
+    <div style="flex-shrink:0;padding:12px 12px 18px;">
+      <div style="background:#0E1A2E;border:1px solid #2b3a56;border-radius:16px;padding:12px 12px 9px;">
+        <div style="font:400 14.5px/1 'Inter';color:#5f6b7d;padding:3px 3px 13px;">Ask Clara...</div>
+        <div style="display:flex;align-items:center;justify-content:flex-end;gap:9px;">
+          <span style="width:30px;height:30px;border-radius:999px;border:1px solid #22314D;color:#7F8CA0;display:flex;align-items:center;justify-content:center;font-size:13px;">⎘</span>
+          <span style="display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 12px 0 10px;border-radius:999px;border:1px solid #2c3f33;background:#0F1B12;"><span style="position:relative;width:11px;height:16px;display:block;flex-shrink:0;"><span style="position:absolute;left:2px;top:0;width:7px;height:9px;border-radius:999px;background:#D4FF3C;display:block;"></span><span style="position:absolute;left:0;top:5.5px;width:11px;height:6px;border:1.5px solid #D4FF3C;border-top:none;border-radius:0 0 8px 8px;display:block;"></span><span style="position:absolute;left:4.5px;top:12px;width:2px;height:4px;background:#D4FF3C;display:block;"></span></span><span style="font:600 12px/1 'Inter';color:#D4FF3C;">Talk</span></span>
+          <span style="width:32px;height:32px;border-radius:999px;background:#D4FF3C;color:#060F1E;display:flex;align-items:center;justify-content:center;font-size:13px;">↑</span>
+        </div>
+      </div>
+      <div style="font:400 11px/1 'Inter';color:#5f6b7d;padding:9px 4px 0;">Hold the mic to talk instead of typing</div>
+    </div>
+  </div>
+  <sc-if value="{{ showAnnotations }}" hint-placeholder-val="{{ true }}">
+  <div style="margin-top:12px;font:400 12px/1.5 'IBM Plex Mono';color:#5b6577;max-width:390px;">· brief card replaces the proof card and stays pinned above the thread</div>
+  </sc-if>
+</div>
+
+<!-- ================= S5 · PRODUCT / MVP BRIEF ================= -->
+<div style="position:absolute;left:0px;top:2000px;width:1440px;">
+  <div style="font:600 12px/1 'Inter';letter-spacing:1.4px;text-transform:uppercase;color:#5b6577;margin-bottom:14px;">S5 · Brief building - product / MVP (no role named)</div>
+  <div data-screen-label="S5 Brief product build" style="height:900px;background:#070D18;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.25);display:flex;flex-direction:column;">
+
+    <div style="height:60px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-bottom:1px solid #1a2740;">
+      <img src="9e62048d-3f85-486f-8c5d-1b5076d77a19" alt="CloudEmployee" style="height:22px;width:auto;display:block;">
+      <a href="#" style="display:inline-flex;align-items:center;gap:9px;background:#D4FF3C;color:#060F1E;border-radius:999px;padding:6px 18px 6px 6px;font:700 14px/1 'Inter';">
+        <span style="width:26px;height:26px;border-radius:999px;background:#060F1E;display:flex;align-items:center;justify-content:center;color:#D4FF3C;font-size:12px;">→</span>Schedule a Call
+      </a>
+    </div>
+
+    <div style="flex:1;display:grid;grid-template-columns:44fr 56fr;min-height:0;position:relative;">
+
+      <div style="position:absolute;left:44%;top:0;bottom:0;width:16px;margin-left:-8px;display:flex;align-items:center;justify-content:center;z-index:3;cursor:col-resize;">
+        <span style="width:3px;height:48px;border-radius:999px;background:#4a586e;display:block;"></span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;min-height:0;padding:0 28px;">
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:20px;padding:28px 0;min-height:0;">
+          <div style="align-self:flex-end;max-width:78%;background:#1B2A45;border-radius:16px 16px 4px 16px;padding:13px 17px;font:400 15px/23px 'Inter';color:#fff;">Honestly I don't know what roles I need. I just need an MVP built - a booking app for clinics.</div>
+          <div style="display:flex;gap:13px;">
+            <span style="width:28px;height:28px;border-radius:999px;background:#D4FF3C;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+              <img src="b15948b5-d17f-4d48-8ba2-5d80a0327e0f" alt="Clara" style="width:14px;height:14px;display:block;">
+            </span>
+            <div style="flex:1;font:400 15.5px/25px 'Inter';color:#E6ECF5;padding-top:2px;">Then let's brief the product, not the roles - I'll suggest the team shape at the end. What does version one absolutely have to do on day one?</div>
+          </div>
+          <div style="align-self:flex-end;max-width:78%;background:#1B2A45;border-radius:16px 16px 4px 16px;padding:13px 17px;font:400 15px/23px 'Inter';color:#fff;">Patients book and reschedule, clinics manage availability, Stripe payments, and it has to survive a data audit.</div>
+          <div style="display:flex;gap:13px;">
+            <span style="width:28px;height:28px;border-radius:999px;background:#D4FF3C;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+              <img src="b15948b5-d17f-4d48-8ba2-5d80a0327e0f" alt="Clara" style="width:14px;height:14px;display:block;">
+            </span>
+            <div style="flex:1;font:400 15.5px/25px 'Inter';color:#E6ECF5;padding-top:2px;">Captured. Data audit usually means UK hosting and an audit trail - I've flagged both. Is there a date this has to be live by<span style="color:#D4FF3C;">▍</span></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;padding-left:41px;">
+            <span style="width:5px;height:5px;border-radius:999px;background:#D4FF3C;display:block;"></span>
+            <span style="font:400 12.5px/1 'Inter';color:#7F8CA0;">Brief updated - scope, payments, compliance, suggested pod</span>
+          </div>
+        </div>
+
+        <div style="flex-shrink:0;padding-bottom:24px;">
+          <div style="background:#0E1A2E;border:1px solid #2b3a56;border-radius:18px;padding:14px 14px 10px;overflow:hidden;">
+            <div style="font:400 15.5px/1 'Inter';color:#5f6b7d;padding:4px 4px 16px;">Ask Clara...</div>
+            <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;">
+              <span style="width:32px;height:32px;border-radius:999px;border:1px solid #22314D;color:#7F8CA0;display:flex;align-items:center;justify-content:center;font-size:14px;">⎘</span>
+              <span style="display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 13px 0 11px;border-radius:999px;border:1px solid #2c3f33;background:#0F1B12;"><span style="position:relative;width:12px;height:17px;display:block;flex-shrink:0;"><span style="position:absolute;left:2.5px;top:0;width:7px;height:10px;border-radius:999px;background:#D4FF3C;display:block;"></span><span style="position:absolute;left:0;top:6px;width:12px;height:6px;border:1.5px solid #D4FF3C;border-top:none;border-radius:0 0 9px 9px;display:block;"></span><span style="position:absolute;left:5px;top:13px;width:2px;height:4px;background:#D4FF3C;display:block;"></span></span><span style="font:600 12.5px/1 'Inter';color:#D4FF3C;">Talk</span></span>
+              <span style="width:34px;height:34px;border-radius:999px;background:#D4FF3C;color:#060F1E;display:flex;align-items:center;justify-content:center;font-size:14px;">↑</span>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 6px 0;">
+            <span style="font:400 11.5px/1 'Inter';color:#5f6b7d;">Hold Ctrl+D to talk instead of typing</span>
+            <span style="font:600 11.5px/1 'Inter';color:#7F8CA0;">Skip - book a call</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="border-left:1px solid #1a2740;background:#0B1424;display:flex;flex-direction:column;min-height:0;">
+        <div style="flex:1;padding:26px 32px;display:flex;flex-direction:column;gap:16px;min-height:0;">
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;">
+            <div>
+              <div style="display:flex;align-items:center;gap:9px;margin-bottom:9px;">
+                <span style="width:6px;height:6px;border-radius:999px;background:#D4FF3C;display:block;"></span>
+                <span style="font:600 10.5px/1 'IBM Plex Mono';letter-spacing:1.4px;text-transform:uppercase;color:#D4FF3C;">Your product brief · live</span>
+              </div>
+              <div style="font:600 24px/1.15 'Inter';letter-spacing:-.8px;color:#fff;">Clinic booking MVP</div>
+            </div>
+            <div style="width:180px;">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
+                <span style="font:500 11px/1 'Inter';letter-spacing:.6px;text-transform:uppercase;color:#7F8CA0;">Brief strength</span>
+                <span style="font:600 12px/1 'Inter';color:#D4FF3C;">67%</span>
+              </div>
+              <div style="height:5px;border-radius:999px;background:#1B2A45;overflow:hidden;"><div style="height:5px;width:67%;border-radius:999px;background:#D4FF3C;"></div></div>
+            </div>
+          </div>
+
+          <div style="background:#101B30;border:1px solid #2c3f33;border-radius:16px;padding:20px 22px;">
+            <div style="font:500 10px/1 'IBM Plex Mono';letter-spacing:1.2px;text-transform:uppercase;color:#7F8CA0;margin-bottom:12px;">Must-haves for v1</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <div style="display:flex;align-items:center;gap:10px;background:#16223A;border-radius:10px;padding:11px 13px;"><span style="width:16px;height:16px;border-radius:999px;background:#D4FF3C;color:#060F1E;font:700 9px/1 'Inter';display:flex;align-items:center;justify-content:center;flex-shrink:0;">✓</span><span style="font:500 13.5px/1.3 'Inter';color:#fff;">Patient booking + reschedule</span></div>
+              <div style="display:flex;align-items:center;gap:10px;background:#16223A;border-radius:10px;padding:11px 13px;"><span style="width:16px;height:16px;border-radius:999px;background:#D4FF3C;color:#060F1E;font:700 9px/1 'Inter';display:flex;align-items:center;justify-content:center;flex-shrink:0;">✓</span><span style="font:500 13.5px/1.3 'Inter';color:#fff;">Clinic availability management</span></div>
+              <div style="display:flex;align-items:center;gap:10px;background:#16223A;border-radius:10px;padding:11px 13px;"><span style="width:16px;height:16px;border-radius:999px;background:#D4FF3C;color:#060F1E;font:700 9px/1 'Inter';display:flex;align-items:center;justify-content:center;flex-shrink:0;">✓</span><span style="font:500 13.5px/1.3 'Inter';color:#fff;">Stripe payments + refunds</span></div>
+              <div style="display:flex;align-items:center;gap:10px;border:1px dashed #2b3a56;border-radius:10px;padding:11px 13px;"><span style="width:16px;height:16px;border-radius:999px;border:1px dashed #2b3a56;flex-shrink:0;display:block;"></span><span style="font:500 13.5px/1.3 'Inter';color:#5f6b7d;">Notifications - email only, or SMS?</span></div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px;">
+            <div style="background:#101B30;border:1px solid #22314D;border-radius:14px;padding:16px 18px;">
+              <div style="font:500 10px/1 'IBM Plex Mono';letter-spacing:1.2px;text-transform:uppercase;color:#7F8CA0;margin-bottom:11px;">Compliance flags</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                <span style="background:#1B2A45;border:1px solid #2c3f33;color:#fff;font:500 12px/1 'Inter';padding:7px 11px;border-radius:999px;">UK data hosting</span>
+                <span style="background:#1B2A45;border:1px solid #2c3f33;color:#fff;font:500 12px/1 'Inter';padding:7px 11px;border-radius:999px;">Audit trail</span>
+                <span style="border:1px dashed #2b3a56;color:#5f6b7d;font:500 12px/1 'Inter';padding:7px 11px;border-radius:999px;">DPIA?</span>
+              </div>
+            </div>
+            <div style="background:#101B30;border:1px solid #22314D;border-radius:14px;padding:16px 18px;">
+              <div style="font:500 10px/1 'IBM Plex Mono';letter-spacing:1.2px;text-transform:uppercase;color:#7F8CA0;margin-bottom:11px;">Suggested stack</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                <span style="background:#1B2A45;border:1px solid #2c3f33;color:#fff;font:500 12px/1 'Inter';padding:7px 11px;border-radius:999px;">Next.js</span>
+                <span style="background:#1B2A45;border:1px solid #2c3f33;color:#fff;font:500 12px/1 'Inter';padding:7px 11px;border-radius:999px;">Node</span>
+                <span style="background:#1B2A45;border:1px solid #2c3f33;color:#fff;font:500 12px/1 'Inter';padding:7px 11px;border-radius:999px;">Postgres</span>
+                <span style="background:#1B2A45;border:1px solid #2c3f33;color:#fff;font:500 12px/1 'Inter';padding:7px 11px;border-radius:999px;">Stripe</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="background:#0F1B12;border:1px solid #2c3f33;border-radius:16px;padding:18px 20px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+              <span style="font:500 10px/1 'IBM Plex Mono';letter-spacing:1.2px;text-transform:uppercase;color:#D4FF3C;">Team shape Clara suggests</span>
+              <span style="font:400 12px/1 'Inter';color:#7F8CA0;">confirm on the call</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:18px;">
+              <div style="width:96px;height:52px;position:relative;flex-shrink:0;">
+                <span style="position:absolute;left:0;top:10px;width:32px;height:32px;border-radius:999px;background:#1B2A45;border:2px solid #0F1B12;display:block;"></span>
+                <span style="position:absolute;left:22px;top:6px;width:38px;height:38px;border-radius:999px;background:#D4FF3C;border:2px solid #0F1B12;display:block;"></span>
+                <span style="position:absolute;left:50px;top:10px;width:32px;height:32px;border-radius:999px;background:#1B2A45;border:2px solid #0F1B12;display:block;"></span>
+              </div>
+              <div style="flex:1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
+                <div><div style="font:600 15px/1.2 'Inter';color:#fff;margin-bottom:5px;">1 × Full-stack</div><div style="font:400 12px/1.3 'Inter';color:#7F8CA0;">Next.js + Node lead</div></div>
+                <div><div style="font:600 15px/1.2 'Inter';color:#fff;margin-bottom:5px;">1 × Backend</div><div style="font:400 12px/1.3 'Inter';color:#7F8CA0;">Payments + data model</div></div>
+                <div><div style="font:600 15px/1.2 'Inter';color:#fff;margin-bottom:5px;">0.5 × QA</div><div style="font:400 12px/1.3 'Inter';color:#7F8CA0;">Part-time from week 3</div></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:auto;display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;border-top:1px solid #1a2740;padding-top:16px;">
+            <div><div style="font:500 10px/1 'IBM Plex Mono';letter-spacing:1.2px;text-transform:uppercase;color:#7F8CA0;margin-bottom:7px;">Target live date</div><div style="display:inline-flex;border:1px dashed #2b3a56;border-radius:9px;padding:5px 11px;font:400 13px/1.3 'Inter';color:#5f6b7d;">Clara is asking</div></div>
+            <div><div style="font:500 10px/1 'IBM Plex Mono';letter-spacing:1.2px;text-transform:uppercase;color:#7F8CA0;margin-bottom:7px;">Engagement</div><div style="font:600 14.5px/1.3 'Inter';color:#fff;">Build pod, 3-6 months</div></div>
+            <div><div style="font:500 10px/1 'IBM Plex Mono';letter-spacing:1.2px;text-transform:uppercase;color:#7F8CA0;margin-bottom:7px;">Region</div><div style="font:600 14.5px/1.3 'Inter';color:#fff;">Philippines</div></div>
+          </div>
+        </div>
+
+        <div style="flex-shrink:0;height:150px;border-top:1px solid #1a2740;background:#0E1A2E;position:relative;overflow:hidden;">
+          <div style="position:absolute;inset:0;padding:20px 32px;display:flex;flex-direction:column;justify-content:center;gap:12px;animation:ceRotate 24s ease-in-out infinite;">
+            <span style="font:500 10px/1 'IBM Plex Mono';letter-spacing:1.4px;text-transform:uppercase;color:#D4FF3C;">Client story</span>
+            <div style="font-family:'Source Serif 4';font-style:italic;font-weight:400;font-size:19px;line-height:29px;color:#fff;max-width:560px;">"We came in with a pitch deck and no engineers. Fourteen weeks later we were taking bookings."</div>
+            <div style="font:400 12.5px/1 'Inter';color:#7F8CA0;">Priya Raman · Founder, Slotwise</div>
+          </div>
+          <div style="position:absolute;inset:0;padding:20px 32px;display:flex;flex-direction:column;justify-content:center;gap:12px;animation:ceRotate 24s ease-in-out -12s infinite;">
+            <span style="font:500 10px/1 'IBM Plex Mono';letter-spacing:1.4px;text-transform:uppercase;color:#D4FF3C;">Did you know</span>
+            <div style="font:600 19px/29px 'Inter';letter-spacing:-.5px;color:#fff;max-width:560px;">Most MVPs we ship start with two engineers, not five. The pod grows once the product has users.</div>
+            <div style="font:400 12.5px/1 'Inter';color:#7F8CA0;">See how product builds work ›</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <sc-if value="{{ showAnnotations }}" hint-placeholder-val="{{ true }}">
+  <div style="display:flex;gap:26px;margin-top:12px;">
+    <span style="font:400 12px/1.4 'IBM Plex Mono';color:#5b6577;">· third brief type: product scope in, team shape out - same canvas, different field set</span>
+    <span style="font:400 12px/1.4 'IBM Plex Mono';color:#5b6577;">· Clara may propose a pod, but it is always labelled "confirm on the call"</span>
+  </div>
+  </sc-if>
+</div>
+
+<!-- ================= S7 · BOOKING OPENS IN THE CANVAS ================= -->
+<div style="position:absolute;left:0px;top:3000px;width:1440px;">
+  <div style="font:600 12px/1 'Inter';letter-spacing:1.4px;text-transform:uppercase;color:#5b6577;margin-bottom:14px;">S7 · Schedule a Call clicked - Calendly opens over the canvas, brief stays attached</div>
+  <div data-screen-label="S7 Booking in canvas" style="height:900px;background:#070D18;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.25);display:flex;flex-direction:column;">
+
+    <div style="height:60px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-bottom:1px solid #1a2740;">
+      <img src="9e62048d-3f85-486f-8c5d-1b5076d77a19" alt="CloudEmployee" style="height:22px;width:auto;display:block;">
+      <a href="#" style="display:inline-flex;align-items:center;gap:9px;background:#D4FF3C;color:#060F1E;border-radius:999px;padding:6px 18px 6px 6px;font-weight:700;font-size:14px;"><span style="width:26px;height:26px;border-radius:999px;background:#060F1E;display:flex;align-items:center;justify-content:center;color:#D4FF3C;font-size:12px;">→</span>Schedule a Call</a>
+    </div>
+
+    <div style="flex:1;display:grid;grid-template-columns:44fr 56fr;min-height:0;position:relative;">
+
+      <div style="position:absolute;left:44%;top:0;bottom:0;width:16px;margin-left:-8px;display:flex;align-items:center;justify-content:center;z-index:3;cursor:col-resize;">
+        <span style="width:3px;height:48px;border-radius:999px;background:#4a586e;display:block;"></span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;min-height:0;padding:0 28px;">
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:20px;padding:28px 0;min-height:0;">
+          <div style="align-self:flex-end;max-width:78%;background:#1B2A45;border-radius:16px 16px 4px 16px;padding:13px 17px;font-size:15px;line-height:23px;color:#fff;">Let us do the call.</div>
+          <div style="display:flex;gap:13px;">
+            <span style="width:28px;height:28px;border-radius:999px;background:#D4FF3C;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+              <img src="b15948b5-d17f-4d48-8ba2-5d80a0327e0f" alt="Clara" style="width:14px;height:14px;display:block;">
+            </span>
+            <div style="flex:1;font-size:15.5px;line-height:25px;color:#E6ECF5;padding-top:2px;">Opening the calendar on the right - your brief goes with the booking, so whoever takes the call has already read it. Pick any slot that suits you.</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;padding-left:41px;">
+            <span style="width:5px;height:5px;border-radius:999px;background:#D4FF3C;display:block;"></span>
+            <span style="font-size:12.5px;color:#7F8CA0;">Brief v4 attached · you can keep chatting while you book</span>
+          </div>
+        </div>
+        <div style="flex-shrink:0;padding-bottom:24px;">
+          <div style="background:#0E1A2E;border:1px solid #2b3a56;border-radius:18px;padding:14px 14px 10px;overflow:hidden;">
+            <div style="font-size:15.5px;color:#5f6b7d;padding:4px 4px 16px;">Ask Clara...</div>
+            <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;">
+              <span style="width:32px;height:32px;border-radius:999px;border:1px solid #22314D;color:#7F8CA0;display:flex;align-items:center;justify-content:center;font-size:14px;">⎘</span>
+              <span style="display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 13px 0 11px;border-radius:999px;border:1px solid #2c3f33;background:#0F1B12;"><span style="position:relative;width:12px;height:17px;display:block;flex-shrink:0;"><span style="position:absolute;left:2.5px;top:0;width:7px;height:10px;border-radius:999px;background:#D4FF3C;display:block;"></span><span style="position:absolute;left:0;top:6px;width:12px;height:6px;border:1.5px solid #D4FF3C;border-top:none;border-radius:0 0 9px 9px;display:block;"></span><span style="position:absolute;left:5px;top:13px;width:2px;height:4px;background:#D4FF3C;display:block;"></span></span><span style="font-weight:600;font-size:12.5px;color:#D4FF3C;">Talk</span></span>
+              <span style="width:34px;height:34px;border-radius:999px;background:#D4FF3C;color:#060F1E;display:flex;align-items:center;justify-content:center;font-size:14px;">↑</span>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 6px 0;">
+            <span style="font-size:11.5px;color:#5f6b7d;">Hold Ctrl+D to talk instead of typing</span>
+            <span style="font-weight:600;font-size:11.5px;color:#7F8CA0;">Brief saved to this session</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="border-left:1px solid #1a2740;background:#0B1424;display:flex;flex-direction:column;min-height:0;padding:22px 24px 24px;gap:16px;">
+          <div style="flex-shrink:0;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span style="font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:#7F8CA0;">Attached brief</span>
+            <span style="background:#101B30;border:1px solid #2c3f33;color:#fff;font-weight:500;font-size:12.5px;padding:7px 12px;border-radius:999px;">Senior React Engineer</span>
+            <span style="background:#101B30;border:1px solid #22314D;color:#B8C2D1;font-weight:500;font-size:12.5px;padding:7px 12px;border-radius:999px;">1 hire · full-time</span>
+            <span style="background:#101B30;border:1px solid #22314D;color:#B8C2D1;font-weight:500;font-size:12.5px;padding:7px 12px;border-radius:999px;">Philippines · 4h overlap</span>
+            <span style="background:#101B30;border:1px solid #22314D;color:#B8C2D1;font-weight:500;font-size:12.5px;padding:7px 12px;border-radius:999px;">Within 6 weeks</span>
+            <span style="font-weight:600;font-size:12.5px;color:#D4FF3C;margin-left:auto;">Back to brief ›</span>
+          </div>
+        <div style="flex:1;min-height:0;border:1px solid #22314D;border-radius:14px;background:#0E1A2E;display:flex;overflow:hidden;">
+          <div style="width:40%;flex-shrink:0;border-right:1px solid #22314D;display:flex;flex-direction:column;">
+            <div style="border-bottom:1px solid #22314D;padding:26px 24px 22px;display:flex;flex-direction:column;align-items:center;gap:10px;">
+              <div style="position:relative;width:200px;height:58px;">
+                <span style="position:absolute;left:12px;top:5px;width:52px;height:52px;border-radius:999px;background:#1B2A45;border:2px solid #fff;display:block;"></span>
+                <span style="position:absolute;left:50px;top:2px;width:52px;height:52px;border-radius:999px;background:#22314D;border:2px solid #fff;display:block;"></span>
+                <span style="position:absolute;left:88px;top:2px;width:52px;height:52px;border-radius:999px;background:#1B2A45;border:2px solid #fff;display:block;"></span>
+                <span style="position:absolute;left:126px;top:5px;width:52px;height:52px;border-radius:999px;background:#22314D;border:2px solid #fff;display:block;"></span>
+              </div>
+              <img src="9e62048d-3f85-486f-8c5d-1b5076d77a19" alt="CloudEmployee" style="height:19px;width:auto;display:block;opacity:.35;">
+            </div>
+            <div style="padding:22px 24px 18px;display:flex;flex-direction:column;gap:13px;flex:1;">
+              <div style="font-weight:700;font-size:23px;line-height:1.2;letter-spacing:-.7px;color:#fff;">Discovery Call - CloudEmployee</div>
+              <div style="display:flex;align-items:center;gap:9px;">
+                <span style="width:19px;height:19px;border-radius:999px;border:1.5px solid #B8C2D1;display:block;"></span>
+                <span style="font-weight:600;font-size:14px;color:#fff;">30 min</span>
+              </div>
+              <div style="font-size:13.5px;line-height:21px;color:#B8C2D1;">A 30-minute intro call with our team to see if CloudEmployee is the right fit to scale your engineering.</div>
+              <div style="font-size:13.5px;line-height:21px;color:#B8C2D1;">You will speak with Seb, Molly, Steph or AJ to:</div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;gap:9px;"><span style="color:#7F8CA0;font-size:13.5px;line-height:21px;">·</span><span style="font-weight:600;font-size:13.5px;line-height:21px;color:#fff;">Review the brief you just built</span></div>
+                <div style="display:flex;gap:9px;"><span style="color:#7F8CA0;font-size:13.5px;line-height:21px;">·</span><span style="font-weight:600;font-size:13.5px;line-height:21px;color:#fff;">Walk through how we source, embed and retain engineers</span></div>
+                <div style="display:flex;gap:9px;"><span style="color:#7F8CA0;font-size:13.5px;line-height:21px;">·</span><span style="font-weight:600;font-size:13.5px;line-height:21px;color:#fff;">Share candidate options and success stories</span></div>
+              </div>
+              <div style="font-size:13px;line-height:20px;color:#7F8CA0;">No pressure - just a clear overview of how it works.</div>
+              <div style="margin-top:auto;display:flex;gap:22px;padding-top:14px;">
+                <span style="font-weight:600;font-size:12.5px;color:#D4FF3C;">Cookie settings</span>
+                <span style="font-weight:600;font-size:12.5px;color:#D4FF3C;">Privacy Policy</span>
+              </div>
+            </div>
+          </div>
+          <div style="flex:1;padding:24px 28px;display:flex;flex-direction:column;min-width:0;">
+            <div style="font-weight:700;font-size:20px;letter-spacing:-.5px;color:#fff;margin-bottom:18px;">Select a Date &amp; Time</div>
+            <div style="display:flex;align-items:center;justify-content:center;gap:26px;margin-bottom:16px;">
+              <span style="font-size:17px;color:#5f6b7d;">‹</span>
+              <span style="font-weight:600;font-size:14.5px;color:#fff;">July 2026</span>
+              <span style="font-size:17px;color:#D4FF3C;">›</span>
+            </div>
+            <div style="display:flex;gap:22px;min-height:0;flex:1;">
+              <div style="flex:1;min-width:0;">
+                <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px;">
+                  <span style="text-align:center;font-weight:500;font-size:11.5px;color:#7F8CA0;">Mon</span>
+                  <span style="text-align:center;font-weight:500;font-size:11.5px;color:#7F8CA0;">Tue</span>
+                  <span style="text-align:center;font-weight:500;font-size:11.5px;color:#7F8CA0;">Wed</span>
+                  <span style="text-align:center;font-weight:500;font-size:11.5px;color:#7F8CA0;">Thu</span>
+                  <span style="text-align:center;font-weight:500;font-size:11.5px;color:#7F8CA0;">Fri</span>
+                  <span style="text-align:center;font-weight:500;font-size:11.5px;color:#7F8CA0;">Sat</span>
+                  <span style="text-align:center;font-weight:500;font-size:11.5px;color:#7F8CA0;">Sun</span>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;">
+                  <span></span>
+                  <span></span>
+                  <span style="height:38px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#3f4a5c;">1</span>
+                  <span style="height:38px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#3f4a5c;">2</span>
+                  <span style="height:38px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#3f4a5c;">3</span>
+                  <span style="height:38px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#3f4a5c;">4</span>
+                  <span style="height:38px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#3f4a5c;">5</span>
+                  <span style="height:38px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#3f4a5c;">6</span>
+                  <span style="height:38px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#3f4a5c;">7</span>
+                  <span style="height:38px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#3f4a5c;">8</span>
+                  <span style="height:38px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#3f4a5c;">9</span>
+                  <span style="height:38px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#3f4a5c;">10</span>
+                  <span style="height:38px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#3f4a5c;">11</span>
+                  <span style="height:38px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#3f4a5c;">12</span>
+                  <span style="height:38px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#3f4a5c;">13</span>
+                  <span style="height:38px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#3f4a5c;">14</span>
+                  <span style="height:38px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#3f4a5c;">15</span>
+                  <span style="height:38px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#3f4a5c;">16</span>
+                  <span style="height:38px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#3f4a5c;">17</span>
+                  <span style="height:38px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#3f4a5c;">18</span>
+                  <span style="height:38px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#3f4a5c;">19</span>
+                  <span style="height:38px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#3f4a5c;">20</span>
+                  <span style="height:38px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#3f4a5c;">21</span>
+                  <span style="height:38px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#3f4a5c;">22</span>
+                  <span style="height:38px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#3f4a5c;">23</span>
+                  <span style="height:38px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#3f4a5c;">24</span>
+                  <span style="height:38px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#3f4a5c;">25</span>
+                  <span style="height:38px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#3f4a5c;">26</span>
+                  <span style="height:38px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#3f4a5c;">27</span>
+                  <span style="height:38px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#3f4a5c;">28</span>
+                  <span style="height:38px;display:flex;align-items:center;justify-content:center;"><span style="width:38px;height:38px;border-radius:999px;background:#D4FF3C;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#060F1E;">29</span></span>
+                  <span style="height:38px;display:flex;align-items:center;justify-content:center;"><span style="width:38px;height:38px;border-radius:999px;background:#0E4E57;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;color:#D4FF3C;">30</span></span>
+                  <span style="height:38px;display:flex;align-items:center;justify-content:center;"><span style="width:38px;height:38px;border-radius:999px;background:#0E4E57;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;color:#D4FF3C;">31</span></span>
+                </div>
+                <div style="margin-top:18px;">
+                  <div style="font-weight:600;font-size:13px;color:#fff;margin-bottom:9px;">Time zone</div>
+                  <div style="display:flex;align-items:center;gap:9px;">
+                    <span style="width:16px;height:16px;border-radius:999px;border:1.5px solid #7F8CA0;display:block;"></span>
+                    <span style="font-size:13px;color:#B8C2D1;">UK Time (13:56) ⌄</span>
+                  </div>
+                </div>
+              </div>
+              <div style="width:158px;flex-shrink:0;display:flex;flex-direction:column;gap:8px;">
+                <div style="font-weight:600;font-size:13px;color:#fff;margin-bottom:2px;">Wed 29 July</div>
+                <span style="border:1px solid #2c3f33;border-radius:8px;padding:11px 0;text-align:center;font-weight:500;font-size:13.5px;color:#D4FF3C;">09:30</span>
+                <div style="display:flex;gap:6px;">
+                  <span style="flex:1;border-radius:8px;padding:11px 0;text-align:center;font-weight:600;font-size:13.5px;color:#B8C2D1;background:#1B2A45;">11:00</span>
+                  <span style="flex:1;border-radius:8px;padding:11px 0;text-align:center;font-weight:700;font-size:13.5px;color:#060F1E;background:#D4FF3C;">Next</span>
+                </div>
+                <span style="border:1px solid #2c3f33;border-radius:8px;padding:11px 0;text-align:center;font-weight:500;font-size:13.5px;color:#D4FF3C;">14:00</span>
+                <span style="border:1px solid #2c3f33;border-radius:8px;padding:11px 0;text-align:center;font-weight:500;font-size:13.5px;color:#D4FF3C;">15:30</span>
+                <span style="border:1px solid #2c3f33;border-radius:8px;padding:11px 0;text-align:center;font-weight:500;font-size:13.5px;color:#D4FF3C;">16:30</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <sc-if value="{{ showAnnotations }}" hint-placeholder-val="{{ true }}">
+  <div style="display:flex;gap:26px;margin-top:12px;">
+    <span style="font:400 12px/1.4 'IBM Plex Mono';color:#5b6577;">· booking never leaves /ask - the Calendly embed replaces the brief panel, brief summary stays pinned above it</span>
+    <span style="font:400 12px/1.4 'IBM Plex Mono';color:#5b6577;">· ENG: session id + brief JSON prefill Calendly and post to HubSpot on confirm only</span>
+  </div>
+  </sc-if>
+</div>
+
+<!-- ================= S8 · BOOKED ================= -->
+<div style="position:absolute;left:1560px;top:3000px;width:1440px;">
+  <div style="font:600 12px/1 'Inter';letter-spacing:1.4px;text-transform:uppercase;color:#5b6577;margin-bottom:14px;">S8 · Booked - confirmation in place, brief sent, chat still live</div>
+  <div data-screen-label="S8 Booked" style="height:900px;background:#070D18;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.25);display:flex;flex-direction:column;">
+
+    <div style="height:60px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-bottom:1px solid #1a2740;">
+      <img src="9e62048d-3f85-486f-8c5d-1b5076d77a19" alt="CloudEmployee" style="height:22px;width:auto;display:block;">
+      <span style="font-weight:500;font-size:12.5px;color:#7F8CA0;">Call booked · Wed 29 Jul, 11:00</span>
+    </div>
+
+    <div style="flex:1;display:grid;grid-template-columns:44fr 56fr;min-height:0;position:relative;">
+
+      <div style="position:absolute;left:44%;top:0;bottom:0;width:16px;margin-left:-8px;display:flex;align-items:center;justify-content:center;z-index:3;cursor:col-resize;">
+        <span style="width:3px;height:48px;border-radius:999px;background:#4a586e;display:block;"></span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;min-height:0;padding:0 28px;">
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:20px;padding:28px 0;min-height:0;">
+          <div style="display:flex;gap:13px;">
+            <span style="width:28px;height:28px;border-radius:999px;background:#D4FF3C;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+              <img src="b15948b5-d17f-4d48-8ba2-5d80a0327e0f" alt="Clara" style="width:14px;height:14px;display:block;">
+            </span>
+            <div style="flex:1;font-size:15.5px;line-height:25px;color:#E6ECF5;padding-top:2px;">Booked - Wednesday 29 July at 11:00. The invite is on its way to jake@northrowhealth.co.uk with your brief attached as a PDF.</div>
+          </div>
+          <div style="display:flex;gap:13px;">
+            <span style="width:28px;height:28px;border-radius:999px;background:#D4FF3C;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+              <img src="b15948b5-d17f-4d48-8ba2-5d80a0327e0f" alt="Clara" style="width:14px;height:14px;display:block;">
+            </span>
+            <div style="flex:1;font-size:15.5px;line-height:25px;color:#E6ECF5;padding-top:2px;">Anything you remember before then, tell me here and I will update the brief - the call notes update with it.</div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;padding-left:41px;">
+            <span style="border:1px solid #22314D;color:#B8C2D1;font-weight:500;font-size:12.5px;padding:9px 13px;border-radius:999px;">Add a second role</span>
+            <span style="border:1px solid #22314D;color:#B8C2D1;font-weight:500;font-size:12.5px;padding:9px 13px;border-radius:999px;">Email me the brief</span>
+            <span style="border:1px solid #22314D;color:#B8C2D1;font-weight:500;font-size:12.5px;padding:9px 13px;border-radius:999px;">What does this cost?</span>
+          </div>
+        </div>
+        <div style="flex-shrink:0;padding-bottom:24px;">
+          <div style="background:#0E1A2E;border:1px solid #2b3a56;border-radius:18px;padding:14px 14px 10px;overflow:hidden;">
+            <div style="font-size:15.5px;color:#5f6b7d;padding:4px 4px 16px;">Ask Clara...</div>
+            <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;">
+              <span style="width:32px;height:32px;border-radius:999px;border:1px solid #22314D;color:#7F8CA0;display:flex;align-items:center;justify-content:center;font-size:14px;">⎘</span>
+              <span style="display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 13px 0 11px;border-radius:999px;border:1px solid #2c3f33;background:#0F1B12;"><span style="position:relative;width:12px;height:17px;display:block;flex-shrink:0;"><span style="position:absolute;left:2.5px;top:0;width:7px;height:10px;border-radius:999px;background:#D4FF3C;display:block;"></span><span style="position:absolute;left:0;top:6px;width:12px;height:6px;border:1.5px solid #D4FF3C;border-top:none;border-radius:0 0 9px 9px;display:block;"></span><span style="position:absolute;left:5px;top:13px;width:2px;height:4px;background:#D4FF3C;display:block;"></span></span><span style="font-weight:600;font-size:12.5px;color:#D4FF3C;">Talk</span></span>
+              <span style="width:34px;height:34px;border-radius:999px;background:#D4FF3C;color:#060F1E;display:flex;align-items:center;justify-content:center;font-size:14px;">↑</span>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 6px 0;">
+            <span style="font-size:11.5px;color:#5f6b7d;">Hold Ctrl+D to talk instead of typing</span>
+            <span style="font-weight:600;font-size:11.5px;color:#7F8CA0;">Brief saved to this session</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="border-left:1px solid #1a2740;background:radial-gradient(120% 90% at 100% 0%,#101f1a 0%,#0B1424 62%);display:flex;flex-direction:column;min-height:0;padding:26px 32px 30px;gap:18px;">
+        <div style="display:flex;align-items:center;gap:9px;">
+          <span style="width:17px;height:17px;border-radius:999px;background:#D4FF3C;color:#060F1E;font-weight:700;font-size:9.5px;display:flex;align-items:center;justify-content:center;">✓</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;color:#D4FF3C;">You are booked in</span>
+        </div>
+        <div style="background:#101B30;border:1px solid #D4FF3C;border-radius:18px;padding:24px 26px;display:flex;align-items:center;gap:24px;">
+          <div style="width:78px;flex-shrink:0;background:#0F1B12;border:1px solid #2c3f33;border-radius:14px;padding:12px 0;text-align:center;">
+            <div style="font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;color:#D4FF3C;margin-bottom:7px;">Jul</div>
+            <div style="font-weight:700;font-size:30px;line-height:1;letter-spacing:-1.2px;color:#fff;">29</div>
+          </div>
+          <div style="flex:1;">
+            <div style="font-weight:600;font-size:21px;line-height:1.2;letter-spacing:-.6px;color:#fff;margin-bottom:8px;">Discovery Call · 11:00-11:30 UK</div>
+            <div style="font-size:13.5px;line-height:21px;color:#B8C2D1;">With Steph, hiring lead. Meet link is in the invite.</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <span style="border:1px solid #2c3f33;border-radius:999px;padding:8px 15px;font-weight:600;font-size:12.5px;color:#D4FF3C;text-align:center;">Add to calendar</span>
+            <span style="border:1px solid #22314D;border-radius:999px;padding:8px 15px;font-weight:500;font-size:12.5px;color:#B8C2D1;text-align:center;">Reschedule</span>
+          </div>
+        </div>
+        <div style="background:#101B30;border:1px solid #2c3f33;border-radius:18px;padding:22px 24px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <span style="font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:#7F8CA0;">Brief sent with the invite</span>
+            <span style="font-weight:600;font-size:12.5px;color:#D4FF3C;">Download PDF ›</span>
+          </div>
+          <div style="font-weight:600;font-size:20px;line-height:1.2;letter-spacing:-.6px;color:#fff;margin-bottom:14px;">Senior React Engineer · Philippines</div>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;">
+            <span style="background:#1B2A45;border:1px solid #2c3f33;color:#fff;font-weight:500;font-size:12.5px;padding:8px 12px;border-radius:999px;">1 hire · full-time</span>
+            <span style="background:#1B2A45;border:1px solid #2c3f33;color:#fff;font-weight:500;font-size:12.5px;padding:8px 12px;border-radius:999px;">React · TypeScript · Next.js</span>
+            <span style="background:#1B2A45;border:1px solid #2c3f33;color:#fff;font-weight:500;font-size:12.5px;padding:8px 12px;border-radius:999px;">4h London overlap</span>
+            <span style="background:#1B2A45;border:1px solid #2c3f33;color:#fff;font-weight:500;font-size:12.5px;padding:8px 12px;border-radius:999px;">Start within 6 weeks</span>
+          </div>
+        </div>
+        <div style="margin-top:auto;display:grid;grid-template-columns:1fr 1fr;gap:22px;border-top:1px solid #1a2740;padding-top:18px;">
+          <div><div style="font-weight:600;font-size:13.5px;color:#fff;margin-bottom:6px;">Before the call</div><div style="font-size:12.5px;line-height:1.5;color:#7F8CA0;">We send 2-3 anonymised profiles that fit this brief where we already have a match.</div></div>
+          <div><div style="font-weight:600;font-size:13.5px;color:#fff;margin-bottom:6px;">Session</div><div style="font-size:12.5px;line-height:1.5;color:#7F8CA0;">ask_9f2c · brief v4 · linked to your email, so a return visit picks up where you left off.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <sc-if value="{{ showAnnotations }}" hint-placeholder-val="{{ true }}">
+  <div style="margin-top:12px;font:400 12px/1.4 'IBM Plex Mono';color:#5b6577;">· chat stays live after booking so late detail still lands in the brief</div>
+  </sc-if>
+</div>
+
+</section>
+
+
+
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;showAnnotations&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Spec&quot;},&quot;showSampleProfile&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;State A&quot;}}">
+class Component extends DCLogic {
+  waveform() {
+    const heights = [.3,.55,.9,.45,.7,1,.35,.6,.85,.4,.75,.5,.95,.3,.65,.8,.45,1,.55,.35,.7,.9,.4,.6,.85,.5,.75,.3,.65,.95,.45,.55];
+    return React.createElement('div',
+      { style:{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:4, height:'100%', width:'100%' } },
+      heights.map((h,i) => React.createElement('span', { key:i, style:{
+        flex:'1 1 0%', minWidth:2, borderRadius:2, background:'#D4FF3C',
+        height:(28 + h*72) + '%', transformOrigin:'center',
+        animation:'ceWave 1.05s ease-in-out ' + (-(i * 0.07)).toFixed(2) + 's infinite',
+        opacity:.55 + h*0.45
+      }}))
+    );
+  }
+  renderVals() {
+    return {
+      waveform: this.waveform(),
+      showAnnotations: this.props.showAnnotations ?? true,
+      showSampleProfile: this.props.showSampleProfile ?? true,
+    };
+  }
+}
+</script>
+
+
+</body></html>
