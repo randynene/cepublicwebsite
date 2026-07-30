@@ -16,6 +16,36 @@
   "exceptions": [
     {
       "paths": [
+        "/start-hiring",
+        "/start-hiring/get-started",
+        "/start-hiring/contact-info",
+        "/start-hiring/how-many",
+        "/start-hiring/how-long",
+        "/start-hiring/budget",
+        "/start-hiring/when-needed",
+        "/start-hiring/technology",
+        "/start-hiring/final-details",
+        "/start-hiring/thanks",
+        "/start-hiring-now",
+        "/uk/start-hiring",
+        "/uk/start-hiring/get-started",
+        "/uk/start-hiring/contact-info",
+        "/uk/start-hiring/how-many",
+        "/uk/start-hiring/how-long",
+        "/uk/start-hiring/budget",
+        "/uk/start-hiring/when-needed",
+        "/uk/start-hiring/technology",
+        "/uk/start-hiring/final-details",
+        "/uk/start-hiring/thanks",
+        "/uk/start-hiring-now"
+      ],
+      "expect": "permanent",
+      "decidedBy": "Jake",
+      "decidedAt": "2026-07-30",
+      "reason": "Live serves the whole /start-hiring funnel 200. We are retiring it at launch. It was 17 URLs driven by nine separate HubSpot forms whose post-submit redirects — configured inside HubSpot, not in this repo — defined the step order. Jake's launch decision is that the site has one aim, book a call, and a nine-step form is the opposite of that. Redirected rather than dropped: traffic is near zero (/start-hiring/get-started 2 clicks / 1,156 impressions; /start-hiring 0 / 177; /uk/start-hiring 0 / 28) but /start-hiring carries 4 referring domains, and 404ing 17 live URLs mid-migration bins that link equity for nothing. Every path 301s to /book-a-call (or /uk/book-a-call), which is where the funnel was trying to get people anyway. The Sanity documents and Studio schemas are left in place, unrouted, so this is reversible without a migration."
+    },
+    {
+      "paths": [
         "/sourcing",
         "/embedding",
         "/retention",

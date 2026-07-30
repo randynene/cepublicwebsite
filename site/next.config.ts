@@ -41,23 +41,33 @@ const lockedRules: Redirect[] = [
   // Verified against live: /team is a genuine 301 to /about-us.
   { source: '/team', destination: '/about-us', permanent: true },
 
-  // THE TWO LOCALES' FUNNELS ARE NOT THE SAME SHAPE. Assuming they were is how the
-  // UK funnel lost its first step.
+  // DELIBERATE DIVERGENCE FROM LIVE - Jake, 30 Jul 2026 (launch consolidation).
   //
-  //   US: /start-hiring/get-started is a REDIRECT into contact-info. 8 pages.
-  //   UK: /uk/start-hiring/get-started is a REAL PAGE ("Let's Find Your Developer",
-  //       HubSpot form 05bfad44). 9 pages, and it is the funnel's entry point.
+  // The whole /start-hiring funnel is RETIRED. It was 17 URLs (8 US steps + 9 UK)
+  // driven by nine separate HubSpot forms, and the step order lived in HubSpot's
+  // redirect settings rather than in this repo. Jake's launch decision: the site
+  // has one aim, book a call, and a nine-step form is the opposite of that.
   //
-  // That form is the one HubSpot calls "Start Hiring (Part 1/8)". It looked
-  // orphaned — on no US page — which is exactly what a UK-only step looks like if
-  // you only check the US locale.
+  // RETIRED VIA REDIRECT, NOT DELETION. The pages carry almost no traffic
+  // (/start-hiring/get-started: 2 clicks / 1,156 impressions; /start-hiring:
+  // 0 / 177; /uk/start-hiring: 0 / 28) but /start-hiring has 4 referring domains,
+  // and every one of these URLs returns 200 on live today. Letting them 404 during
+  // a domain migration bins the link equity and fails the parity gate. A 301 to
+  // /book-a-call costs nothing and lands the visitor on the thing we actually want
+  // them to do.
   //
-  // /start-hiring carries 4 referring domains, so its redirect matters. Its UK
-  // counterpart 404s on live and is left alone: mirroring a US redirect onto a UK
-  // URL that behaves differently is the mistake this comment exists to prevent.
-  { source: '/start-hiring', destination: '/start-hiring/contact-info', permanent: true },
-  { source: '/start-hiring/get-started', destination: '/start-hiring/contact-info', permanent: true },
-  { source: '/uk/start-hiring-now', destination: '/uk/start-hiring/get-started', permanent: true },
+  // The Sanity documents and Studio schemas are deliberately LEFT IN PLACE. Nothing
+  // routes to them, so they render nowhere; removing them would be a schema change
+  // that orphans live data for no gain. Reversible if Jake ever wants the funnel
+  // back.
+  //
+  // Recorded in data/webflow/parity-exceptions.json.
+  { source: '/start-hiring', destination: '/book-a-call', permanent: true },
+  { source: '/start-hiring/:step*', destination: '/book-a-call', permanent: true },
+  { source: '/start-hiring-now', destination: '/book-a-call', permanent: true },
+  { source: '/uk/start-hiring', destination: '/uk/book-a-call', permanent: true },
+  { source: '/uk/start-hiring/:step*', destination: '/uk/book-a-call', permanent: true },
+  { source: '/uk/start-hiring-now', destination: '/uk/book-a-call', permanent: true },
 
   // DELIBERATE DIVERGENCE FROM LIVE — Jake, Jul 2026.
   //

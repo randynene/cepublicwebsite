@@ -453,7 +453,7 @@ export const LATAM_CONTENT: LocationContent = {
         body: 'Tell us what you need. Four quick questions about your stack, team, and budget.',
         bullets: ['Free to interview, no card required', 'No job boards, no CVs, no time wasted'],
         cta: 'Start the brief',
-        ctaHref: '/start-hiring',
+        ctaHref: '/book-a-call',
       },
       {
         eyebrow: 'Want guidance',
@@ -710,7 +710,7 @@ export const EASTERN_EUROPE_CONTENT: LocationContent = {
         body: 'Tell us what you need. Four quick questions about your stack, team, and budget.',
         bullets: ['Free to interview, no card required', 'No job boards, no CVs, no time wasted'],
         cta: 'Start the brief',
-        ctaHref: '/start-hiring',
+        ctaHref: '/book-a-call',
       },
       {
         eyebrow: 'Want guidance',
@@ -1026,7 +1026,7 @@ export const PHILIPPINES_CONTENT: LocationContent = {
         body: 'Tell us what you need. Four quick questions about your stack, team, and budget.',
         bullets: ['Free to interview, no card required', 'No job boards, no CVs, no time wasted'],
         cta: 'Start the brief',
-        ctaHref: '/start-hiring',
+        ctaHref: '/book-a-call',
       },
       {
         eyebrow: 'Want guidance',
@@ -1052,7 +1052,7 @@ export const PHILIPPINES_CONTENT: LocationContent = {
       hint: "Pick one to start - you'll see matching engineers at the end.",
       roles: ['Backend', 'Frontend', 'Full-Stack', 'AI / ML', 'Data', 'DevOps', 'Mobile', 'Something else'],
       cta: 'Next',
-      ctaHref: '/start-hiring',
+      ctaHref: '/book-a-call',
       selectedPrefix: 'Selected: ',
       emptyStatus: 'Select a role to continue',
     },

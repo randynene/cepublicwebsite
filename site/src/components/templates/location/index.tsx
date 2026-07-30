@@ -243,7 +243,7 @@ function Hero({ content }: { content: LocationContent }) {
         <div className="mt-8 flex flex-wrap items-center gap-[14px]">
           <MegaMenuPillLabel
             as="a"
-            href="/start-hiring"
+            href="/book-a-call"
             variant="pill-green"
             size="cta"
             leadingArrow
@@ -815,7 +815,7 @@ function Calculator({ content }: { content: LocationContent }) {
             savedPrefix: calculator.savedPrefix ?? 'vs. hiring in the US',
             savedSuffix: '/yr saved',
             cta: 'Get matched at this rate',
-            ctaHref: '/start-hiring',
+            ctaHref: '/book-a-call',
           }}
         />
       </div>
