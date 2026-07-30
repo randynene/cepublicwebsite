@@ -54,7 +54,10 @@ export interface FeHero {
   eyebrow: string
   titleLead: string
   titleAccent: string
+  /** Static first line of the subhead ("We match you with companies that fit your"). */
   sub: string
+  /** Rotating lime-italic words that sit on the line under `sub` (CE-13). */
+  subRotate?: string[]
   ctaPrimary: string
   /** Path or #anchor for the primary CTA. Default #join. */
   ctaPrimaryHref?: string
@@ -282,11 +285,12 @@ export const FOR_ENGINEERS_CONTENT: ForEngineersContent = {
     eyebrow: 'FOR ENGINEERS',
     titleLead: 'Get matched to the\nbest companies,\n',
     titleAccent: 'wherever you are',
-    sub: 'We match you with companies that fit your work style',
+    sub: 'We match you with companies that fit your',
+    subRotate: ['work style', 'values', 'salary', 'mission'],
     ctaPrimary: 'Join the network',
     ctaPrimaryHref: '#join',
     ctaGhost: 'How it works',
-    ctaGhostHref: '/how-it-works',
+    ctaGhostHref: '#fe2-how',
     trust: ['4.8 on Glassdoor · 200+ reviews', 'Real employment + healthcare', '97% stay 2+ years'],
     card: {
       name: 'Your profile',
@@ -304,11 +308,12 @@ export const FOR_ENGINEERS_CONTENT: ForEngineersContent = {
   },
   problem: {
     eyebrow: 'WHY THIS EXISTS',
-    titleLead: 'Applying is broken. ',
+    titleLead: 'Applying is broken.\n',
     titleAccent: "Being matched isn't",
     leadPre: 'Your CV gets read by a machine before a person ever sees it. ',
     leadStrong: 'We do it the other way round',
-    leadPost: ' - an engineer looks at your actual work, once, and the right companies come to you.',
+    leadPost:
+      '\nAn engineer looks at your actual work, once, and the right companies come to you.',
     stats: [
       { num: '70%', body: 'of engineering roles are never publicly posted. We put you in front of them.' },
       { num: '2', body: 'profiles per role. One of two people a company sees - not one of 500.' },

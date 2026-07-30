@@ -41,6 +41,17 @@ function interactiveSrc(provider: string, id: string, sourceUrl: string): string
   return `https://www.linkedin.com/embed/feed/update/urn:li:share:${id}`
 }
 
+/** Muted looping backdrop (homepage-style) while the poster chrome is visible. */
+function ambientSrc(provider: string, id: string, sourceUrl: string): string | null {
+  if (provider === 'vimeo') {
+    return `https://player.vimeo.com/video/${id}?${vimeoQuery(sourceUrl, 'background=1&autoplay=1&loop=1&muted=1')}`
+  }
+  if (provider === 'youtube') {
+    return `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&playsinline=1&controls=0&rel=0`
+  }
+  return null
+}
+
 function PlayGlyph({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
@@ -169,6 +180,8 @@ function EmbedLocationVideo({
   const [playing, setPlaying] = useState(false)
   const parsed = parseVideoUrl(videoUrl)
   const playable = Boolean(parsed)
+  const ambient =
+    parsed && !playing ? ambientSrc(parsed.provider, parsed.id, videoUrl) : null
 
   if (playing && parsed) {
     return (
@@ -201,6 +214,17 @@ function EmbedLocationVideo({
             className="absolute inset-0 h-full w-full object-cover object-top"
             loading="lazy"
           />
+
+          {ambient ? (
+            <iframe
+              src={ambient}
+              title={title}
+              allow="autoplay; encrypted-media"
+              aria-hidden="true"
+              tabIndex={-1}
+              className="pointer-events-none absolute inset-0 h-full w-full border-0 motion-reduce:hidden"
+            />
+          ) : null}
 
           <span
             aria-hidden="true"

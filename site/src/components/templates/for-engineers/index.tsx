@@ -78,6 +78,29 @@ function promoteHeroTitleToH1(html: string): string {
   )
 }
 
+function escHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
+/** CE-13 — turn the hero sub into two lines + a lime-italic rotating word. */
+function injectHeroSubRotator(html: string, content: ForEngineersContent): string {
+  const sub = content.hero.sub
+  const words = content.hero.subRotate?.filter(Boolean) ?? []
+  if (!sub || words.length === 0) return html
+  const first = escHtml(words[0] ?? '')
+  const escapedSub = escHtml(sub)
+  const escapedSubRe = escapedSub.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  // The hydrated sub sits as text inside its span; rewrite that node and keep a
+  // class hook for the larger type size.
+  if (!html.includes(`>${escapedSub}</span>`)) return html
+  return html.replace(
+    new RegExp(
+      `(<span style="position: relative;[^"]*font-size: 18px;[^"]*")>${escapedSubRe}</span>`,
+    ),
+    `$1 class="fe2-hero-sub">${escapedSub}<span class="fe2-rotator" data-fe2-rotator aria-live="polite"><em class="fe2-rotator-word">${first}</em></span></span>`,
+  )
+}
+
 // Split the frozen export body after its FIRST top-level <div> (the hero), so
 // the hero can be given its own full-viewport wrapper and everything from
 // "Applying is broken" down starts below the fold. Depth-counts <div>/</div>;
@@ -384,7 +407,9 @@ export function ForEngineersTemplate({
   // reproducing the export byte-for-byte when nothing is overridden.
   // H1 promotion runs after hydrate so verify-fe2-parity still sees a clean
   // hydrate(template, defaults) === export match.
-  const preHtml = promoteHeroTitleToH1(hydrateFe2(FE2_PRE_HTML, content))
+  const preHtml = promoteHeroTitleToH1(
+    injectHeroSubRotator(hydrateFe2(FE2_PRE_HTML, content), content),
+  )
   const postHtml = hydrateFe2(FE2_POST_HTML, content)
   const [heroHtml, restHtml] = splitHeroBlock(preHtml)
 
@@ -445,6 +470,33 @@ export function ForEngineersTemplate({
       spot.addEventListener('mouseenter', onEnter)
       spot.addEventListener('mouseleave', onLeave)
       spot.addEventListener('mousemove', onMove)
+    }
+
+    // CE-28 — pin an in-page id on the "How it works / THE PROCESS" block so the
+    // hero ghost CTA can scroll here instead of leaving for /how-it-works.
+    const howEyebrow = [...root.querySelectorAll('span')].find(
+      (el) => el.textContent?.trim() === content.how.eyebrow,
+    )
+    const howSection = howEyebrow?.closest<HTMLElement>('div[style*="padding"]')
+    if (howSection && !howSection.id) {
+      howSection.id = 'fe2-how'
+      howSection.style.scrollMarginTop = '96px'
+    }
+
+    // CE-13 — cycle the lime-italic rotating word under the hero subhead.
+    const rotateWords = (content.hero.subRotate ?? []).filter(Boolean)
+    const rotatorWord = root.querySelector<HTMLElement>('[data-fe2-rotator] .fe2-rotator-word')
+    let rotateTimer: number | undefined
+    if (rotatorWord && rotateWords.length > 1 && !reduce) {
+      let i = 0
+      rotateTimer = window.setInterval(() => {
+        rotatorWord.classList.add('is-out')
+        window.setTimeout(() => {
+          i = (i + 1) % rotateWords.length
+          rotatorWord.textContent = rotateWords[i] ?? ''
+          rotatorWord.classList.remove('is-out')
+        }, 280)
+      }, 2600)
     }
 
     // ---- pill CTAs follow Studio-owned hrefs (default #join / /how-it-works) ----
@@ -529,6 +581,7 @@ export function ForEngineersTemplate({
     return () => {
       io?.disconnect()
       clearTimeout(revealTimer)
+      if (rotateTimer !== undefined) window.clearInterval(rotateTimer)
       if (spot && !reduce) {
         spot.removeEventListener('mouseenter', onEnter)
         spot.removeEventListener('mouseleave', onLeave)
@@ -543,6 +596,8 @@ export function ForEngineersTemplate({
   }, [
     content.hero.ctaPrimaryHref,
     content.hero.ctaGhostHref,
+    content.hero.subRotate,
+    content.how.eyebrow,
     content.final.ctaHref,
     content.tests.videoUrl,
     content.tests.videoLabel,

@@ -20,6 +20,7 @@
 
 import { useRef, useEffect, useCallback } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 
 import { cn } from '@/components/ui/_utils/cn'
 import { ClientLogoImage } from '@/components/social-proof/client-logo-strip'
@@ -29,6 +30,9 @@ const BAND = 'mx-auto w-full max-w-[1440px] px-[22px] sm:px-[32px] lg:px-[64px]'
 const EYEBROW_CLS =
   'text-[12px] font-semibold uppercase leading-[18.6px] tracking-[1.68px] text-brand-primary'
 const MUTED = 'text-[#7F8CA0]'
+const CASE_STUDIES_LABEL = 'All case studies'
+const CASE_STUDIES_HREF = '/customer-stories'
+const CASE_STUDIES_ARROW = '\u2192'
 
 
 // Radius of the glow circle (px) and how far the overlay extends past the
@@ -164,23 +168,32 @@ export function ClientStorySection({ content = HOME_CONTENT }: { content?: HomeC
 
         <div
           ref={attrRef}
-          className="motion-safe:opacity-40 mt-[36px] flex items-center gap-[16px]"
+          className="motion-safe:opacity-40 mt-[36px] flex flex-col gap-[20px]"
         >
-          <Image
-            src={clientStory.avatar}
-            alt={clientStory.name}
-            width={64}
-            height={64}
-            className="h-[64px] w-[64px] shrink-0 rounded-full object-cover"
-          />
-          <div>
-            <div className="text-[18px] font-bold leading-[22px] text-white">
-              {clientStory.name}
+          <div className="flex items-center gap-[20px]">
+            <Image
+              src={clientStory.avatar}
+              alt={clientStory.name}
+              width={84}
+              height={84}
+              className="h-[84px] w-[84px] shrink-0 rounded-full object-cover"
+            />
+            <div>
+              <div className="text-[23px] font-bold leading-[28px] text-white">
+                {clientStory.name}
+              </div>
+              <div className={cn('text-[19px] leading-[26px]', MUTED)}>{clientStory.role}</div>
             </div>
-            <div className={cn('text-[15px]', MUTED)}>{clientStory.role}</div>
+            <span aria-hidden className="mx-[6px] h-[56px] w-px shrink-0 bg-[#22314D]" />
+            <ClientLogoImage logo={clientStory.logo} className="max-h-[28px]" />
           </div>
-          <span aria-hidden className="mx-[6px] h-[44px] w-px shrink-0 bg-[#22314D]" />
-          <ClientLogoImage logo={clientStory.logo} className="max-h-[22px]" />
+          <Link
+            href={CASE_STUDIES_HREF}
+            className="inline-flex w-fit items-center gap-[8px] text-[16px] font-semibold text-white transition-colors hover:text-brand-primary"
+          >
+            <span aria-hidden>{CASE_STUDIES_ARROW}</span>
+            {CASE_STUDIES_LABEL}
+          </Link>
         </div>
       </div>
     </section>

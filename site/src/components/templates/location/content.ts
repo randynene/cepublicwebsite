@@ -612,6 +612,7 @@ export const EASTERN_EUROPE_CONTENT: LocationContent = {
     presenter: 'Grace Tannor · Why Eastern Europe',
     pullQuote: 'elite engineering, fair rates.',
     image: `${EE}/video-still.jpg`,
+    videoUrl: 'https://vimeo.com/1212987222',
   },
   onGround: {
     eyebrow: 'Where we are',
@@ -862,6 +863,7 @@ export const PHILIPPINES_CONTENT: LocationContent = {
     presenter: 'Marcus Kilgour · CTO, Salmon Software',
     pullQuote: 'Watch · 90 sec',
     image: `${PH}/video-still.jpg`,
+    videoUrl: 'https://vimeo.com/1145433775',
   },
   regionsStrip: {
     title: 'Built on the ground in three regions.',

@@ -287,7 +287,7 @@ export const HOME_CONTENT = {
     logos: CLIENT_LOGOS as HomeLogo[],
   },
   clientStory: {
-    eyebrow: "Jobs boards don't work anymore",
+    eyebrow: "JOB BOARDS DON'T WORK",
     quoteLines: [
       "Cloud Employee didn't send us 100s of CVs.",
       'Their engineers did the screening and handed us',

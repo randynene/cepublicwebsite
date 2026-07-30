@@ -80,13 +80,27 @@ export const FE2_UI_CSS = `
 .fe2 .pc-foot .s .n{font-family:var(--serif);font-style:italic;color:var(--lime);font-size:22px;font-weight:600}
 .fe2 .pc-foot .s .l{font-size:12px;color:var(--dim);margin-top:2px}
 
-/* ---- motion: cursor spotlight on The Idea ---- */
-.fe2 [data-fe2-spotlight]{position:relative;isolation:isolate;overflow:visible}
+/* ---- motion: cursor spotlight on The Idea ----
+ * Overflow must stay visible so the radial glow can fade past the section
+ * edges (the frozen export sets overflow:hidden inline — override it).
+ * Headline starts dim and lights up under the cursor. */
+.fe2 [data-fe2-spotlight]{position:relative;isolation:isolate;overflow:visible!important}
 .fe2 [data-fe2-spotlight]::before{content:"";position:absolute;inset:-320px;z-index:-1;opacity:0;transition:opacity .4s ease;pointer-events:none;background:radial-gradient(560px circle at var(--mx,50%) var(--my,50%),rgba(212,255,60,.16),rgba(212,255,60,.05) 42%,transparent 70%)}
 .fe2 [data-fe2-spotlight].fe2-glowing::before{opacity:1}
-.fe2 [data-fe2-glow-item]{transition:opacity .35s ease,transform .35s ease}
-.fe2 [data-fe2-spotlight].fe2-glowing [data-fe2-glow-item]{opacity:.4}
-.fe2 [data-fe2-spotlight].fe2-glowing [data-fe2-glow-item].fe2-lit{opacity:1;transform:translateY(-4px)}
+.fe2 [data-fe2-glow-item]{opacity:.45;transition:opacity .35s ease,transform .35s ease}
+.fe2 [data-fe2-spotlight] [data-fe2-glow-item].fe2-lit{opacity:1;transform:translateY(-4px)}
+.fe2 [data-fe2-spotlight].fe2-glowing [data-fe2-glow-item]:not(.fe2-lit){opacity:.35}
+
+/* ---- CE-13: rotating lime-italic word under the hero subhead ---- */
+.fe2 .fe2-rotator{display:block;margin-top:6px;min-height:1.2em}
+.fe2 .fe2-rotator-word{display:inline-block;font-family:var(--serif);font-style:italic;font-weight:400;color:var(--lime);font-size:1.15em;line-height:1.2;transition:opacity .28s ease,transform .28s ease}
+.fe2 .fe2-rotator-word.is-out{opacity:0;transform:translateY(-6px)}
+/* Slightly larger hero sub so the two-line treatment reads clearly */
+.fe2 .fe2-hero-sub{font-size:22px!important;line-height:32px!important}
+
+/* ---- Why this exists: even stat columns ---- */
+.fe2 [data-fe2-problem-stats]{align-items:stretch!important}
+.fe2 [data-fe2-problem-stats] > *{flex:1 1 0!important;min-width:0}
 
 /* ---- motion: reveal-on-scroll + hover on step cards ---- */
 .fe2 [data-fe2-reveal]{opacity:0;transform:translateY(20px);transition:opacity .6s ease,transform .6s ease}
@@ -122,9 +136,9 @@ export const FE2_UI_CSS = `
 @media(prefers-reduced-motion:reduce){
 .fe2 [data-fe2-reveal]{opacity:1!important;transform:none!important}
 .fe2 [data-fe2-spotlight].fe2-glowing::before{opacity:0}
-.fe2 [data-fe2-spotlight].fe2-glowing [data-fe2-glow-item]{opacity:1}
+.fe2 [data-fe2-glow-item]{opacity:1!important;transform:none!important}
 .fe2 [data-fe2-card],.fe2 [data-fe2-cta]{transition:none}
 .fe2 [data-fe2-card]:hover,.fe2 [data-fe2-cta]:hover{transform:none}
-.fe2 
+.fe2 .fe2-rotator-word{transition:none}
 }
 `

@@ -130,11 +130,11 @@ export function ProcessVideo({
         }}
       />
 
-      {/* Caption (top). Sized up on the 28 Jul review — at 13px the "90-second
-       * explainer" framing was unreadable over the moving footage. */}
+      {/* Caption (top). CE-23: enlarge so the "90-second explainer" line reads
+       * clearly over the moving footage. */}
       <div className="relative flex items-center gap-[12px]">
-        <span aria-hidden="true" className="h-[10px] w-[10px] rounded-full bg-brand-primary" />
-        <p className="text-[16px] font-medium leading-[24px] tracking-[-0.08px] text-white lg:text-[19px] lg:leading-[28px]">
+        <span aria-hidden="true" className="h-[12px] w-[12px] rounded-full bg-brand-primary" />
+        <p className="text-[20px] font-medium leading-[28px] tracking-[-0.08px] text-white lg:text-[24px] lg:leading-[32px]">
           {video.caption}
         </p>
       </div>

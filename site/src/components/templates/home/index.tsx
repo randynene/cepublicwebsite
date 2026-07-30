@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { MegaMenuPillLabel } from '@/components/ui/mega-menu-pill-label'
@@ -47,6 +48,8 @@ const CARD = 'rounded-[20px] border border-[#22314D] bg-[#101B30]'
 const EYEBROW =
   'text-[12px] font-semibold uppercase leading-[18.6px] tracking-[1.68px] text-brand-primary'
 const MUTED = 'text-[#7F8CA0]'
+const SEE_HOW_IT_WORKS_LABEL = 'See how it works'
+const SEE_HOW_IT_WORKS_ARROW = '\u2192'
 
 // White display headings = Inter semibold. Only lime accent words = font-serif italic.
 const H1 =
@@ -419,6 +422,17 @@ function Process({ content }: SectionProps) {
         >
           <ProcessVideo video={process.video} videoUrl={resolvedVideoUrl} />
         </Reveal>
+
+        {/* CE-18 — secondary CTA under the video, points at How it works. */}
+        <div className="mt-[28px] flex justify-center">
+          <Link
+            href="/how-it-works"
+            className="inline-flex items-center gap-[10px] rounded-full border border-white/25 bg-transparent px-[26px] py-[14px] text-[16px] font-semibold text-white transition-colors hover:border-brand-primary hover:text-brand-primary"
+          >
+            {SEE_HOW_IT_WORKS_LABEL}
+            <span aria-hidden>{SEE_HOW_IT_WORKS_ARROW}</span>
+          </Link>
+        </div>
       </div>
     </section>
   )
