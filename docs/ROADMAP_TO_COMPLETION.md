@@ -639,6 +639,24 @@ Jake decision), `dateModified` freshness. Logged here so they are not forgotten.
 
 ### 7a. HubSpot + sales-funnel cutover once-over (NEW — Jake priority)
 
+> **Superseded in part, 30 Jul 2026.** The funnel map Jake was going to write by
+> hand is now written and confirmed against the code:
+> **`docs/HUBSPOT_FORMS_STRATEGY.md`** (four gateways, locked decisions D1-D7, and
+> the J1-J9 list of what only Jake can do). The build that closes the "form demos"
+> item below is **`docs/briefs/active/GATEWAY-3-QUICK-HIRING-FORM.md`** (LOCKED,
+> not started - waiting on Jake to say "unpark and build").
+>
+> **Three findings from that confirmation pass that change this section:**
+> 1. The Contact and Newsletter form GUIDs are **our substitutions**, not live's
+>    (live posts both through a dead `hubspotonwebflow.com` bridge). They resolve
+>    on the portal, but nobody has confirmed a human reads those submissions. That
+>    is a cutover gate, not a nice-to-have.
+> 2. **`/price-comparison-calculator` lost a real live form** (`24f5bd5f-…`,
+>    "Start Hiring Request"). A live lead path that does not exist on the new site.
+> 3. "No connected workflows" in the April audit was a **missing `automation`
+>    token scope** (Tech Debt #8), not evidence. We do not currently know what
+>    HubSpot notifies on submit.
+
 **Why this exists:** a wrong HubSpot form id is the quietest failure on the site.
 The page looks perfect, nothing 404s, and every enquiry is lost. Typecheck / build /
 parity cannot catch it. We already have `npm run launch:verify-hubspot-forms` for
@@ -646,6 +664,8 @@ that reason — this phase makes the *whole funnel* a named cutover gate, not a
 side note.
 
 **Jake does first (business map — one sitting):**
+*Superseded 30 Jul — the map now lives in `docs/HUBSPOT_FORMS_STRATEGY.md`. What
+remains for Jake is the J1-J9 gate list in that doc, not this exercise.*
 1. List every path a lead can take on live CE today, in plain English. Example
    shape (fill in / correct with real CE reality):
    - Nav / CTA → Book a Call → Calendly → thank-you / confirmed page
@@ -680,9 +700,19 @@ side note.
       fixed → `/book-a-call` + `/how-it-works` (Jul 2026 forms pass).
 - [ ] Thank-you / confirmed pages remain noindex; lead-capture pages behave as live.
 
-**Not HubSpot (do not invent forms):** For Developers join UI, Fractional CTO match
-UI, Pricing calculator — demos / Book-a-Call paths per lead-conversion plan. Talent
-join stays a separate system.
+- [ ] **Confirm a human reads the Contact (`4b883c7d-…`) and Newsletter
+      (`b411a11f-…`) submissions.** These GUIDs are ours, not live's. **Jake (J1).**
+- [ ] **Confirm what HubSpot notifies today** (workflows / notify-emails / Slack).
+      The April "none" was a token-scope artifact. **Jake (J2).**
+- [ ] **`/price-comparison-calculator` has no form; live does.** Closed by the
+      gateway-3 build (embed target 2 of 3).
+
+**Not HubSpot (do not invent forms):** For Developers join UI (talent, separate
+system), the calculators themselves. **Changed 30 Jul:** the Hire Engineers and
+Fractional CTO demo quizzes are no longer "leave as demos" — they are gateway-3
+targets. Hire Engineers gets the real form embedded (Marker **CE-17** lands there);
+Fractional CTO gets a CTA into it. Downloads stay ungated as a **deliberate
+divergence from live**, to be recorded in `parity-exceptions.json`.
 
 **Gate:** Jake signs the funnel map; every path on the map has a green staging test;
 verifier PASS recorded in the cutover folder.
