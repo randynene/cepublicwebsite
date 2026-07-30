@@ -939,7 +939,7 @@ from the product tracker and should be deleted before launch (scaffold debt).
 | Fractional CTO | `/services/fractional-ctos` (+ `/uk`) | Net-new | BUILT + COMMITTED 22 Jul (`2951a2c`); **G2 wiring code-complete (WIRE-BESPOKE 23 Jul): `fractionalCtoPage` singleton (all copy editable + `video.videoUrl`) + GROQ/Zod/transform + US/UK routes (Sanity-first, static `FCTO` fallback) + seed; tsc/build/routes-200 green.** No photos by design (anonymised CTO cards, text-name logos, stylised video tile) - only media control is the video URL. OPEN: Jake deploys Studio + runs `npm run static:seed-fractional-cto-page`. | Deploy Studio + run seed; then DONE (confirm canonical URL vs planned `/fractional-cto` separately) | 4 |
 | Software Engineers (Hire Engineers) | `/services/software-engineers` (+ `/uk`) | Net-new (nav "Hire Engineers") | BUILT + COMMITTED 22 Jul (`a9cf250`; bespoke dark/lime `templates/hire-engineers/`). **G2 wiring code-complete (WIRE-BESPOKE 23 Jul): `hireEngineersPage` singleton (all copy editable + every image slot editable - hero avatars, offer/proof/form photos, sample-profile + author avatars, match photos - + 90-second tour `videoUrl`/`poster`) + GROQ/Zod/transform (splices calculator option keys, stega-cleans tour URL) + US/UK routes (Sanity-first, static `HE` fallback) + seed; tsc/build/routes-200 green.** Calculator numeric tables stay code-driven. SEEDED to production 23 Jul (after the Growth plan upgrade; verified `hireEngineersPage` landed with all sections), Studio deployed. Fully editable in Studio. Seb: upload image slots + paste the 90-second tour video URL if wanted. | DONE (G2). Optional: image/video uploads (confirm `/hire/software-engineers` redirect target + nav link) | 4 |
 | Managed Pods | `/managed-pods` | Net-new | NOT-BUILT | Phase 5.2 | 4 |
-| Ask Clara | `/ask` (+ `/uk/ask`) | Net-new (no live equivalent) | **P1 DONE (29 Jul) - FRONTEND SHELL ONLY.** UI built to `docs/design/lead-conversion/ask-clara-reference/Ask_Clara_Page_standalone.html`: chat left / canvas right, draggable 35-65% divider persisted to `localStorage`, and all 10 designed states (S1-S10) from hard-coded `Brief` fixtures. Reviewable via `?askDebug=1`. **Jake's 29 Jul revisions applied:** bespoke chrome - Cloud Employee logo left (30px), `Back to site` + `Talk to a human` right as an equal-size pair (190x46 desktop) on the sitewide `.cta-sweep` archetype, nothing else (no sitewide nav, no announcement bar, no footer); the brief region scrolls independently with the Download / Email / Book-a-call bar pinned below it, so it holds an arbitrarily deep brief; the client-story band carries a dismiss X and stays dismissed; and the composer's paperclip opens a real multi-file picker (CV, doc, spreadsheet, image) with removable chips. **Still nothing connected:** no Clara API, no HubSpot, no microphone, files are selected but not uploaded or read, S7's Calendly is a static placeholder, and Download / Email are affordances rather than controls. | P2 mock SSE transport -> P3 real Clara (`brief_update` + CORS + proxy + attachment analysis) -> P4 voice -> P5 Calendly + HubSpot + brief PDF, which is what turns Download and Email into working buttons. Per `docs/design/lead-conversion/ASK_CLARA_EXECUTION_PLAN.md`. | Not in a launch wave - `/ask` is a net-new conversion surface, not a parity page |
+| Ask Clara | `/ask` (+ `/uk/ask`) | Net-new (no live equivalent) | **P1 DONE (29 Jul) + P2 DONE (30 Jul) - MOCK STREAM LIVE.** P1 shell (chat/canvas/fixtures/`?askDebug=1`) survives. **P2:** scripted SSE mock transport + brief reducer drive the page; send / Enter / chips / suggestions advance a conversation that fills the brief live, reshapes S3→S4, and reaches S6 - zero Clara API spend. Debug panel adds a mock-script picker beside the fixture switcher. Still no real Clara, HubSpot, voice, or booking backend. | P3 real Clara (`brief_update` + CORS + proxy + attachment analysis) -> P4 voice -> P5 Calendly + HubSpot + brief PDF. Per `docs/design/lead-conversion/ASK_CLARA_WIRING_PLAN.md` + `ASK_CLARA_P2_KICKOFF.md`. | Not in a launch wave - `/ask` is a net-new conversion surface, not a parity page |
 | 404 | any bad URL | n/a | DONE (dark/lime re-skin 22 Jul) | none | - |
 
 > **`/ask` (Ask Clara) - what P1 does and does not include.** P1 is deliberately a
@@ -983,10 +983,15 @@ from the product tracker and should be deleted before launch (scaffold debt).
 > is why it has to grow without limit, why it is takeable away (download / email),
 > and why booking a call to walk through it is always one click from it.
 >
-> **Outstanding:** everything behind the UI (P2-P5). Specifically: Download and
-> Email are affordances, not buttons, until the PDF and HubSpot work lands in P5;
-> attached files are listed but never uploaded or read until P3 sends them to Clara
-> for analysis. Plus two decisions for Jake - whether `/ask` should be indexable (it
+> **P2 complete (30 Jul):** mock SSE client (`site/src/lib/ask/clara/`), brief
+> reducer + live canvas derivation, shell wired so composer send/Enter/chips run
+> the script, `?askDebug=1` keeps fixtures and adds mock-script picker. Demo:
+> `/ask?askDebug=1` → chip "Hire one senior React engineer" → keep sending through
+> the script until the squad reshape and brief-ready panel.
+>
+> **Outstanding (P3-P5):** real Clara proxy, voice, Calendly + HubSpot + brief PDF
+> (Download / Email stay affordances until P5); attached files still listed only
+> until P3. Plus two decisions for Jake - whether `/ask` should be indexable (it
 > currently is, per the plan's non-blocking default) and whether it belongs in the
 > sitemap.
 

@@ -394,6 +394,10 @@ export function BriefCanvas({
   onSchedule: () => void
 }) {
   const shape = resolveBriefShape(canvas.brief)
+  // Version key: fields settling in re-run the settle motion. Shape key: an
+  // S3 → S4 reshape remounts the card so the morph animation can play.
+  // Both animations are gated on prefers-reduced-motion in globals.css.
+  const settleKey = `${shape}-${canvas.brief.version}`
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -412,14 +416,16 @@ export function BriefCanvas({
       >
         <BriefHeader canvas={canvas} />
 
-        {shape === 'single' ? <BriefSingle canvas={canvas} /> : null}
-        {shape === 'team' ? <BriefTeam canvas={canvas} /> : null}
-        {shape === 'product' ? <BriefProduct canvas={canvas} /> : null}
-        {shape === 'pending' ? (
-          <div className={cn(CARD, 'px-[26px] py-[24px]')}>
-            <DashedValue>{ASK_LABELS.awaitingSignal}</DashedValue>
-          </div>
-        ) : null}
+        <div key={settleKey} className="ask-brief-settle">
+          {shape === 'single' ? <BriefSingle canvas={canvas} /> : null}
+          {shape === 'team' ? <BriefTeam canvas={canvas} /> : null}
+          {shape === 'product' ? <BriefProduct canvas={canvas} /> : null}
+          {shape === 'pending' ? (
+            <div className={cn(CARD, 'px-[26px] py-[24px]')}>
+              <DashedValue>{ASK_LABELS.awaitingSignal}</DashedValue>
+            </div>
+          ) : null}
+        </div>
 
         {canvas.disclaimer ? (
           <p className="mt-auto text-[12.5px] leading-[1.5] text-[#5f6b7d]">

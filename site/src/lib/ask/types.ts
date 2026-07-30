@@ -1,9 +1,8 @@
 // Ask Clara — the shapes the `/ask` UI renders.
 //
-// P1 is frontend-only: every one of these is filled by a hand-written fixture in
-// ./fixtures.ts. P2 swaps the source for a scripted SSE mock and P3 for real
-// Clara turns, without the components changing - which is the whole point of
-// keeping the render input declarative here.
+// P1 filled these from fixtures; P2 fills them from the live session reducer
+// (mock SSE); P3 will swap the transport for real Clara turns. Components stay
+// declarative either way - that is the point of this module.
 
 import type { Brief } from './brief'
 import type { BriefDisplay } from './display'
