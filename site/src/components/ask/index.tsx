@@ -1,8 +1,12 @@
 import type { Locale } from '@/lib/locale-path'
-
-import { AskShell, resolveInitialScriptId } from './ask-shell'
-import { ASK_META } from './content'
+import {
+  DEFAULT_MOCK_SCRIPT,
+  isMockScriptId,
+} from '@/lib/ask/clara/scripts'
 import type { AskScreenId } from '@/lib/ask/types'
+
+import { AskShell } from './ask-shell'
+import { ASK_META } from './content'
 
 // Server entry point for /ask and its locale mirrors.
 //
@@ -28,13 +32,17 @@ export function AskTemplate({
   fixtureMode: boolean
   debug: boolean
 }) {
+  const initialScriptId = isMockScriptId(scriptId)
+    ? scriptId
+    : DEFAULT_MOCK_SCRIPT
+
   return (
     <main>
       <h1 className="sr-only">{ASK_META.title}</h1>
       <AskShell
         locale={locale}
         initialScreenId={screenId}
-        initialScriptId={resolveInitialScriptId(scriptId)}
+        initialScriptId={initialScriptId}
         fixtureMode={fixtureMode}
         debug={debug}
       />

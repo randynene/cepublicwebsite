@@ -7,7 +7,6 @@ import type { Locale } from '@/lib/locale-path'
 import { ASK_SCREENS } from '@/lib/ask/fixtures'
 import {
   DEFAULT_MOCK_SCRIPT,
-  isMockScriptId,
   type MockScriptId,
 } from '@/lib/ask/clara/scripts'
 import type { AskAttachment, AskScreenId, ComposerState } from '@/lib/ask/types'
@@ -306,8 +305,4 @@ export function AskShell({
       ) : null}
     </>
   )
-}
-
-export function resolveInitialScriptId(value: string | null): MockScriptId {
-  return isMockScriptId(value) ? value : DEFAULT_MOCK_SCRIPT
 }
