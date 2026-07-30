@@ -8,23 +8,46 @@
 // Run: npm run launch:verify-hubspot-forms-staging
 // Optional: STAGING_BASE_URL=https://staging.jakevibes.dev
 
+// LAUNCH CONSOLIDATION - Jake, 30 Jul 2026. The site now has three form-shaped
+// lead surfaces, not eleven. This verifier was rewritten to match:
+//
+//   1. Book a call / Calendly   - the primary door, everything points here
+//   2. Contact form             - the only HubSpot embed left on the site
+//   3. Ask Clara                - separate track, not checked here
+//   4. Quick hiring form        - custom UI, own API route, checked once it ships
+//
+// It now proves two things, and the second one matters as much as the first:
+// that the surviving form is alive, and that the retired ones are GONE. A
+// newsletter box that quietly comes back, or a start-hiring step that stops
+// redirecting, is exactly the kind of regression nobody notices by eye.
+
 const PORTAL_ID = '22809822'
 const BASE = (process.env.STAGING_BASE_URL ?? 'https://staging.jakevibes.dev').replace(/\/$/, '')
-const NEWSLETTER_ID = 'b411a11f-1548-4cf7-887e-26fac7824006'
 
-/** Paths that must embed a HubSpot form (newsletter is sitewide and stripped). */
+/** Retired 30 Jul 2026. Must not appear in any page's HTML. */
+const RETIRED_NEWSLETTER_ID = 'b411a11f-1548-4cf7-887e-26fac7824006'
+
+/** Paths that must embed a HubSpot form. */
 const EXPECTED: Array<{ path: string; formId: string; note?: string }> = [
   { path: '/contact', formId: '4b883c7d-72c1-4f9c-8196-de68fce303d6' },
   { path: '/uk/contact', formId: '4b883c7d-72c1-4f9c-8196-de68fce303d6' },
-  { path: '/uk/start-hiring/get-started', formId: '05bfad44-0c7c-45f2-a3c4-3eccea71965d' },
-  { path: '/start-hiring/contact-info', formId: '1578f9b5-fb43-4772-83df-79c51c120a92' },
-  { path: '/uk/start-hiring/contact-info', formId: '1578f9b5-fb43-4772-83df-79c51c120a92' },
-  { path: '/start-hiring/how-many', formId: '07a77a4d-07ad-4c8a-aef1-c1c2ea8499a8' },
-  { path: '/start-hiring/how-long', formId: '1c6864a5-cfc7-44e5-82cc-652b429fe816' },
-  { path: '/start-hiring/budget', formId: 'b51dfb72-7574-4d3f-843a-e3ea1a183e8f' },
-  { path: '/start-hiring/when-needed', formId: 'c5e99e29-8968-4ad8-98c5-496218322b0d' },
-  { path: '/start-hiring/technology', formId: '023ae2ad-cebc-4535-bb86-5807a578ffc6' },
-  { path: '/start-hiring/final-details', formId: '2d69a43b-9e1f-405d-b5f6-11e8063d7ba5' },
+]
+
+/** Retired funnel. Every one of these must 301 to a book-a-call page. */
+const RETIRED_TO_BOOK_A_CALL: string[] = [
+  '/start-hiring',
+  '/start-hiring/get-started',
+  '/start-hiring/contact-info',
+  '/start-hiring/how-many',
+  '/start-hiring/how-long',
+  '/start-hiring/budget',
+  '/start-hiring/when-needed',
+  '/start-hiring/technology',
+  '/start-hiring/final-details',
+  '/start-hiring/thanks',
+  '/uk/start-hiring',
+  '/uk/start-hiring/get-started',
+  '/uk/start-hiring/contact-info',
 ]
 
 async function resolvesOnHubSpot(id: string): Promise<boolean> {
@@ -62,18 +85,10 @@ async function main(): Promise<void> {
 
   let failed = 0
 
-  // Newsletter appears sitewide via footer.
-  const homeHtml = await fetchHtml('/')
-  const homeIds = extractFormIds(homeHtml)
-  const newsOk = homeIds.includes(NEWSLETTER_ID) && (await resolvesOnHubSpot(NEWSLETTER_ID))
-  console.log(
-    `${newsOk ? 'OK  ' : 'DEAD'}  footer newsletter`.padEnd(42) + NEWSLETTER_ID,
-  )
-  if (!newsOk) failed++
-
+  // 1. The surviving HubSpot embeds must render and resolve.
   for (const row of EXPECTED) {
     const html = await fetchHtml(row.path)
-    const ids = extractFormIds(html).filter((id) => id !== NEWSLETTER_ID)
+    const ids = extractFormIds(html)
     const present = ids.includes(row.formId)
     const live = present && (await resolvesOnHubSpot(row.formId))
     if (!live) failed++
@@ -84,23 +99,34 @@ async function main(): Promise<void> {
     )
   }
 
-  // US get-started must redirect into contact-info (not serve its own form).
-  const usGetStarted = await fetch(`${BASE}/start-hiring/get-started`, {
-    headers: { 'user-agent': 'mygratr-hubspot-forms-staging-verify' },
-    redirect: 'follow',
-  })
-  const landed = new URL(usGetStarted.url).pathname
-  const redirectOk = landed.endsWith('/start-hiring/contact-info')
+  // 2. The newsletter must be gone sitewide, not merely hidden.
+  const homeIds = extractFormIds(await fetchHtml('/'))
+  const newsletterGone = !homeIds.includes(RETIRED_NEWSLETTER_ID)
   console.log(
-    `\n${redirectOk ? 'OK  ' : 'DEAD'}  US /start-hiring/get-started redirects to contact-info (landed ${landed})`,
+    `\n${newsletterGone ? 'OK  ' : 'BACK'}  footer newsletter is retired`.padEnd(48) +
+      RETIRED_NEWSLETTER_ID,
   )
-  if (!redirectOk) failed++
+  if (!newsletterGone) failed++
+
+  // 3. Every retired funnel URL must 301 onto a book-a-call page. These are live
+  //    200s today, so a 404 here would bin real link equity mid-migration.
+  console.log('')
+  for (const path of RETIRED_TO_BOOK_A_CALL) {
+    const res = await fetch(`${BASE}${path}`, {
+      headers: { 'user-agent': 'mygratr-hubspot-forms-staging-verify' },
+      redirect: 'follow',
+    })
+    const landed = new URL(res.url).pathname.replace(/\/$/, '')
+    const ok = res.ok && landed.endsWith('/book-a-call')
+    if (!ok) failed++
+    console.log(`${ok ? 'OK  ' : 'FAIL'}  ${path.padEnd(36)} -> ${landed}`)
+  }
 
   if (failed > 0) {
     console.error(`\n${failed} check(s) failed. A dead form id loses every enquiry silently.`)
     process.exit(1)
   }
-  console.log('\nAll staging HubSpot form ids are present and resolve on HubSpot.')
+  console.log('\nForms consolidated: contact embed live, newsletter retired, funnel redirected.')
 }
 
 main().catch((err) => {
