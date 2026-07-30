@@ -1,13 +1,120 @@
 # HubSpot + lead-gateway strategy
 
-> **Status:** STRATEGY LOCKED, BUILD STILL PARKED.
+> **Status:** UNPARKED. Consolidation SHIPPED. Quick hiring form outstanding.
 > **Owner:** Jake + agent.
 > **Created:** 30 Jul 2026 (from Marker CE-17 discussion + forms audit).
-> **Updated:** 30 Jul 2026 - strategy session. Doc confirmed against the live
-> codebase; every open decision in §"Open decisions" now carries a locked answer
-> or a named Jake gate. Build brief: `docs/briefs/active/GATEWAY-3-QUICK-HIRING-FORM.md`.
-> **Still do not build until Jake says "unpark and build".** Nothing in HubSpot
-> has been created, renamed, or mutated by this session.
+> **Updated:** 30 Jul 2026 (second pass) - **Jake simplified the model for a
+> launch-tomorrow cutover.** See §"Launch model" immediately below, which
+> supersedes the four-gateway section and decisions D1-D7 wherever they disagree.
+> Build brief: `docs/briefs/active/GATEWAY-3-QUICK-HIRING-FORM.md`.
+> Nothing in HubSpot has been created, renamed, or mutated by any session so far.
+
+---
+
+## Launch model (Jake, 30 Jul 2026) - THIS SUPERSEDES EVERYTHING BELOW IT
+
+**One aim: get the visitor to schedule a call.** Every form on the site points at
+that. Anything that does not serve it is removed rather than maintained.
+
+### The three form-shaped surfaces that survive, plus Clara
+
+| # | Surface | What it is | Status |
+|---|---|---|---|
+| 1 | **Book a call** | Calendly, syncing into HubSpot. The primary door. Everything funnels here. | Exists |
+| 2 | **Contact page** | The one remaining HubSpot embed. "I just want to message you." | Exists |
+| 3 | **Ask Clara** | AI chat. Jake is building this in parallel; not this track's job. | Jake's track |
+| 4 | **Quick hiring form** | Proxify-shaped component: a few questions, then their details, then push to book a call. Sits on services and technology pages. | **TO BUILD** |
+
+### Removed at launch, deliberately
+
+| Removed | Why | How |
+|---|---|---|
+| **Footer newsletter** | Collected emails for a newsletter that does not exist, and competed for attention with the one CTA that matters. A funnel for this can be designed later, on purpose. | Block deleted from the footer. `footer.subscribe` left in Sanity, unread. Footer keeps its book-a-call CTA (`footer.topCtaBlock`). |
+| **`/start-hiring` funnel** | 17 URLs and nine HubSpot forms whose step order lived in HubSpot's settings, not our code. A nine-step form is the opposite of "book a call". | **301 to `/book-a-call`**, not deleted - it has 4 referring domains and 17 live 200s. Routes and template removed; Sanity docs and schemas left in place so it is reversible. |
+| **Every demo form** | Looks like a lead form, captures nothing. | Replaced by the quick hiring form where one belongs, or a plain CTA. |
+
+### Why the retired things were redirected rather than deleted
+
+We are 24 hours from pointing a real domain at this. `/start-hiring` and its steps
+return 200 on live today. Deleting the routes would have 404'd 17 URLs the moment
+DNS flipped, binning the link equity from 4 referring domains for no gain. A 301 to
+`/book-a-call` costs three lines and lands the visitor on the thing we actually
+want. Traffic is tiny (2 clicks / 1,156 impressions on the best of them), which is
+why retiring it is safe - not why deleting it would have been.
+
+### Shipped in this pass (commits on `cursor/hubspot-gateway-lock-c05e`)
+
+- `/start-hiring` retired behind 301s; routes, template and GROQ query deleted;
+  Location page CTAs repointed to `/book-a-call`; recorded in
+  `data/webflow/parity-exceptions.json`.
+- Footer newsletter removed; `subscribe.tsx` and `subscribe-form.tsx` deleted.
+- Both HubSpot verifiers rewritten. They now also assert the **retired** surfaces
+  stay retired - a newsletter that quietly returns, or a start-hiring step that
+  stops redirecting, is exactly the regression nobody spots by eye.
+- tsc clean (site + root), compile clean, lint errors down from 34 to 32.
+
+### Still outstanding for launch
+
+1. **The quick hiring form** (surface 4). Needs a HubSpot form id, which needs a
+   token or the MCP. See the build brief.
+2. **The remaining demo forms** on Hire Engineers, Fractional CTO and For
+   Developers still render. They capture nothing. See §"The demos still live".
+3. **The three questions in §"What only Jake can do"** - one of them could
+   invalidate the whole model if the answer is no.
+
+---
+
+## What only Jake can do (revised for the launch model)
+
+| # | Item | Why it matters now |
+|---|---|---|
+| **J-A** | **Confirm Calendly actually syncs into HubSpot.** | This is the one that can undo everything. The site now points ~100% of its intent at booking a call. If that booking does not create a HubSpot record, we have funnelled the entire site into a path with no CRM behind it. Nothing in this repo can verify it. **Check this first.** |
+| **J-B** | Confirm a human reads the Contact form (`4b883c7d-…`) submissions | It is now 1 of only 3 live surfaces, and that GUID is our substitution, not live's (CONFIRM-1). `/contact` is the site's #5 page: 229 clicks, 20,369 impressions. |
+| **J-C** | Connect HubSpot MCP, or supply a private-app token | Unblocks creating the quick hiring form's HubSpot form + properties. See §"Connecting HubSpot" below. |
+| **J-D** | Decide `/for-developers` (see §"The demos still live") | It is the site's #6 page, 19,558 impressions, and its apply form is fake. |
+| **J-E** | Consent wording next to the quick form's submit button | CE runs no consent banner today. Legal call. |
+
+---
+
+## Connecting HubSpot (revised - the MCP question answered)
+
+Jake asked to "get HubSpot integrated with the MCP and just make our system be able
+to talk to it." Those are **two different things** and only one of them is an MCP.
+
+**The MCP lets the agent manage HubSpot during a chat.** Create the form, create
+the properties, rename the junk-drawer forms, read what is there. This is the
+"no clicking around HubSpot" part, and it works.
+
+HubSpot's **official remote MCP server** went GA in April 2026 at
+`https://mcp.hubspot.com`. It is OAuth, so there is **no token to create, paste or
+store** - Jake adds the server in Cursor's MCP settings, logs in through the
+browser, approves the scopes. That is the cleanest path and the recommendation.
+(The alternative, `npx @hubspot/mcp-server`, needs a private-app token in a config
+file. More moving parts, same result. Only worth it to keep the process local.)
+
+**The MCP does nothing for the live website.** An MCP only runs inside a chat
+session on Jake's machine. The deployed site on Vercel cannot use it. So the quick
+hiring form still needs its own server-side path to HubSpot, exactly as the build
+brief describes. There is no version of this where the MCP replaces that.
+
+Recommended scopes when approving: `crm.objects.contacts.read` + `.write`,
+`crm.schemas.contacts.read` + `.write`, and forms read/write. Start there; add more
+only if something is refused.
+
+---
+
+## The demos still live (decide before cutover)
+
+These three still render form-shaped UI that captures nothing. They violate the
+"no silent dead forms" rule and are the last of the cleanup.
+
+| Page | What is fake | Recommendation |
+|---|---|---|
+| `/services/software-engineers` (Hire Engineers) | 4-step "find your engineer" quiz, then a fabricated list of matched engineers, then a button to `/book-a-call`. **Marker CE-17 lives here.** | **This is where the quick hiring form goes.** The fabricated engineer list must go regardless - inventing matches we have not made is the one thing the locked lead-conversion plan explicitly forbids. |
+| `/services/fractional-ctos` | 4-step match quiz, local state only | Replace with a CTA into the quick form. Not its own embed. |
+| `/for-developers` | Talent join form with a fake done-state. **Site's #6 page: 200 clicks, 19,558 impressions.** | **Jake decision (J-D).** This is developers applying into a void, at volume. CE already runs a real talent site at `talent.cloudemployee.io` (873 clicks in its own right). Recommendation: replace the fake form with a real link to the talent site. It is out of the client-lead model, but shipping a fake careers form on a top-10 page at launch is worse than any of the things we just removed. |
+
+---
 
 ---
 
@@ -42,6 +149,12 @@ Jake’s goal: one clear lead system, manageable from Cursor / Claude Code (HubS
 ---
 
 ## The four lead gateways (Jake’s model)
+
+> **Partly superseded 30 Jul by the launch model above.** Gateways 1-4 still hold.
+> What changed: the footer newsletter is **removed**, not kept as a convenience;
+> `/start-hiring` is **retired**, not kept as an unpromoted background funnel; and
+> the quick hiring form's home is services and technology pages. Read the launch
+> model first; this section is kept for the reasoning behind each gateway.
 
 These are the intentional ways a lead should enter the business. Everything else is either a CTA into one of these, or content (downloads) with no forced contact.
 
@@ -233,6 +346,12 @@ authenticated it only covers (1)-style convenience, never (2).
 ---
 
 ## Open decisions - RESOLVED 30 Jul 2026
+
+> **D1 and D5 were overtaken the same day by Jake's launch model.**
+> **D1 said keep `/start-hiring` unpromoted; it is now RETIRED** behind 301s to
+> `/book-a-call`. **D5 named three embed pages; the form now goes on services and
+> technology pages**, and Pricing is no longer contested (D5's collision with Ask
+> Clara is moot). D2, D3, D4, D6 and D7 stand as written.
 
 Each carries a recommendation, the one-line tradeoff, and whether it is locked or
 waiting on Jake. Full build detail lives in

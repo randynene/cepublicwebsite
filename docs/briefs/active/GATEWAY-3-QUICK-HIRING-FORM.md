@@ -1,8 +1,17 @@
 # MYGRATR-GATEWAY-3 - Quick hiring form (Proxify-shaped)
 
-> **Status:** LOCKED, NOT STARTED. Do not execute until Jake says
-> **"unpark and build"**.
+> **Status:** UNPARKED 30 Jul 2026. Blocked only on a HubSpot form id (J-C).
 > **Authored:** 30 Jul 2026, from `docs/HUBSPOT_FORMS_STRATEGY.md` decisions D1-D7.
+> **Revised same day** for Jake's launch model. Changes from the first draft:
+>
+> - **`/start-hiring` is retired, not kept.** D1 is overtaken. The funnel now 301s
+>   to `/book-a-call`; routes, template and query are deleted. Already shipped.
+> - **The footer newsletter is removed.** Already shipped.
+> - **Placement changed.** The form goes on **services and technology pages**, not
+>   the three pages D5 named. Pricing is no longer contested, so the Ask Clara
+>   collision (old J6) is moot.
+> - **Launch is tomorrow.** Phase ordering below is now driven by that.
+>
 > **Strategy doc is the parent.** If this brief and that doc disagree, the doc wins
 > and this file is stale.
 > **Complexity:** HIGH. First server-side POST in this codebase, first custom
@@ -190,15 +199,24 @@ only. The route is the boundary.
 | 3.4 | Storybook story covering all 7 states | `site/src/components/lead/quick-hiring-form/stories.tsx` |
 | 3.5 | Any new visible copy goes through UI_STRINGS | `tools/eslint/ui-strings.json` then `npm run generate-ui-strings` |
 
-### Phase 4 - mount it, delete the fakes
+### Phase 4 - mount it, delete the fakes (REVISED for the launch model)
+
+Placement changed. The form now lives on the **services and technology detail
+pages**, which is a much wider footprint than the original three pages - the whole
+point of building it as one reusable component.
 
 | # | Step | File | Note |
 |---|---|---|---|
-| 4.1 | Replace `FindForm` with the real component | `site/src/components/templates/hire-engineers/index.tsx` | **CE-17 lands here.** Delete `sendLead`. Delete the fake "matches" list - it fabricates engineers we have not matched, which the locked plan forbids. |
-| 4.2 | Embed below the calculator result | `site/src/app/price-comparison-calculator/page.tsx` + `site/src/app/uk/...` | Restores CONFIRM-2, the live regression |
-| 4.3 | Embed below the calculator result | `site/src/app/pricing/page.tsx` + `site/src/app/uk/pricing/page.tsx` | **Only if Jake resolves J6 in favour of the form.** If Clara wins Pricing, skip this step entirely. |
-| 4.4 | Point Fractional CTO's match quiz at the form instead of its dead stepper | `site/src/components/templates/fractional-cto/index.tsx` | CTA, not embed |
-| 4.5 | Stamp `ce_lead_gateway` on the other gateways so the model is complete | Contact + newsletter: hidden field in HubSpot. Start-hiring: `start_hiring_legacy`. | HubSpot-side |
+| 4.1 | Replace `FindForm` with the real component | `site/src/components/templates/hire-engineers/index.tsx` | **CE-17 lands here.** Delete `sendLead`. **Delete the fabricated "matches" list regardless of whether the form is ready** - inventing engineers we have not matched is the one thing the locked lead-conversion plan explicitly forbids. |
+| 4.2 | Embed on service detail | `site/src/components/templates/service/` (+ UK) | Highest-intent browse surface |
+| 4.3 | Embed on technology detail | `site/src/components/templates/technology/` (+ UK) | **Pre-select the page's own technology** in step 1, so the visitor starts a question in |
+| 4.4 | Embed below the calculator result | `site/src/app/price-comparison-calculator/page.tsx` + UK | Restores CONFIRM-2, the live regression |
+| 4.5 | Point Fractional CTO's match quiz at the form | `site/src/components/templates/fractional-cto/index.tsx` | CTA, not embed |
+| 4.6 | **Jake decision J-D:** `/for-developers` fake talent form | `site/src/components/templates/for-engineers/index.tsx` | Site's #6 page, 19,558 impressions, apply form is fake. Recommendation: link to `talent.cloudemployee.io`. **Not** the quick form - this is talent, not clients. |
+| 4.7 | Stamp `ce_lead_gateway` on the surviving gateways | Contact: hidden field in HubSpot. Calendly: whatever its HubSpot sync supports. | HubSpot-side |
+
+**Already shipped, do not redo:** `/start-hiring` retirement and the footer
+newsletter removal both landed on 30 Jul. Old steps referencing them are void.
 
 ### Phase 5 - verify
 
