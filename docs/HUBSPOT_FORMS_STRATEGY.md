@@ -68,7 +68,7 @@ why retiring it is safe - not why deleting it would have been.
 
 | # | Item | Why it matters now |
 |---|---|---|
-| **J-A** | **Confirm Calendly actually syncs into HubSpot.** | This is the one that can undo everything. The site now points ~100% of its intent at booking a call. If that booking does not create a HubSpot record, we have funnelled the entire site into a path with no CRM behind it. Nothing in this repo can verify it. **Check this first.** |
+| **J-A** | **Confirm Calendly actually syncs into HubSpot.** | This is the one that can undo everything. The site now points ~100% of its intent at booking a call. If that booking does not create a HubSpot record, we have funnelled the entire site into a path with no CRM behind it. **Check this first.** Verifiable by the agent once the MCPs are connected - see §"Proving the booking path works" below. |
 | **J-B** | Confirm a human reads the Contact form (`4b883c7d-…`) submissions | It is now 1 of only 3 live surfaces, and that GUID is our substitution, not live's (CONFIRM-1). `/contact` is the site's #5 page: 229 clicks, 20,369 impressions. |
 | **J-C** | Connect HubSpot MCP, or supply a private-app token | Unblocks creating the quick hiring form's HubSpot form + properties. See §"Connecting HubSpot" below. |
 | **J-D** | Decide `/for-developers` (see §"The demos still live") | It is the site's #6 page, 19,558 impressions, and its apply form is fake. |
@@ -100,6 +100,68 @@ brief describes. There is no version of this where the MCP replaces that.
 Recommended scopes when approving: `crm.objects.contacts.read` + `.write`,
 `crm.schemas.contacts.read` + `.write`, and forms read/write. Start there; add more
 only if something is refused.
+
+---
+
+## Proving the booking path works (J-A)
+
+The question is not "is the Calendly integration switched on". It is **"when
+somebody books, does a record appear in HubSpot?"** That is answerable from data
+that already exists, which is a stronger test than any settings toggle: a toggle
+can be on and still not be writing anything.
+
+### With HubSpot MCP alone (mostly sufficient)
+
+Look at what is already in the CRM:
+
+- Recent contacts and their source properties (`hs_object_source_label`,
+  `hs_latest_source`, `hs_analytics_source`). A contact created by Calendly shows
+  an integration source, not "offline" or "direct traffic".
+- **Meeting engagements.** Calendly's HubSpot integration writes a meeting onto
+  the contact's timeline. Meetings in the last few weeks that trace back to
+  Calendly are the proof.
+
+**The gap:** if there are zero recent bookings, we learn nothing. No meetings could
+mean the integration is dead, or it could mean nobody booked. Absence of evidence
+is not evidence of absence, and on a pre-launch site low volume is likely.
+
+### Adding Calendly MCP (removes the ambiguity)
+
+Calendly runs an **official hosted MCP** at `https://mcp.calendly.com`. OAuth 2.1
+with dynamic client registration, so - like HubSpot - **there is no token to
+create, paste or store**.
+
+With both connected the test becomes a cross-check, and it is conclusive either
+way:
+
+| Calendly says | HubSpot says | Verdict |
+|---|---|---|
+| 12 bookings in 30 days | 12 matching meetings | Connected. Proven. |
+| 12 bookings | 0 meetings | **Broken.** Every booking is being lost. |
+| 0 bookings | 0 meetings | Inconclusive - book a test meeting and re-run |
+
+**Scope warning, worth knowing before approving.** Calendly's MCP requires
+`mcp:scheduling:read` **and** `mcp:scheduling:write` together - there is no
+read-only option. Write includes cancelling and scheduling real meetings on the
+account. HubSpot's MCP, by contrast, can start read-only. If that is not
+acceptable, the fallback is for Jake to read the booking count off Calendly's own
+dashboard and paste it back; the cross-check works just as well with a
+human-supplied number.
+
+### The wrinkle: not every booking page is Calendly
+
+`site/src/components/templates/book-a-call/index.tsx:33-41` picks the scheduler
+from the URL stored in Sanity, per booking page:
+
+- URL contains `meetings.hubspot.com` -> **HubSpot Meetings.** This is HubSpot's
+  own scheduler. It needs no integration and cannot lose a booking, because the
+  record is created natively.
+- URL contains `calendly.com` -> **Calendly.** Needs the integration.
+
+So the booking pages are potentially a mix, and J-A only applies to the Calendly
+ones. Known Calendly surfaces regardless: the Contact page popup and the header
+CTA both use `calendly.com/d/cwwf-6k5-2qy/intro-call-cloud-employee`
+(`site/src/components/templates/contact/content.ts:60`).
 
 ---
 
