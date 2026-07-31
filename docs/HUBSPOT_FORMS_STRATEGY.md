@@ -1,5 +1,8 @@
 # HubSpot + lead-gateway strategy
 
+> **Follow `docs/FORMS_LAUNCH_PLAN.md` to execute.** That is the plain walkthrough.
+> This file is the reasoning behind it - read it when something surprises you.
+>
 > **Status:** UNPARKED. Consolidation SHIPPED. Quick hiring form outstanding.
 > **Owner:** Jake + agent.
 > **Created:** 30 Jul 2026 (from Marker CE-17 discussion + forms audit).
@@ -210,7 +213,7 @@ This is the single credential the whole setup turns on. Create it once and it
 serves the local MCP (A2), the repo's scripts, and cloud agents.
 
 1. HubSpot -> Settings -> Integrations -> **Private Apps** -> Create a private app.
-2. Name: `mygratr-launch`. Grant the A3 scopes.
+2. Name: `CE Website`. Grant the A3 scopes.
 3. Copy the access token. You will paste it in **two** places, both off-repo:
    - Jake's own Cursor MCP config (A2), so the agent can manage HubSpot in chat.
    - Cursor Dashboard -> **Cloud Agents -> Secrets** -> `HUBSPOT_ACCESS_TOKEN`,
