@@ -28,18 +28,111 @@ the footer newsletter is gone.
 
 ## The 8 steps
 
-| Step | What | Who |
-|---|---|---|
-| **1** | **Connect HubSpot + Calendly** | **You** |
-| 2 | Prove bookings actually reach HubSpot | Me |
-| 3 | Audit the 25 forms in HubSpot, propose keep vs archive | Me |
-| 4 | Create the new form + 5 new fields | Me |
-| 5 | Rename the messy old forms (you approve first) | Me |
-| 6 | Build the quick hiring form + its Slack ping | Me |
-| 7 | Put it on the services + technology pages, delete the fake forms | Me |
-| 8 | Send one real test lead through each path | You + me |
+| Step | What | Who | Status |
+|---|---|---|---|
+| **1** | **Connect HubSpot + Calendly** | **You** | Done (token) |
+| 2 | Prove bookings actually reach HubSpot | Me | **Half done. Waiting on one number from you** |
+| 3 | Audit the forms in HubSpot, propose keep vs archive | Me | Done - `docs/hubspot-form-audit.md` |
+| 4 | Create the new form + 5 new fields | Me | Done |
+| 5 | Rename the messy old forms (you approve first) | Me | Not started - needs your sign-off |
+| 6 | Build the quick hiring form + its Slack ping | Me | Not started |
+| 7 | Put it on the services + technology pages, delete the fake forms | Me | Not started |
+| 8 | Send one real test lead through each path | You + me | Not started |
 
 **You are only hands-on in steps 1, 5 (approval) and 8.** The rest is me.
+
+---
+
+## Where we got to (31 Jul 2026)
+
+Steps 2, 3 and 4 ran. Nothing was renamed, archived or deleted in HubSpot.
+
+### Step 2 - the booking path IS connected, but it is not concluded
+
+**Calendly is writing into HubSpot.** In the last 30 days it created **13 meeting
+records** and **4 new contacts**. Those two numbers differ on purpose: a repeat
+booker matches an existing contact, so it makes a meeting but no new contact.
+**Meetings is the number to compare on.**
+
+Six of the 13 titles are marked `[Canceled]`, which is the stronger signal.
+Cancellations flowing back means the link is live and two-way, not a one-off
+import that has since stopped.
+
+**The one number you still have to supply:** Calendly's own count of scheduled
+events in the last 30 days, **cancellations included**. Then:
+
+| Calendly says | Verdict |
+|---|---|
+| 13 | Connected. Proven. Step 2 closes. |
+| more than 13 | **Partial loss.** That many bookings never reached the CRM. |
+| 13 but HubSpot showed 0 | Would have been total breakage. Not what happened. |
+
+Read it off the Calendly dashboard, or ask desktop Cursor via the Calendly MCP.
+Either works.
+
+**The checker was reporting a false pass and has been fixed.** It said "LOOKS
+CONNECTED, 49 contacts". Of those 49, **43 were Fireflies.ai call transcripts**
+and 2 were the Clara chatbot. Four were Calendly. It was matching the word
+"INTEGRATION" and calling any integration a booking. It also read HubSpot's
+`appointments` object, found nothing, and printed that as evidence. Calendly does
+not write appointments; it writes **meetings**, and there were 216 of those.
+Reading the wrong object and reporting it empty is worse than not looking. Both
+are corrected, so the numbers above are what the fixed checker reports.
+
+### Step 3 - 36 forms, not 25
+
+Full audit at **`docs/hubspot-form-audit.md`**, regenerate with
+`npm run hubspot:audit-forms`. Verdicts: **1 keep, 19 archive, 16 unknown.**
+
+Four things came out of it that change what we do next:
+
+1. **A human does read the Contact form.** It notifies **seb@cloudemployee.co.uk**
+   on every submit, took 22 submissions in the last 90 days, and creates an MQL
+   deal. That was the open question that could have invalidated surface 2. It is
+   settled.
+2. **The Contact form's Slack notification is switched OFF.** Seb gets the email;
+   the leads channel gets nothing. Worth knowing before we decide step 6.
+3. **Book-a-call already notifies Slack.** Two enabled workflows cover it. Do not
+   build a second path for it.
+4. **The real open question is the lead-magnet and pricing-download forms**, not
+   the start-hiring ones. Seven forms with a live workflow each and no home on the
+   new site, because downloads ship ungated by deliberate decision.
+
+**Tech Debt #8 is closed.** The April audit reported "no connected workflows" for
+every form. That was a missing token permission, not a fact. With it granted:
+**120 workflows exist and 55 are enabled.**
+
+### Step 4 - done, and nothing is wired to it yet
+
+Five contact properties created in a new **`CE Website`** property group, so they
+sit together rather than being lost among the ~200 in "Contact information":
+`ce_skills_requested`, `ce_engagement_length`, `ce_commitment`,
+`ce_lead_gateway`, `ce_source_page`.
+
+The form:
+
+| | |
+|---|---|
+| Name | **CE Web - Quick Hiring Form** |
+| GUID | **`8f974ef4-a3dd-4bba-ad3a-086054ac235b`** |
+| Fields | skills, length, commitment, first/last name, work email, phone, company, plus 2 hidden |
+| After submit | redirects to `/book-a-call` |
+| Consent wording | none, pending your legal call (J-E) |
+
+Nothing on the site renders it, so nothing can submit to it by accident.
+
+Both scripts check before they write and never overwrite. Running either a second
+time changes nothing, which was tested rather than assumed.
+
+### Waiting on you
+
+| # | Thing | Blocks |
+|---|---|---|
+| 1 | **The Calendly 30-day booking count** | Closing step 2 |
+| 2 | Sign-off on the rename pass, and telling Seb first | Step 5 |
+| 3 | Slack webhook URL for the leads channel | The Slack half of step 6 |
+| 4 | Consent wording for the submit button | Going live with the form |
+| 5 | `/for-developers` decision | Step 7 |
 
 ---
 
@@ -149,6 +242,8 @@ call. If that path does not reach your CRM, nothing else matters.
 ---
 
 ## Three things still waiting on you (not blocking step 1)
+
+> Superseded by §"Waiting on you" above, which is current. Kept for the reasoning.
 
 | # | Thing | Why it is yours |
 |---|---|---|

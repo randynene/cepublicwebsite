@@ -3,7 +3,24 @@
 > **Follow `docs/FORMS_LAUNCH_PLAN.md` to execute.** That is the plain walkthrough.
 > This file is the reasoning behind it - read it when something surprises you.
 >
-> **Status:** UNPARKED. Consolidation SHIPPED. Quick hiring form outstanding.
+> **Status:** UNPARKED. Consolidation SHIPPED. HubSpot artifacts CREATED
+> (31 Jul 2026: 5 `ce_*` properties + form `8f974ef4-a3dd-4bba-ad3a-086054ac235b`).
+> React component outstanding. See `docs/FORMS_LAUNCH_PLAN.md` §"Where we got to".
+>
+> **Three open questions in this file are now ANSWERED by evidence.** Read
+> `docs/hubspot-form-audit.md` before acting on any of them:
+> - **CONFIRM-3 / J2 closed.** "No connected workflows" was a missing `automation`
+>   scope, not a fact. 120 workflows exist, 55 enabled. HubSpot already notifies
+>   Slack for book-a-call and for several forms, so D3 must not duplicate it.
+> - **CONFIRM-1 / J1 / J-B answered for Contact.** `4b883c7d` notifies
+>   seb@cloudemployee.co.uk on submit, took 22 submissions in 90 days, and creates
+>   an MQL deal. Somebody reads it. The newsletter half is moot: that surface is
+>   removed.
+> - **J-A answered on HubSpot's side only.** Calendly wrote 13 meetings and 4
+>   contacts in 30 days, cancellations syncing back. Still needs Calendly's own
+>   count to conclude.
+>
+> Also corrected: the portal holds **36 forms, not 25**.
 > **Owner:** Jake + agent.
 > **Created:** 30 Jul 2026 (from Marker CE-17 discussion + forms audit).
 > **Updated:** 30 Jul 2026 (second pass) - **Jake simplified the model for a
