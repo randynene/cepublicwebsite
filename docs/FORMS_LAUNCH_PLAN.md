@@ -66,7 +66,11 @@ Two things. One credential total, plus one browser login.
 1. In HubSpot, go to **Development** -> **Keys** -> **Service Keys**.
    (Also reachable at Settings -> Integrations -> Service Keys.)
 2. Create a key and name it **`CE Website`**.
-3. Add these six scopes:
+3. Add the scopes listed in §"Service Key scopes" at the bottom of this file.
+   (Originally six; widened on 31 Jul after seeing HubSpot's full catalogue -
+   notably `automation`, which closes a gap open since the first audit.)
+
+   The original minimum six were:
 
 ```
 crm.objects.contacts.read
@@ -164,3 +168,70 @@ call. If that path does not reach your CRM, nothing else matters.
   removed.
 - All of the above committed and pushed on `cursor/hubspot-gateway-lock-c05e`
   ([PR #61](https://github.com/galaxyfunk/mygratr/pull/61)).
+
+---
+
+## Service Key scopes (`CE Website`) - the final list
+
+25 scopes. Broad on read, narrow on write, nothing that deletes.
+
+### Write - only what we actually build with (3)
+
+```
+crm.objects.contacts.write
+crm.schemas.contacts.write
+forms
+```
+
+Contacts, contact properties, forms. That is the entire write surface. Nothing in
+this plan writes to deals, pipelines, users or billing.
+
+### Read - generous, so the agent never needs another round trip (22)
+
+```
+crm.objects.contacts.read
+crm.schemas.contacts.read
+crm.objects.companies.read
+crm.objects.deals.read
+crm.objects.leads.read
+crm.objects.owners.read
+crm.objects.appointments.read
+crm.schemas.companies.read
+crm.schemas.deals.read
+crm.lists.read
+timeline.read
+business-intelligence
+automation
+automation.sequences.read
+marketing.campaigns.read
+communication_preferences.read
+conversations.read
+settings.users.read
+forms-uploaded-files
+external_integrations.forms.access
+scheduler.meetings.meeting-link.read
+mcp.users.read
+```
+
+**Why `automation` matters:** Tech Debt #8 has been open since AUDIT-1 because the
+old token lacked it, which is why every form in the April audit reported
+`connectedWorkflowIds: []` - an artifact, not a fact. This scope finally answers
+"what does HubSpot notify today?" without Jake digging through the UI.
+
+**Why `timeline.read` + `crm.objects.appointments.read`:** Service Keys do not
+offer `crm.objects.meetings.read` (beta gap). These are the substitute for seeing
+Calendly bookings land on a contact record - step 2.
+
+### Deliberately NOT granted
+
+| Group | Why |
+|---|---|
+| `*.sensitive.read`, `*.highly_sensitive.read` | Unlocks restricted personal-data fields. We capture names and work emails. |
+| `crm.export`, `crm.import` | Bulk data movement. A mistake at that scale is not recoverable. |
+| Any `.delete` scope | Nothing in this plan deletes. The form tidy-up **archives**, on purpose, so submission history survives. |
+| `crm.objects.deals.write`, `crm.pipelines.*.write` | Seb's sales pipeline. Read is enough to understand the funnel. |
+| `settings.billing.write`, `settings.users.write` | Billing and user accounts. Irreversible, and unrelated. |
+| `oauth` | Not needed for a Service Key. |
+
+Scopes can be added to a Service Key later, so this list is a starting point, not
+a one-shot decision.
