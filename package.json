@@ -16,6 +16,7 @@
     "redirects:extract": "tsx scripts/scaffold/extract-redirects.ts",
     "launch:capture-live": "tsx scripts/launch/capture-live-behaviour.ts",
     "launch:verify-parity": "tsx scripts/launch/verify-redirect-parity.ts",
+    "launch:verify-booking-path": "tsx scripts/launch/verify-booking-path.ts",
     "launch:verify-hubspot-forms": "tsx scripts/launch/verify-hubspot-forms.ts",
     "launch:verify-hubspot-forms-staging": "tsx scripts/launch/verify-hubspot-forms-staging.ts",
     "launch:verify-noindex": "tsx scripts/launch/verify-noindex.ts",
