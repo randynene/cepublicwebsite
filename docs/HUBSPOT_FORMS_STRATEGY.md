@@ -85,21 +85,110 @@ to talk to it." Those are **two different things** and only one of them is an MC
 the properties, rename the junk-drawer forms, read what is there. This is the
 "no clicking around HubSpot" part, and it works.
 
-HubSpot's **official remote MCP server** went GA in April 2026 at
-`https://mcp.hubspot.com`. It is OAuth, so there is **no token to create, paste or
-store** - Jake adds the server in Cursor's MCP settings, logs in through the
-browser, approves the scopes. That is the cleanest path and the recommendation.
-(The alternative, `npx @hubspot/mcp-server`, needs a private-app token in a config
-file. More moving parts, same result. Only worth it to keep the process local.)
+HubSpot's **official remote MCP server** went GA on 13 Apr 2026 at
+`https://mcp.hubspot.com`.
+
+> **CORRECTION (31 Jul).** An earlier version of this doc said HubSpot's MCP had
+> "no token to create, paste or store". **That was wrong** and it understated the
+> setup. HubSpot requires you to create an **MCP auth app** first, which issues a
+> Client ID and Client Secret that you paste into the MCP client. Cursor then runs
+> the OAuth flow using them. **Calendly** is the one that genuinely needs no
+> credentials, because it supports Dynamic Client Registration. The two are not
+> the same shape; see the runbook below.
 
 **The MCP does nothing for the live website.** An MCP only runs inside a chat
 session on Jake's machine. The deployed site on Vercel cannot use it. So the quick
 hiring form still needs its own server-side path to HubSpot, exactly as the build
 brief describes. There is no version of this where the MCP replaces that.
 
-Recommended scopes when approving: `crm.objects.contacts.read` + `.write`,
-`crm.schemas.contacts.read` + `.write`, and forms read/write. Start there; add more
-only if something is refused.
+---
+
+## Runbook: connecting HubSpot + Calendly (Jake, 31 Jul 2026)
+
+There are **two separate things to set up**, and they solve different problems.
+Doing only one leaves a gap.
+
+| | What it unlocks | Who uses it |
+|---|---|---|
+| **A. MCPs** (HubSpot + Calendly) | Managing and inspecting both tools conversationally, from Cursor | The agent, during a chat |
+| **B. HubSpot token as a Cloud Agent Secret** | The repo's existing scripts (`launch:verify-hubspot-forms` already requires `HUBSPOT_ACCESS_TOKEN`) and any cloud agent running without a browser | Scripts + cloud agents |
+
+**Do both.** B is not optional extra credit: the verifier in this repo has needed
+that token since it was written, and a cloud agent on a VM cannot complete a
+browser OAuth flow on its own.
+
+### A1. Calendly MCP - the easy one, no credentials
+
+Calendly supports Dynamic Client Registration, so there is genuinely nothing to
+create and nothing to paste. **A `.cursor/mcp.json` pointing at it is already
+committed in this repo**, so it should appear automatically.
+
+1. Open Cursor Settings -> Tools & MCP.
+2. Find `calendly`. Click connect / authenticate.
+3. A browser opens. Log into Calendly, approve.
+
+**Scope caution:** Calendly grants `mcp:scheduling:read` **and**
+`mcp:scheduling:write` together - there is no read-only option, and write includes
+cancelling real meetings. If that is not acceptable, delete `.cursor/mcp.json`,
+skip this, and instead read the booking count off Calendly's dashboard and paste
+it to me. The verification cross-check works identically with a number you supply.
+
+### A2. HubSpot MCP - needs an auth app first
+
+Not committed to the repo, deliberately: it issues a Client Secret, and secrets do
+not belong in version control.
+
+1. Go to `https://app.hubspot.com/l/mcp-auth-apps/` (portal `22809822`).
+2. **Create MCP auth app.** Name it something obvious, e.g. `Cursor - Mygratr`.
+3. On the Scopes tab, grant the list in A3 below.
+4. Create the app, then copy the **Client ID** and **Client Secret**.
+5. In Cursor: Settings -> Tools & MCP -> **Add MCP Server**.
+   - URL: `https://mcp.hubspot.com`
+   - Paste the Client ID and Client Secret.
+6. Authenticate when prompted. **A HubSpot admin has to connect first** before
+   other users on the account can.
+
+### A3. HubSpot scopes
+
+Grant all of these in one pass. Splitting it into read-now / write-later is safer
+in principle, but it costs a second round trip and we are launching.
+
+| Scope | Why | Power |
+|---|---|---|
+| `crm.objects.contacts.read` | Answer J-A: see whether bookings created contacts | read |
+| `crm.objects.meetings.read` | Answer J-A: see the Calendly meetings on the timeline | read |
+| `crm.schemas.contacts.read` | See which properties already exist before creating any | read |
+| `forms` | List the 25 forms, create the quick hiring form, run the rename pass | **write** |
+| `crm.schemas.contacts.write` | Create the five `ce_*` custom properties | **write** |
+| `crm.objects.contacts.write` | Let the quick hiring form create contacts | **write** |
+
+The three marked write are what let the agent change things in your CRM. The
+rename pass (D6) is the only one that touches anything Seb sees, and it stays
+gated on telling him first.
+
+### B. HubSpot token as a Cloud Agent Secret
+
+Separate from the MCP. This is a **private app** token, not an MCP auth app.
+
+1. HubSpot -> Settings -> Integrations -> **Private Apps** -> Create a private app.
+2. Name: `mygratr-launch`. Same scopes as A3.
+3. Copy the access token.
+4. Cursor Dashboard -> **Cloud Agents -> Secrets** -> add
+   `HUBSPOT_ACCESS_TOKEN`. Scope it to this repo.
+
+Do **not** paste this token into a chat, a file, or `.env` in the repo. The
+dashboard injects it into the agent VM as an environment variable, which is the
+only place it should live.
+
+### Verifying it worked
+
+Ask the agent to run the J-A check. Expected output is the cross-check table in
+§"Proving the booking path works": Calendly's booking count for the last 30 days
+against HubSpot's meeting count for the same window.
+
+If HubSpot MCP shows `needsAuth` to a cloud agent, that is the known limitation -
+authenticate once in **desktop** Cursor, then re-run. Path B is the fallback that
+does not depend on a browser at all.
 
 ---
 
