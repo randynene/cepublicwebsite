@@ -235,3 +235,30 @@ Calendly bookings land on a contact record - step 2.
 
 Scopes can be added to a Service Key later, so this list is a starting point, not
 a one-shot decision.
+
+### Scopes HubSpot refused (subscription tier, not permissions)
+
+Three scopes returned "Your account doesn't have access to this scope" on 31 Jul.
+That is a **plan limit, not a misconfiguration**. Skipped; they block nothing in
+this plan.
+
+| Scope | Gated behind | Cost (annual billing, Jul 2026) |
+|---|---|---|
+| `automation.sequences.write` | Sales Hub **Professional** | $90 / seat / month + $1,500 one-time onboarding |
+| `marketing-email` | Marketing Hub (Starter may suffice; Pro certain) | Starter ~$20 / seat / month · **Pro $800 / month + $3,000 mandatory onboarding** |
+| `marketing.campaigns.read` | Marketing Hub **Professional** | as above |
+
+**Do not assume Pro is required.** Marketing Hub *Starter* includes email
+marketing at roughly $20/seat/month. If the goal is only "email the people who
+enquired", Starter is very likely enough and the gap is ~$20/month rather than
+~$800/month + $3k. Worth confirming with HubSpot before anyone signs anything.
+
+**What is free and already covers launch:**
+
+- **HubSpot form notification emails.** Every form has a setting to email named
+  people on submit. No scope, no tier, no code.
+- **Our Slack notification**, built at step 6.
+
+So "we find out when a lead arrives" is fully solved at zero cost. Only *automated
+multi-step nurture* needs an upgrade, and that decision is better made after
+launch when real lead volume is known.
