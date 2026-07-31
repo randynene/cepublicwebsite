@@ -22,6 +22,7 @@
     "launch:verify-noindex": "tsx scripts/launch/verify-noindex.ts",
     "hubspot:audit-forms": "tsx scripts/hubspot/audit-forms.ts",
     "hubspot:create-lead-properties": "tsx scripts/hubspot/create-lead-properties.ts",
+    "hubspot:create-quick-hiring-form": "tsx scripts/hubspot/create-quick-hiring-form.ts",
     "scaffold:start": "tsx scripts/scaffold/start-scaffold-phase.ts",
     "scaffold:complete": "tsx scripts/scaffold/complete-scaffold-phase.ts",
     "schema:start": "tsx scripts/schema/start-schema-phase.ts",
