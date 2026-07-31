@@ -42,6 +42,10 @@
 // Run: npm run launch:verify-booking-path
 // Optional: DAYS=60 npm run launch:verify-booking-path
 
+// Marks the file as a module so its top-level consts do not collide with the
+// other import-less scripts in the same typecheck project.
+export {}
+
 const API = 'https://api.hubapi.com'
 const TOKEN = process.env.HUBSPOT_ACCESS_TOKEN
 const DAYS = Number(process.env.DAYS ?? 30)
