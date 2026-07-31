@@ -262,3 +262,75 @@ enquired", Starter is very likely enough and the gap is ~$20/month rather than
 So "we find out when a lead arrives" is fully solved at zero cost. Only *automated
 multi-step nurture* needs an upgrade, and that decision is better made after
 launch when real lead volume is known.
+
+---
+
+## Kickoff prompt for a fresh cloud agent (steps 2-4)
+
+A cloud agent only receives secrets that existed **before it started**. The agent
+that wrote this plan started before `HUBSPOT_ACCESS_TOKEN` was added, so it cannot
+use it. Start a new one and paste this:
+
+```
+Continue the CE forms launch track. Read docs/FORMS_LAUNCH_PLAN.md first, then
+docs/HUBSPOT_FORMS_STRATEGY.md for the reasoning.
+
+Work on branch cursor/hubspot-gateway-lock-c05e (do not start a new branch).
+HUBSPOT_ACCESS_TOKEN is available as an env var. Portal is 22809822.
+There is no HubSpot MCP in a cloud agent - use the REST API with that token.
+
+Do steps 2, 3 and the additive half of 4:
+
+STEP 2 - run `npm run launch:verify-booking-path` and report the output verbatim.
+Do not interpret it as a pass on its own; it only sees HubSpot's side. State
+plainly what it does and does not prove, and what Calendly number Jake must
+supply to conclude it.
+
+STEP 3 - list every form on portal 22809822 (name, id, submission count if
+available, and post-submit redirect). Label each keep / archive / unknown against
+the four surviving surfaces in the plan doc. Write the audit to
+docs/hubspot-form-audit.md and commit it. Read-only - change nothing in HubSpot.
+
+STEP 4a - create the five custom contact properties from the plan doc
+(ce_skills_requested, ce_engagement_length, ce_commitment, ce_lead_gateway,
+ce_source_page) via a NEW idempotent script at
+scripts/hubspot/create-lead-properties.ts. It must check existence first and
+never overwrite. Run it, then re-run it to prove it is a no-op.
+
+STEP 4b - create the HubSpot form "CE Web - Quick Hiring Form" and print its GUID.
+
+STOP THERE. Do NOT rename any existing form (that needs Jake's sign-off and Seb
+being told first). Do NOT delete anything in HubSpot. Do NOT build the React
+component yet.
+
+Rules: no em dashes. Commit each logical change separately. Push and update
+PR #61. Typecheck before committing.
+```
+
+### What Jake does in DESKTOP Cursor in parallel
+
+The Calendly half cannot be done by a cloud agent - that MCP lives on the laptop.
+Ask desktop Cursor:
+
+1. "How many Calendly bookings were there in the last 30 days?"
+2. "How many HubSpot contacts were created in the last 30 days, and what is
+   `hs_object_source_label` on each?"
+
+Those two numbers are step 2's verdict. See the table in §"Then tell me step 1
+done".
+
+---
+
+## What testing is actually required, by stage
+
+Testing here is not one event. It is three, and only the last one proves anything.
+
+| Stage | Test | Proves |
+|---|---|---|
+| **Now (steps 2-4)** | Read-only API calls + a property script that is a no-op on second run | Nothing is broken, and the script is safe to re-run |
+| **After the form is built (step 6-7)** | tsc, lint, build; the exit-criteria list in the brief; deliberately break HubSpot and confirm Slack still fires | The failure modes behave as designed |
+| **Before cutover (step 8)** | **Jake submits one real lead per surface and confirms it appears in HubSpot and Slack** | It actually works |
+
+Everything above the last row proves the thing is not *obviously* broken.
+Only the last row proves it works. They are different, and a wrong HubSpot form id
+passes every test except the last one.
