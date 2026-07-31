@@ -117,6 +117,10 @@ Doing only one leaves a gap.
 that token since it was written, and a cloud agent on a VM cannot complete a
 browser OAuth flow on its own.
 
+**Net effect once A2's recommended route is taken: two credentials in total.**
+One HubSpot private app token (which does three jobs) and one Calendly browser
+login (which needs no credential at all).
+
 ### A1. Calendly MCP - the easy one, no credentials
 
 Calendly supports Dynamic Client Registration, so there is genuinely nothing to
@@ -133,20 +137,54 @@ cancelling real meetings. If that is not acceptable, delete `.cursor/mcp.json`,
 skip this, and instead read the booking count off Calendly's dashboard and paste
 it to me. The verification cross-check works identically with a number you supply.
 
-### A2. HubSpot MCP - needs an auth app first
+### A2. HubSpot MCP - two routes, and the second one is simpler
 
-Not committed to the repo, deliberately: it issues a Client Secret, and secrets do
-not belong in version control.
+**Yes, we do connect HubSpot's MCP.** The "auth app" is not an alternative to the
+MCP - it is the key that opens it. But HubSpot ships **two** official MCP servers,
+and they need different keys. Naming them plainly, because HubSpot does not:
 
-1. Go to `https://app.hubspot.com/l/mcp-auth-apps/` (portal `22809822`).
-2. **Create MCP auth app.** Name it something obvious, e.g. `Cursor - Mygratr`.
-3. On the Scopes tab, grant the list in A3 below.
-4. Create the app, then copy the **Client ID** and **Client Secret**.
-5. In Cursor: Settings -> Tools & MCP -> **Add MCP Server**.
-   - URL: `https://mcp.hubspot.com`
-   - Paste the Client ID and Client Secret.
-6. Authenticate when prompted. **A HubSpot admin has to connect first** before
-   other users on the account can.
+| | **Remote MCP** | **Local MCP** |
+|---|---|---|
+| Address | `https://mcp.hubspot.com` | runs on your machine via `npx @hubspot/mcp-server` |
+| Key it needs | **MCP auth app** -> Client ID + Secret | **Private app** -> one access token |
+| Permissions follow | the logged-in user | the app itself |
+| Extra setup | a second HubSpot artifact | **none - reuses the token the scripts already need** |
+
+**RECOMMENDED: the local MCP.** It takes the *same private app token* that
+`launch:verify-hubspot-forms` has required since the day it was written. So you
+create **one** private app, get **one** token, and it serves both jobs. The remote
+route means creating a second HubSpot artifact that does nothing the first one
+cannot.
+
+*Tradeoff:* the local server runs with the app's permissions rather than your
+personal user permissions. In a big team that distinction matters. Here, where Jake
+is the operator, it does not, and it buys a whole setup step back.
+
+**Steps (local MCP route):**
+
+1. Create the private app in step B below and copy its token.
+2. In Cursor: Settings -> Tools & MCP -> **Add MCP Server**, and add:
+   ```json
+   {
+     "hubspot": {
+       "command": "npx",
+       "args": ["-y", "@hubspot/mcp-server"],
+       "env": { "PRIVATE_APP_ACCESS_TOKEN": "<paste the token>" }
+     }
+   }
+   ```
+3. Restart Cursor.
+
+This entry is deliberately **not** committed to `.cursor/mcp.json`: it contains a
+live token, and tokens do not belong in version control. It lives in Jake's own
+Cursor config only.
+
+**If you would rather have the remote MCP** (user-level permissions, nothing
+running locally): go to `https://app.hubspot.com/l/mcp-auth-apps/`, create an MCP
+auth app with the A3 scopes, copy the Client ID + Secret, and add
+`https://mcp.hubspot.com` in Cursor's MCP settings with those credentials. A
+HubSpot admin has to connect first before other users can. You still need the
+private app in step B for the scripts, so this is the two-artifact path.
 
 ### A3. HubSpot scopes
 
@@ -166,19 +204,25 @@ The three marked write are what let the agent change things in your CRM. The
 rename pass (D6) is the only one that touches anything Seb sees, and it stays
 gated on telling him first.
 
-### B. HubSpot token as a Cloud Agent Secret
+### B. The private app token - ONE token, THREE jobs
 
-Separate from the MCP. This is a **private app** token, not an MCP auth app.
+This is the single credential the whole setup turns on. Create it once and it
+serves the local MCP (A2), the repo's scripts, and cloud agents.
 
 1. HubSpot -> Settings -> Integrations -> **Private Apps** -> Create a private app.
-2. Name: `mygratr-launch`. Same scopes as A3.
-3. Copy the access token.
-4. Cursor Dashboard -> **Cloud Agents -> Secrets** -> add
-   `HUBSPOT_ACCESS_TOKEN`. Scope it to this repo.
+2. Name: `mygratr-launch`. Grant the A3 scopes.
+3. Copy the access token. You will paste it in **two** places, both off-repo:
+   - Jake's own Cursor MCP config (A2), so the agent can manage HubSpot in chat.
+   - Cursor Dashboard -> **Cloud Agents -> Secrets** -> `HUBSPOT_ACCESS_TOKEN`,
+     scoped to this repo, so scripts and cloud agents can run headlessly.
 
-Do **not** paste this token into a chat, a file, or `.env` in the repo. The
-dashboard injects it into the agent VM as an environment variable, which is the
-only place it should live.
+Do **not** paste this token into a chat, into `.cursor/mcp.json`, or into `.env`
+in the repo. Cursor's own config and the Cloud Agent Secrets store are the only
+two places it should live.
+
+**Why two places for one token:** the local MCP runs on Jake's laptop, so it reads
+his Cursor config. A cloud agent runs on a VM that has never seen that laptop, so
+it reads the injected secret instead. Same token, two runtimes.
 
 ### Verifying it worked
 
