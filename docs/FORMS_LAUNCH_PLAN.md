@@ -47,12 +47,26 @@ the footer newsletter is gone.
 
 Two things. One credential total, plus one browser login.
 
-### 1a. Create the HubSpot private app
+### 1a. Create the HubSpot Service Key
 
-1. In HubSpot, go to **Settings** (the gear icon) -> **Integrations** -> **Private Apps**.
-2. Click **Create a private app**.
-3. Name it **`CE Website`**.
-4. Go to the **Scopes** tab and tick these six:
+> **Changed 31 Jul, mid-setup.** HubSpot has moved on from private apps twice over.
+> They are now under "Legacy Apps", and HubSpot actively steers you to **Service
+> Keys** instead (public beta since Feb 2026, and explicitly "the replacement for
+> legacy private apps"). We took that path.
+>
+> **Why it is safe for us:** a Service Key is used exactly the same way - as a
+> `Bearer` token against `api.hubapi.com` - and even carries the same `pat-na1-…`
+> shape as the old tokens. The repo's existing HubSpot client
+> (`src/lib/content/hubspot-forms.ts`) needs no change.
+>
+> **Its one limitation is webhooks**, which this plan does not use anywhere. Our
+> Slack notification is sent by our own server, not by a HubSpot webhook, so the
+> limitation never bites.
+
+1. In HubSpot, go to **Development** -> **Keys** -> **Service Keys**.
+   (Also reachable at Settings -> Integrations -> Service Keys.)
+2. Create a key and name it **`CE Website`**.
+3. Add these six scopes:
 
 ```
 crm.objects.contacts.read
@@ -63,12 +77,15 @@ crm.schemas.contacts.write
 crm.objects.contacts.write
 ```
 
-5. Click **Create app**, then **copy the access token**.
+4. Create it, then **copy the key** (click **Show**, then **Copy**).
 
-The first three only let me look. The last three let me create the form and its
-fields. Nothing in this plan deletes anything in HubSpot.
+The first three scopes only let me look. The last three let me create the form and
+its fields. Nothing in this plan deletes anything in HubSpot.
 
-### 1b. Put the token in two places
+If the key is ever exposed, HubSpot has a **Rotate** button on it - that is the
+recovery path, no rebuild needed.
+
+### 1b. Put the key in two places
 
 Same token, pasted twice. Both are outside the codebase.
 
@@ -80,7 +97,7 @@ Cursor -> Settings -> Tools & MCP -> Add MCP Server:
   "hubspot": {
     "command": "npx",
     "args": ["-y", "@hubspot/mcp-server"],
-    "env": { "PRIVATE_APP_ACCESS_TOKEN": "<paste the token>" }
+    "env": { "PRIVATE_APP_ACCESS_TOKEN": "<paste the Service Key>" }
   }
 }
 ```
