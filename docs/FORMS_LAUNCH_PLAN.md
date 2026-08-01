@@ -3,7 +3,7 @@
 > **This is the walkthrough doc. Follow it top to bottom.**
 > Written for Jake. The detailed reasoning lives in `docs/HUBSPOT_FORMS_STRATEGY.md`;
 > you should not need to open that unless something surprises us.
-> Last updated: 31 Jul 2026.
+> Last updated: 1 Aug 2026.
 
 ---
 
@@ -31,7 +31,7 @@ the footer newsletter is gone.
 | Step | What | Who | Status |
 |---|---|---|---|
 | **1** | **Connect HubSpot + Calendly** | **You** | Done (token) |
-| 2 | Prove bookings actually reach HubSpot | Me | **Half done. Waiting on one number from you** |
+| 2 | Prove bookings actually reach HubSpot | Me | **Done. Proven, by machine, both sides** |
 | 3 | Audit the forms in HubSpot, propose keep vs archive | Me | Done - `docs/hubspot-form-audit.md` |
 | 4 | Create the new form + 5 new fields | Me | Done |
 | 5 | Rename the messy old forms (you approve first) | Me | Not started - needs your sign-off |
@@ -43,32 +43,61 @@ the footer newsletter is gone.
 
 ---
 
-## Where we got to (31 Jul 2026)
+## Where we got to (1 Aug 2026)
 
 Steps 2, 3 and 4 ran. Nothing was renamed, archived or deleted in HubSpot.
 
-### Step 2 - the booking path IS connected, but it is not concluded
+### Step 2 - CLOSED. The booking path works, and the check now proves it alone
 
-**Calendly is writing into HubSpot.** In the last 30 days it created **13 meeting
-records** and **4 new contacts**. Those two numbers differ on purpose: a repeat
-booker matches an existing contact, so it makes a meeting but no new contact.
-**Meetings is the number to compare on.**
+**Verdict: connected, nothing being lost.** Every one of the **11** bookings
+Calendly took in the last 30 days has a matching meeting record in HubSpot. Not
+11 against 11 as a pair of totals, which two systems can reach by coincidence:
+each individual booking was matched to its own CRM record, by meeting time and
+event name. Six of the eleven were cancelled and all six cancellations came back
+through, so the link is live and two-way rather than a stale one-off import.
 
-Six of the 13 titles are marked `[Canceled]`, which is the stronger signal.
-Cancellations flowing back means the link is live and two-way, not a one-off
-import that has since stopped.
+**You do not have to supply a number any more.** `npm run launch:verify-booking-path`
+now reads both sides itself and ends on a verdict. It exits non-zero and names the
+specific booking if one ever goes missing.
 
-**The one number you still have to supply:** Calendly's own count of scheduled
-events in the last 30 days, **cancellations included**. Then:
+**Why 11 and not the 13 from yesterday.** Nothing changed and nothing broke. The
+window is rolling: "the last 30 days" on 1 Aug starts a day later than it did on
+31 Jul, and two early-July bookings fell out of the back of it. New contacts moved
+4 to 3 for the same reason. It is a reminder to read this check as a live gate,
+not a fixed figure to quote later.
 
-| Calendly says | Verdict |
-|---|---|
-| 13 | Connected. Proven. Step 2 closes. |
-| more than 13 | **Partial loss.** That many bookings never reached the CRM. |
-| 13 but HubSpot showed 0 | Would have been total breakage. Not what happened. |
+**Counted properly, which is the part that is easy to get wrong.** Both sides are
+counted by when the booking was MADE, not when the meeting happens. Calendly's API
+can only filter by meeting time, so the script pulls a deliberately wide range and
+then filters on each event's own creation date. Comparing "booked in July" against
+"meeting happens in July" would be two different sets of bookings and a meaningless
+answer.
 
-Read it off the Calendly dashboard, or ask desktop Cursor via the Calendly MCP.
-Either works.
+**One real loss, in June, outside the window.** Widening to `DAYS=120` finds a
+single booking that never reached the CRM: kayla@technexus.com, booked 23 Jun with
+Molly for 25 Jun. It is the only one in the three and a half months the check can
+see back to, it is before the current window, and the cause is not visible from the
+outside. Worth Seb knowing; not worth holding launch for. The check will catch it
+immediately if it starts happening again.
+
+**Six other apparent losses that are not losses.** In the same 120 days, six
+bookings have no HubSpot record because the invitee RESCHEDULED. Calendly models a
+reschedule as cancel-the-old plus create-the-new, and the integration only writes a
+record for the survivor. The script now recognises those and does not count them
+against the verdict. That mattered: without it the check cried wolf six times, and
+a gate that cries wolf gets switched off.
+
+**What the Calendly token can see, verified rather than assumed.** The token
+belongs to **seb@cloudemployee.io**, who is the **owner** of the Calendly
+organisation, and organisation-wide reads are permitted. So this covers the whole
+team, not just one calendar: bookings by Seb, Molly, Steph and AJ all count. The
+script attempts the organisation-wide read every time and falls back to
+single-user if Calendly ever refuses, printing plainly which of the two it got, so
+a future permissions change downgrades the verdict rather than silently narrowing
+it. Bookings taken by someone who has since left the team stay visible: Shawnee is
+no longer a member and her 28 bookings still read back, so leavers do not quietly
+shrink the history. One note for later: the token is tied to Seb's login, so if he
+revokes it or leaves, the check goes dark rather than wrong.
 
 **The checker was reporting a false pass and has been fixed.** It said "LOOKS
 CONNECTED, 49 contacts". Of those 49, **43 were Fireflies.ai call transcripts**
@@ -128,11 +157,12 @@ time changes nothing, which was tested rather than assumed.
 
 | # | Thing | Blocks |
 |---|---|---|
-| 1 | **The Calendly 30-day booking count** | Closing step 2 |
-| 2 | Sign-off on the rename pass, and telling Seb first | Step 5 |
-| 3 | Slack webhook URL for the leads channel | The Slack half of step 6 |
-| 4 | Consent wording for the submit button | Going live with the form |
-| 5 | `/for-developers` decision | Step 7 |
+| 1 | Sign-off on the rename pass, and telling Seb first | Step 5 |
+| 2 | Slack webhook URL for the leads channel | The Slack half of step 6 |
+| 3 | Consent wording for the submit button | Going live with the form |
+| 4 | `/for-developers` decision | Step 7 |
+
+The Calendly booking count is no longer on this list. The check now fetches it.
 
 ---
 
@@ -205,17 +235,46 @@ Restart Cursor afterwards.
 Add it as `HUBSPOT_ACCESS_TOKEN`, scoped to this repo. This is what lets me work
 in the background without your laptop being open.
 
-### 1c. Connect Calendly
+### 1c. Connect Calendly - DONE 1 Aug, and better than planned
 
-Nothing to create. Its config is already committed to this repo.
+> **The earlier warning here was wrong, and it is worth correcting.** It said
+> Calendly has no read-only option and that connecting it would grant permission
+> to schedule and cancel meetings. That is true of the Calendly MCP integration.
+> It is not true of a **personal access token**, where you choose the scopes one
+> by one. A read-only token was created instead, so nothing in this project can
+> touch a real calendar.
 
-Cursor -> Settings -> Tools & MCP -> find **`calendly`** -> connect -> approve in
-the browser.
+What exists now: a Calendly personal access token on **seb@cloudemployee.io**,
+who owns the Calendly organisation, stored as `CALENDLY_ACCESS_TOKEN` in Cursor
+Dashboard -> Cloud Agents -> Secrets.
 
-> **Heads up:** Calendly has no read-only option. Connecting it grants permission
-> to schedule and cancel meetings. I only need to *count* bookings. If you would
-> rather not, skip it entirely and just tell me how many bookings you have had in
-> the last 30 days - step 2 works exactly the same.
+**Scopes granted. Every one of them is read. There are no write scopes at all.**
+
+```
+scheduled_events:read
+event_types:read
+availability:read
+locations:read
+routing_forms:read
+users:read
+organizations:read
+groups:read
+contacts:read
+activity_log:read
+webhooks:read
+```
+
+Only two of those are actually used: `scheduled_events:read` to count bookings and
+`users:read` to work out whose bookings the token may see. The rest cost nothing
+and save a round trip to you later.
+
+**What it cannot do:** create, move, or cancel a booking; change an event type;
+change availability; add or remove a webhook. Those are all separate `:write`
+scopes and none were granted.
+
+Because the token owner is the organisation owner, it reads the whole team's
+bookings rather than one calendar. The check verifies that every run rather than
+assuming it.
 
 ### Never paste that token into a chat message or a file in the repo.
 
@@ -223,21 +282,31 @@ Cursor's settings and the Secrets store are the only two places it belongs.
 
 ---
 
-## Then tell me "step 1 done"
+## Step 2, now that it runs itself
 
-I will run **step 2** immediately, because it is the one that can change the plan.
+> Step 1 and step 2 are both done. This section is now the manual for the check
+> rather than a thing waiting on you.
 
-I compare how many bookings Calendly has taken against how many meetings HubSpot
-has recorded for the same period.
+`npm run launch:verify-booking-path` reads Calendly and HubSpot for the same
+period and matches each booking to its CRM record one by one.
 
-| Result | What it means |
-|---|---|
-| Numbers match | Bookings reach HubSpot. Carry on. |
-| Calendly has bookings, HubSpot has none | **Every booking is being lost.** This becomes the emergency, ahead of everything else. |
-| Both zero | Nobody has booked recently. You book a test meeting, I re-check. |
+| Result | Exit | What it means |
+|---|---|---|
+| Every booking matched | 0 | Bookings reach HubSpot. Carry on. |
+| A booking has no record | **1** | That specific booking never reached the CRM. It is named in the output. |
+| Nothing to judge | 0 | Nobody has booked recently. Book a test meeting and re-run. |
+| No `CALENDLY_ACCESS_TOKEN` | 0 | HubSpot-only report, and it says plainly that this is not a pass. |
 
-We do this before building anything because the whole site now points at booking a
-call. If that path does not reach your CRM, nothing else matters.
+Two things it deliberately does NOT fail on: a booking made in the last half hour
+(HubSpot may not have written it yet) and a booking the invitee rescheduled away
+(Calendly writes no record for the stub, by design).
+
+`DAYS=90 npm run launch:verify-booking-path` widens the window. Past roughly 100
+days HubSpot's search hits its page cap; the script detects that, narrows the
+window it is willing to judge, and says so rather than inventing a loss.
+
+We did this before building anything because the whole site now points at booking
+a call. If that path does not reach the CRM, nothing else matters.
 
 ---
 
@@ -362,6 +431,9 @@ launch when real lead volume is known.
 
 ## Kickoff prompt for a fresh cloud agent (steps 2-4)
 
+> **Spent. Steps 2, 3 and 4 are done.** Kept for the pattern, because the next
+> phase needs a prompt just like it.
+
 A cloud agent only receives secrets that existed **before it started**. The agent
 that wrote this plan started before `HUBSPOT_ACCESS_TOKEN` was added, so it cannot
 use it. Start a new one and paste this:
@@ -404,15 +476,13 @@ PR #61. Typecheck before committing.
 
 ### What Jake does in DESKTOP Cursor in parallel
 
-The Calendly half cannot be done by a cloud agent - that MCP lives on the laptop.
-Ask desktop Cursor:
+**Nothing, as it turns out.** This said the Calendly half could not be done by a
+cloud agent because that MCP lives on the laptop. True of the MCP, false of the
+problem: Calendly has a plain REST API and a read-only token works fine from
+anywhere. The whole cross-check now runs unattended.
 
-1. "How many Calendly bookings were there in the last 30 days?"
-2. "How many HubSpot contacts were created in the last 30 days, and what is
-   `hs_object_source_label` on each?"
-
-Those two numbers are step 2's verdict. See the table in §"Then tell me step 1
-done".
+Worth remembering as a general point. "There is no MCP for it in this environment"
+is a statement about tooling convenience, not about whether the thing can be done.
 
 ---
 
