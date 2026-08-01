@@ -219,11 +219,14 @@ export function QuickHiringForm({
       )}
       aria-labelledby="quick-hiring-form-heading"
     >
-      <div className="mb-6 flex items-center justify-between gap-4">
-        <Text size="small" className="uppercase tracking-[0.08em] text-accent-primary">
+      {/* Both halves are nowrap. At 390px the eyebrow was breaking after "FIND
+          YOUR" and the counter after "Step 1 of", which turned a one-line header
+          into a ragged four-line block. */}
+      <div className="mb-6 flex items-baseline justify-between gap-4">
+        <p className="whitespace-nowrap text-[11.5px] font-semibold uppercase leading-none tracking-[1.68px] text-accent-primary">
           {C.eyebrow}
-        </Text>
-        <Text size="small" className="text-text-tertiary">
+        </p>
+        <p className="whitespace-nowrap text-[13px] leading-none text-text-tertiary">
           {C.progress.step}
           {' '}
           {stepNumber}
@@ -231,7 +234,7 @@ export function QuickHiringForm({
           {C.progress.of}
           {' '}
           {stepCount}
-        </Text>
+        </p>
       </div>
 
       <div
@@ -258,10 +261,10 @@ export function QuickHiringForm({
                   onClick={() => setRole(option)}
                   aria-pressed={role?.id === option.id}
                   className={cn(
-                    'rounded-2xl border px-5 py-4 text-left transition-colors',
+                    'rounded-xl border px-5 py-[14px] text-left text-[15px] transition-colors',
                     role?.id === option.id
                       ? 'border-accent-primary bg-accent-primary/15 text-text-primary'
-                      : 'border-border-default text-text-secondary hover:border-accent-primary/50',
+                      : 'border-border-default text-text-primary hover:border-accent-primary/50 hover:bg-surface-tertiary/40',
                   )}
                 >
                   {option.label}
@@ -473,7 +476,15 @@ export function QuickHiringForm({
               type="button"
               disabled={!canContinue() || submitting}
               onClick={() => (step === 'details' ? void submit() : goNext())}
-              className="rounded-full bg-accent-primary px-7 py-3 font-medium text-text-dark transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
+              // Disabled is a different FILL, not lime at 40%. Lime dimmed over a
+              // dark card renders as a muddy olive that reads as a rendering bug
+              // rather than as "not yet". A flat dark surface reads as inactive.
+              className={cn(
+                'rounded-full px-7 py-3 font-medium transition-colors',
+                !canContinue() || submitting
+                  ? 'cursor-not-allowed border border-border-subtle bg-surface-tertiary text-text-tertiary'
+                  : 'bg-accent-primary text-text-dark hover:bg-accent-deep',
+              )}
             >
               {step === 'details'
                 ? submitting
@@ -499,10 +510,19 @@ function StepShell({
 }) {
   return (
     <div>
-      <Heading as="h2" size="h4" id="quick-hiring-form-heading" className="text-text-primary">
+      {/* Explicit size rather than the h4 variant. At h4 the question carried the
+          same weight as the option labels below it and stopped reading as a
+          question. There is no h3 variant, and the catalogue templates set fold
+          headings in explicit px for the same reason, so this follows them. */}
+      <Heading
+        as="h2"
+        size="h4"
+        id="quick-hiring-form-heading"
+        className="text-[26px] font-semibold leading-[32px] tracking-[-0.6px] text-text-primary lg:text-[34px] lg:leading-[40px] lg:tracking-[-0.9px]"
+      >
         {heading}
       </Heading>
-      <Text className="mt-2 mb-6 text-text-secondary">{sub}</Text>
+      <Text className="mt-3 mb-7 text-text-secondary">{sub}</Text>
       {children}
     </div>
   )
