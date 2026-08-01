@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react'
 
+import { LeadFormSection, roleForServiceSlug } from '@/components/lead-form/section'
 import { Container } from '@/components/ui/container'
 import { Heading } from '@/components/ui/heading'
 import { Image } from '@/components/ui/image'
 import { PortableText } from '@/components/ui/portable-text'
 import { cn } from '@/components/ui/_utils/cn'
-import type { Locale } from '@/lib/locale'
+import { buildLocalePath, type Locale } from '@/lib/locale'
 import { UI_STRINGS } from '@/lib/ui-strings'
 import type {
   Fold,
@@ -500,7 +501,7 @@ function DecorPhotoBand() {
   )
 }
 
-export default function ServiceTemplate({ service }: ServiceTemplateProps) {
+export default function ServiceTemplate({ service, locale }: ServiceTemplateProps) {
   const eyebrow = serviceCategoryLabel(service.type)
   const tagline = service.tagline?.trim()
   const folds = Array.isArray(service.folds) ? service.folds : []
@@ -595,6 +596,15 @@ export default function ServiceTemplate({ service }: ServiceTemplateProps) {
           </div>
         </div>
       </Container>
+
+      {/* Quick hiring form. The role comes from the page: someone reading the
+          DevOps Engineers page has answered that question by being here. Project
+          services and the location pages deliberately map to nothing, because
+          there the open question is what to build or where, not which role. */}
+      <LeadFormSection
+        sourcePage={buildLocalePath(`/services/${service.slug}`, locale)}
+        prefillRole={roleForServiceSlug(service.slug)}
+      />
     </article>
   )
 }
