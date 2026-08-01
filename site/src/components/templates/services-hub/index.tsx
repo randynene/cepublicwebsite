@@ -8,6 +8,7 @@ import type { ServicesHubContent } from '@/lib/catalogue/hub-content'
 import { CatalogueFaq } from '@/components/templates/catalogue/faq'
 import { TechBadge } from '@/components/ui/tech-badge'
 import { ACCENT, BAND, BODY, CAT_LABELS, Chevron, Eyebrow, GLYPH, HubQuotes, HubStories, LimeCheck, SectionHeading } from '@/components/templates/catalogue/shared'
+import { LeadFormSection } from '@/components/lead-form/section'
 
 // TEMPLATE-SERVICES-HUB - /services index. Approved D3 design, fed by Sanity
 // (Phase 2B): card grids + hero lead + FAQs come from Sanity via
@@ -186,6 +187,7 @@ export function ServicesHubTemplate({ content, pathPrefix = '' }: { content: Ser
           <CatalogueFaq items={h.faqs} />
         </div>
       </section>
+      <LeadFormSection sourcePage={`${pathPrefix}/services`} />
     </main>
   )
 }

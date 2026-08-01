@@ -6,6 +6,7 @@ import type { TechnologyHubContent } from '@/lib/catalogue/hub-content'
 import { CatalogueFaq } from '@/components/templates/catalogue/faq'
 import { TechBadge } from '@/components/ui/tech-badge'
 import { ACCENT, BAND, BODY, CAT_LABELS, Chevron, Eyebrow, HubQuotes, HubStories } from '@/components/templates/catalogue/shared'
+import { LeadFormSection } from '@/components/lead-form/section'
 
 // TEMPLATE-TECHNOLOGY-HUB - /technology index. Approved D3 design, fed by Sanity
 // (Phase 2B): the full alphabetical directory + hero lead + FAQs come from Sanity
@@ -91,6 +92,7 @@ export function TechnologyHubTemplate({ content, pathPrefix = '' }: { content: T
           <CatalogueFaq items={h.faqs} />
         </div>
       </section>
+      <LeadFormSection sourcePage={`${pathPrefix}/technology`} />
     </main>
   )
 }

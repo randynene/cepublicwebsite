@@ -16,6 +16,8 @@ import { ClientLogoImage } from '@/components/social-proof/client-logo-strip'
 import { HeroTrustBar } from '@/components/social-proof/hero-trust-bar'
 import { CHAT_FALLBACK_HREF, CHAT_HREF } from '@/lib/chat'
 import { STICKY_ASIDE } from '@/components/layout/sticky-aside'
+import { LeadFormSection } from '@/components/lead-form/section'
+import { buildLocalePath, type Locale } from '@/lib/locale-path'
 
 import {
   HERO_PROFILE_CARD_PEOPLE,
@@ -940,7 +942,13 @@ function Faq({ content }: SectionProps) {
   )
 }
 
-export function HomeTemplate({ content = HOME_CONTENT }: { content?: HomeContent }) {
+export function HomeTemplate({
+  content = HOME_CONTENT,
+  locale = 'en-US',
+}: {
+  content?: HomeContent
+  locale?: Locale
+}) {
   return (
     <main id="main" className="bg-[#070D18]">
       {/* Hero + trust bar claim the first screen together. */}
@@ -958,6 +966,7 @@ export function HomeTemplate({ content = HOME_CONTENT }: { content?: HomeContent
       <ReadyToFind content={content} />
       <WhereWeWork content={content.whereWeWork} />
       <Faq content={content} />
+      <LeadFormSection sourcePage={buildLocalePath('/', locale)} />
     </main>
   )
 }

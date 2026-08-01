@@ -12,7 +12,8 @@ import { HeroTrustBar } from '@/components/social-proof/hero-trust-bar'
 import { EngineerMatchQuiz } from '@/components/shared/engineer-match-quiz'
 import { FaqChatCard } from '@/components/shared/faq-chat-card'
 import { STICKY_ASIDE } from '@/components/layout/sticky-aside'
-import type { Locale } from '@/lib/locale-path'
+import { LeadFormSection } from '@/components/lead-form/section'
+import { buildLocalePath, type Locale } from '@/lib/locale-path'
 import { toInternalHref } from '@/lib/url'
 
 import type { HiwContent } from './content'
@@ -546,6 +547,7 @@ export function HowItWorksTemplate({
       <Testimonials content={content} />
       <Matcher content={content} locale={locale} />
       <Faq content={content} locale={locale} />
+      <LeadFormSection sourcePage={buildLocalePath('/how-it-works', locale)} />
     </main>
   )
 }

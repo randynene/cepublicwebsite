@@ -8,6 +8,7 @@ import { ChatLink } from '@/components/shared/chat-link'
 import { HeroTrustBar } from '@/components/social-proof/hero-trust-bar'
 import { cn } from '@/components/ui/_utils/cn'
 import { parseVideoUrl } from '@/components/ui/video-embed'
+import { LeadFormSection } from '@/components/lead-form/section'
 import { CHAT_HREF } from '@/lib/chat'
 import { buildLocalePath, type Locale } from '@/lib/locale-path'
 import { CALC, HE, type HireEngineersContent } from './content'
@@ -964,6 +965,10 @@ export function HireEngineersTemplate({
           <div className="sub">{content.final.sub}</div>
         </div>
       </section>
+      <LeadFormSection
+        sourcePage={buildLocalePath('/services/software-engineers', locale)}
+        prefillRole="product-engineer"
+      />
     </main>
   )
 }

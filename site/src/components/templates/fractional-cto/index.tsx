@@ -6,6 +6,7 @@ import { cn } from '@/components/ui/_utils/cn'
 import { TypewriterText } from '@/components/motion/typewriter-text'
 import { ChatLink } from '@/components/shared/chat-link'
 import { HeroTrustBar } from '@/components/social-proof/hero-trust-bar'
+import { LeadFormSection } from '@/components/lead-form/section'
 import { CHAT_HREF } from '@/lib/chat'
 import { buildLocalePath, type Locale } from '@/lib/locale-path'
 import { FCTO, type FctoContent } from './content'
@@ -587,6 +588,10 @@ export function FractionalCtoTemplate({
           </div>
         </div>
       </section>
+      <LeadFormSection
+        sourcePage={buildLocalePath('/services/fractional-ctos', locale)}
+        prefillRole="fractional-cto"
+      />
     </main>
   )
 }
