@@ -108,6 +108,62 @@ not write appointments; it writes **meetings**, and there were 216 of those.
 Reading the wrong object and reporting it empty is worse than not looking. Both
 are corrected, so the numbers above are what the fixed checker reports.
 
+### Slack is already wired, and step 3 got this wrong
+
+**Correction, 1 Aug.** Step 3 reported that the Contact form's Slack notification is
+off and the leads channel gets nothing from it. The channel plainly does get those
+leads. The form's own Slack toggle was never the mechanism: **workflows are.**
+
+Checked properly: **14 enabled workflows post into Slack**, across 6 channels. Full
+map at **`docs/hubspot-slack-notifications.md`**, regenerate with
+`npm run hubspot:audit-slack-notifications`.
+
+Two consequences, and they change the build:
+
+1. **Do not build a second notifier for anything HubSpot already announces.** The
+   leads channel would get every message twice, and a channel that repeats itself
+   is one people stop reading. Our own Slack post is the SAFETY NET only: if
+   HubSpot ever rejects a submission, HubSpot cannot tell you, and our endpoint
+   still can.
+2. **7 of the 14 name a surface the new site retires** (Start Hiring x2, the home
+   main form, the Webflow pricing-guide download, the website chatbot, and the two
+   catch-alls that reference them). After cutover each either goes quiet, which
+   nobody notices, or announces a page that no longer exists. Decide before the
+   flip, not after.
+
+**The spam problem is a filter, not a build.** The junk Jake sees (guest posts,
+backlink pitches, agencies selling to CE) arrives through **Notify Sales - New Tier
+1 or 2 MQLs**. Filter conditions on that workflow fix it, in the HubSpot UI, with
+no code and no developer needed afterwards.
+
+One principle for that filter, which matters more than the keyword list: **bias it
+toward letting junk through, not toward hiding real leads.** A guest-post pitch in
+the leads channel is mildly annoying. A real buyer routed into a channel nobody
+reads costs a deal.
+
+### Channel routing (Jake, 1 Aug)
+
+| Channel | Gets |
+|---|---|
+| `#aa-leads-channel` | Every booking, and every genuine inquiry |
+| `#leads-junk` | Guest posts, backlink pitches, anyone selling to CE |
+| `#leads-test` | Temporary. Our webhook points here until it is proven, then one env var moves it |
+| Top of funnel | **Not created.** No source exists yet. An empty channel becomes furniture. |
+
+Marketing Wins collapses into the leads channel.
+
+**No pricing download gate.** Jake's call: visitors who want pricing go to the AI
+chat, talk it through, and give their details there. That closes the lead-magnet
+question step 3 left open, and it means the seven orphaned lead-magnet forms need
+no home on the new site.
+
+**Both sites feed the same channel during the overlap.** Webflow and the new site
+post into the same HubSpot portal, so a staging test lands in the real leads channel
+looking exactly like a real lead. The new site's forms send `ce_lead_gateway` and
+`ce_source_page`, so anything arriving WITHOUT those fields is Webflow. For testing,
+use a recognisable address (`jake+test1@cloudemployee.io`); there is precedent in the
+data already.
+
 ### Step 3 - 36 forms, not 25
 
 Full audit at **`docs/hubspot-form-audit.md`**, regenerate with
@@ -157,12 +213,20 @@ time changes nothing, which was tested rather than assumed.
 
 | # | Thing | Blocks |
 |---|---|---|
-| 1 | Sign-off on the rename pass, and telling Seb first | Step 5 |
-| 2 | Slack webhook URL for the leads channel | The Slack half of step 6 |
-| 3 | Consent wording for the submit button | Going live with the form |
+| 1 | **Approve or edit the four-step form copy** (headings, pills, buttons) | Step 6 |
+| 2 | Consent wording for the submit button | Going live with the form |
+| 3 | Sign-off on the rename pass, and telling Seb first | Step 5 |
 | 4 | `/for-developers` decision | Step 7 |
 
-The Calendly booking count is no longer on this list. The check now fetches it.
+Two items came off this list on 1 Aug. The Calendly booking count is gone because
+the check now fetches it. The **Slack webhook is done**: app `Cloud Employee
+Website`, currently pointed at `#leads-test`, stored as `SLACK_LEADS_WEBHOOK_URL` in
+Cursor Cloud Agent Secrets and in Vercel (Production and Preview, sensitive).
+
+Two things about that webhook that are easy to trip over. It **does not take effect
+until the next deployment**, because Vercel bakes environment variables at build
+time. And a cloud agent only receives secrets that existed **before it started**, so
+the agent that builds the Slack half has to be a fresh one.
 
 ---
 
