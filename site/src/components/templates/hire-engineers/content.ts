@@ -140,8 +140,6 @@ export interface HireEngineersContent {
       q: string
       hint: string
       per: string
-      /** `image` empty = the `ftag` placeholder chip. */
-      matches: { ftag: string; nm: string; rl: string; rate: string; image?: string }[]
       cta: string
     }
     footTrust: string[]
@@ -317,10 +315,6 @@ export const HE: HireEngineersContent = {
       q: "Here's who we'd build your team with.",
       hint: 'Real engineers, vetted and available. Full profiles on request.',
       per: '/ mo',
-      matches: [
-        { ftag: 'photo', nm: 'Ana R.', rl: 'Senior Backend · Go · Buenos Aires · 8 yrs', rate: '$5,400' },
-        { ftag: 'photo', nm: 'Marko P.', rl: 'Senior Full-Stack · TS · Zagreb · 7 yrs', rate: '$5,200' },
-      ],
       cta: 'See full profiles',
     },
     footTrust: ['300+ teams built', '97% stay 2+ years', "Replace if it isn't working"],

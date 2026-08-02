@@ -733,8 +733,8 @@ function ReadyToFind({ content }: SectionProps) {
   const { readyToFind } = content
   return (
     // Cursor spotlight, same treatment as the location pages' "Three ways to
-    // start". Only the heading block carries data-spot-item, so the quiz card
-    // below stays full-bright and fully usable.
+    // start". The old static quiz card is gone because it looked like a form
+    // but captured nothing. The real form renders later on this page.
     <Spotlight className="py-[72px] lg:py-[104px]">
       <div className={BAND}>
         <div data-spot-item className="transition-opacity duration-300 motion-safe:opacity-50">
@@ -749,122 +749,6 @@ function ReadyToFind({ content }: SectionProps) {
             {readyToFind.paragraph}
           </p>
         </div>
-
-        <Reveal
-          className={cn(
-            CARD,
-            'mt-[40px] grid gap-[28px] p-[28px] lg:grid-cols-[1.5fr_1fr] lg:p-[36px]',
-          )}
-        >
-          <div>
-            <div className="flex flex-wrap gap-x-[36px] gap-y-[12px]">
-              {readyToFind.steps.map((step, i) => (
-                <span key={step} className="flex items-center gap-[8px] text-[14px] font-semibold text-white">
-                  <span
-                    className={cn(
-                      'flex h-[24px] w-[24px] items-center justify-center rounded-full text-[11px] font-bold',
-                      i === 0
-                        ? 'bg-brand-primary text-[#060F1E]'
-                        : 'bg-[#16233B] text-text-secondary',
-                    )}
-                  >
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
-                  <span className={cn(i === 0 ? 'text-white' : 'text-text-secondary')}>
-                    {step}
-                  </span>
-                </span>
-              ))}
-            </div>
-            <h3 className="mt-[28px] text-[24px] font-semibold leading-[30px] tracking-[-0.5px] text-white">
-              {readyToFind.question}
-            </h3>
-            <p className={cn('mt-[6px] text-[13px]', MUTED)}>{readyToFind.questionSub}</p>
-            <div className="mt-[20px] grid gap-[14px] sm:grid-cols-2">
-              {readyToFind.roles.map((role, i) => (
-                <div
-                  key={role}
-                  className={cn(
-                    'flex items-center gap-[12px] rounded-[12px] border bg-[#16233B] px-[16px] py-[14px]',
-                    i === 0 ? 'border-brand-primary' : 'border-[#22314D]',
-                  )}
-                >
-                  <span
-                    aria-hidden
-                    className="flex h-[28px] w-[28px] items-center justify-center rounded-[8px] bg-[#0A1120] text-[12px] text-brand-primary"
-                  >
-                    {GLYPH.arrow}
-                  </span>
-                  <span className="text-[15px] font-semibold text-white">{role}</span>
-                </div>
-              ))}
-            </div>
-            <div className="mt-[24px] flex flex-wrap items-center justify-between gap-[16px]">
-              <div className="flex flex-wrap gap-x-[16px] gap-y-[8px]">
-                {readyToFind.bottomPills.map((pill) => (
-                  <span
-                    key={pill}
-                    className="flex items-center gap-[6px] text-[12px] font-normal text-text-secondary"
-                  >
-                    <span aria-hidden className="h-[5px] w-[5px] rounded-full bg-brand-primary" />
-                    {pill}
-                  </span>
-                ))}
-              </div>
-              <MegaMenuPillLabel
-                as="a"
-                href="#pricing"
-                variant="pill-green"
-                size="cta"
-                leadingArrow
-                leadingGlyph={GLYPH.arrow}
-                label={readyToFind.nextLabel}
-              />
-            </div>
-          </div>
-
-          <div className="rounded-[16px] border border-[#22314D] bg-[#0A1120] p-[24px]">
-            <div className="flex items-center gap-[8px]">
-              <span aria-hidden className="h-[7px] w-[7px] rounded-full bg-brand-primary" />
-              <span className="text-[12px] font-bold uppercase tracking-[0.9px] text-white">
-                {readyToFind.matching.label}
-              </span>
-            </div>
-            {/* Decorative progress fills — variant="scale-x" scales the bar's
-             * OWN box from the left edge; the box keeps its final 70%/45%
-             * width at all times, so nothing here can cause CLS. */}
-            <Reveal variant="scale-x" className="mt-[40px] h-[10px] w-[70%] rounded-full bg-[#1B2942]" />
-            <Reveal
-              variant="scale-x"
-              delay={150}
-              className="mt-[10px] h-[10px] w-[45%] rounded-full bg-[#1B2942]"
-            />
-            <p className={cn('mt-[14px] text-[13px]', MUTED)}>{readyToFind.matching.unlocks}</p>
-            <div className="mt-[20px] flex flex-wrap gap-[8px]">
-              {readyToFind.matching.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded-full bg-[#16233B] px-[10px] py-[5px] text-[12px] font-semibold text-text-secondary"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-            <p className={cn('mt-[16px] text-[13px] leading-[20px]', MUTED)}>
-              {readyToFind.matching.note}
-            </p>
-            <div className="mt-[20px] flex gap-[28px]">
-              {readyToFind.matching.stats.map((stat) => (
-                <div key={stat.label}>
-                  <div className="text-[22px] font-extrabold leading-none text-brand-primary">
-                    {stat.value}
-                  </div>
-                  <div className={cn('mt-[6px] text-[12px]', MUTED)}>{stat.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </Reveal>
 
         {/* These were non-clickable <span>s: the page invited you to "Ask our AI
             anything" and then did nothing when you did. First CTA opens the chat

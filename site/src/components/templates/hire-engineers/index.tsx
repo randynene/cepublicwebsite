@@ -306,145 +306,6 @@ function Calculator({ price }: { price: HireEngineersContent['price'] }) {
   )
 }
 
-// ── Multi-step "find your engineer" form ──
-function OptionGroup({
-  options,
-  iconFor,
-  single,
-}: {
-  options: readonly string[]
-  /** Resolve the icon from the option LABEL, not its index — see roleIcon. */
-  iconFor?: (label: string) => ReactNode
-  single?: boolean
-}) {
-  const [sel, setSel] = useState<Set<number>>(new Set())
-  function toggle(i: number) {
-    setSel((prev) => {
-      if (single) return new Set([i])
-      const next = new Set(prev)
-      if (next.has(i)) next.delete(i)
-      else next.add(i)
-      return next
-    })
-  }
-  return (
-    <div className="opts">
-      {options.map((o, i) => (
-        <button key={o} type="button" className={cn('opt', 'icon-card', sel.has(i) && 'sel')} onClick={() => toggle(i)}>
-          {iconFor ? <span className="ic">{iconFor(o)}</span> : null}
-          <span className="on">{o}</span>
-        </button>
-      ))}
-    </div>
-  )
-}
-
-function FindForm({
-  find,
-  locale,
-}: {
-  find: HireEngineersContent['find']
-  locale: Locale
-}) {
-  const [step, setStep] = useState(0)
-  const next = () => setStep((s) => (s < 3 ? s + 1 : s))
-  const back = () => setStep((s) => (s > 0 ? s - 1 : s))
-  // This match form is a guided demo (no HubSpot form on live either). Final
-  // CTA must still send people into a real lead path — Book a Call — not a
-  // no-op that looks like a submit.
-  const sendLead = () => {
-    window.location.assign(buildLocalePath('/book-a-call', locale))
-  }
-
-  const stepClass = (i: number) => (i === step ? 'step active' : 'step')
-  const stpClass = (i: number) => (i === step ? 'stp active' : i < step ? 'stp done' : 'stp')
-
-  return (
-    <div className="form-card">
-      <div className="stepper">
-        {find.stepper.map((s, i) => (
-          <div key={s.num} className={stpClass(i)}>
-            <span className="num">{s.num}</span>
-            <span className="lbl">{s.lbl}</span>
-          </div>
-        ))}
-      </div>
-
-      <div className={stepClass(0)}>
-        <div className="q">{find.step0.q}</div>
-        <div className="q-hint">{find.step0.hint}</div>
-        <OptionGroup options={find.step0.opts} iconFor={roleIcon} single />
-      </div>
-
-      <div className={stepClass(1)}>
-        <div className="q">{find.step1.q}</div>
-        <div className="q-hint">{find.step1.hint}</div>
-        <OptionGroup options={find.step1.opts} />
-      </div>
-
-      <div className={stepClass(2)}>
-        <div className="q">{find.step2.q}</div>
-        <div className="q-hint">{find.step2.hint}</div>
-        <OptionGroup options={find.step2.opts} single />
-      </div>
-
-      <div className={stepClass(3)}>
-        <div className="q">{find.step3.q}</div>
-        <div className="q-hint">{find.step3.hint}</div>
-        <div className="matches">
-          {find.step3.matches.map((m) => (
-            <div key={m.nm} className="match">
-              <span className="m-face">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                {m.image ? (
-                  <img src={m.image} alt={m.nm} style={COVER} />
-                ) : (
-                  <span className="ftag">{m.ftag}</span>
-                )}
-              </span>
-              <div>
-                <div className="m-nm">{m.nm}</div>
-                <div className="m-rl">{m.rl}</div>
-              </div>
-              <div className="m-rate">
-                <div className="r">{m.rate}</div>
-                <div className="l">{find.step3.per}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-        <button className="next" style={{ width: '100%', justifyContent: 'center', marginTop: '18px' }} onClick={sendLead}>
-          {find.step3.cta}
-          <span className="arw">
-            <Arrow className="icon-motion icon-motion--draw" />
-          </span>
-        </button>
-      </div>
-
-      <div className="card-foot" style={{ display: step === 3 ? 'none' : 'flex' }}>
-        <div className="trust">
-          {find.footTrust.map((t) => (
-            <span key={t} className="t">
-              <Check className="icon-motion icon-motion--draw" /> {t}
-            </span>
-          ))}
-        </div>
-        <div className="nav-btns">
-          <button className="back" onClick={back} disabled={step === 0}>
-            {find.back}
-          </button>
-          <button className="next" onClick={next}>
-            {find.next}{' '}
-            <span className="arw">
-              <Arrow className="icon-motion icon-motion--draw" />
-            </span>
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 // ── Explorable profile (vetting section, right column) + faux modal ──
 // The "90-second tour" link plays a real embed when vet.tourVideoUrl is set
 // (optional vet.tourPoster shows as the still); otherwise it stays inert, as in
@@ -915,18 +776,10 @@ export function HireEngineersTemplate({
             <p className="lead">{content.find.lead}</p>
           </div>
 
-          <div className="ff-layout">
-            <FindForm find={content.find} locale={locale} />
-            <div className="imgslot ff-img rvl">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              {content.find.img.image ? <img src={content.find.img.image} alt={content.find.img.t} style={COVER} /> : null}
-              <span className="tag">{content.find.img.tag}</span>
-              <div className="cap">
-                <div className="t">{content.find.img.t}</div>
-                <div className="s">{content.find.img.s}</div>
-              </div>
-            </div>
-          </div>
+          <LeadFormSection
+            sourcePage={buildLocalePath('/services/software-engineers', locale)}
+            prefillRole="product-engineer"
+          />
 
           {/* Both of these were href="#": the page offered to put you in front
               of the AI or a human and then did nothing when clicked. */}
@@ -965,10 +818,6 @@ export function HireEngineersTemplate({
           <div className="sub">{content.final.sub}</div>
         </div>
       </section>
-      <LeadFormSection
-        sourcePage={buildLocalePath('/services/software-engineers', locale)}
-        prefillRole="product-engineer"
-      />
     </main>
   )
 }

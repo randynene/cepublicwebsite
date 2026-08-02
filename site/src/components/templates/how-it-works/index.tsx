@@ -6,10 +6,8 @@ import { Marquee } from '@/components/ui/marquee'
 import { cn } from '@/components/ui/_utils/cn'
 import { Reveal } from '@/components/motion/reveal'
 import { CountUp } from '@/components/motion/count-up'
-import { Spotlight } from '@/components/motion/spotlight'
 import { TypewriterText } from '@/components/motion/typewriter-text'
 import { HeroTrustBar } from '@/components/social-proof/hero-trust-bar'
-import { EngineerMatchQuiz } from '@/components/shared/engineer-match-quiz'
 import { FaqChatCard } from '@/components/shared/faq-chat-card'
 import { STICKY_ASIDE } from '@/components/layout/sticky-aside'
 import { LeadFormSection } from '@/components/lead-form/section'
@@ -30,7 +28,7 @@ import { TestimonialsSlider } from './testimonials-slider'
 // headings, Source Serif 4 italic accent word. All copy arrives via the
 // `content` prop (Sanity howItWorksPage, or the static HIW_CONTENT fallback);
 // no JSX string literals. The closing lime CTA and footer are sitewide chrome
-// (FooterTopCta) — not rebuilt here. The interactive matcher is a static stub.
+// (FooterTopCta) - not rebuilt here.
 
 const BAND = 'mx-auto w-full max-w-[1440px] px-[22px] sm:px-[32px] lg:px-[64px]'
 const EYEBROW =
@@ -41,8 +39,6 @@ const H1 =
   'text-[38px] font-semibold leading-[1.05] tracking-[-1.5px] text-white lg:text-[67px] lg:leading-[70.56px] lg:tracking-[-2.52px]'
 const H2 =
   'text-[34px] font-semibold leading-[1.05] tracking-[-1.3px] text-white lg:text-[58px] lg:leading-[61px] lg:tracking-[-1.7px]'
-const H2_SM =
-  'text-[30px] font-semibold leading-[1.08] tracking-[-1px] text-white lg:text-[46px] lg:leading-[56px] lg:tracking-[-1.4px]'
 const ACCENT = 'font-serif font-normal italic text-brand-primary'
 
 const GLYPH = {
@@ -461,31 +457,6 @@ function Testimonials({ content }: { content: HiwContent }) {
   )
 }
 
-function Matcher({ content, locale }: SectionProps) {
-  const { matcher } = content
-  return (
-    // Cursor spotlight on the heading block only - the quiz below is an input
-    // surface and must stay full-bright.
-    <Spotlight className="py-[72px] lg:py-[104px]">
-      <div className={BAND}>
-        <div data-spot-item className="transition-opacity duration-300 motion-safe:opacity-50">
-          <Eyebrow>{matcher.eyebrow}</Eyebrow>
-          <h2 className={cn('mt-[16px]', H2_SM)}>
-            {matcher.titleLead}{' '}
-            <span className={cn(ACCENT, 'whitespace-nowrap')}>{matcher.titleAccent}</span>
-          </h2>
-          <p className="mt-[18px] max-w-[560px] text-[16px] font-normal leading-[24px] tracking-[-0.08px] text-text-secondary">
-            {matcher.paragraph}
-          </p>
-        </div>
-        <div className="mt-[40px]">
-          <EngineerMatchQuiz content={matcher} locale={locale} />
-        </div>
-      </div>
-    </Spotlight>
-  )
-}
-
 function Faq({ content, locale }: SectionProps) {
   const { faq } = content
   return (
@@ -545,7 +516,6 @@ export function HowItWorksTemplate({
       <Stages content={content} />
       <DeRisk content={content} />
       <Testimonials content={content} />
-      <Matcher content={content} locale={locale} />
       <Faq content={content} locale={locale} />
       <LeadFormSection sourcePage={buildLocalePath('/how-it-works', locale)} />
     </main>
