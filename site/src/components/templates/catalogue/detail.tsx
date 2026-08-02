@@ -1,5 +1,6 @@
 import Link from 'next/link'
 
+import { LeadFormSection, type LeadFormSectionProps } from '@/components/lead-form/section'
 import { CtaButton } from '@/components/ui/cta-button'
 import { cn } from '@/components/ui/_utils/cn'
 import type { HubQuote, HubStory } from '@/data/services'
@@ -23,6 +24,12 @@ export interface CatalogueDetailProps {
   content: CatalogueContent
   hireHref?: string
   scheduleHref?: string
+  /**
+   * Quick hiring form, rendered at the foot of the page. Optional so a caller
+   * that has no sensible source path simply does not get one, rather than
+   * reporting a lead as coming from somewhere it did not.
+   */
+  leadForm?: LeadFormSectionProps
 }
 
 // Fixed furniture copy + serif-italic accent phrases (verbatim from the reference).
@@ -179,7 +186,7 @@ function ContentBlock({ section }: { section: CatalogueSection }) {
   )
 }
 
-export function CatalogueDetail({ content, hireHref = '/book-a-call', scheduleHref = '/book-a-call' }: CatalogueDetailProps) {
+export function CatalogueDetail({ content, hireHref = '/book-a-call', scheduleHref = '/book-a-call', leadForm }: CatalogueDetailProps) {
   const { name, eyebrow, heroSubhead, heroBullets, skillBadges, ourService, capabilities, why, statements, techCoverage, faqs, isTechnology } = content
   const stories = SERVICES_HUB.stories as HubStory[]
   const quotes = SERVICES_HUB.quotes as HubQuote[]
@@ -415,6 +422,8 @@ export function CatalogueDetail({ content, hireHref = '/book-a-call', scheduleHr
           </ul>
         </div>
       </section>
+
+      {leadForm && <LeadFormSection {...leadForm} />}
     </main>
   )
 }

@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 
-import { LeadFormSection, roleForServiceSlug } from '@/components/lead-form/section'
 import { Container } from '@/components/ui/container'
 import { Heading } from '@/components/ui/heading'
 import { Image } from '@/components/ui/image'
@@ -596,15 +595,6 @@ export default function ServiceTemplate({ service, locale }: ServiceTemplateProp
           </div>
         </div>
       </Container>
-
-      {/* Quick hiring form. The role comes from the page: someone reading the
-          DevOps Engineers page has answered that question by being here. Project
-          services and the location pages deliberately map to nothing, because
-          there the open question is what to build or where, not which role. */}
-      <LeadFormSection
-        sourcePage={buildLocalePath(`/services/${service.slug}`, locale)}
-        prefillRole={roleForServiceSlug(service.slug)}
-      />
     </article>
   )
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
+import { technologyNameToSkill } from '@/components/lead-form/section'
 import { CatalogueDetail } from '@/components/templates/catalogue/detail'
 import { TechnologyJsonLd } from '@/components/templates/technology/json-ld'
 import { mapTechnologyToContent } from '@/lib/catalogue/content'
@@ -43,7 +44,15 @@ export default async function TechnologyDetailUkPage({ params }: { params: Promi
   return (
     <>
       <TechnologyJsonLd technology={technology} locale="en-GB" faqs={content.faqs} />
-      <CatalogueDetail content={content} hireHref="/uk/book-a-call" scheduleHref="/uk/book-a-call" />
+      <CatalogueDetail
+        content={content}
+        hireHref="/uk/book-a-call"
+        scheduleHref="/uk/book-a-call"
+        leadForm={{
+          sourcePage: `/uk/technology/${slug}`,
+          prefillSkill: technologyNameToSkill(technology.technologyName),
+        }}
+      />
     </>
   )
 }
