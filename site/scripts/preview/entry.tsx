@@ -14,7 +14,7 @@ const container = document.getElementById('root')
 if (!container) throw new Error('no #root')
 
 createRoot(container).render(
-  <div className="mx-auto max-w-[900px] px-6 py-10">
+  <div className="mx-auto max-w-[1280px] px-[22px] py-16 sm:px-[32px] lg:px-[64px]">
     <QuickHiringForm sourcePage="/technology/react-developers" />
   </div>,
 )

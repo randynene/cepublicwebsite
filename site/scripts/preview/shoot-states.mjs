@@ -18,7 +18,7 @@ mkdirSync(OUT, { recursive: true })
 
 const browser = await chromium.launch()
 const page = await browser.newPage({
-  viewport: { width: 860, height: 1200 },
+  viewport: { width: 1400, height: 1100 },
   deviceScaleFactor: 2,
 })
 

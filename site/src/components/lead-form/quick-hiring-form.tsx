@@ -97,6 +97,20 @@ const ADD_GLYPH = '+'
  */
 const ERROR_TEXT_CLASS = 'text-[#FF6B6B]'
 
+/**
+ * Per-step question, read by the left rail. Kept as a lookup rather than passed
+ * down with each control block, because in the landscape layout the question and
+ * the controls it belongs to are rendered in two different columns.
+ */
+const STEP_COPY: Record<StepId, { heading: string; sub: string }> = {
+  role: C.role,
+  skills: C.skills,
+  length: C.length,
+  commitment: C.commitment,
+  details: C.details,
+  booking: C.booking,
+}
+
 function useSteps(hasPrefilledRole: boolean): StepId[] {
   return useMemo(
     () =>
@@ -248,49 +262,90 @@ export function QuickHiringForm({
 
   const stepNumber = stepIndex + 1
   const stepCount = steps.length
+  const { heading, sub } = STEP_COPY[step]
+
+  // The booking step takes the full width. A Calendly month view squeezed into a
+  // 60% column is unusable, and by then there is no question left to ask, so the
+  // left rail has nothing to hold.
+  const fullWidth = step === 'booking'
 
   return (
     <section
       className={cn(
-        'rounded-[20px] border border-border-subtle bg-section-bg-card p-6 sm:p-10',
+        'rounded-[20px] border border-border-subtle bg-section-bg-card p-6 sm:p-10 lg:p-12',
         className,
       )}
       aria-labelledby="quick-hiring-form-heading"
     >
-      {/* Both halves are nowrap. At 390px the eyebrow was breaking after "FIND
-          YOUR" and the counter after "Step 1 of", which turned a one-line header
-          into a ragged four-line block. */}
-      <div className="mb-6 flex items-baseline justify-between gap-4">
-        <p className="whitespace-nowrap text-[11.5px] font-semibold uppercase leading-none tracking-[1.68px] text-accent-primary">
-          {C.eyebrow}
-        </p>
-        <p className="whitespace-nowrap text-[13px] leading-none text-text-tertiary">
-          {C.progress.step}
-          {' '}
-          {stepNumber}
-          {' '}
-          {C.progress.of}
-          {' '}
-          {stepCount}
-        </p>
-      </div>
-
       <div
-        className="mb-8 h-[3px] w-full overflow-hidden rounded-full bg-surface-tertiary"
-        role="progressbar"
-        aria-valuenow={stepNumber}
-        aria-valuemin={1}
-        aria-valuemax={stepCount}
+        className={cn(
+          'gap-10 lg:gap-16',
+          fullWidth ? 'block' : 'lg:grid lg:grid-cols-[minmax(0,360px)_1fr]',
+        )}
       >
-        <div
-          className="h-full rounded-full bg-accent-primary transition-[width] duration-300"
-          style={{ width: `${(stepNumber / stepCount) * 100}%` }}
-        />
-      </div>
+        {/* Left rail: what is being asked. Landscape, because this block sits at
+            the bottom of a long page and a tall portrait card there reads as a
+            second page rather than as the last section of this one. */}
+        <div className="mb-8 lg:mb-0">
+          {/* Both halves are nowrap. At 390px the eyebrow was breaking after
+              "FIND YOUR" and the counter after "Step 1 of", which turned a
+              one-line header into a ragged four-line block. */}
+          <div className="mb-5 flex items-baseline justify-between gap-4">
+            <p className="whitespace-nowrap text-[11.5px] font-semibold uppercase leading-none tracking-[1.68px] text-accent-primary">
+              {C.eyebrow}
+            </p>
+            <p className="whitespace-nowrap text-[13px] leading-none text-text-tertiary lg:hidden">
+              {C.progress.step}
+              {' '}
+              {stepNumber}
+              {' '}
+              {C.progress.of}
+              {' '}
+              {stepCount}
+            </p>
+          </div>
 
-      <div ref={headingRef} tabIndex={-1} className="outline-none">
+          <Heading
+            as="h2"
+            size="h4"
+            id="quick-hiring-form-heading"
+            ref={headingRef}
+            tabIndex={-1}
+            className="text-[26px] font-semibold leading-[32px] tracking-[-0.6px] text-text-primary outline-none lg:text-[34px] lg:leading-[40px] lg:tracking-[-0.9px]"
+          >
+            {heading}
+          </Heading>
+          <Text className="mt-3 text-text-secondary">{sub}</Text>
+
+          <div className="mt-7 flex items-center gap-4">
+            <div
+              className="h-[3px] w-full max-w-[220px] overflow-hidden rounded-full bg-surface-tertiary"
+              role="progressbar"
+              aria-valuenow={stepNumber}
+              aria-valuemin={1}
+              aria-valuemax={stepCount}
+            >
+              <div
+                className="h-full rounded-full bg-accent-primary transition-[width] duration-300"
+                style={{ width: `${(stepNumber / stepCount) * 100}%` }}
+              />
+            </div>
+            <p className="hidden whitespace-nowrap text-[13px] leading-none text-text-tertiary lg:block">
+              {C.progress.step}
+              {' '}
+              {stepNumber}
+              {' '}
+              {C.progress.of}
+              {' '}
+              {stepCount}
+            </p>
+          </div>
+        </div>
+
+        {/* Right column: the controls. */}
+        <div className="min-w-0">
         {step === 'role' && (
-          <StepShell heading={C.role.heading} sub={C.role.sub}>
+          <StepShell>
             <div className="grid gap-3 sm:grid-cols-2">
               {ROLE_OPTIONS.map((option) => (
                 <button
@@ -313,7 +368,7 @@ export function QuickHiringForm({
         )}
 
         {step === 'skills' && (
-          <StepShell heading={C.skills.heading} sub={C.skills.sub}>
+          <StepShell>
             <label htmlFor="quick-hiring-skill-search" className="sr-only">
               {C.skills.searchLabel}
             </label>
@@ -393,7 +448,7 @@ export function QuickHiringForm({
         )}
 
         {step === 'length' && (
-          <StepShell heading={C.length.heading} sub={C.length.sub}>
+          <StepShell>
             <ChoiceList
               name="quick-hiring-length"
               options={LENGTH_OPTIONS}
@@ -404,7 +459,7 @@ export function QuickHiringForm({
         )}
 
         {step === 'commitment' && (
-          <StepShell heading={C.commitment.heading} sub={C.commitment.sub}>
+          <StepShell>
             <ChoiceList
               name="quick-hiring-commitment"
               options={COMMITMENT_OPTIONS}
@@ -415,7 +470,7 @@ export function QuickHiringForm({
         )}
 
         {step === 'details' && (
-          <StepShell heading={C.details.heading} sub={C.details.sub}>
+          <StepShell>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field
                 id="qh-first-name"
@@ -431,16 +486,22 @@ export function QuickHiringForm({
                 value={details.lastName}
                 onChange={(v) => updateDetail('lastName', v)}
               />
-              <Field
-                id="qh-email"
-                label={C.details.email}
-                placeholder={C.details.emailPlaceholder}
-                type="email"
-                value={details.email}
-                onChange={(v) => updateDetail('email', v)}
-                error={errors.email}
-                required
-              />
+              {/* Full width. A work email is the longest thing anyone types
+                  here, and in a half-width field it was being clipped to
+                  "jake@cloudemployee." with no way to read back what was
+                  entered. The two optional short fields share the row instead. */}
+              <div className="sm:col-span-2">
+                <Field
+                  id="qh-email"
+                  label={C.details.email}
+                  placeholder={C.details.emailPlaceholder}
+                  type="email"
+                  value={details.email}
+                  onChange={(v) => updateDetail('email', v)}
+                  error={errors.email}
+                  required
+                />
+              </div>
               <Field
                 id="qh-phone"
                 label={C.details.phone}
@@ -449,15 +510,13 @@ export function QuickHiringForm({
                 value={details.phone}
                 onChange={(v) => updateDetail('phone', v)}
               />
-              <div className="sm:col-span-2">
-                <Field
-                  id="qh-company"
-                  label={C.details.company}
-                  hint={C.details.optional}
-                  value={details.company}
-                  onChange={(v) => updateDetail('company', v)}
-                />
-              </div>
+              <Field
+                id="qh-company"
+                label={C.details.company}
+                hint={C.details.optional}
+                value={details.company}
+                onChange={(v) => updateDetail('company', v)}
+              />
             </div>
 
             <label className="mt-6 flex items-start gap-3 text-text-secondary">
@@ -484,14 +543,13 @@ export function QuickHiringForm({
         )}
 
         {step === 'booking' && (
-          <StepShell heading={C.booking.heading} sub={C.booking.sub}>
+          <StepShell>
             <CalendlyInlineEmbed url={calendlyUrl} className="mt-2 rounded-2xl" />
           </StepShell>
         )}
-      </div>
 
-      {step !== 'booking' && (
-        <div className="mt-8 flex items-center gap-3">
+        {step !== 'booking' && (
+          <div className="mt-8 flex items-center gap-3">
           {stepIndex > 0 && (
             <button
               type="button"
@@ -531,39 +589,20 @@ export function QuickHiringForm({
                 : C.actions.continue}
             </button>
           )}
+          </div>
+        )}
         </div>
-      )}
+      </div>
     </section>
   )
 }
 
-function StepShell({
-  heading,
-  sub,
-  children,
-}: {
-  heading: string
-  sub: string
-  children: React.ReactNode
-}) {
-  return (
-    <div>
-      {/* Explicit size rather than the h4 variant. At h4 the question carried the
-          same weight as the option labels below it and stopped reading as a
-          question. There is no h3 variant, and the catalogue templates set fold
-          headings in explicit px for the same reason, so this follows them. */}
-      <Heading
-        as="h2"
-        size="h4"
-        id="quick-hiring-form-heading"
-        className="text-[26px] font-semibold leading-[32px] tracking-[-0.6px] text-text-primary lg:text-[34px] lg:leading-[40px] lg:tracking-[-0.9px]"
-      >
-        {heading}
-      </Heading>
-      <Text className="mt-3 mb-7 text-text-secondary">{sub}</Text>
-      {children}
-    </div>
-  )
+/**
+ * The control column. It carries no heading: in the landscape layout the question
+ * lives in the left rail, so a heading here would repeat it.
+ */
+function StepShell({ children }: { children: React.ReactNode }) {
+  return <div>{children}</div>
 }
 
 function SkillPill({
