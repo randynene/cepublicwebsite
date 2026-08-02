@@ -23,6 +23,7 @@ import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { CalendlyInlineEmbed } from '@/components/templates/book-a-call/calendly-inline-embed'
+import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/components/ui/_utils/cn'
 import { Heading } from '@/components/ui/heading'
 import { Text } from '@/components/ui/text'
@@ -77,6 +78,24 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 // inside JSX, and a multiplication sign is not a string a translator should see.
 const REMOVE_GLYPH = '\u00D7'
 const ADD_GLYPH = '+'
+
+/**
+ * Validation messages are red, not lime.
+ *
+ * The first build used the accent, which meant "please use a valid work email"
+ * arrived in the same colour as every success and CTA on the site. An error that
+ * looks like a confirmation is worse than no colour at all.
+ *
+ * It is NOT `--color-error` (#bd0000) either. That token was specified for light
+ * surfaces: against this card (#101B30) it measures 2.6:1, well under the 4.5:1
+ * AA floor, so it would be an unreadable error message. This lighter red measures
+ * about 6.2:1 on the same ground.
+ *
+ * TOKEN GAP, flagged rather than fixed here: the palette has no dark-surface
+ * variant of error / success / warning, and every dark form will hit this. Belongs
+ * in tokens.css as a proper semantic pair, not inline in one component.
+ */
+const ERROR_TEXT_CLASS = 'text-[#FF6B6B]'
 
 function useSteps(hasPrefilledRole: boolean): StepId[] {
   return useMemo(
@@ -151,6 +170,25 @@ export function QuickHiringForm({
 
   const goNext = (): void => setStepIndex((i) => Math.min(i + 1, steps.length - 1))
   const goBack = (): void => setStepIndex((i) => Math.max(i - 1, 0))
+
+  /**
+   * Set a field AND clear its error.
+   *
+   * Without the second half, validation messages persist after the visitor has
+   * fixed the thing they complain about: the screenshots showed "Please use a
+   * valid work email" sitting under a valid email address, and "Please tick the
+   * box" under a ticked box. Errors are only recomputed on submit, so the state
+   * has to be cleared where the correction happens.
+   */
+  function updateDetail<K extends keyof Details>(key: K, value: Details[K]): void {
+    setDetails((d) => ({ ...d, [key]: value }))
+    setErrors((current) => {
+      if (!(key in current)) return current
+      const next = { ...current }
+      delete next[key]
+      return next
+    })
+  }
 
   function validateDetails(): boolean {
     const next: Partial<Record<keyof Details, string>> = {}
@@ -383,7 +421,7 @@ export function QuickHiringForm({
                 id="qh-first-name"
                 label={C.details.firstName}
                 value={details.firstName}
-                onChange={(v) => setDetails((d) => ({ ...d, firstName: v }))}
+                onChange={(v) => updateDetail('firstName', v)}
                 error={errors.firstName}
                 required
               />
@@ -391,7 +429,7 @@ export function QuickHiringForm({
                 id="qh-last-name"
                 label={C.details.lastName}
                 value={details.lastName}
-                onChange={(v) => setDetails((d) => ({ ...d, lastName: v }))}
+                onChange={(v) => updateDetail('lastName', v)}
               />
               <Field
                 id="qh-email"
@@ -399,7 +437,7 @@ export function QuickHiringForm({
                 placeholder={C.details.emailPlaceholder}
                 type="email"
                 value={details.email}
-                onChange={(v) => setDetails((d) => ({ ...d, email: v }))}
+                onChange={(v) => updateDetail('email', v)}
                 error={errors.email}
                 required
               />
@@ -409,7 +447,7 @@ export function QuickHiringForm({
                 hint={C.details.optional}
                 type="tel"
                 value={details.phone}
-                onChange={(v) => setDetails((d) => ({ ...d, phone: v }))}
+                onChange={(v) => updateDetail('phone', v)}
               />
               <div className="sm:col-span-2">
                 <Field
@@ -417,17 +455,17 @@ export function QuickHiringForm({
                   label={C.details.company}
                   hint={C.details.optional}
                   value={details.company}
-                  onChange={(v) => setDetails((d) => ({ ...d, company: v }))}
+                  onChange={(v) => updateDetail('company', v)}
                 />
               </div>
             </div>
 
             <label className="mt-6 flex items-start gap-3 text-text-secondary">
-              <input
-                type="checkbox"
+              <Checkbox
                 checked={details.consent}
-                onChange={(e) => setDetails((d) => ({ ...d, consent: e.target.checked }))}
-                className="mt-1 size-4 shrink-0 accent-[#D4FF3C]"
+                onCheckedChange={(checked) => updateDetail('consent', checked === true)}
+                aria-invalid={Boolean(errors.consent)}
+                className="mt-[2px] shrink-0"
               />
               <span className="text-sm">
                 {C.details.consent}
@@ -438,7 +476,7 @@ export function QuickHiringForm({
               </span>
             </label>
             {errors.consent && (
-              <Text size="small" className="mt-2 text-accent-primary">
+              <Text size="small" className={cn('mt-2', ERROR_TEXT_CLASS)}>
                 {errors.consent}
               </Text>
             )}
@@ -639,11 +677,11 @@ function Field({
         onChange={(e) => onChange(e.target.value)}
         className={cn(
           'w-full rounded-xl border bg-surface-tertiary px-4 py-3 text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-ring',
-          error ? 'border-accent-primary' : 'border-border-default focus:border-accent-primary',
+          error ? 'border-[#FF6B6B]' : 'border-border-default focus:border-accent-primary',
         )}
       />
       {error && (
-        <p id={errorId} className="mt-1 text-sm text-accent-primary">
+        <p id={errorId} className={cn('mt-1 text-sm', ERROR_TEXT_CLASS)}>
           {error}
         </p>
       )}
