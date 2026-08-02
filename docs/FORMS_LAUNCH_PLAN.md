@@ -3,7 +3,7 @@
 > **This is the walkthrough doc. Follow it top to bottom.**
 > Written for Jake. The detailed reasoning lives in `docs/HUBSPOT_FORMS_STRATEGY.md`;
 > you should not need to open that unless something surprises us.
-> Last updated: 1 Aug 2026.
+> Last updated: 2 Aug 2026.
 
 ---
 
@@ -35,17 +35,19 @@ the footer newsletter is gone.
 | 3 | Audit the forms in HubSpot, propose keep vs archive | Me | Done - `docs/hubspot-form-audit.md` |
 | 4 | Create the new form + 5 new fields | Me | Done |
 | 5 | Rename the messy old forms (you approve first) | Me | Not started - needs your sign-off |
-| 6 | Build the quick hiring form + its Slack ping | Me | Not started |
-| 7 | Put it on the services + technology pages, delete the fake forms | Me | Not started |
+| 6 | Build the quick hiring form + its Slack safety net | Me | **Built. Launch webhooks, final consent wording, and a real test remain** |
+| 7 | Put it on the services + technology pages, delete the fake forms | Me | **Code complete on 8 templates. `/for-developers` still waits on J-D** |
 | 8 | Send one real test lead through each path | You + me | Not started |
 
 **You are only hands-on in steps 1, 5 (approval) and 8.** The rest is me.
 
 ---
 
-## Where we got to (1 Aug 2026)
+## Where we got to (2 Aug 2026)
 
-Steps 2, 3 and 4 ran. Nothing was renamed, archived or deleted in HubSpot.
+Steps 2, 3 and 4 are closed. Steps 6 and 7 are built, with the launch inputs and
+human test listed below still open. Nothing was renamed, archived or deleted in
+HubSpot.
 
 ### Step 2 - CLOSED. The booking path works, and the check now proves it alone
 
@@ -204,29 +206,82 @@ The form:
 | After submit | redirects to `/book-a-call` |
 | Consent wording | none, pending your legal call (J-E) |
 
-Nothing on the site renders it, so nothing can submit to it by accident.
+At the close of step 4 nothing on the site rendered it. Steps 6 and 7 now provide
+the real submission UI described below.
 
 Both scripts check before they write and never overwrite. Running either a second
 time changes nothing, which was tested rather than assumed.
+
+### Steps 6 and 7 - built, fake capture flows removed
+
+The quick hiring form, shared skills taxonomy, and `/api/lead` endpoint are built.
+The real form now renders on eight templates: Home, How It Works, Hire Engineers,
+Fractional CTO, service detail, technology detail, the services hub, and the
+technology hub.
+
+Every template importing `LeadFormSection` was checked for another form-shaped
+surface. The service and technology directories keep their genuine search forms;
+those filter page content and are not lead capture. Service and technology detail
+had no collision.
+
+Four collisions were removed:
+
+- Hire Engineers no longer renders `FindForm`, its dead `sendLead` path, or its
+  fabricated engineer results. The real form occupies the existing `#find`
+  section, so the hero, calculator, and final CTAs still land in the right place.
+- Fractional CTO no longer renders the local match stepper. Its useful heading,
+  talk-first links, and trust copy remain around the real form.
+- Home no longer shows the static role-picker and locked matching panel beside
+  the real form.
+- How It Works no longer shows the shared static matcher preview beside the real
+  form. The unused preview component was deleted.
+
+`/for-developers` was not touched. Its fake talent application remains open under
+Jake decision J-D because it belongs to recruitment, not the client-lead form.
+
+The code is type-clean. All changed files lint with zero errors. The full site
+lint still fails on 32 older errors outside this forms work, so this is not a
+sitewide clean-lint claim.
 
 ### Waiting on you
 
 | # | Thing | Blocks |
 |---|---|---|
-| 1 | **Approve or edit the four-step form copy** (headings, pills, buttons) | Step 6 |
-| 2 | Consent wording for the submit button | Going live with the form |
-| 3 | Sign-off on the rename pass, and telling Seb first | Step 5 |
-| 4 | `/for-developers` decision | Step 7 |
+| 1 | Final consent wording next to the submit button | Going live with the form |
+| 2 | Add or confirm `SLACK_LEADS_WEBHOOK_URL` in the launch deployment | HubSpot-failure safety alert |
+| 3 | Add or confirm `SLACK_JUNK_WEBHOOK_URL` in the launch deployment | Junk routing |
+| 4 | Sign-off on the rename pass, and tell Seb first | Step 5 |
+| 5 | `/for-developers` decision | J-D, separate talent path |
+| 6 | Submit one real test lead through every surviving path | Step 8 launch proof |
 
-Two items came off this list on 1 Aug. The Calendly booking count is gone because
-the check now fetches it. The **Slack webhook is done**: app `Cloud Employee
-Website`, currently pointed at `#leads-test`, stored as `SLACK_LEADS_WEBHOOK_URL` in
-Cursor Cloud Agent Secrets and in Vercel (Production and Preview, sensitive).
+The Calendly booking count came off this list on 1 Aug because the check now
+fetches it. This cloud agent can see `SLACK_LEADS_WEBHOOK_URL`, but it cannot see
+`SLACK_JUNK_WEBHOOK_URL`. The launch deployment needs both names confirmed
+before step 8. This check reports only whether a variable exists and never prints
+its secret value.
 
-Two things about that webhook that are easy to trip over. It **does not take effect
-until the next deployment**, because Vercel bakes environment variables at build
-time. And a cloud agent only receives secrets that existed **before it started**, so
-the agent that builds the Slack half has to be a fresh one.
+Environment variable changes do not take effect until the next deployment because
+Vercel bakes them in at build time. A cloud agent also only receives secrets that
+existed before it started.
+
+### What `/api/lead` does today when Slack variables are absent
+
+The endpoint always tries HubSpot first.
+
+- If HubSpot accepts a genuine lead, the visitor continues and HubSpot's existing
+  workflows remain the notification path. `SLACK_LEADS_WEBHOOK_URL` is not used
+  on the successful path, so leaving it absent does not block the form.
+- If HubSpot rejects a genuine lead, the endpoint tries
+  `SLACK_LEADS_WEBHOOK_URL` as the safety net. When that variable is absent, no
+  Slack alert is sent. The server logs the failure, but the visitor still sees
+  success and continues to booking. That lead then exists only in the submitted
+  request and server logs, so the safety net is not launch-ready without the URL.
+- Suspected junk is still submitted to HubSpot, then routed to
+  `SLACK_JUNK_WEBHOOK_URL`. When that variable is absent, it remains in HubSpot
+  and no junk-channel message is sent.
+- If both Slack variables are absent, HubSpot still receives every accepted
+  submission. There is no Slack backup for a failed HubSpot write and no Slack
+  notice for filtered junk.
 
 ---
 

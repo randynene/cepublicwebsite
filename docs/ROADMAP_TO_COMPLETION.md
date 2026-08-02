@@ -696,8 +696,14 @@ remains for Jake is the J1-J9 gate list in that doc, not this exercise.*
 - [ ] Calendly: Book-a-call detail pages + Contact intro-call URL load and book. **Jake.**
 - [x] Start-hiring step form ids match seed/HubSpot; US `get-started` redirects to
       `contact-info`; UK `get-started` is a real page.
-- [x] Hire Engineers dead final CTA (`sendLead = () => {}`) and `how-more` `#` link
-      fixed → `/book-a-call` + `/how-it-works` (Jul 2026 forms pass).
+- [x] Quick hiring form UI, skills taxonomy, and `/api/lead` built and mounted on
+      eight templates. Duplicate fake capture UI removed from Hire Engineers,
+      Fractional CTO, Home, and How It Works. Hire Engineers `FindForm`,
+      `sendLead`, and fabricated match results deleted (2 Aug 2026).
+- [ ] Confirm `SLACK_LEADS_WEBHOOK_URL` and `SLACK_JUNK_WEBHOOK_URL` on the launch
+      deployment, then redeploy. The first is the HubSpot-failure safety net; the
+      second routes suspected junk.
+- [ ] Replace the draft consent sentence with Jake and legal's approved wording.
 - [ ] Thank-you / confirmed pages remain noindex; lead-capture pages behave as live.
 
 - [ ] **Confirm a human reads the Contact (`4b883c7d-…`) and Newsletter
@@ -708,11 +714,11 @@ remains for Jake is the J1-J9 gate list in that doc, not this exercise.*
       gateway-3 build (embed target 2 of 3).
 
 **Not HubSpot (do not invent forms):** For Developers join UI (talent, separate
-system), the calculators themselves. **Changed 30 Jul:** the Hire Engineers and
-Fractional CTO demo quizzes are no longer "leave as demos" — they are gateway-3
-targets. Hire Engineers gets the real form embedded (Marker **CE-17** lands there);
-Fractional CTO gets a CTA into it. Downloads stay ungated as a **deliberate
-divergence from live**, to be recorded in `parity-exceptions.json`.
+system), the calculators themselves. **Changed 2 Aug:** the real quick hiring form
+now replaces the old demo flows on Hire Engineers and Fractional CTO. Marker
+**CE-17** lands in the Hire Engineers form. `/for-developers` remains Jake decision
+J-D and was not touched. Downloads stay ungated as a **deliberate divergence from
+live**, to be recorded in `parity-exceptions.json`.
 
 **Gate:** Jake signs the funnel map; every path on the map has a green staging test;
 verifier PASS recorded in the cutover folder.
