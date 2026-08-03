@@ -151,10 +151,9 @@ export interface WhereWeWorkHub {
   /** Destination — the hub's location page. */
   href: string
   /**
-   * Panel photo. These are Picsum PLACEHOLDERS today. To drop in a real photo
-   * later, just replace this string with a portrait image path (e.g.
-   * `${IMG}/hubs/sao-paulo.jpg`, roughly 800x1100 or larger, shown object-fit
-   * cover). Nothing else needs to change.
+   * Panel photo — portrait, roughly 800x1100 or larger, shown object-fit cover.
+   * The panel is narrow at rest and wide on hover, so the subject needs to sit
+   * in the middle of the frame both ways. Crops live in `public/design/home/hubs/`.
    */
   image: string
 }
@@ -180,27 +179,27 @@ export const WHERE_WE_WORK: WhereWeWorkContent = {
     {
       name: 'São Paulo',
       href: '/services/latam-developers',
-      image: 'https://picsum.photos/seed/saopaulo7/800/1100',
+      image: `${IMG}/hubs/sao-paulo.jpg`,
     },
     {
       name: 'Bogotá',
       href: '/services/latam-developers',
-      image: 'https://picsum.photos/seed/bogota3/800/1100',
+      image: `${IMG}/hubs/bogota.jpg`,
     },
     {
       name: 'Buenos Aires',
       href: '/services/latam-developers',
-      image: 'https://picsum.photos/seed/buenosaires9/800/1100',
+      image: `${IMG}/hubs/buenos-aires.jpg`,
     },
     {
       name: 'Manila',
       href: '/services/philippines-developers',
-      image: 'https://picsum.photos/seed/manila12/800/1100',
+      image: `${IMG}/hubs/manila.jpg`,
     },
     {
       name: 'Zagreb',
       href: '/services/eastern-europe-developers',
-      image: 'https://picsum.photos/seed/zagreb5/800/1100',
+      image: `${IMG}/hubs/zagreb.jpg`,
     },
   ],
 }

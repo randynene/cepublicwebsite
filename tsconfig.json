@@ -10,7 +10,10 @@
     "outDir": "dist",
     "rootDir": "src",
     "paths": {
-      "@/*": ["./src/*"]
+      // Second entry is a fallback for the scripts lane: seed/patch scripts pull
+      // content modules out of site/src, and those modules use the site's own
+      // "@/" alias. Root src still wins, so nothing here changes for src/**.
+      "@/*": ["./src/*", "./site/src/*"]
     },
     "resolveJsonModule": true,
     "declaration": true,
