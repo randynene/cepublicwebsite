@@ -152,8 +152,8 @@ export const HIW_CONTENT = {
           'Your engineer reports to you directly, daily, on your timezone (Just like regular FT employees)',
           'We check in after month one, then continue with quarterly reviews',
         ],
-        image: `${HIW_IMG}/stage3-onboard.png`,
-        imageAlt: 'A newly onboarded engineer joining the client team standup on day one',
+        image: `${HIW_IMG}/stage3-onboard.jpg`,
+        imageAlt: 'Molly and Daniel on a welcome-to-the-team onboarding call',
       },
       {
         stage: 'Stage 4',
