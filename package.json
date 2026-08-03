@@ -23,6 +23,7 @@
     "hubspot:audit-forms": "tsx scripts/hubspot/audit-forms.ts",
     "hubspot:audit-slack-notifications": "tsx scripts/hubspot/audit-slack-notifications.ts",
     "hubspot:find-lead": "tsx scripts/hubspot/find-lead.ts",
+    "static:patch-home-lead-line": "tsx scripts/static/patch-home-ready-to-find-lead.ts",
     "hubspot:create-lead-properties": "tsx scripts/hubspot/create-lead-properties.ts",
     "hubspot:create-quick-hiring-form": "tsx scripts/hubspot/create-quick-hiring-form.ts",
     "scaffold:start": "tsx scripts/scaffold/start-scaffold-phase.ts",
