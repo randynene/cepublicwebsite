@@ -6,11 +6,13 @@ import { fetchFooter } from '@/lib/sanity/queries/footer'
 import { FOOTER_PAD_MOBILE_X, FOOTER_PAD_Y, FOOTER_SHELL } from './_parts'
 import { FooterBottomBar } from './bottom-bar'
 import { FooterLinkGrid } from './link-grid'
-import { FooterSubscribe } from './subscribe'
 import { FooterTopCta } from './top-cta'
 import type { Locale } from '@/lib/locale-path'
 
 // MYGRATR-STATIC-3 Step 5 — Footer rebuild (Footer.html export + topCtaBlock).
+// The newsletter subscribe block was retired Aug 2026: CE is not using the
+// HubSpot newsletter form any more. `footer.subscribe` is still in the schema
+// and still populated in the dataset, just no longer read.
 
 export default async function Footer({ locale }: { locale: Locale }) {
   const data = await fetchFooter()
@@ -40,7 +42,6 @@ export default async function Footer({ locale }: { locale: Locale }) {
       <div className={cn(FOOTER_PAD_MOBILE_X, 'lg:px-[64px]', FOOTER_PAD_Y)}>
         <div className={CHROME_CONTENT_BAND}>
           <FooterLinkGrid sections={data.sections} talentLocations={data.talentLocations} locale={locale}/>
-          <FooterSubscribe subscribe={data.subscribe} />
           <FooterBottomBar bottomBar={data.bottomBar} locale={locale}/>
         </div>
       </div>
