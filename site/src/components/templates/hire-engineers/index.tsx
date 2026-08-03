@@ -5,9 +5,9 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Spotlight } from '@/components/motion/spotlight'
 import { TypewriterText } from '@/components/motion/typewriter-text'
 import { ChatLink } from '@/components/shared/chat-link'
+import { VettingProfile } from '@/components/shared/vetting-profile'
 import { HeroTrustBar } from '@/components/social-proof/hero-trust-bar'
 import { cn } from '@/components/ui/_utils/cn'
-import { parseVideoUrl } from '@/components/ui/video-embed'
 import { CHAT_HREF } from '@/lib/chat'
 import { buildLocalePath, type Locale } from '@/lib/locale-path'
 import { CALC, HE, type HireEngineersContent } from './content'
@@ -25,20 +25,6 @@ const COVER: React.CSSProperties = {
   height: '100%',
   objectFit: 'cover',
   borderRadius: 'inherit',
-}
-
-// Build a provider embed URL (autoplay) from a parsed YouTube/Vimeo/Loom link.
-function heEmbedSrc(parsed: NonNullable<ReturnType<typeof parseVideoUrl>>): string {
-  if (parsed.provider === 'youtube') {
-    return `https://www.youtube-nocookie.com/embed/${parsed.id}?autoplay=1&rel=0`
-  }
-  if (parsed.provider === 'vimeo') {
-    return `https://player.vimeo.com/video/${parsed.id}?autoplay=1`
-  }
-  if (parsed.provider === 'linkedin') {
-    return `https://www.linkedin.com/embed/feed/update/urn:li:share:${parsed.id}`
-  }
-  return `https://www.loom.com/embed/${parsed.id}?autoplay=1`
 }
 
 // Hire Engineers landing page (/services/software-engineers).
@@ -444,170 +430,6 @@ function FindForm({
   )
 }
 
-// ── Explorable profile (vetting section, right column) + faux modal ──
-// The "90-second tour" link plays a real embed when vet.tourVideoUrl is set
-// (optional vet.tourPoster shows as the still); otherwise it stays inert, as in
-// the source design.
-function ProfileExplorer({
-  vet,
-  locale,
-}: {
-  vet: HireEngineersContent['vet']
-  locale: Locale
-}) {
-  const [open, setOpen] = useState(false)
-  const [tourOpen, setTourOpen] = useState(false)
-  const [tourPlaying, setTourPlaying] = useState(false)
-  const modalRef = useRef<HTMLDivElement>(null)
-  const tourRef = useRef<HTMLDivElement>(null)
-
-  const p = vet.profile
-  const parsedTour = vet.tourVideoUrl ? parseVideoUrl(vet.tourVideoUrl) : null
-  const tourPoster =
-    vet.tourPoster ||
-    (parsedTour?.provider === 'youtube'
-      ? `https://img.youtube.com/vi/${parsedTour.id}/hqdefault.jpg`
-      : '')
-
-  function openProfile() {
-    setOpen((o) => !o)
-    requestAnimationFrame(() => modalRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }))
-  }
-
-  function openTour(e: React.MouseEvent) {
-    e.preventDefault()
-    if (!parsedTour) return
-    setTourOpen(true)
-    // With no poster, autoplay straight into the embed.
-    if (!tourPoster) setTourPlaying(true)
-    requestAnimationFrame(() => tourRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }))
-  }
-
-  return (
-    <div>
-      <div className="prof-wrap" onClick={openProfile}>
-        <div className="prof rvl">
-          <div className="prof-top">
-            <span className="prof-av">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              {p.image ? <img src={p.image} alt={p.nm} style={COVER} /> : p.av}
-            </span>
-            <div>
-              <div className="prof-nm">{p.nm}</div>
-              <div className="prof-rl">{p.rl}</div>
-            </div>
-          </div>
-          <div className="prof-tabs">
-            {p.tabs.map((t, i) => (
-              <span key={t} className={cn(i === 0 && 'on')}>
-                {t}
-              </span>
-            ))}
-          </div>
-          <div className="prof-body">
-            <div className="prof-lbl">{p.assessment}</div>
-            <div className="prof-scores">
-              {p.scores.map((s) => (
-                <div key={s.sn} className="prof-sc">
-                  <span className="sn">{s.sn}</span>
-                  <span className="sb">
-                    <span className="sf" style={{ width: `${s.w}%` }} />
-                  </span>
-                  <span className="sp">{s.sp}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          {/* Seb liked the profile widget itself and wanted only its CTA
-              re-pointed: the bar now opens the chat rather than the sample
-              profile modal. stopPropagation keeps the card's own click (which
-              expands the sample) from firing underneath it. */}
-          <div className="prof-open">
-            <span className="po-t">{p.openTitle}</span>
-            <ChatLink
-              href={CHAT_HREF}
-              locale={locale}
-              className="po-b"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {p.openBtn} <Arrow className="icon-motion icon-motion--draw" />
-            </ChatLink>
-          </div>
-        </div>
-      </div>
-      <a className="prof-tour" href={vet.tourVideoUrl || '#'} onClick={openTour}>
-        <span className="pt-ic">
-          <svg viewBox="0 0 24 24" className="icon-motion icon-motion--bob">
-            <path d="M8 5v14l11-7z" />
-          </svg>
-        </span>
-        {vet.tour}
-      </a>
-      {parsedTour && tourOpen ? (
-        <div className="pmodal open" ref={tourRef}>
-          <div
-            style={{
-              position: 'relative',
-              aspectRatio: '16 / 9',
-              borderRadius: '14px',
-              overflow: 'hidden',
-              background: '#0b1424',
-            }}
-          >
-            {tourPlaying ? (
-              <iframe
-                src={heEmbedSrc(parsedTour)}
-                title={vet.tour}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
-              />
-            ) : (
-              <button
-                type="button"
-                onClick={() => setTourPlaying(true)}
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  width: '100%',
-                  height: '100%',
-                  border: 0,
-                  padding: 0,
-                  cursor: 'pointer',
-                  background: 'transparent',
-                }}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                {tourPoster ? <img src={tourPoster} alt={vet.tour} style={COVER} /> : null}
-                <span
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    display: 'grid',
-                    placeItems: 'center',
-                  }}
-                >
-                  <svg viewBox="0 0 24 24" width="56" height="56" style={{ fill: '#fff' }}>
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                </span>
-              </button>
-            )}
-          </div>
-        </div>
-      ) : (
-        <div className={cn('pmodal', open && 'open')} ref={modalRef}>
-          <div className="pm-note">
-            <strong>{vet.modalStrong}</strong>
-            <br />
-            {vet.modalBody}
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
 export function HireEngineersTemplate({
   content = HE,
   locale = 'en-US',
@@ -760,13 +582,28 @@ export function HireEngineersTemplate({
             <em>{content.roles.h2Em}</em>
           </h2>
           <div className="roles-grid">
-            {content.roles.items.map((r) => (
-              <a key={r.rn} className="role icon-card rvl">
-                <span className="ri">{roleIcon(r.rn)}</span>
-                <div className="rn">{r.rn}</div>
-                <div className="rd">{r.rd}</div>
-              </a>
-            ))}
+            {content.roles.items.map((r) => {
+              // Catch-all card sends people to book a call (design CTA).
+              const href = /something else/i.test(r.rn)
+                ? buildLocalePath('/book-a-call', locale)
+                : undefined
+              const inner = (
+                <>
+                  <span className="ri">{roleIcon(r.rn)}</span>
+                  <div className="rn">{r.rn}</div>
+                  <div className="rd">{r.rd}</div>
+                </>
+              )
+              return href ? (
+                <a key={r.rn} href={href} className="role icon-card rvl">
+                  {inner}
+                </a>
+              ) : (
+                <div key={r.rn} className="role icon-card rvl">
+                  {inner}
+                </div>
+              )
+            })}
           </div>
         </div>
       </section>
@@ -797,34 +634,11 @@ export function HireEngineersTemplate({
         </div>
       </section>
 
-      {/* VETTING */}
-      <section className="vet">
-        <div className="wrap">
-          <span className="eyebrow">{content.vet.eyebrow}</span>
-          <h2 className="st">
-            {content.vet.h2Lead}{' '}
-            <em>{content.vet.h2Em}</em>
-          </h2>
-          <div className="vet-grid">
-            <div>
-              <div className="vet-points">
-                {content.vet.points.map((pt) => (
-                  <div key={pt.h4} className="vet-point icon-card">
-                    <span className="vc">
-                      <Check className="icon-motion icon-motion--draw" />
-                    </span>
-                    <div>
-                      <h4>{pt.h4}</h4>
-                      <p>{pt.p}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <ProfileExplorer vet={content.vet} locale={locale} />
-          </div>
-        </div>
-      </section>
+      {/* VETTING — the shared Vetting Profile section. It replaced this page's
+          original vetting block (a static three-score profile card plus a
+          "sample profile opens here" placeholder modal) on 31 Jul; the six-stage
+          card is the real thing that placeholder was describing. */}
+      <VettingProfile locale={locale} />
 
       {/* PROOF — cursor spotlight on the heading only. Spotlight's own
           bg-[#070D18] loses to `.he .proof`'s higher-specificity --navy, so the
