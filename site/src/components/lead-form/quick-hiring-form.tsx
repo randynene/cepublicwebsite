@@ -357,7 +357,11 @@ export function QuickHiringForm({
                   onClick={() => setRole(option)}
                   aria-pressed={role?.id === option.id}
                   className={cn(
-                    'group flex flex-col items-start gap-[10px] rounded-xl border px-[12px] py-[11px] text-left transition-colors lg:px-[14px] lg:py-[12px]',
+                    // Generous left padding. At 12-14px the icon and label hugged
+                    // the edge, which reads as badly set rather than tight,
+                    // because the tile's corner radius curves away right where
+                    // the content starts and the two fight each other.
+                    'group flex flex-col items-start gap-[10px] rounded-xl border px-[18px] py-[11px] text-left transition-colors lg:px-[22px] lg:py-[12px]',
                     role?.id === option.id
                       ? 'border-accent-primary bg-accent-primary/[0.12]'
                       : 'border-border-subtle bg-surface-tertiary/50 hover:border-accent-primary/50 hover:bg-surface-tertiary',
@@ -614,9 +618,13 @@ export function QuickHiringForm({
                 onClick={() => (step === 'details' ? void submit() : goNext())}
                 // Disabled is a different FILL, not lime at reduced opacity: dimmed
                 // lime on a dark ground reads as a rendering fault, not as "not yet".
+                // `!bg-none` matters as much as the colour. `.cta-sweep-solid`
+                // parks a 200%-wide lime gradient off-canvas as a background
+                // IMAGE, so overriding background-colour alone left a lime sliver
+                // down the left edge of the disabled button.
                 className={cn(
                   (!canContinue() || submitting) &&
-                    'cursor-not-allowed border border-border-subtle !bg-surface-tertiary !text-text-tertiary [&_span]:!text-text-tertiary',
+                    'cursor-not-allowed border border-border-subtle !bg-surface-tertiary !bg-none !text-text-tertiary !shadow-none [&_span]:!text-text-tertiary',
                 )}
               />
             )}
