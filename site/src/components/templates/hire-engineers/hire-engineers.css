@@ -1512,3 +1512,34 @@ html {
     transform: none;
   }
 }
+
+/* ── Shared quick hiring form: hand element styling back to the utilities ──
+   Deliberately at the END of this file, and deliberately listing elements rather
+   than using `*`.
+   `.he .matchform h2` is (0,2,1) and beats the (0,2,0) wildcard exemption
+   further up, so the form's question rendered at 46px/700 instead of 26px/600 and
+   the same component looked like a different one on this page. Matching that
+   specificity and winning on source order is what fixes it.
+   `max-width` and `margin` are in here too: the host rule also caps the heading at
+   22ch and centres it with auto margins. */
+.he .qh-form h1,
+.he .qh-form h2,
+.he .qh-form h3,
+.he .qh-form p,
+.he .qh-form span,
+.he .qh-form a,
+.he .qh-form button,
+.he .qh-form input,
+.he .qh-form label,
+.he .qh-form ol,
+.he .qh-form ul,
+.he .qh-form li {
+  font-size: revert-layer;
+  font-weight: revert-layer;
+  line-height: revert-layer;
+  letter-spacing: revert-layer;
+  text-align: revert-layer;
+  max-width: revert-layer;
+  margin: revert-layer;
+  padding: revert-layer;
+}
