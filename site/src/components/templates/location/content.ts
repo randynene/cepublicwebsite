@@ -13,6 +13,18 @@
 // A later pass binds it to Sanity (per-region singleton or the service doc) and
 // serves it at /services/<region>-developers instead of the preview route.
 
+import {
+  heroTrio,
+  roleWithYears,
+  talentByRegion,
+  talentPhoto,
+  talentPhotoSlide,
+  type TalentRegion,
+  // Relative, not the '@/' alias: the seed + patch scripts under /scripts
+  // import this file directly with tsx, and the root tsconfig maps '@/' to the
+  // ROOT src, not site/src, so an alias here breaks them at runtime.
+} from '../../../lib/talent/roster'
+
 export interface Pill {
   value: string
   label: string
@@ -28,6 +40,54 @@ export interface HeroCard {
   /** Layout-only in the current hero stack; kept optional for older content. */
   rotate?: number
   flag: string
+  /**
+   * CSS object-position for the home-style ProfileCard slideshow crop.
+   * Used when a slide master needs the top of the frame kept (e.g. Anto's
+   * painted headroom) instead of the default centre crop.
+   */
+  objectPosition?: string
+}
+
+// Stack rotations, by slot: [0] back, [1] middle, [2] front (the main face).
+const HERO_CARD_ROTATIONS = [2.5, 3, -3]
+
+/**
+ * The three hero cards for a region, drawn from the shared talent roster so a
+ * face, name and flag cannot drift between this page and the home marquee.
+ */
+function heroCardTrio(region: TalentRegion): HeroCard[] {
+  return heroTrio(region).map((p, i) => ({
+    name: p.name,
+    role: roleWithYears(p),
+    vettedLabel: 'Vetted by Senior Eng',
+    skills: [...p.tags],
+    image: talentPhoto(p.slug),
+    rotate: HERO_CARD_ROTATIONS[i],
+    flag: p.flag,
+  }))
+}
+
+/**
+ * Every roster person in a region, shaped for the home-style rotating
+ * ProfileCard slideshow (used on Eastern Europe; LATAM/PH keep the 3-card stack).
+ * Uses the dedicated landscape `-slide` crop so faces are not truncated in the
+ * 488x280 photo area.
+ */
+function heroSlideshowCards(region: TalentRegion): HeroCard[] {
+  return talentByRegion(region).map((p, i) => ({
+    name: p.name,
+    role: `${roleWithYears(p)} | Remote`,
+    vettedLabel: 'Vetted by Senior Eng',
+    skills: p.heroTrait ? [...p.tags, p.heroTrait] : [...p.tags],
+    image: talentPhotoSlide(p.slug),
+    rotate: HERO_CARD_ROTATIONS[i % HERO_CARD_ROTATIONS.length],
+    flag: p.flag,
+    // Face-centred slide masters — keep object-position on centre so the
+    // ProfileCard cover crop does not re-bias Anto / Ivana off-frame.
+    ...((p.slug === 'anto-s' || p.slug === 'ivana-m')
+      ? { objectPosition: 'center center' }
+      : {}),
+  }))
 }
 
 // Client logo in the "trusted by" strip. Images arrive as dereferenced URL
@@ -95,6 +155,12 @@ export interface LocationContent {
     trustPills: string[]
     cards: HeroCard[]
     floatingBadges: string[]
+    /**
+     * Right-column visual. `stack` = three overlapping photo cards (LATAM /
+     * Philippines). `slideshow` = the home hero's single rotating ProfileCard
+     * (Eastern Europe), cycling through every person in `cards`.
+     */
+    visual?: 'stack' | 'slideshow'
   }
   logosLabel: string
   /** Optional logo-strip label lines. Standard trusted-by copy renders on two lines. */
@@ -190,6 +256,12 @@ export interface LocationContent {
     titleAccent: string
     intro: string
     profiles: EngineerProfile[]
+    /**
+     * Temporarily hide the placed-engineers block (LATAM / EE / PH).
+     * Flip to false (or remove) to bring the section back — content stays in
+     * the registry and in Sanity; only the render is gated.
+     */
+    hidden?: boolean
   }
   funFact: {
     eyebrow: string
@@ -298,26 +370,7 @@ export const LATAM_CONTENT: LocationContent = {
     ctaPrimary: 'Meet your engineer in 7 days',
     ctaSecondary: 'See the cost calculator',
     trustPills: ['Senior engineers, US hours', 'Same-day standups', 'Rolling monthly, no lock-ins'],
-    cards: [
-      {
-        name: 'Ana M.',
-        role: 'Senior Full-Stack · 6 yrs',
-        vettedLabel: 'Vetted by Senior Eng',
-        skills: ['React', 'Node.js', 'TypeScript'],
-        image: `${A}/eng-ana.jpg`,
-        rotate: 3,
-        flag: '🇨🇴',
-      },
-      {
-        name: 'Mateus S.',
-        role: 'Senior Full Stack · 7 yrs',
-        vettedLabel: 'Vetted by Senior Eng',
-        skills: ['React', 'Node.js', 'TypeScript'],
-        image: `${A}/eng-mateus.jpg`,
-        rotate: -2,
-        flag: '🇧🇷',
-      },
-    ],
+    cards: heroCardTrio('latam'),
     floatingBadges: ['Live pair programming', '7-day shortlist'],
   },
   logosLabel: 'Trusted by 300+ engineering teams',
@@ -398,6 +451,8 @@ export const LATAM_CONTENT: LocationContent = {
     titleLead: "Engineers we've placed from",
     titleAccent: 'Latin America.',
     intro: "Three real engineers currently embedded with our clients. Anonymised - you'll meet them on a call.",
+    // Stock faces for now — hide until real LATAM placed-engineer photos land.
+    hidden: true,
     profiles: [
       {
         name: 'Reinaldo A.',
@@ -418,7 +473,7 @@ export const LATAM_CONTENT: LocationContent = {
         flag: '🇨🇴',
       },
       {
-        name: 'Mateus S.',
+        name: 'Thiago S.',
         role: 'Senior Full Stack Engineer · São Paulo',
         skills: ['React', 'Node.js', 'TypeScript'],
         years: '7 years experience',
@@ -452,8 +507,8 @@ export const LATAM_CONTENT: LocationContent = {
         title: 'Get two LATAM engineers in 7 days.',
         body: 'Tell us what you need. Four quick questions about your stack, team, and budget.',
         bullets: ['Free to interview, no card required', 'No job boards, no CVs, no time wasted'],
-        cta: 'Start the brief',
-        ctaHref: '/start-hiring',
+        cta: 'Contact us today',
+        ctaHref: '/contact',
       },
       {
         eyebrow: 'Want guidance',
@@ -466,7 +521,7 @@ export const LATAM_CONTENT: LocationContent = {
         eyebrow: 'Have questions',
         title: 'Chat with our AI.',
         body: "Trained on every sales call we've had. Ask anything about hiring in LATAM.",
-        cta: 'Open chat',
+        cta: 'Ask our AI anything',
         ctaHref: '#chat',
       },
     ],
@@ -540,37 +595,10 @@ export const EASTERN_EUROPE_CONTENT: LocationContent = {
     ctaPrimary: 'Meet your engineer in 7 days',
     ctaSecondary: 'See the cost calculator',
     trustPills: ['Elite CS education', 'EU & US-morning overlap', 'Rolling monthly, no lock-ins'],
-    // Home-style 3-card stack order: [0] back · [1] middle · [2] front (main).
-    cards: [
-      {
-        name: 'Andriy T.',
-        role: 'Senior Data Eng · 10 yrs',
-        vettedLabel: 'Vetted by Senior Eng',
-        skills: ['Python', 'Spark', 'Airflow'],
-        image: `${EE}/eng-3.jpg`,
-        rotate: 2.5,
-        flag: '🇺🇦',
-      },
-      {
-        name: 'Ivana D.',
-        role: 'Senior Backend Eng · 8 yrs',
-        vettedLabel: 'Vetted by Senior Eng',
-        skills: ['Java', 'Kafka', 'Spring'],
-        image: `${EE}/eng-2.jpg`,
-        rotate: 3,
-        flag: '🇷🇴',
-      },
-      {
-        name: 'Petar K.',
-        role: 'Senior Platform Eng · 9 yrs',
-        vettedLabel: 'Vetted by Senior Eng',
-        skills: ['Go', 'Kubernetes', 'AWS'],
-        image: `${EE}/eng-1.jpg`,
-        rotate: -3,
-        flag: '🇵🇱',
-      },
-    ],
-    // One floating pill keeps the location hero cleaner than the home collage.
+    // Same rotating ProfileCard as the home hero, with every Eastern Europe
+    // roster person in the cycle (not the three-card stack LATAM/PH still use).
+    visual: 'slideshow',
+    cards: heroSlideshowCards('eastern-europe'),
     floatingBadges: ['7-day shortlist'],
   },
   logosLabel: 'Trusted by 300+ engineering teams',
@@ -647,9 +675,12 @@ export const EASTERN_EUROPE_CONTENT: LocationContent = {
     titleLead: "Engineers we've placed from",
     titleAccent: 'Eastern Europe.',
     intro: "Three real engineers currently embedded with our clients. Anonymised - you'll meet them on a call.",
+    // Stock photos — hero uses all three real EE roster faces. Hidden until
+    // we have three more photos for this grid. Set hidden: false to restore.
+    hidden: true,
     profiles: [
       {
-        name: 'Petar K.',
+        name: 'Kacper W.',
         role: 'Senior Platform Engineer · Warsaw',
         skills: ['Go', 'Kubernetes', 'AWS'],
         years: '9 years experience',
@@ -658,7 +689,7 @@ export const EASTERN_EUROPE_CONTENT: LocationContent = {
         flag: '🇵🇱',
       },
       {
-        name: 'Ivana D.',
+        name: 'Elena D.',
         role: 'Senior Backend Engineer · Bucharest',
         skills: ['Java', 'Kafka', 'Spring'],
         years: '8 years experience',
@@ -709,8 +740,8 @@ export const EASTERN_EUROPE_CONTENT: LocationContent = {
         title: 'Get two Eastern European engineers in 7 days.',
         body: 'Tell us what you need. Four quick questions about your stack, team, and budget.',
         bullets: ['Free to interview, no card required', 'No job boards, no CVs, no time wasted'],
-        cta: 'Start the brief',
-        ctaHref: '/start-hiring',
+        cta: 'Contact us today',
+        ctaHref: '/contact',
       },
       {
         eyebrow: 'Want guidance',
@@ -723,7 +754,7 @@ export const EASTERN_EUROPE_CONTENT: LocationContent = {
         eyebrow: 'Have questions',
         title: 'Chat with our AI.',
         body: "Trained on every sales call we've had. Ask anything about hiring in Eastern Europe.",
-        cta: 'Open chat',
+        cta: 'Ask our AI anything',
         ctaHref: '#chat',
       },
     ],
@@ -799,26 +830,7 @@ export const PHILIPPINES_CONTENT: LocationContent = {
     ctaPrimary: 'Meet your engineer in 7 days',
     ctaSecondary: 'See the cost calculator',
     trustPills: ['Works your exact hours', 'English official language', '20+ years tech delivery'],
-    cards: [
-      {
-        name: 'Aileen R.',
-        role: 'Senior Mobile · 6 yrs',
-        vettedLabel: 'Vetted by Senior Eng',
-        skills: ['React Native', 'Swift'],
-        image: `${PH}/eng-1.jpg`,
-        rotate: 3,
-        flag: '🇵🇭',
-      },
-      {
-        name: 'Jericho S.',
-        role: 'Senior Backend · 9 yrs',
-        vettedLabel: 'Vetted by Senior Eng',
-        skills: ['.NET', 'Azure', 'SQL'],
-        image: `${PH}/eng-2.jpg`,
-        rotate: -2,
-        flag: '🇵🇭',
-      },
-    ],
+    cards: heroCardTrio('philippines'),
     floatingBadges: ['Your exact hours', '7-day shortlist'],
   },
   logosLabel: 'Trusted by 300+ engineering teams',
@@ -954,6 +966,9 @@ export const PHILIPPINES_CONTENT: LocationContent = {
     titleLead: 'Engineers working via Cloud Employee in the',
     titleAccent: 'Philippines.',
     intro: "Three real engineers currently embedded with our clients. Anonymised - you'll meet them on a call.",
+    // Stock / non-roster faces — hidden until real placed-engineer photos land.
+    // Set hidden: false to restore.
+    hidden: true,
     profiles: [
       {
         name: 'Mark Anthony L.',
@@ -1025,8 +1040,8 @@ export const PHILIPPINES_CONTENT: LocationContent = {
         title: 'Get two Philippine engineers in 7 days.',
         body: 'Tell us what you need. Four quick questions about your stack, team, and budget.',
         bullets: ['Free to interview, no card required', 'No job boards, no CVs, no time wasted'],
-        cta: 'Start the brief',
-        ctaHref: '/start-hiring',
+        cta: 'Contact us today',
+        ctaHref: '/contact',
       },
       {
         eyebrow: 'Want guidance',
@@ -1039,7 +1054,7 @@ export const PHILIPPINES_CONTENT: LocationContent = {
         eyebrow: 'Have questions',
         title: 'Chat with our AI.',
         body: "Trained on every sales call we've had. Ask anything about hiring in the Philippines.",
-        cta: 'Open chat',
+        cta: 'Ask our AI anything',
         ctaHref: '#chat',
       },
     ],
@@ -1051,8 +1066,8 @@ export const PHILIPPINES_CONTENT: LocationContent = {
       prompt: 'What role are you hiring for?',
       hint: "Pick one to start - you'll see matching engineers at the end.",
       roles: ['Backend', 'Frontend', 'Full-Stack', 'AI / ML', 'Data', 'DevOps', 'Mobile', 'Something else'],
-      cta: 'Next',
-      ctaHref: '/start-hiring',
+      cta: 'Book a call',
+      ctaHref: '/book-a-call',
       selectedPrefix: 'Selected: ',
       emptyStatus: 'Select a role to continue',
     },

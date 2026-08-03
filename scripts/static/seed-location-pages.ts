@@ -29,9 +29,9 @@ import {
 // profiles (real photos) to match the approved 3-card look. Seb can edit all
 // three per region afterwards.
 //
-// VIDEO: the poster image is uploaded; `videoUrl` is left empty so Seb pastes a
-// YouTube/Vimeo link in Studio when ready. Until then the poster shows as a
-// static still.
+// VIDEO: poster image is uploaded; `videoUrl` is taken from the registry when
+// set (PH + EE Vimeo IDs). LATAM may keep a local mp4 via `videoSrc` in code.
+// Seb can still override the URL in Studio.
 //
 // CALCULATOR: only the surrounding COPY is written. The numeric config (roles,
 // region multipliers, currency, comparison multiple) is deliberately NOT written
@@ -220,6 +220,7 @@ async function buildDoc(c: LocationContent) {
     presenter: c.video.presenter,
     pullQuote: c.video.pullQuote,
     image: await img(c.video.image, `${c.region} video`),
+    ...(c.video.videoUrl ? { videoUrl: c.video.videoUrl } : {}),
   }
 
   const onGround = c.onGround
