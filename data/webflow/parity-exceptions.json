@@ -161,6 +161,29 @@
     },
     {
       "paths": [
+        "/compare/cloud-employee-vs-revelo",
+        "/compare/cloud-employee-vs-toptal",
+        "/compare/dev-agencies"
+      ],
+      "expect": "permanent",
+      "decidedBy": "Jake",
+      "decidedAt": "2026-08-03",
+      "reason": "Second-order consequence of the /compare hub retirement above, not a separate decision. All three were deleted from Webflow after the migration, so live 301s them to the /compare hub root. We redirect them to the same place; /compare then continues to /alternatives, so the visitor ends one hop further along on a hub that ranks better. The gate compares FINAL destinations, which is why retiring a hub surfaces as a divergence on every URL pointing into it. Nothing to fix: reverting would mean sending traffic to a URL we deliberately retired."
+    },
+    {
+      "paths": [
+        "/hire",
+        "/salesforce/dedicated-salesforce-developer",
+        "/talents/hire-dot-net-developers",
+        "/ui-ux/hire-ui-ux-developers"
+      ],
+      "expect": "permanent",
+      "decidedBy": "Jake",
+      "decidedAt": "2026-08-03",
+      "reason": "Second-order consequence of the /start-hiring funnel retirement above, not a separate decision. Webflow 301s all four into /start-hiring, which then lands on /start-hiring/contact-info. We honour the same first hop, and /start-hiring now continues to /book-a-call, so they land there instead. Same number of hops as live (3), same intent — these are all 'I want to hire someone' URLs and /book-a-call is the page that acts on it. Flagged only because the gate compares final destinations."
+    },
+    {
+      "paths": [
         "/customer-story/virgin",
         "/uk/customer-story/virgin"
       ],
