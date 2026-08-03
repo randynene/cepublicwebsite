@@ -42,6 +42,7 @@ import {
   ROLE_OPTIONS,
   STEP_LABELS,
   TRUST_POINTS,
+  type RoleId,
   type RoleOption,
 } from './content'
 
@@ -50,8 +51,8 @@ type StepId = 'role' | 'skills' | 'length' | 'commitment' | 'details' | 'booking
 export interface QuickHiringFormProps {
   /** Page path the form sits on. Stored on the lead as `ce_source_page`. */
   sourcePage: string
-  /** Skips the role step. Use the role id, e.g. `ai-engineer`. */
-  prefillRole?: string
+  /** Skips the role step. Typed, so a renamed role fails the build. */
+  prefillRole?: RoleId
   /** Preselects a stack pill, e.g. "React" on the React Developers page. */
   prefillSkill?: string
   calendlyUrl?: string

@@ -12,7 +12,7 @@
 
 import { cn } from '@/components/ui/_utils/cn'
 
-import { ROLE_OPTIONS } from './content'
+import { ROLE_OPTIONS, type RoleId } from './content'
 import { QuickHiringForm, type QuickHiringFormProps } from './quick-hiring-form'
 
 // Matches the catalogue templates' band so the form lines up with the content
@@ -29,7 +29,7 @@ export function LeadFormSection(props: LeadFormSectionProps) {
     // different colour. `bg-bg-primary` is set explicitly rather than inherited:
     // several of the pages this lands on end in a gradient section, and inheriting
     // would put the box on a different shade page to page.
-    <section className="bg-bg-primary">
+    <section className="qh-form bg-bg-primary">
       <div className={cn(BAND_CLASS, BAND_PX_CLASS, 'py-[52px] lg:py-[68px]')}>
         <div className="rounded-[20px] border border-white/[0.14] p-[22px] sm:p-[30px] lg:p-[40px]">
           <QuickHiringForm {...props} />
@@ -58,7 +58,7 @@ export function technologyNameToSkill(technologyName: string): string {
  * (MVP Development, Mobile Apps, Web-Based Apps, Product Scoping) and for the two
  * location services, where the question is where, not what.
  */
-const SERVICE_SLUG_TO_ROLE: Record<string, string> = {
+const SERVICE_SLUG_TO_ROLE: Record<string, RoleId> = {
   'ai-engineers': 'ai-ml',
   'ai-consulting': 'ai-ml',
   'ai-product-builds': 'ai-ml',
@@ -97,6 +97,6 @@ for (const [slug, roleId] of Object.entries(SERVICE_SLUG_TO_ROLE)) {
   }
 }
 
-export function roleForServiceSlug(slug: string | null | undefined): string | undefined {
+export function roleForServiceSlug(slug: string | null | undefined): RoleId | undefined {
   return slug ? SERVICE_SLUG_TO_ROLE[slug] : undefined
 }

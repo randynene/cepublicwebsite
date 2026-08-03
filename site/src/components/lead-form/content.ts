@@ -30,7 +30,7 @@ export interface RoleOption {
   category?: SkillCategory
 }
 
-export const ROLE_OPTIONS: RoleOption[] = [
+export const ROLE_OPTIONS = [
   { id: 'backend', label: 'Backend', category: 'backend' },
   { id: 'frontend', label: 'Frontend', category: 'frontend' },
   { id: 'full-stack', label: 'Full-Stack', category: 'backend' },
@@ -39,7 +39,15 @@ export const ROLE_OPTIONS: RoleOption[] = [
   { id: 'devops', label: 'DevOps', category: 'devops' },
   { id: 'mobile', label: 'Mobile', category: 'mobile' },
   { id: 'something-else', label: 'Something else' },
-]
+] as const satisfies readonly RoleOption[]
+
+/**
+ * Every valid `prefillRole`. Typed rather than a bare string, because renaming
+ * the roles once already broke prefill on every service page silently: the props
+ * still compiled, they just stopped matching anything. The load-time guard in
+ * section.tsx only covered the slug map; inline props walked straight past it.
+ */
+export type RoleId = (typeof ROLE_OPTIONS)[number]['id']
 
 /**
  * One rail entry per ACTUAL screen, numbered in order.

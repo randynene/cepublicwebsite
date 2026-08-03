@@ -447,11 +447,11 @@ export function FractionalCtoTemplate({
         </div>
       </section>
 
+      {/* No prefill: the eight role tiles have no Fractional CTO option, so there
+          is nothing truthful to preselect here. */}
+      <LeadFormSection sourcePage={buildLocalePath('/services/fractional-ctos', locale)} />
+
       {/* 10. FAQ */}
-      <LeadFormSection
-            sourcePage={buildLocalePath('/services/fractional-ctos', locale)}
-            prefillRole="fractional-cto"
-          />
       <section className="faq">
         <div className="wrap faq-grid">
           <div className="faq-left">
