@@ -54,35 +54,43 @@ function ChartUpIcon({ className }: { className?: string }) {
 }
 
 const SELECT =
-  'w-full appearance-none rounded-[12px] border border-[#22314D] bg-[#0A1628] px-4 py-3 pr-10 text-[15px] text-text-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-[#070D18]'
+  'w-full cursor-pointer appearance-none rounded-[12px] border border-[#22314D] bg-[#0A1628] px-4 py-3 pr-10 text-[15px] text-text-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-[#070D18]'
 
 function Field({
   label,
   value,
   onChange,
   options,
+  id,
 }: {
   label: string
   value: string
   onChange: (v: string) => void
   options: { id: string; label: string }[]
+  id: string
 }) {
+  // Select fills the whole box (padding on the control); chevron is decorative.
   return (
-    <label className="flex flex-col gap-2">
-      <span className="text-[13px] font-medium text-text-default/60">{label}</span>
+    <div className="flex flex-col gap-2">
+      <label htmlFor={id} className="text-[13px] font-medium text-text-default/60">
+        {label}
+      </label>
       <span className="relative block">
-        <select value={value} onChange={(e) => onChange(e.target.value)} className={SELECT}>
+        <select id={id} value={value} onChange={(e) => onChange(e.target.value)} className={SELECT}>
           {options.map((o) => (
             <option key={o.id} value={o.id}>
               {o.label}
             </option>
           ))}
         </select>
-        <span aria-hidden="true" className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[12px] text-text-default/50">
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[12px] text-text-default/50"
+        >
           {GLYPH.chevron}
         </span>
       </span>
-    </label>
+    </div>
   )
 }
 
@@ -177,13 +185,21 @@ export function CostCalculator({ content }: { content: PricingCalculator }) {
             </span>
           </div>
           <Field
+            id="pricing-calc-country"
             label={content.countryPrompt}
             value={countryId}
             onChange={setCountryId}
             options={model.countries.map((c) => ({ id: c.id, label: c.flag ? `${c.flag} ${c.label}` : c.label }))}
           />
-          <Field label={content.regionPrompt} value={regionId} onChange={setRegionId} options={model.regions} />
           <Field
+            id="pricing-calc-region"
+            label={content.regionPrompt}
+            value={regionId}
+            onChange={setRegionId}
+            options={model.regions}
+          />
+          <Field
+            id="pricing-calc-currency"
             label={content.currencyPrompt}
             value={currencyId}
             onChange={setCurrencyId}
