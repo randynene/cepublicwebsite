@@ -7,7 +7,7 @@ import { cn } from '@/components/ui/_utils/cn'
 import type { HiwPerson } from './content'
 
 // Hero engineer cards for How It Works — two cards flanking the centered
-// headline (Ana left, Reinaldo right). Each drifts a few px toward the cursor
+// headline (left and right of it). Each drifts a few px toward the cursor
 // on hover and eases back on leave. Motion respects prefers-reduced-motion.
 // Split into a client component so the rest of the template stays server-side.
 

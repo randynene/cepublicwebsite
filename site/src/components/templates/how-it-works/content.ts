@@ -19,6 +19,7 @@
 // Relative, not the `@/` alias: the seed script imports this file from the
 // repo root, where `@/` resolves to a different src tree.
 import { CHAT_HREF } from '../../../lib/chat'
+import { roleWithYears, talentBySlug, talentPhoto } from '../../../lib/talent/roster'
 
 export interface HiwPerson {
   name: string
@@ -79,6 +80,32 @@ const HERO_BOTTOM_PILLS = [
   'No lock-ins',
 ] as const
 
+// The two faces flanking the hero headline. Real people from the shared roster
+// rather than the export's invented "Ana M." and "Reinaldo A." (Jake, 3 Aug).
+// One woman, one man, two regions, and one full-stack + one backend so the two
+// cards do not read as the same person twice. Name, role, flag and skills come
+// from site/src/lib/talent/roster.ts, so they can never drift from the same
+// people shown on the home hero, the marquee and the location pages.
+const HIW_HERO_CARDS = [
+  { slug: 'ivana-m', rotate: 3 },
+  { slug: 'stephen-l', rotate: -3 },
+] as const
+
+const HIW_HERO_PEOPLE: HiwPerson[] = HIW_HERO_CARDS.map(({ slug, rotate }) => {
+  const person = talentBySlug(slug)
+  return {
+    name: person.name,
+    role: roleWithYears(person),
+    flag: person.flag,
+    tags: [...person.tags],
+    // Portrait crop, not the landscape home-hero one: this card is taller than
+    // it is wide, and the landscape crop loses the face in it.
+    image: talentPhoto(person.slug),
+    imageAlt: `${person.name}, a ${person.role.toLowerCase()} vetted by Cloud Employee`,
+    rotate,
+  }
+})
+
 export const HIW_CONTENT = {
   hero: {
     eyebrow: 'How it works',
@@ -90,26 +117,7 @@ export const HIW_CONTENT = {
     ctaHref: '#stages',
     bottomPills: HERO_BOTTOM_PILLS,
     vetted: 'Vetted by senior eng',
-    people: [
-      {
-        name: 'Marcello. P',
-        role: 'Senior Data Engineer · 9 yrs',
-        flag: '🇦🇷',
-        tags: ['Python', 'Snowflake', 'Airflow'],
-        image: '/design/home/engineers/hero-card/marcello.jpg',
-        imageAlt: 'Marcello. P, a senior data engineer vetted by Cloud Employee',
-        rotate: 3,
-      },
-      {
-        name: 'Petra. K',
-        role: 'Senior AI Engineer · 7 yrs',
-        flag: '🇭🇷',
-        tags: ['RAG', 'LangChain', 'AWS'],
-        image: '/design/home/engineers/hero-card/petra.jpg',
-        imageAlt: 'Petra. K, a senior AI engineer vetted by Cloud Employee',
-        rotate: -3,
-      },
-    ] as HiwPerson[],
+    people: HIW_HERO_PEOPLE,
   },
   stages: {
     eyebrow: 'The four stages',

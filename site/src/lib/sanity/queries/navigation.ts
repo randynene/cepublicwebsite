@@ -477,17 +477,50 @@ export function orderLocations<T extends { url?: string | null }>(items: T[]): T
     .map((entry) => entry.item)
 }
 
+/**
+ * Services-dropdown sections hidden from the nav for now (Jake, 3 Aug).
+ * "Build With Us" (Product delivery + AI services) comes back later, so the
+ * data stays in Sanity untouched and this list is the only thing to empty.
+ * Matched on section key and label, because a section re-created in Studio
+ * gets a fresh key.
+ */
+const HIDDEN_SERVICES_SECTIONS = {
+  keys: ['svc-build'],
+  labels: ['build with us'],
+} as const
+
+function visibleServicesSections(dropdown: SimpleDropdown): SimpleDropdown {
+  const sections = dropdown?.sections
+  if (!sections?.length) return dropdown
+  return {
+    ...dropdown,
+    sections: sections.filter((section) => {
+      const key = section._key ?? ''
+      const label = (section.sectionLabel ?? '').trim().toLowerCase()
+      return (
+        !HIDDEN_SERVICES_SECTIONS.keys.includes(key as never) &&
+        !HIDDEN_SERVICES_SECTIONS.labels.includes(label as never)
+      )
+    }),
+  }
+}
+
 export async function fetchNavigation(): Promise<NavigationDoc | null> {
   const { data } = await sanityFetch({ query: NAVIGATION_QUERY })
   if (data === null || data === undefined) return null
   const nav = NavigationSchema.parse(data)
 
-  const sections = nav.locationsDropdown?.sections
+  const normalised: NavigationDoc = {
+    ...nav,
+    servicesDropdown: visibleServicesSections(nav.servicesDropdown),
+  }
+
+  const sections = normalised.locationsDropdown?.sections
   if (sections?.length) {
     return {
-      ...nav,
+      ...normalised,
       locationsDropdown: {
-        ...nav.locationsDropdown,
+        ...normalised.locationsDropdown,
         sections: sections.map((section) => ({
           ...section,
           items: section.items ? orderLocations(section.items) : section.items,
@@ -495,7 +528,7 @@ export async function fetchNavigation(): Promise<NavigationDoc | null> {
       },
     }
   }
-  return nav
+  return normalised
 }
 
 // Predicate — a primary link has a non-empty dropdown rendered in
