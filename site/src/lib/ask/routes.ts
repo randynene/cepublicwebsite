@@ -8,9 +8,29 @@
 import { stripLocalePrefix } from '@/lib/locale-path'
 
 export const ASK_PATH = '/ask'
+export const FOR_DEVELOPERS_PATH = '/for-developers'
+export const BOOK_A_CALL_PATH = '/book-a-call'
 
 /** True for /ask and every locale mirror of it (/uk/ask). */
 export function isAskPath(pathname: string): boolean {
   const withoutLocale = stripLocalePrefix(pathname.split('?')[0])
   return withoutLocale === ASK_PATH || withoutLocale === `${ASK_PATH}/`
+}
+
+/** True for /for-developers and every locale mirror (/uk/for-developers). */
+export function isForDevelopersPath(pathname: string): boolean {
+  const withoutLocale = stripLocalePrefix(pathname.split('?')[0])
+  return (
+    withoutLocale === FOR_DEVELOPERS_PATH ||
+    withoutLocale === `${FOR_DEVELOPERS_PATH}/`
+  )
+}
+
+/** True for /book-a-call, /book-a-call/[slug], and their locale mirrors. */
+export function isBookACallPath(pathname: string): boolean {
+  const withoutLocale = stripLocalePrefix(pathname.split('?')[0])
+  return (
+    withoutLocale === BOOK_A_CALL_PATH ||
+    withoutLocale.startsWith(`${BOOK_A_CALL_PATH}/`)
+  )
 }

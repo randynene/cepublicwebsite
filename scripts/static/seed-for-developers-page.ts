@@ -77,7 +77,7 @@ function buildDoc() {
     titleAccent: FE.hero.titleAccent,
     sub: FE.hero.sub,
     ctaPrimary: FE.hero.ctaPrimary,
-    ctaPrimaryHref: FE.hero.ctaPrimaryHref ?? '#join',
+    ctaPrimaryHref: FE.hero.ctaPrimaryHref ?? 'https://talent.cloudemployee.io',
     ctaGhost: FE.hero.ctaGhost,
     ctaGhostHref: FE.hero.ctaGhostHref ?? '#fe2-how',
     trust: [...FE.hero.trust],
@@ -236,7 +236,7 @@ function buildDoc() {
     titleAccent: FE.final.titleAccent,
     p: FE.final.p,
     cta: FE.final.cta,
-    ctaHref: FE.final.ctaHref ?? '#join',
+    ctaHref: FE.final.ctaHref ?? 'https://talent.cloudemployee.io',
     trust: [...FE.final.trust],
   }
 
