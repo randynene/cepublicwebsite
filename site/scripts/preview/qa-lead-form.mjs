@@ -36,8 +36,11 @@ const PAGES = [
   { path: '/uk/services/devops-engineers', name: 'uk-service-detail' },
   { path: '/uk', name: 'uk-home' },
   // Deliberately without the form, to prove the absence is intentional and that
-  // nothing leaked onto pages that were meant to stay clean.
-  { path: '/services/latam-developers', name: 'location', form: false },
+  // nothing leaked onto pages that were meant to stay clean. The three location
+  // pages used to be in this group; they carry it as of 3 Aug.
+  { path: '/services/latam-developers', name: 'location-latam' },
+  { path: '/services/philippines-developers', name: 'location-philippines' },
+  { path: '/services/eastern-europe-developers', name: 'location-eastern-europe' },
   { path: '/blog', name: 'blog-hub', form: false },
   { path: '/pricing', name: 'pricing', form: false },
 ]

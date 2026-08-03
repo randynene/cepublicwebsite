@@ -1,7 +1,7 @@
 import { cn } from '@/components/ui/_utils/cn'
 import { HeroTrustBar } from '@/components/social-proof/hero-trust-bar'
 import { CLIENT_LOGOS, type ClientLogo } from '@/components/social-proof/client-logo-strip'
-import type { Locale } from '@/lib/locale-path'
+import { buildLocalePath, type Locale } from '@/lib/locale-path'
 import { TypewriterText } from '@/components/motion/typewriter-text'
 import { MegaMenuPillLabel } from '@/components/ui/mega-menu-pill-label'
 
@@ -12,6 +12,7 @@ import { LocationCalculator } from './calculator'
 import { LocationStartQuiz } from './start-quiz'
 import { LocationVideo } from './video'
 import { Spotlight } from '@/components/motion/spotlight'
+import { LeadFormSection } from '@/components/lead-form/section'
 import { FaqChatCard } from '@/components/shared/faq-chat-card'
 import { HubPanels } from '@/components/shared/hub-panels'
 import { STICKY_ASIDE } from '@/components/layout/sticky-aside'
@@ -1006,6 +1007,11 @@ export function LocationTemplate({
       <FunFact content={content} />
       <Calculator content={content} />
       <Start content={content} />
+      {/* Above the FAQ, same position as the services and technology detail
+          pages. No role prefill: a location page answers WHERE, not which role,
+          so preselecting one would be a guess. `content.slug` is the page's own
+          slug, so the lead records which region it came from. */}
+      <LeadFormSection sourcePage={buildLocalePath(`/services/${content.slug}`, locale)} />
       <Faq content={content} />
     </main>
   )
