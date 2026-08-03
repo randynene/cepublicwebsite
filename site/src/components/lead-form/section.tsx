@@ -20,9 +20,32 @@ import { QuickHiringForm, type QuickHiringFormProps } from './quick-hiring-form'
 const BAND_CLASS = 'mx-auto max-w-[1280px]'
 const BAND_PX_CLASS = 'px-[22px] sm:px-[32px] lg:px-[64px]'
 
-export type LeadFormSectionProps = QuickHiringFormProps
+export type LeadFormSectionProps = QuickHiringFormProps & {
+  /**
+   * Drop the full-bleed band and the vertical padding, keeping only the outlined
+   * box. For hosts that already supply the section: Hire Engineers introduces the
+   * form with its own eyebrow, headline and lead paragraph and follows it with a
+   * "prefer to talk first" row, so the default wrapper nested a 1280px band inside
+   * that section's 1440px band and stacked 68px of its own padding on top of the
+   * section's 92px. The form then sat flush under the intro with a large gap
+   * inside it, which reads as broken spacing rather than deliberate.
+   */
+  bare?: boolean
+}
 
-export function LeadFormSection(props: LeadFormSectionProps) {
+export function LeadFormSection({ bare, ...props }: LeadFormSectionProps) {
+  if (bare) {
+    return (
+      // `qh-form` still matters here: it is what exempts this subtree from the
+      // host template's wildcard margin/padding reset.
+      <div className="qh-form mt-[26px]">
+        <div className="rounded-[20px] border border-white/[0.14] p-[22px] sm:p-[30px] lg:p-[36px]">
+          <QuickHiringForm {...props} />
+        </div>
+      </div>
+    )
+  }
+
   return (
     // Page ground, not a lighter band. The form is defined by a hairline instead
     // of by a fill, so it sits ON the page rather than interrupting it with a

@@ -667,7 +667,11 @@ export function HireEngineersTemplate({
             <p className="lead">{content.find.lead}</p>
           </div>
 
+          {/* `bare`: this section already supplies the eyebrow, headline, lead
+              and the "prefer to talk first" row, so the form contributes only its
+              outlined box and sits between them. */}
           <LeadFormSection
+            bare
             sourcePage={buildLocalePath('/services/software-engineers', locale)}
             prefillRole="full-stack"
           />
