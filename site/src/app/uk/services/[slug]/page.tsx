@@ -82,7 +82,6 @@ export default async function ServiceUkPage({ params }: { params: Promise<RouteP
       <CatalogueDetail
         content={content}
         hireHref="/uk/book-a-call"
-        scheduleHref="/uk/book-a-call"
         leadForm={{
           sourcePage: `/uk/services/${slug}`,
           prefillRole: roleForServiceSlug(slug),

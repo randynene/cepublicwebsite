@@ -47,7 +47,6 @@ export default async function TechnologyDetailUkPage({ params }: { params: Promi
       <CatalogueDetail
         content={content}
         hireHref="/uk/book-a-call"
-        scheduleHref="/uk/book-a-call"
         leadForm={{
           sourcePage: `/uk/technology/${slug}`,
           prefillSkill: technologyNameToSkill(technology.technologyName),

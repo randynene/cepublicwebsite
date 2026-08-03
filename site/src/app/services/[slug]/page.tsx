@@ -88,7 +88,6 @@ export default async function ServiceDefaultPage({ params }: { params: Promise<R
       <CatalogueDetail
         content={content}
         hireHref="/book-a-call"
-        scheduleHref="/book-a-call"
         leadForm={{
           sourcePage: `/services/${slug}`,
           prefillRole: roleForServiceSlug(slug),

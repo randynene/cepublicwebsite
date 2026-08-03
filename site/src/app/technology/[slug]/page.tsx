@@ -50,7 +50,6 @@ export default async function TechnologyDetailPage({ params }: { params: Promise
       <CatalogueDetail
         content={content}
         hireHref="/book-a-call"
-        scheduleHref="/book-a-call"
         leadForm={{
           sourcePage: `/technology/${slug}`,
           prefillSkill: technologyNameToSkill(technology.technologyName),
