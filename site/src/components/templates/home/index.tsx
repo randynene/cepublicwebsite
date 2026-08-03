@@ -729,7 +729,7 @@ function RealEngineers({ content }: SectionProps) {
   )
 }
 
-function ReadyToFind({ content }: SectionProps) {
+function ReadyToFind({ content, locale }: SectionProps & { locale: Locale }) {
   const { readyToFind } = content
   return (
     // Cursor spotlight, same treatment as the location pages' "Three ways to
@@ -749,6 +749,10 @@ function ReadyToFind({ content }: SectionProps) {
             {readyToFind.paragraph}
           </p>
         </div>
+
+        {/* `bare`: this section already supplies the eyebrow, headline and lead,
+            and the talk row below closes it. The form contributes only its box. */}
+        <LeadFormSection bare sourcePage={buildLocalePath('/', locale)} />
 
         {/* These were non-clickable <span>s: the page invited you to "Ask our AI
             anything" and then did nothing when you did. First CTA opens the chat
@@ -847,9 +851,8 @@ export function HomeTemplate({
       <Included content={content} />
       <Calculator content={content} />
       <RealEngineers content={content} />
-      <ReadyToFind content={content} />
+      <ReadyToFind content={content} locale={locale} />
       <WhereWeWork content={content.whereWeWork} />
-      <LeadFormSection sourcePage={buildLocalePath('/', locale)} />
       <Faq content={content} />
     </main>
   )
