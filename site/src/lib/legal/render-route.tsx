@@ -10,6 +10,7 @@ import {
   formatLastUpdated,
   type LegalPageId,
 } from '@/lib/sanity/queries/legal-page'
+import { resolvePageTitle } from '@/lib/seo/page-title'
 
 // Shared metadata + render for the four legal routes (2 pages x 2 locales).
 //
@@ -31,7 +32,10 @@ export async function buildLegalMetadata(
   const canonical = generateCanonical(usPath, locale)
 
   return {
-    title,
+    // Bare string here would inherit the layout's `%s | Cloud Employee` template
+    // and double the brand on a stored title that already carries it. Every other
+    // template goes through resolvePageTitle for exactly this reason.
+    title: resolvePageTitle(title),
     ...(page.metaDescription ? { description: page.metaDescription } : {}),
     alternates: {
       canonical,

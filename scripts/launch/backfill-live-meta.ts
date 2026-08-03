@@ -28,8 +28,27 @@ import { createClient } from '@sanity/client'
 import 'dotenv/config'
 
 const REPORT_PATH = 'audit-output/launch/meta-parity.json'
+const EXCEPTIONS_PATH = 'data/webflow/parity-exceptions.json'
 const APPLY = process.argv.includes('--apply')
 const TRUNCATIONS_ONLY = process.argv.includes('--truncations-only')
+
+// A URL that REDIRECTS on live has no title of its own: the comparison follows
+// the redirect and reports the DESTINATION's title. Writing that back would
+// stamp the destination's title onto the source document, which is how
+// /compare/cloud-employee-vs-arc-dev briefly ended up holding the /compare hub's
+// title. The parity exceptions file already enumerates every URL we know
+// redirects, so read it rather than keep a second list in sync by hand.
+function redirectingPaths(): Set<string> {
+  const parsed = JSON.parse(readFileSync(EXCEPTIONS_PATH, 'utf-8')) as {
+    exceptions: Array<{ paths: string[]; expect: string }>
+  }
+  const out = new Set<string>()
+  for (const e of parsed.exceptions) {
+    if (e.expect !== 'permanent') continue
+    for (const p of e.paths) out.add(p)
+  }
+  return out
+}
 
 type ReportRow = {
   path: string
@@ -164,8 +183,15 @@ async function main(): Promise<void> {
   const byDoc = new Map<string, { resolved: Resolved; paths: string[]; row: ReportRow }>()
   const skipped: string[] = []
 
+  const redirecting = redirectingPaths()
+  let skippedRedirects = 0
+
   for (const row of rows) {
     if (row.live.status !== 200 || !row.live.title) continue
+    if (redirecting.has(row.path)) {
+      skippedRedirects++
+      continue
+    }
     const resolved = resolve(row.path)
     if (!resolved) {
       skipped.push(row.path)
@@ -215,6 +241,7 @@ async function main(): Promise<void> {
   console.log(`Resolved to a document:  ${byDoc.size}`)
   console.log(`Documents needing a fix: ${patches.length}`)
   console.log(`Not a Sanity-driven doc: ${skipped.length} (copy decision, see list below)`)
+  console.log(`Skipped, redirects on live: ${skippedRedirects}`)
   if (notFound.length) console.log(`Slug not found in Sanity: ${notFound.length}`)
   console.log()
 
