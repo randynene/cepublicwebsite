@@ -112,16 +112,23 @@ export const TALENT_ROSTER: TalentProfile[] = [
     heroTrait: 'Product-minded',
     bio: 'Built the retrieval layer for a Croatian legal-tech product. Placed with a US SaaS for 18 months.',
   },
+  // Anto C. removed on Jake's instruction (3 Aug) — off the Eastern Europe hero
+  // slideshow and off the home marquee. Marcelo takes his slot here.
+  //
+  // Marcelo's source photo is europe/EU 3.png, so he was always an Eastern
+  // European face carrying an Argentine flag. Moved region, flag and city to
+  // match the photo (Jake, 3 Aug); the name stays as the home hero named him.
   {
-    slug: 'anto-s',
-    name: 'Anto C.',
-    role: 'Fractional CTO',
-    years: 15,
-    city: 'Split',
-    flag: '🇭🇷',
-    tags: ['Java', 'Kafka', 'Spring'],
+    slug: 'marcelo-p',
+    name: 'Marcelo P.',
+    role: 'Senior Data Engineer',
+    years: 9,
+    city: 'Belgrade',
+    flag: '🇷🇸',
+    tags: ['Python', 'Snowflake', 'Airflow'],
     region: 'eastern-europe',
-    bio: 'Fifteen years leading technical teams across large-scale and remote delivery. Placed as Fractional CTO with US product companies.',
+    heroTrait: 'Async-first',
+    bio: 'Built the analytics warehouse for a Serbian marketplace. Placed with a US data team for 2 years.',
   },
 
   // ── Latin America ─────────────────────────────────────────────────────
@@ -164,18 +171,6 @@ export const TALENT_ROSTER: TalentProfile[] = [
     region: 'latam',
     heroTrait: 'Mentors juniors',
     bio: 'A decade on cloud infrastructure for Brazilian scale-ups. Placed with a US platform team for 2 years.',
-  },
-  {
-    slug: 'marcelo-p',
-    name: 'Marcelo P.',
-    role: 'Senior Data Engineer',
-    years: 9,
-    city: 'Buenos Aires',
-    flag: '🇦🇷',
-    tags: ['Python', 'Snowflake', 'Airflow'],
-    region: 'latam',
-    heroTrait: 'Async-first',
-    bio: 'Built the analytics warehouse for an Argentine marketplace. Placed with a US data team for 2 years.',
   },
 
   // ── Philippines ───────────────────────────────────────────────────────

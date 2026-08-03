@@ -42,8 +42,8 @@ export interface HeroCard {
   flag: string
   /**
    * CSS object-position for the home-style ProfileCard slideshow crop.
-   * Used when a slide master needs the top of the frame kept (e.g. Anto's
-   * painted headroom) instead of the default centre crop.
+   * Used when a slide master needs its own framing kept instead of the
+   * default centre crop.
    */
   objectPosition?: string
 }
@@ -82,11 +82,9 @@ function heroSlideshowCards(region: TalentRegion): HeroCard[] {
     image: talentPhotoSlide(p.slug),
     rotate: HERO_CARD_ROTATIONS[i % HERO_CARD_ROTATIONS.length],
     flag: p.flag,
-    // Face-centred slide masters — keep object-position on centre so the
-    // ProfileCard cover crop does not re-bias Anto / Ivana off-frame.
-    ...((p.slug === 'anto-s' || p.slug === 'ivana-m')
-      ? { objectPosition: 'center center' }
-      : {}),
+    // Face-centred slide master — keep object-position on centre so the
+    // ProfileCard cover crop does not re-bias Ivana off-frame.
+    ...(p.slug === 'ivana-m' ? { objectPosition: 'center center' } : {}),
   }))
 }
 
