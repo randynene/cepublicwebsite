@@ -8,6 +8,7 @@ import type { ServicesHubContent } from '@/lib/catalogue/hub-content'
 import { CatalogueFaq } from '@/components/templates/catalogue/faq'
 import { TechBadge } from '@/components/ui/tech-badge'
 import { ACCENT, BAND, BODY, CAT_LABELS, Chevron, Eyebrow, GLYPH, HubQuotes, HubStories, LimeCheck, SectionHeading } from '@/components/templates/catalogue/shared'
+import { LeadFormSection } from '@/components/lead-form/section'
 
 // TEMPLATE-SERVICES-HUB - /services index. Approved D3 design, fed by Sanity
 // (Phase 2B): card grids + hero lead + FAQs come from Sanity via
@@ -173,6 +174,8 @@ export function ServicesHubTemplate({ content, pathPrefix = '' }: { content: Ser
 
       <HubStories eyebrow="Shared · Customer stories" heading="Hear from our customers" stories={h.stories} />
       <HubQuotes eyebrow="Reviews from real teams" lead="What the difference" accent="feels like" quotes={h.quotes} />
+
+      <LeadFormSection sourcePage={`${pathPrefix}/services`} />
 
       {/* FAQ */}
       <section className={cn(BAND, 'py-[64px]')}>

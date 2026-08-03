@@ -26,7 +26,7 @@
 import { readFileSync } from 'node:fs'
 
 import { ensureSanity } from '@/lib/env'
-import { fetchHubSpotForms, orderFunnelSteps } from '@/lib/content/hubspot-forms'
+import { fetchHubSpotForms } from '@/lib/content/hubspot-forms'
 import { sanityWriteClient } from '@/lib/content/sanity-write-client'
 
 ensureSanity()
@@ -55,21 +55,18 @@ type Used = { id: string; where: string }
 async function collectUsedForms(): Promise<Used[]> {
   const used: Used[] = []
 
-  const steps = await sanityWriteClient.fetch<Array<{ slug: string; formId: string | null }>>(
-    `*[_type == "startHiringStep" && defined(hubspotFormId)] | order(order asc){
-       "slug": slug.current, "formId": hubspotFormId
-     }`,
-  )
-  for (const step of steps) {
-    if (step.formId) used.push({ id: step.formId, where: `/start-hiring/${step.slug}` })
-  }
-
-  const newsletter = await sanityWriteClient.fetch<string | null>(
-    `*[_type == "footer"][0].subscribe.formId`,
-  )
-  if (newsletter) used.push({ id: newsletter, where: 'footer newsletter' })
-
-  // /contact (WP-05). Same trap as the footer newsletter: the live Webflow page
+  // LAUNCH CONSOLIDATION - Jake, 30 Jul 2026.
+  //
+  // The start-hiring funnel and the footer newsletter used to be read here. Both
+  // are retired: the funnel 301s to /book-a-call and the newsletter block was
+  // removed from the footer. Their Sanity documents still exist and still carry
+  // valid form ids, which is exactly why they are no longer read — verifying a
+  // form that nothing renders reports green on a path no visitor can reach.
+  //
+  // What replaced them is the reverse assertion, in the staging verifier: prove
+  // those surfaces are GONE. Retirement is only real if something checks it.
+  //
+  // /contact. Same trap as the old footer newsletter: the live Webflow page
   // posts through hubspotonwebflow.com, so the GUID in the live markup belongs
   // to the bridge and 404s against HubSpot. This asserts the id in Sanity is the
   // real form, not the bridge's.
@@ -103,46 +100,15 @@ async function main(): Promise<void> {
     console.log(`  ${ok ? 'OK  ' : 'DEAD'}  ${form.where.padEnd(28)} ${name}`)
   }
 
-  // The funnel order must match HubSpot's redirect chain. If someone reorders the
-  // funnel in HubSpot and not in Sanity, the progress bar lies and the steps run
-  // out of sequence — with nothing else to notice it.
-  const sanitySteps = await sanityWriteClient.fetch<
-    Array<{ slug: string; order: number; formId: string | null; ukOnly: boolean | null }>
-  >(
-    `*[_type == "startHiringStep"] | order(order asc){
-       "slug": slug.current, order, "formId": hubspotFormId, ukOnly
-     }`,
-  )
-  const formIdBySlug = Object.fromEntries(sanitySteps.map((s) => [s.slug, s.formId]))
-
-  // Walk from get-started: it is the UK funnel's first step, and the US funnel is
-  // the same chain minus that page. Starting from contact-info would report
-  // get-started as unreachable, which it is — in the US locale only.
-  const expected = orderFunnelSteps(forms, formIdBySlug, {
-    startSlug: 'get-started',
-    pathPrefix: '/start-hiring',
-  })
-
-  const drift = expected.filter((e, i) => sanitySteps[i]?.slug !== e.slug)
-  const ukCount = sanitySteps.length
-  const usCount = sanitySteps.filter((s) => s.ukOnly !== true).length
-
-  console.log('\nFunnel order vs HubSpot redirects:')
-  if (drift.length === 0) {
-    console.log(`  OK    ${expected.map((e) => e.slug).join(' -> ')}`)
-    console.log(`        UK ${ukCount} steps, US ${usCount} (get-started is UK-only)`)
-  } else {
-    failed++
-    console.log(`  DRIFT sanity:  ${sanitySteps.map((s) => s.slug).join(' -> ')}`)
-    console.log(`        hubspot: ${expected.map((e) => e.slug).join(' -> ')}`)
-    console.log('        Re-run npm run content:seed-start-hiring.')
-  }
+  // The funnel-order walk that used to live here is gone with the funnel. It
+  // followed HubSpot's redirect chain to prove the nine start-hiring steps ran in
+  // the order Sanity claimed. There are no steps left to order.
 
   if (failed > 0) {
     console.error('\nA dead form id loses every enquiry submitted to it, silently.')
     process.exit(1)
   }
-  console.log('\nAll forms resolve and the funnel order matches HubSpot.')
+  console.log('\nAll forms in use resolve on HubSpot.')
 }
 
 main().catch((err) => {

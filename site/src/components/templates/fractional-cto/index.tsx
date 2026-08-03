@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react'
 
 import { cn } from '@/components/ui/_utils/cn'
 import { TypewriterText } from '@/components/motion/typewriter-text'
 import { ChatLink } from '@/components/shared/chat-link'
 import { HeroTrustBar } from '@/components/social-proof/hero-trust-bar'
+import { LeadFormSection } from '@/components/lead-form/section'
 import { CHAT_HREF } from '@/lib/chat'
 import { buildLocalePath, type Locale } from '@/lib/locale-path'
 import { FCTO, type FctoContent } from './content'
@@ -120,29 +121,6 @@ const MATCHED_STEP_ICONS: ReactNode[] = [
   </svg>,
 ]
 
-// Match-form option icons, in order (5th option is .wide).
-const MF_OPTION_ICONS: ReactNode[] = [
-  <svg key="o0" viewBox="0 0 24 24">
-    <path d="M12 21c-4-3-7-6-7-10a7 7 0 0 1 14 0c0 4-3 7-7 10z" />
-    <path d="M12 8v5M9 11c1.5 0 3-1 3-3M15 11c-1.5 0-3-1-3-3" />
-  </svg>,
-  <svg key="o1" viewBox="0 0 24 24">
-    <path d="M14.7 6.3a4 4 0 0 0-5.4 5.4l-6 6L5 20l6-6a4 4 0 0 0 5.4-5.4l-2 2-2-2z" />
-  </svg>,
-  <svg key="o2" viewBox="0 0 24 24">
-    <path d="M4 18l5-5 3 3 8-8" />
-    <path d="M16 8h4v4" />
-  </svg>,
-  <svg key="o3" viewBox="0 0 24 24">
-    <circle cx="12" cy="12" r="9" />
-    <path d="M15.5 8.5l-2 5-5 2 2-5z" />
-  </svg>,
-  <svg key="o4" viewBox="0 0 24 24">
-    <circle cx="12" cy="12" r="3" />
-    <path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" />
-  </svg>,
-]
-
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
@@ -253,92 +231,28 @@ function DeriskRow({ seq, dir }: { seq: readonly string[]; dir: 'l' | 'r' }) {
   )
 }
 
-// ── Multi-step match form ──
-function MatchForm({ mf, locale }: { mf: FctoContent['matchform']; locale: Locale }) {
-  const [step, setStep] = useState(0)
-  const [selected, setSelected] = useState<number | null>(0)
-
-  const nextLabel = step === 2 ? mf.nextStep2 : step === 3 ? mf.nextStep3 : mf.nextDefault
-
+// The original four-step card was a local demo that captured nothing. Keep the
+// useful talk-first choices and trust copy beside the real form.
+function MatchReassurance({ mf, locale }: { mf: FctoContent['matchform']; locale: Locale }) {
   return (
-    <>
-      <div className="mf-card">
-        <div className="mf-progress" id="mfProgress">
-          {mf.progress.map((s, i) => (
-            <div key={s.num} className={cn('st', i <= step && 'done')}>
-              <span className="num">{s.num}</span>
-              <span className="lb">{s.lb}</span>
-            </div>
-          ))}
-        </div>
-        <div className="mf-q">
-          <h3 id="mfTitle">{mf.steps[step].title}</h3>
-          <p id="mfHint">{mf.steps[step].hint}</p>
-        </div>
-        <div className="mf-opts" id="mfOpts" style={{ display: step === 3 ? 'none' : 'grid' }}>
-          {mf.options.map((o, i) => (
-            <button
-              key={o.label}
-              type="button"
-              className={cn('mf-opt', o.wide && 'wide', selected === i && 'on')}
-              onClick={() => setSelected(i)}
-            >
-              {MF_OPTION_ICONS[i]}
-              <span>{o.label}</span>
-            </button>
-          ))}
-        </div>
-        <div className="mf-nav" style={{ justifyContent: step === 3 ? 'flex-start' : 'space-between' }}>
-          <button
-            className="mf-back"
-            id="mfBack"
-            type="button"
-            disabled={step === 0}
-            onClick={() => setStep((s) => (s > 0 ? s - 1 : s))}
-          >
-            {mf.back}
-          </button>
-          <button
-            className="btn-primary"
-            id="mfNext"
-            type="button"
-            style={{ flexDirection: 'row-reverse', padding: '14px 14px 14px 24px' }}
-            onClick={() => {
-              if (step < 3) {
-                setStep((s) => s + 1)
-                return
-              }
-              // Final "Done" — send them to book a call (retired /start-hiring funnel).
-              window.location.assign(buildLocalePath('/book-a-call', locale))
-            }}
-          >
-            {nextLabel}
-            <span className="arw">
-              <Arrow />
-            </span>
-          </button>
-        </div>
+    <div className="mf-reassure">
+      <div className="mf-talk">
+        <span className="lbl">{mf.reassureLabel}</span>
+        <ChatLink href={CHAT_HREF} locale={locale} className="pill-soft">
+          <ChatIcon /> {mf.pillAi}
+        </ChatLink>
+        <a className="pill-soft" href={buildLocalePath('/book-a-call', locale)}>
+          <CalendarIcon /> {mf.pillBook}
+        </a>
       </div>
-      {/* Both pills were <button type="button"> with no handler. */}
-      <div className="mf-reassure">
-        <div className="mf-talk">
-          <span className="lbl">{mf.reassureLabel}</span>
-          <ChatLink href={CHAT_HREF} locale={locale} className="pill-soft">
-            <ChatIcon /> {mf.pillAi}
-          </ChatLink>
-          <a className="pill-soft" href={buildLocalePath('/book-a-call', locale)}>
-            <CalendarIcon /> {mf.pillBook}
-          </a>
-        </div>
-        <div className="trust-row" style={{ justifyContent: 'center', marginTop: 0 }}>
-          {mf.trust.map((t) => (
-            <span key={t} className="t">
-              <Check /> {t}
-            </span>
-          ))}
-        </div>
+      <div className="trust-row" style={{ justifyContent: 'center', marginTop: 0 }}>
+        {mf.trust.map((t) => (
+          <span key={t} className="t">
+            <Check /> {t}
+          </span>
+        ))}
       </div>
-    </>
+    </div>
   )
 }
 
@@ -500,24 +414,9 @@ export function FractionalCtoTemplate({
       </section>
 
       {/* 8. SELF CHECK */}
-      <section className="selfcheck">
-        <div className="wrap">
-          <div className="head">
-            <span className="eyebrow">{content.selfcheck.eyebrow}</span>
-            <h2 className="section-title">
-              {content.selfcheck.h2Lead} <em>{content.selfcheck.h2Em}</em>
-            </h2>
-          </div>
-          <div className="sc-grid">
-            {content.selfcheck.items.map((it) => (
-              <div key={it.n} className="sc-item">
-                <span className="n">{it.n}</span>
-                <p>{it.p}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* REMOVED - "Do any of these sound familiar?" self-check. Jake's call,
+          3 Aug: pulled for now. Content and styles are still in content.ts and
+          fractional-cto.css if it comes back. */}
 
       {/* 9. MATCH FORM */}
       <section className="matchform" id="match">
@@ -531,7 +430,13 @@ export function FractionalCtoTemplate({
             </h2>
             <p className="lead">{content.matchform.lead}</p>
           </div>
-          <MatchForm mf={content.matchform} locale={locale} />
+          {/* `bare`: this section supplies the eyebrow, headline and lead, and the
+              reassurance block below closes it. No prefill, because the eight role
+              tiles have no Fractional CTO option and there is nothing truthful to
+              preselect. */}
+          <LeadFormSection bare sourcePage={buildLocalePath('/services/fractional-ctos', locale)} />
+
+          <MatchReassurance mf={content.matchform} locale={locale} />
         </div>
       </section>
 
@@ -570,32 +475,13 @@ export function FractionalCtoTemplate({
       </section>
 
       {/* 11. FINAL CTA */}
-      <section className="final">
-        <div className="wrap final-inner">
-          <div>
-            <h2>
-              {content.final.h2Lead} <em>{content.final.h2Em}</em>
-            </h2>
-            <p>{content.final.p}</p>
-          </div>
-          <div className="r">
-            <a href="#match" className="btn-dark">
-              <span className="arw">
-                <Arrow />
-              </span>
-              {content.final.cta}
-            </a>
-            <div className="metrics">
-              {content.final.metrics.map((m) => (
-                <span key={m} className="m">
-                  <span className="d" />
-                  {m}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* REMOVED - the lime "Ready to hire your next engineer?" band. Jake's
+          call, 3 Aug: it repeated the sitewide footer CTA word for word, so the
+          page ended by asking the same question twice in two different colours,
+          about 200px apart. The footer band stays; this one added nothing.
+          Its button read "Find your Fractional CTO" rather than the footer's
+          "Contact us today" - the only thing lost, and the quick hiring form
+          directly above the FAQ now covers that intent. */}
     </main>
   )
 }

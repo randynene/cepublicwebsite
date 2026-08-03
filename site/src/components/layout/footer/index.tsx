@@ -13,9 +13,16 @@ import { FooterTopCta } from './top-cta'
 import type { Locale } from '@/lib/locale-path'
 
 // MYGRATR-STATIC-3 Step 5 — Footer rebuild (Footer.html export + topCtaBlock).
-// The newsletter subscribe block was retired Aug 2026: CE is not using the
-// HubSpot newsletter form any more. `footer.subscribe` is still in the schema
-// and still populated in the dataset, just no longer read.
+//
+// NEWSLETTER REMOVED - Jake, 30 Jul 2026 (launch consolidation). The footer
+// newsletter was a real HubSpot form, but it collected emails for a newsletter
+// that does not exist and pulled attention away from the one thing the footer is
+// for: booking a call. FooterTopCta above already carries that CTA, so the block
+// came out rather than being replaced.
+//
+// The Sanity `footer.subscribe` field is intentionally LEFT IN THE SCHEMA and
+// still populated. Nothing reads it, so it renders nowhere. Re-mounting it later
+// is a render change, not a migration.
 
 export default async function Footer({ locale }: { locale: Locale }) {
   const data = await fetchFooter()

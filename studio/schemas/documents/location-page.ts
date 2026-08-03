@@ -388,11 +388,13 @@ const startSection = defineField({
       options: {
         list: [
           { title: 'Cards', value: 'cards' },
-          { title: 'Quiz', value: 'quiz' },
+          { title: 'None (lead form only)', value: 'none' },
+          { title: 'Quiz (retired)', value: 'quiz' },
         ],
         layout: 'radio',
       },
-      description: 'Quiz renders the role-picker CTA (Philippines). Cards is the default three-way start.',
+      description:
+        'Cards = three-way start tiles. None / Quiz = skip Start; the page lead form is the conversion path. Quiz is retired and treated the same as None.',
     }),
     defineField({ name: 'cards', title: 'Cards', type: 'array', of: [startCardMember] }),
   ],

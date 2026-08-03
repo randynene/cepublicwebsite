@@ -5,7 +5,7 @@ import { Heading } from '@/components/ui/heading'
 import { Image } from '@/components/ui/image'
 import { PortableText } from '@/components/ui/portable-text'
 import { cn } from '@/components/ui/_utils/cn'
-import type { Locale } from '@/lib/locale'
+import { buildLocalePath, type Locale } from '@/lib/locale'
 import { UI_STRINGS } from '@/lib/ui-strings'
 import type {
   Fold,
@@ -500,7 +500,7 @@ function DecorPhotoBand() {
   )
 }
 
-export default function ServiceTemplate({ service }: ServiceTemplateProps) {
+export default function ServiceTemplate({ service, locale }: ServiceTemplateProps) {
   const eyebrow = serviceCategoryLabel(service.type)
   const tagline = service.tagline?.trim()
   const folds = Array.isArray(service.folds) ? service.folds : []

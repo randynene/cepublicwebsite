@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 
 import { LocationTemplate } from '@/components/templates/location'
 import { LocationJsonLd } from '@/components/templates/location/json-ld'
+import { roleForServiceSlug } from '@/components/lead-form/section'
 import { CatalogueDetail } from '@/components/templates/catalogue/detail'
 import { ServiceJsonLd } from '@/components/templates/service/json-ld'
 import { getLocationEntry, LOCATION_SLUGS } from '@/lib/location/registry'
@@ -78,7 +79,14 @@ export default async function ServiceUkPage({ params }: { params: Promise<RouteP
   return (
     <>
       <ServiceJsonLd service={service} locale="en-GB" faqs={content.faqs} />
-      <CatalogueDetail content={content} hireHref="/uk/book-a-call" scheduleHref="/uk/book-a-call" />
+      <CatalogueDetail
+        content={content}
+        hireHref="/uk/book-a-call"
+        leadForm={{
+          sourcePage: `/uk/services/${slug}`,
+          prefillRole: roleForServiceSlug(slug),
+        }}
+      />
     </>
   )
 }

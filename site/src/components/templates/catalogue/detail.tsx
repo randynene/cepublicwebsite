@@ -1,6 +1,6 @@
 import Link from 'next/link'
 
-import { CtaButton } from '@/components/ui/cta-button'
+import { LeadFormSection, type LeadFormSectionProps } from '@/components/lead-form/section'
 import { cn } from '@/components/ui/_utils/cn'
 import type { HubQuote, HubStory } from '@/data/services'
 import { SERVICES_HUB } from '@/data/services'
@@ -22,7 +22,12 @@ import { ACCENT, BAND_1280, BODY, Chevron, Eyebrow, GLYPH, LimeCheck } from './s
 export interface CatalogueDetailProps {
   content: CatalogueContent
   hireHref?: string
-  scheduleHref?: string
+  /**
+   * Quick hiring form, rendered at the foot of the page. Optional so a caller
+   * that has no sensible source path simply does not get one, rather than
+   * reporting a lead as coming from somewhere it did not.
+   */
+  leadForm?: LeadFormSectionProps
 }
 
 // Fixed furniture copy + serif-italic accent phrases (verbatim from the reference).
@@ -39,11 +44,6 @@ const DC = {
   noFeeEyebrow: 'In-house, without the friction',
   noFeeLead: 'No upfront fees.',
   noFeeAccent: 'No lock-in contracts.',
-  ctaLead: 'Tell us who you need.',
-  ctaAccent: "We'll handle the rest.",
-  ctaBodyPre: 'Two vetted',
-  ctaBodyPost: 'in front of you within 7 working days. No job boards, no CVs, no time wasted.',
-  scheduleCta: 'Talk to a human',
   customersEyebrow: 'Proof, not promises',
   customersLead: 'Hear from our',
   customersAccent: 'customers',
@@ -179,7 +179,7 @@ function ContentBlock({ section }: { section: CatalogueSection }) {
   )
 }
 
-export function CatalogueDetail({ content, hireHref = '/book-a-call', scheduleHref = '/book-a-call' }: CatalogueDetailProps) {
+export function CatalogueDetail({ content, hireHref = '/book-a-call', leadForm }: CatalogueDetailProps) {
   const { name, eyebrow, heroSubhead, heroBullets, skillBadges, ourService, capabilities, why, statements, techCoverage, faqs, isTechnology } = content
   const stories = SERVICES_HUB.stories as HubStory[]
   const quotes = SERVICES_HUB.quotes as HubQuote[]
@@ -338,29 +338,15 @@ export function CatalogueDetail({ content, hireHref = '/book-a-call', scheduleHr
       </section>
 
       {/* 8b. FAQs (per-page override else shared block; matches live) */}
+      {leadForm && <LeadFormSection {...leadForm} />}
       {faqs.length > 0 ? <CatalogueFaqPanel items={faqs} /> : null}
 
-      {/* 9. CTA BAND */}
-      <section className={cn(BAND_1280, 'py-[40px]')}>
-        <div className="grid grid-cols-1 items-center gap-8 overflow-hidden rounded-[24px] border border-[#22314D] p-8 lg:grid-cols-[1.1fr_0.9fr] lg:p-12" style={{ background: 'linear-gradient(120deg, #0A1628, #101B30)' }}>
-          <div>
-            <h2 className="text-[30px] font-semibold leading-[1.15] tracking-[-1px] text-white lg:text-[40px]">
-              {DC.ctaLead} <span className={ACCENT}>{DC.ctaAccent}</span>
-            </h2>
-            <p className={cn('mt-4 max-w-[440px] text-[16px] leading-[24px]', BODY)}>{DC.ctaBodyPre} {name} {DC.ctaBodyPost}</p>
-            {/* Same solid archetype as the header's Schedule a Call, so the
-                two read identically wherever they appear (header 1E). */}
-            <CtaButton
-              as="a"
-              href={scheduleHref}
-              variant="solid"
-              label={DC.scheduleCta}
-              className="mt-6 w-fit"
-            />
-          </div>
-          <Placeholder className="hidden h-[240px] rounded-[16px] lg:block" />
-        </div>
-      </section>
+      {/* 9. REMOVED - "Tell us who you need. We'll handle the rest." CTA band.
+          Jake's call, 3 Aug. The quick hiring form directly above the FAQ does
+          the same job and does it better: it captures the requirement instead of
+          just asking for a call. Two competing CTAs in the same scroll region
+          split the intent rather than doubling it, and this one also carried an
+          empty placeholder tile where an image was never supplied. */}
 
       {/* 10. CUSTOMERS */}
       <section className={cn(BAND_1280, 'py-[72px]')}>
@@ -415,6 +401,7 @@ export function CatalogueDetail({ content, hireHref = '/book-a-call', scheduleHr
           </ul>
         </div>
       </section>
+
     </main>
   )
 }

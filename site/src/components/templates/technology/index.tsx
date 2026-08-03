@@ -5,7 +5,7 @@ import { Heading } from '@/components/ui/heading'
 import { Image } from '@/components/ui/image'
 import { PortableText } from '@/components/ui/portable-text'
 import { cn } from '@/components/ui/_utils/cn'
-import type { Locale } from '@/lib/locale'
+import { buildLocalePath, type Locale } from '@/lib/locale'
 import { UI_STRINGS } from '@/lib/ui-strings'
 import type { Fold, Technology } from '@/types/sanity/documents/technology'
 
@@ -377,6 +377,7 @@ function FoldSection({
 
 export default function TechnologyTemplate({
   technology,
+  locale,
 }: TechnologyTemplateProps) {
   const eyebrow = UI_STRINGS['technology.heroCategory']
   const tagline = technology.tagline?.trim()

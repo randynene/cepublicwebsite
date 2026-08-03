@@ -51,6 +51,30 @@ html {
   padding: 0;
   box-sizing: border-box;
 }
+
+/* The wildcard reset above zeroes margin and padding on EVERY descendant, and
+   this stylesheet is unlayered so it outranks Tailwind's layered utilities. The
+   shared quick hiring form arrives already laid out in utilities, so inside .fcto
+   it rendered with no padding at all: text crushed against borders, tiles with no
+   height, the whole block unreadable.
+   `revert-layer` hands those two properties back to the utility layer for this
+   subtree only, and the two-class selector clears the reset's specificity. Scoped
+   here rather than fought in the component, because the reset is this page's
+   choice and the form is shared by 250 others. */
+.fcto .qh-form,
+.fcto .qh-form * {
+  margin: revert-layer;
+  padding: revert-layer;
+  /* Typography too. `.fcto h2` sets its own size and weight, which rendered the
+     form's question at 46px/700 instead of 26px/600 - the same block looked like
+     a different component on this page than on every other one. Reverting these
+     four hands them back to the utility layer for this subtree only, so the form
+     is identical everywhere regardless of what the host page does to elements. */
+  font-size: revert-layer;
+  font-weight: revert-layer;
+  line-height: revert-layer;
+  letter-spacing: revert-layer;
+}
 .fcto a {
   color: var(--lime);
   text-decoration: none;
@@ -710,7 +734,6 @@ html {
 .fcto .video {
   padding: 96px 0;
   background: var(--bg);
-  border-top: 1px solid var(--line);
 }
 .fcto .video-shell {
   margin-top: 34px;
@@ -847,7 +870,6 @@ html {
 .fcto .does {
   padding: 96px 0;
   background: var(--navy);
-  border-top: 1px solid var(--line);
 }
 .fcto .does .head {
   text-align: center;
@@ -985,7 +1007,6 @@ html {
 .fcto .matched {
   padding: 104px 0;
   background: var(--navy);
-  border-top: 1px solid var(--line);
 }
 .fcto .matched .top {
   display: flex;
@@ -1133,7 +1154,6 @@ html {
 .fcto .derisk {
   padding: 120px 0;
   background: var(--bg);
-  border-top: 1px solid var(--line);
   overflow: hidden;
 }
 .fcto .derisk .wrap {
@@ -1190,7 +1210,6 @@ html {
 .fcto .selfcheck {
   padding: 96px 0;
   background: var(--navy);
-  border-top: 1px solid var(--line);
 }
 .fcto .selfcheck .head {
   text-align: center;
@@ -1239,7 +1258,6 @@ html {
 .fcto .matchform {
   padding: 100px 0;
   background: var(--bg);
-  border-top: 1px solid var(--line);
 }
 .fcto .matchform .head {
   text-align: center;
@@ -1410,7 +1428,6 @@ html {
 .fcto .faq {
   padding: 96px 0 104px;
   background: var(--navy);
-  border-top: 1px solid var(--line);
 }
 .fcto .faq-grid {
   display: grid;
@@ -1705,4 +1722,35 @@ html {
   .fcto .dtrack {
     animation: none !important;
   }
+}
+
+/* ── Shared quick hiring form: hand element styling back to the utilities ──
+   Deliberately at the END of this file, and deliberately listing elements rather
+   than using `*`.
+   `.fcto .matchform h2` is (0,2,1) and beats the (0,2,0) wildcard exemption
+   further up, so the form's question rendered at 46px/700 instead of 26px/600 and
+   the same component looked like a different one on this page. Matching that
+   specificity and winning on source order is what fixes it.
+   `max-width` and `margin` are in here too: the host rule also caps the heading at
+   22ch and centres it with auto margins. */
+.fcto .qh-form h1,
+.fcto .qh-form h2,
+.fcto .qh-form h3,
+.fcto .qh-form p,
+.fcto .qh-form span,
+.fcto .qh-form a,
+.fcto .qh-form button,
+.fcto .qh-form input,
+.fcto .qh-form label,
+.fcto .qh-form ol,
+.fcto .qh-form ul,
+.fcto .qh-form li {
+  font-size: revert-layer;
+  font-weight: revert-layer;
+  line-height: revert-layer;
+  letter-spacing: revert-layer;
+  text-align: revert-layer;
+  max-width: revert-layer;
+  margin: revert-layer;
+  padding: revert-layer;
 }

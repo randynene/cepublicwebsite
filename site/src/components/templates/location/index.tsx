@@ -1,7 +1,7 @@
 import { cn } from '@/components/ui/_utils/cn'
 import { HeroTrustBar } from '@/components/social-proof/hero-trust-bar'
 import { CLIENT_LOGOS, type ClientLogo } from '@/components/social-proof/client-logo-strip'
-import type { Locale } from '@/lib/locale-path'
+import { buildLocalePath, type Locale } from '@/lib/locale-path'
 import { TypewriterText } from '@/components/motion/typewriter-text'
 import { MegaMenuPillLabel } from '@/components/ui/mega-menu-pill-label'
 
@@ -10,9 +10,9 @@ import type { HomeProfile, ProfileCardPerson } from '@/components/templates/home
 import { HeroCards } from '@/components/templates/home/hero-cards'
 import { ProfileCard as HeroSlideshowCard } from '@/components/templates/home/profile-card'
 import { LocationCalculator } from './calculator'
-import { LocationStartQuiz } from './start-quiz'
 import { LocationVideo } from './video'
 import { Spotlight } from '@/components/motion/spotlight'
+import { LeadFormSection } from '@/components/lead-form/section'
 import { FaqChatCard } from '@/components/shared/faq-chat-card'
 import { ChatLink } from '@/components/shared/chat-link'
 import { isChatHref } from '@/lib/chat'
@@ -921,27 +921,11 @@ function StartTile({
 function Start({ content, locale }: { content: LocationContent; locale: Locale }) {
   const { start } = content
 
-  if (start.variant === 'quiz' && start.quiz) {
-    return (
-      <Spotlight className="py-[72px]">
-        <div className={BAND}>
-          <LocationStartQuiz
-            eyebrow={start.quiz.eyebrow || start.eyebrow}
-            title={start.titleLead}
-            titleAccent={start.titleAccent}
-            subtitle={start.quiz.subtitle}
-            stepLabel={start.quiz.stepLabel}
-            prompt={start.quiz.prompt}
-            hint={start.quiz.hint}
-            roles={start.quiz.roles}
-            cta={start.quiz.cta}
-            ctaHref={toInternalHref(start.quiz.ctaHref, locale).href}
-            selectedPrefix={start.quiz.selectedPrefix}
-            emptyStatus={start.quiz.emptyStatus}
-          />
-        </div>
-      </Spotlight>
-    )
+  // Quiz / none: the quick hiring form (LeadFormSection below) replaced the
+  // old STEP-1-OF-4 role picker. Skip this whole block so the page only shows
+  // one conversion path. 'quiz' stays as a Sanity-compat value for the PH doc.
+  if (start.variant === 'quiz' || start.variant === 'none') {
+    return null
   }
 
   const [first, ...rest] = start.cards
@@ -1041,6 +1025,11 @@ export function LocationTemplate({
       <FunFact content={content} />
       <Calculator content={content} locale={locale} />
       <Start content={content} locale={locale} />
+      {/* Above the FAQ, same position as the services and technology detail
+          pages. No role prefill: a location page answers WHERE, not which role,
+          so preselecting one would be a guess. `content.slug` is the page's own
+          slug, so the lead records which region it came from. */}
+      <LeadFormSection sourcePage={buildLocalePath(`/services/${content.slug}`, locale)} />
       <Faq content={content} locale={locale} />
     </main>
   )

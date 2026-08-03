@@ -8,6 +8,8 @@ import { ChatLink } from '@/components/shared/chat-link'
 import { VettingProfile } from '@/components/shared/vetting-profile'
 import { HeroTrustBar } from '@/components/social-proof/hero-trust-bar'
 import { cn } from '@/components/ui/_utils/cn'
+import { LeadFormSection } from '@/components/lead-form/section'
+import { roleIcon } from '@/components/shared/role-icons'
 import { CHAT_HREF } from '@/lib/chat'
 import { buildLocalePath, type Locale } from '@/lib/locale-path'
 import { CALC, HE, type HireEngineersContent } from './content'
@@ -84,117 +86,7 @@ const OFFER_ICONS: ReactNode[] = [
 // match exactly what the roles are"). Keying on the label means the mapping
 // survives a reorder or a rename in Sanity, and an unrecognised role falls back
 // to the neutral arrow instead of borrowing whichever icon sat at that index.
-const ROLE_ICON_RULES: { match: RegExp; icon: ReactNode }[] = [
-  {
-    // Backend before the generic "engineer" catch-alls.
-    match: /back[- ]?end/i,
-    icon: (
-      <svg viewBox="0 0 24 24" className="icon-motion icon-motion--bob">
-        <rect x="3" y="4" width="18" height="6" rx="1.5" />
-        <rect x="3" y="14" width="18" height="6" rx="1.5" />
-        <path d="M6.5 7h.01M6.5 17h.01" />
-      </svg>
-    ),
-  },
-  {
-    match: /front[- ]?end/i,
-    icon: (
-      <svg viewBox="0 0 24 24" className="icon-motion icon-motion--bob">
-        <rect x="3" y="4" width="18" height="16" rx="2" />
-        <path d="M3 9h18M6.5 6.5h.01M9.5 6.5h.01" />
-      </svg>
-    ),
-  },
-  {
-    // Full-stack and plain "Software Engineers" share the code-brackets mark.
-    match: /full[- ]?stack|software/i,
-    icon: (
-      <svg viewBox="0 0 24 24" className="icon-motion icon-motion--bob">
-        <path d="M8 6l-4 6 4 6M16 6l4 6-4 6" />
-      </svg>
-    ),
-  },
-  {
-    match: /dev[- ]?ops|platform|infra/i,
-    icon: (
-      // Continuous-delivery loop, which is what DevOps actually means.
-      <svg viewBox="0 0 24 24" className="icon-motion icon-motion--spin">
-        <path d="M3 12a9 9 0 0115.7-6M21 12a9 9 0 01-15.7 6" />
-        <path d="M18 3v3h-3M6 21v-3h3" />
-      </svg>
-    ),
-  },
-  {
-    match: /\bqa\b|test/i,
-    icon: (
-      <svg viewBox="0 0 24 24">
-        <path className="icon-motion icon-motion--draw" d="M9 11l3 3 8-8" pathLength={100} />
-        <path d="M20 12v6a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h9" />
-      </svg>
-    ),
-  },
-  {
-    match: /mobile|ios|android/i,
-    icon: (
-      <svg viewBox="0 0 24 24" className="icon-motion icon-motion--bob">
-        <rect x="7" y="3" width="10" height="18" rx="2" />
-        <path d="M11 18h2" />
-      </svg>
-    ),
-  },
-  {
-    match: /\bdata\b/i,
-    icon: (
-      // Database cylinder, replacing a desktop monitor.
-      <svg viewBox="0 0 24 24" className="icon-motion icon-motion--bob">
-        <ellipse cx="12" cy="6" rx="8" ry="3" />
-        <path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6" />
-        <path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3" />
-      </svg>
-    ),
-  },
-  {
-    match: /\bai\b|machine learning|\bml\b/i,
-    icon: (
-      // The sparkle is the mark people now read as "AI" — Seb asked for it by
-      // name ("should that be the little AI logo?").
-      <svg viewBox="0 0 24 24" className="icon-motion icon-motion--twinkle">
-        <path d="M10 3l1.6 4.4L16 9l-4.4 1.6L10 15l-1.6-4.4L4 9l4.4-1.6z" />
-        <path d="M17.5 14l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z" />
-      </svg>
-    ),
-  },
-  {
-    match: /cto|lead|principal|architect/i,
-    icon: (
-      // Compass: direction and technical strategy, not a gold star.
-      <svg viewBox="0 0 24 24" className="icon-motion icon-motion--bob">
-        <circle cx="12" cy="12" r="9" />
-        <path d="M15.5 8.5l-2.2 4.8-4.8 2.2 2.2-4.8z" />
-      </svg>
-    ),
-  },
-  {
-    match: /security|cyber/i,
-    icon: (
-      <svg viewBox="0 0 24 24" className="icon-motion icon-motion--bob">
-        <path d="M12 3l8 4v6c0 5-3.5 7.5-8 8-4.5-.5-8-3-8-8V7z" />
-        <path d="M9.5 12l1.8 1.8L15 10" />
-      </svg>
-    ),
-  },
-]
 
-/** Neutral catch-all: "Something else?" and any role we do not recognise. */
-const ROLE_ICON_FALLBACK: ReactNode = (
-  <svg viewBox="0 0 24 24">
-    <path className="icon-motion icon-motion--draw" d="M5 12h14M13 6l6 6-6 6" pathLength={100} />
-  </svg>
-)
-
-function roleIcon(label: string): ReactNode {
-  return ROLE_ICON_RULES.find((r) => r.match.test(label))?.icon ?? ROLE_ICON_FALLBACK
-}
 
 // ── Pricing cost calculator (source <script> engine, verbatim tables) ──
 const fmt = (n: number) => '$' + Math.round(n).toLocaleString('en-US')
@@ -286,145 +178,6 @@ function Calculator({ price }: { price: HireEngineersContent['price'] }) {
           </span>
           {price.cta}
         </a>
-      </div>
-    </div>
-  )
-}
-
-// ── Multi-step "find your engineer" form ──
-function OptionGroup({
-  options,
-  iconFor,
-  single,
-}: {
-  options: readonly string[]
-  /** Resolve the icon from the option LABEL, not its index — see roleIcon. */
-  iconFor?: (label: string) => ReactNode
-  single?: boolean
-}) {
-  const [sel, setSel] = useState<Set<number>>(new Set())
-  function toggle(i: number) {
-    setSel((prev) => {
-      if (single) return new Set([i])
-      const next = new Set(prev)
-      if (next.has(i)) next.delete(i)
-      else next.add(i)
-      return next
-    })
-  }
-  return (
-    <div className="opts">
-      {options.map((o, i) => (
-        <button key={o} type="button" className={cn('opt', 'icon-card', sel.has(i) && 'sel')} onClick={() => toggle(i)}>
-          {iconFor ? <span className="ic">{iconFor(o)}</span> : null}
-          <span className="on">{o}</span>
-        </button>
-      ))}
-    </div>
-  )
-}
-
-function FindForm({
-  find,
-  locale,
-}: {
-  find: HireEngineersContent['find']
-  locale: Locale
-}) {
-  const [step, setStep] = useState(0)
-  const next = () => setStep((s) => (s < 3 ? s + 1 : s))
-  const back = () => setStep((s) => (s > 0 ? s - 1 : s))
-  // This match form is a guided demo (no HubSpot form on live either). Final
-  // CTA must still send people into a real lead path — Book a Call — not a
-  // no-op that looks like a submit.
-  const sendLead = () => {
-    window.location.assign(buildLocalePath('/book-a-call', locale))
-  }
-
-  const stepClass = (i: number) => (i === step ? 'step active' : 'step')
-  const stpClass = (i: number) => (i === step ? 'stp active' : i < step ? 'stp done' : 'stp')
-
-  return (
-    <div className="form-card">
-      <div className="stepper">
-        {find.stepper.map((s, i) => (
-          <div key={s.num} className={stpClass(i)}>
-            <span className="num">{s.num}</span>
-            <span className="lbl">{s.lbl}</span>
-          </div>
-        ))}
-      </div>
-
-      <div className={stepClass(0)}>
-        <div className="q">{find.step0.q}</div>
-        <div className="q-hint">{find.step0.hint}</div>
-        <OptionGroup options={find.step0.opts} iconFor={roleIcon} single />
-      </div>
-
-      <div className={stepClass(1)}>
-        <div className="q">{find.step1.q}</div>
-        <div className="q-hint">{find.step1.hint}</div>
-        <OptionGroup options={find.step1.opts} />
-      </div>
-
-      <div className={stepClass(2)}>
-        <div className="q">{find.step2.q}</div>
-        <div className="q-hint">{find.step2.hint}</div>
-        <OptionGroup options={find.step2.opts} single />
-      </div>
-
-      <div className={stepClass(3)}>
-        <div className="q">{find.step3.q}</div>
-        <div className="q-hint">{find.step3.hint}</div>
-        <div className="matches">
-          {find.step3.matches.map((m) => (
-            <div key={m.nm} className="match">
-              <span className="m-face">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                {m.image ? (
-                  <img src={m.image} alt={m.nm} style={COVER} />
-                ) : (
-                  <span className="ftag">{m.ftag}</span>
-                )}
-              </span>
-              <div>
-                <div className="m-nm">{m.nm}</div>
-                <div className="m-rl">{m.rl}</div>
-              </div>
-              <div className="m-rate">
-                <div className="r">{m.rate}</div>
-                <div className="l">{find.step3.per}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-        <button className="next" style={{ width: '100%', justifyContent: 'center', marginTop: '18px' }} onClick={sendLead}>
-          {find.step3.cta}
-          <span className="arw">
-            <Arrow className="icon-motion icon-motion--draw" />
-          </span>
-        </button>
-      </div>
-
-      <div className="card-foot" style={{ display: step === 3 ? 'none' : 'flex' }}>
-        <div className="trust">
-          {find.footTrust.map((t) => (
-            <span key={t} className="t">
-              <Check className="icon-motion icon-motion--draw" /> {t}
-            </span>
-          ))}
-        </div>
-        <div className="nav-btns">
-          <button className="back" onClick={back} disabled={step === 0}>
-            {find.back}
-          </button>
-          <button className="next" onClick={next}>
-            {find.next}{' '}
-            <span className="arw">
-              <Arrow className="icon-motion icon-motion--draw" />
-            </span>
-          </button>
-        </div>
       </div>
     </div>
   )
@@ -728,18 +481,14 @@ export function HireEngineersTemplate({
             <p className="lead">{content.find.lead}</p>
           </div>
 
-          <div className="ff-layout">
-            <FindForm find={content.find} locale={locale} />
-            <div className="imgslot ff-img rvl">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              {content.find.img.image ? <img src={content.find.img.image} alt={content.find.img.t} style={COVER} /> : null}
-              <span className="tag">{content.find.img.tag}</span>
-              <div className="cap">
-                <div className="t">{content.find.img.t}</div>
-                <div className="s">{content.find.img.s}</div>
-              </div>
-            </div>
-          </div>
+          {/* `bare`: this section already supplies the eyebrow, headline, lead
+              and the "prefer to talk first" row, so the form contributes only its
+              outlined box and sits between them. */}
+          <LeadFormSection
+            bare
+            sourcePage={buildLocalePath('/services/software-engineers', locale)}
+            prefillRole="full-stack"
+          />
 
           {/* Both of these were href="#": the page offered to put you in front
               of the AI or a human and then did nothing when clicked. */}
@@ -762,22 +511,10 @@ export function HireEngineersTemplate({
       </section>
 
       {/* FINAL CTA */}
-      <section className="final">
-        <div className="wrap">
-          <h2>
-            {content.final.h2Lead}{' '}
-            <em>{content.final.h2Em}</em>
-          </h2>
-          <p>{content.final.p}</p>
-          <a href="#find" className="btn-primary">
-            <span className="arw">
-              <Arrow className="icon-motion icon-motion--draw" />
-            </span>
-            {content.final.cta}
-          </a>
-          <div className="sub">{content.final.sub}</div>
-        </div>
-      </section>
+      {/* REMOVED - the lime "Ready to hire your next engineer?" band. Jake's
+          call, 3 Aug: it repeated the sitewide footer CTA word for word, so the
+          page ended by asking the same question twice in two different colours,
+          about 200px apart. The footer band stays; this one added nothing. */}
     </main>
   )
 }

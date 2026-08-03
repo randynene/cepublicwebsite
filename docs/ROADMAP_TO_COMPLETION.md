@@ -740,6 +740,24 @@ Jake decision), `dateModified` freshness. Logged here so they are not forgotten.
 
 ### 7a. HubSpot + sales-funnel cutover once-over (NEW — Jake priority)
 
+> **Superseded in part, 30 Jul 2026.** The funnel map Jake was going to write by
+> hand is now written and confirmed against the code:
+> **`docs/HUBSPOT_FORMS_STRATEGY.md`** (four gateways, locked decisions D1-D7, and
+> the J1-J9 list of what only Jake can do). The build that closes the "form demos"
+> item below is **`docs/briefs/active/GATEWAY-3-QUICK-HIRING-FORM.md`** (LOCKED,
+> not started - waiting on Jake to say "unpark and build").
+>
+> **Three findings from that confirmation pass that change this section:**
+> 1. The Contact and Newsletter form GUIDs are **our substitutions**, not live's
+>    (live posts both through a dead `hubspotonwebflow.com` bridge). They resolve
+>    on the portal, but nobody has confirmed a human reads those submissions. That
+>    is a cutover gate, not a nice-to-have.
+> 2. **`/price-comparison-calculator` lost a real live form** (`24f5bd5f-…`,
+>    "Start Hiring Request"). A live lead path that does not exist on the new site.
+> 3. "No connected workflows" in the April audit was a **missing `automation`
+>    token scope** (Tech Debt #8), not evidence. We do not currently know what
+>    HubSpot notifies on submit.
+
 **Why this exists:** a wrong HubSpot form id is the quietest failure on the site.
 The page looks perfect, nothing 404s, and every enquiry is lost. Typecheck / build /
 parity cannot catch it. We already have `npm run launch:verify-hubspot-forms` for
@@ -747,6 +765,8 @@ that reason — this phase makes the *whole funnel* a named cutover gate, not a
 side note.
 
 **Jake does first (business map — one sitting):**
+*Superseded 30 Jul — the map now lives in `docs/HUBSPOT_FORMS_STRATEGY.md`. What
+remains for Jake is the J1-J9 gate list in that doc, not this exercise.*
 1. List every path a lead can take on live CE today, in plain English. Example
    shape (fill in / correct with real CE reality):
    - Nav / CTA → Book a Call → Calendly → thank-you / confirmed page
@@ -777,13 +797,29 @@ side note.
 - [ ] Calendly: Book-a-call detail pages + Contact intro-call URL load and book. **Jake.**
 - [x] Start-hiring step form ids match seed/HubSpot; US `get-started` redirects to
       `contact-info`; UK `get-started` is a real page.
-- [x] Hire Engineers dead final CTA (`sendLead = () => {}`) and `how-more` `#` link
-      fixed → `/book-a-call` + `/how-it-works` (Jul 2026 forms pass).
+- [x] Quick hiring form UI, skills taxonomy, and `/api/lead` built and mounted on
+      eight templates. Duplicate fake capture UI removed from Hire Engineers,
+      Fractional CTO, Home, and How It Works. Hire Engineers `FindForm`,
+      `sendLead`, and fabricated match results deleted (2 Aug 2026).
+- [ ] Confirm `SLACK_LEADS_WEBHOOK_URL` and `SLACK_JUNK_WEBHOOK_URL` on the launch
+      deployment, then redeploy. The first is the HubSpot-failure safety net; the
+      second routes suspected junk.
+- [ ] Replace the draft consent sentence with Jake and legal's approved wording.
 - [ ] Thank-you / confirmed pages remain noindex; lead-capture pages behave as live.
 
-**Not HubSpot (do not invent forms):** For Developers join UI, Fractional CTO match
-UI, Pricing calculator — demos / Book-a-Call paths per lead-conversion plan. Talent
-join stays a separate system.
+- [ ] **Confirm a human reads the Contact (`4b883c7d-…`) and Newsletter
+      (`b411a11f-…`) submissions.** These GUIDs are ours, not live's. **Jake (J1).**
+- [ ] **Confirm what HubSpot notifies today** (workflows / notify-emails / Slack).
+      The April "none" was a token-scope artifact. **Jake (J2).**
+- [ ] **`/price-comparison-calculator` has no form; live does.** Closed by the
+      gateway-3 build (embed target 2 of 3).
+
+**Not HubSpot (do not invent forms):** For Developers join UI (talent, separate
+system), the calculators themselves. **Changed 2 Aug:** the real quick hiring form
+now replaces the old demo flows on Hire Engineers and Fractional CTO. Marker
+**CE-17** lands in the Hire Engineers form. `/for-developers` remains Jake decision
+J-D and was not touched. Downloads stay ungated as a **deliberate divergence from
+live**, to be recorded in `parity-exceptions.json`.
 
 **Gate:** Jake signs the funnel map; every path on the map has a green staging test;
 verifier PASS recorded in the cutover folder.
@@ -1024,7 +1060,7 @@ from the product tracker and should be deleted before launch (scaffold debt).
 | For Developers | `/for-developers` (+ `/uk`) | Yes | DONE - rebuilt + Sanity-wired, pixel-parity PROVEN (not yet seeded/pushed) | Phase 3.1: tokenise-and-hydrate rebuild of the frozen Figma export; `forDevelopersPage` bespoke singleton + GROQ/Zod/transform + US/UK routes + seed. `npm run static:verify-fe2-parity` asserts byte-identical output. Build green, routes 200. **3 Aug polish:** hero "How it works" scrolls to in-page `#fe2-how` (THE PROCESS), not `/how-it-works`; Sanity `ctaGhostHref` patched. **3 Aug rotator:** line 1 = "We match you with companies that fit your"; line 2 = static "work" + rotating style/values/salary/mission; Sanity `hero.sub` patched. **3 Aug UI:** Why-this-exists stats no longer truncate; "2" body wraps on two lines; community photo strip hidden (`hideCommunityBlock`); IDEA glow fades at the bottom. **3 Aug CTAs + trims:** both "Join the network" CTAs are now "View Live jobs" -> `talent.cloudemployee.io` (new tab); values are code-owned in `content.ts` and override Sanity so a stale Studio value cannot win; FE2 parity fixture regenerated. The on-page "build your profile" JoinForm is retired (component parked in the file, `forDevelopersPage.join` still in Sanity - orphaned like #62/#63); Clara floating bar and the footer "Ready to hire" band are both suppressed on this page. **3 Aug video:** Vimeo `1092722278` under "Not a resume in a pile" - muted ambient autoplay on load with a loading spinner, play button restarts it from the top with sound. | 2 |
 | Our Work | `/our-work` | Yes | **DONE (WIRE-BESPOKE 23 Jul) + polish 28 Jul.** Bespoke page + Sanity wiring. Polish: bright logo marquee; people-photo tiles (8x + 2x beyond-hiring); taller Customer Impact with autoplay videos TR/BL; uniform `#070D18` ground; mid-CTA removed. Studio photo slots still optional overrides. | DONE (G2 + polish) | 2 |
 | Location: LATAM | `/services/latam-developers` | Net-new | BUILT + COMMITTED (bespoke `LocationTemplate` + cost calculator + location JSON-LD, dark/lime; 200). G1 + G2 done. **27 Jul:** redesigned shared "What's included" card added after the regional overview with Latin America-specific payroll copy; `locationPage-latam-developers.included` patched in production (published doc only, no draft) so all copy is Studio-editable. | DONE (G1+G2) | 2 |
-| Location: Philippines | `/services/philippines-developers` | Net-new | BUILT + COMMITTED (same `LocationTemplate`; 200). G1 done. G2 wiring code-complete (WIRE-BESPOKE 23 Jul, same as LATAM). Doc IS seeded (page renders Sanity data). **"What's included" section redesigned 27 Jul - DONE** (one bordered card, equal-height columns, two-up "We" list, lime as accent only) per `whats-included-1a.html`; copy rewritten with counted labels + 8 split "We" items + PH-named payroll line; 4 new fields (`youBody`, `youFootnote`, `wePill`, `weBody`) added to schema/GROQ/Zod/seed. **Studio deployed + `npm run static:patch-ph-included` run against production** (published doc patched, no draft existed); verified rendering at 1440/1024/390. **27 Jul polish:** hero CTA contents optically centred; all three benefit facts share one desktop row; trusted-by label is exactly two lines. **3 Aug:** Vimeo `1145433775` wired - muted ambient autoplay on black + click play from start with sound; Sanity `video.videoUrl` patched. | DONE (G1+G2) | 2 |
+| Location: Philippines | `/services/philippines-developers` | Net-new | BUILT + COMMITTED (same `LocationTemplate`; 200). G1 done. G2 wiring code-complete (WIRE-BESPOKE 23 Jul, same as LATAM). Doc IS seeded (page renders Sanity data). **"What's included" section redesigned 27 Jul - DONE** (one bordered card, equal-height columns, two-up "We" list, lime as accent only) per `whats-included-1a.html`; copy rewritten with counted labels + 8 split "We" items + PH-named payroll line; 4 new fields (`youBody`, `youFootnote`, `wePill`, `weBody`) added to schema/GROQ/Zod/seed. **Studio deployed + `npm run static:patch-ph-included` run against production** (published doc patched, no draft existed); verified rendering at 1440/1024/390. **27 Jul polish:** hero CTA contents optically centred; all three benefit facts share one desktop row; trusted-by label is exactly two lines. **3 Aug:** Vimeo `1145433775` wired - muted ambient autoplay on black + click play from start with sound; Sanity `video.videoUrl` patched. **Forms launch:** old STEP-1-OF-4 start quiz removed; `LeadFormSection` above FAQ is the only conversion block (`start.variant` `quiz`/`none` skips Start). | DONE (G1+G2) | 2 |
 | Location: Eastern Europe | `/services/eastern-europe-developers` | Net-new | BUILT + COMMITTED (same `LocationTemplate`; 200; net-new slug, no service doc). G1 + G2 done. **27 Jul:** redesigned shared "What's included" card added after the regional overview with Eastern Europe-specific payroll copy; `locationPage-eastern-europe-developers.included` patched in production (published doc only, no draft) so all copy is Studio-editable. **3 Aug:** Vimeo `1212987222` wired same ambient behaviour; Sanity `video.videoUrl` patched. | DONE (G1+G2) | 2 |
 | About Us | `/about-us` | YES - live + indexed on CE | URL-LIVE-ONLY | Keep live w/ captured content (stays indexed); redesign later (deferred). Do NOT hide. **27 Jul:** removed from header `navigation.primaryLinks` (was the 6th item); kept in footer Company column (`About us`). Page itself unchanged. | 4 (defer design) |
 | Contact | `/contact` | YES - live + indexed on CE (`/contact-us` -> `/contact`) | URL-LIVE-ONLY | Keep live w/ captured content; redesign later (deferred). Do NOT hide. | 4 (defer design) |

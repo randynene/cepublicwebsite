@@ -406,7 +406,7 @@ export const HOME_CONTENT = {
     eyebrow: 'Ready to find your engineer?',
     titleLead: 'See real engineer profiles, rates, and timelines.',
     titleAccent: 'In 90 seconds',
-    paragraph: "Four quick questions. See who we'd build your team with.",
+    paragraph: "See who we'd build your team with.",
     steps: ['Role', 'Skills', 'Team size', 'Your match'],
     question: 'What role are you hiring for?',
     questionSub: "Pick one to start — you'll see matching engineers at the end.",
