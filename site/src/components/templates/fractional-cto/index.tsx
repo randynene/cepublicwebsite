@@ -486,32 +486,13 @@ export function FractionalCtoTemplate({
       </section>
 
       {/* 11. FINAL CTA */}
-      <section className="final">
-        <div className="wrap final-inner">
-          <div>
-            <h2>
-              {content.final.h2Lead} <em>{content.final.h2Em}</em>
-            </h2>
-            <p>{content.final.p}</p>
-          </div>
-          <div className="r">
-            <a href="#match" className="btn-dark">
-              <span className="arw">
-                <Arrow />
-              </span>
-              {content.final.cta}
-            </a>
-            <div className="metrics">
-              {content.final.metrics.map((m) => (
-                <span key={m} className="m">
-                  <span className="d" />
-                  {m}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* REMOVED - the lime "Ready to hire your next engineer?" band. Jake's
+          call, 3 Aug: it repeated the sitewide footer CTA word for word, so the
+          page ended by asking the same question twice in two different colours,
+          about 200px apart. The footer band stays; this one added nothing.
+          Its button read "Find your Fractional CTO" rather than the footer's
+          "Contact us today" - the only thing lost, and the quick hiring form
+          directly above the FAQ now covers that intent. */}
     </main>
   )
 }

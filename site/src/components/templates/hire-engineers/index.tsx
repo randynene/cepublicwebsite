@@ -697,22 +697,10 @@ export function HireEngineersTemplate({
       </section>
 
       {/* FINAL CTA */}
-      <section className="final">
-        <div className="wrap">
-          <h2>
-            {content.final.h2Lead}{' '}
-            <em>{content.final.h2Em}</em>
-          </h2>
-          <p>{content.final.p}</p>
-          <a href="#find" className="btn-primary">
-            <span className="arw">
-              <Arrow className="icon-motion icon-motion--draw" />
-            </span>
-            {content.final.cta}
-          </a>
-          <div className="sub">{content.final.sub}</div>
-        </div>
-      </section>
+      {/* REMOVED - the lime "Ready to hire your next engineer?" band. Jake's
+          call, 3 Aug: it repeated the sitewide footer CTA word for word, so the
+          page ended by asking the same question twice in two different colours,
+          about 200px apart. The footer band stays; this one added nothing. */}
     </main>
   )
 }
