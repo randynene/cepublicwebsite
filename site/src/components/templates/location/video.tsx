@@ -41,6 +41,21 @@ function interactiveSrc(provider: string, id: string, sourceUrl: string): string
   return `https://www.linkedin.com/embed/feed/update/urn:li:share:${id}`
 }
 
+/** Muted looping backdrop (homepage ProcessVideo-style) while the poster chrome is visible. */
+function ambientSrc(provider: string, id: string, sourceUrl: string): string | null {
+  if (provider === 'vimeo') {
+    // background=1 = mute + loop + autoplay + no chrome; fill/cover the frame.
+    return `https://player.vimeo.com/video/${id}?${vimeoQuery(sourceUrl, 'background=1&autoplay=1&loop=1&muted=1')}`
+  }
+  if (provider === 'youtube') {
+    return `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&playsinline=1&controls=0&rel=0`
+  }
+  return null
+}
+
+const VIMEO_ALLOW =
+  'autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media'
+
 function PlayGlyph({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
@@ -49,10 +64,10 @@ function PlayGlyph({ className }: { className?: string }) {
   )
 }
 
-/** 16:9 frame — padding hack matches live CE homepage Vimeo wrap. */
+/** 16:9 frame — black ground so ambient Vimeo never flashes white while loading. */
 function VideoFrame({ children }: { children: ReactNode }) {
   return (
-    <div className="relative w-full overflow-hidden rounded-[16px] bg-[#0A1628]" style={{ paddingTop: '56.25%' }}>
+    <div className="relative w-full overflow-hidden rounded-[16px] bg-[#05080F]" style={{ paddingTop: '56.25%' }}>
       {children}
     </div>
   )
@@ -169,6 +184,8 @@ function EmbedLocationVideo({
   const [playing, setPlaying] = useState(false)
   const parsed = parseVideoUrl(videoUrl)
   const playable = Boolean(parsed)
+  const ambient =
+    parsed && !playing ? ambientSrc(parsed.provider, parsed.id, videoUrl) : null
 
   if (playing && parsed) {
     return (
@@ -179,7 +196,11 @@ function EmbedLocationVideo({
               key={`play-${parsed.provider}-${parsed.id}`}
               src={interactiveSrc(parsed.provider, parsed.id, videoUrl)}
               title={title}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+              allow={
+                parsed.provider === 'vimeo'
+                  ? VIMEO_ALLOW
+                  : 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen'
+              }
               allowFullScreen
               referrerPolicy="strict-origin-when-cross-origin"
               className="absolute inset-0 h-full w-full border-0"
@@ -201,6 +222,18 @@ function EmbedLocationVideo({
             className="absolute inset-0 h-full w-full object-cover object-top"
             loading="lazy"
           />
+
+          {ambient ? (
+            <iframe
+              src={ambient}
+              title={title}
+              allow={VIMEO_ALLOW}
+              aria-hidden="true"
+              tabIndex={-1}
+              // Oversized + centred so Vimeo's light edge seam sits outside the clip.
+              className="pointer-events-none absolute left-1/2 top-1/2 h-[calc(100%+6px)] w-[calc(100%+6px)] -translate-x-1/2 -translate-y-1/2 border-0 motion-reduce:hidden"
+            />
+          ) : null}
 
           <span
             aria-hidden="true"

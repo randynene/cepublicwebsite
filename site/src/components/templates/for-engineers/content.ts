@@ -54,12 +54,20 @@ export interface FeHero {
   eyebrow: string
   titleLead: string
   titleAccent: string
+  /** Static first line of the subhead ("We match you with companies that fit your"). */
   sub: string
+  /**
+   * Static word on the second line before the rotating lime italic
+   * (e.g. "work" → "work style" / "work values" / …).
+   */
+  subRotateLead?: string
+  /** Rotating lime-italic words that sit after `subRotateLead` on line 2 (CE-13). */
+  subRotate?: string[]
   ctaPrimary: string
   /** Path or #anchor for the primary CTA. Default #join. */
   ctaPrimaryHref?: string
   ctaGhost: string
-  /** Path or #anchor for the secondary CTA. Default /how-it-works. */
+  /** Path or #anchor for the secondary CTA. Default #fe2-how (in-page process). */
   ctaGhostHref?: string
   trust: string[]
   card: FeHeroCard
@@ -145,6 +153,8 @@ export interface FeBenefits {
   lead: string
   items: FeBenefitItem[]
   photos: FeBenefitPhoto[]
+  /** Hide the "A community, in person" block + photo strip (Jake, 3 Aug). */
+  hideCommunityBlock?: boolean
 }
 export interface FeMission {
   eyebrow: string
@@ -282,11 +292,13 @@ export const FOR_ENGINEERS_CONTENT: ForEngineersContent = {
     eyebrow: 'FOR ENGINEERS',
     titleLead: 'Get matched to the\nbest companies,\n',
     titleAccent: 'wherever you are',
-    sub: 'We match you with companies that fit your work style',
+    sub: 'We match you with companies that fit your',
+    subRotateLead: 'work',
+    subRotate: ['style', 'values', 'salary', 'mission'],
     ctaPrimary: 'Join the network',
     ctaPrimaryHref: '#join',
     ctaGhost: 'How it works',
-    ctaGhostHref: '/how-it-works',
+    ctaGhostHref: '#fe2-how',
     trust: ['4.8 on Glassdoor · 200+ reviews', 'Real employment + healthcare', '97% stay 2+ years'],
     card: {
       name: 'Your profile',
@@ -304,14 +316,20 @@ export const FOR_ENGINEERS_CONTENT: ForEngineersContent = {
   },
   problem: {
     eyebrow: 'WHY THIS EXISTS',
-    titleLead: 'Applying is broken. ',
+    titleLead: 'Applying is broken.\n',
     titleAccent: "Being matched isn't",
     leadPre: 'Your CV gets read by a machine before a person ever sees it. ',
     leadStrong: 'We do it the other way round',
-    leadPost: ' - an engineer looks at your actual work, once, and the right companies come to you.',
+    leadPost:
+      '\nAn engineer looks at your actual work, once, and the right companies come to you.',
     stats: [
       { num: '70%', body: 'of engineering roles are never publicly posted. We put you in front of them.' },
-      { num: '2', body: 'profiles per role. One of two people a company sees - not one of 500.' },
+      // Newline is intentional — fe2-styles renders stat bodies with pre-line so
+      // this wraps as: "…people a" / "company sees - not one of 500."
+      {
+        num: '2',
+        body: 'profiles per role. One of two people a\ncompany sees - not one of 500.',
+      },
       { num: '97%', body: 'stay 2+ years. Real full-time seats - not gig work.' },
       { num: '$ you set it', body: 'You name it. We only introduce companies that will pay it.' },
     ],
@@ -376,6 +394,9 @@ export const FOR_ENGINEERS_CONTENT: ForEngineersContent = {
       { caption: 'São Paulo hub', sub: '40+ engineers · fintech & full-stack', image: '' },
       { caption: 'Engineer workshop', sub: 'Sub text here', image: '' },
     ],
+    // Photo strip still has placeholder "Sub text here" captions — hide until
+    // Seb has real copy + curated photos (Jake, 3 Aug).
+    hideCommunityBlock: true,
   },
   mission: {
     eyebrow: 'THE IDEA',
@@ -387,10 +408,13 @@ export const FOR_ENGINEERS_CONTENT: ForEngineersContent = {
     eyebrow: 'FROM ENGINEERS IN THE NETWORK',
     titleLead: 'Not a résumé in a pile. ',
     titleAccent: 'Part of a team.',
-    videoPill: 'Snr. Front-End Engineer - Dani',
-    videoLabel: 'What Cloud Employee did for me',
+    // The video is CE's own Boracay Cloudfest film, not a single-engineer
+    // testimonial, so the pill and label describe that rather than the "Dani"
+    // placeholder the Figma export shipped with.
+    videoPill: 'Cloudfest - Boracay',
+    videoLabel: 'Inside our annual team festival',
     videoImage: '',
-    videoUrl: '',
+    videoUrl: 'https://vimeo.com/1092722278',
     // PLACEHOLDER quotes - see note above. Do not ship as real testimonials.
     quotes: [
       {

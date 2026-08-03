@@ -156,8 +156,8 @@ export function ProfileCard({ profiles }: { profiles: readonly ProfileCardPerson
         ))}
         <div
           aria-hidden
-          className="absolute inset-x-0 bottom-0 h-[161px]"
-          style={{ background: 'linear-gradient(180deg, rgba(6,15,30,0), rgba(6,15,30,.92))' }}
+          className="absolute inset-x-0 bottom-0 h-[120px]"
+          style={{ background: 'linear-gradient(180deg, rgba(6,15,30,0), rgba(6,15,30,.88))' }}
         />
         <div className="absolute bottom-[24px] left-[24px] flex flex-col items-start gap-[3px]">
           <span

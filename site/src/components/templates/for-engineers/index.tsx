@@ -30,12 +30,27 @@ import { FE2_UI_CSS } from './fe2-styles'
 
 const VIDEO_POSTER_CLASS = 'fig-asset-8f1066200d444094-72cc5769'
 
-function fe2EmbedSrc(parsed: NonNullable<ReturnType<typeof parseVideoUrl>>): string {
+/**
+ * `ambient` = the silent looping wallpaper treatment the testimonial tile uses:
+ * plays itself, no sound, no player chrome. Browsers only allow unprompted
+ * playback when it is muted, so muted and autoplay travel together here.
+ * Without it, the same embed is a normal click-to-play video with sound.
+ */
+function fe2EmbedSrc(
+  parsed: NonNullable<ReturnType<typeof parseVideoUrl>>,
+  ambient = false,
+): string {
   if (parsed.provider === 'youtube') {
-    return `https://www.youtube-nocookie.com/embed/${parsed.id}?autoplay=1&rel=0`
+    // YouTube needs `playlist` set to its own id for `loop` to do anything.
+    return ambient
+      ? `https://www.youtube-nocookie.com/embed/${parsed.id}?autoplay=1&mute=1&loop=1&playlist=${parsed.id}&controls=0&playsinline=1&rel=0`
+      : `https://www.youtube-nocookie.com/embed/${parsed.id}?autoplay=1&rel=0`
   }
   if (parsed.provider === 'vimeo') {
-    return `https://player.vimeo.com/video/${parsed.id}?autoplay=1`
+    // Vimeo's `background` does the whole ambient treatment in one flag.
+    return ambient
+      ? `https://player.vimeo.com/video/${parsed.id}?background=1&autoplay=1&loop=1&muted=1&dnt=1`
+      : `https://player.vimeo.com/video/${parsed.id}?autoplay=1&title=0&byline=0&portrait=0&dnt=1`
   }
   if (parsed.provider === 'linkedin') {
     return `https://www.linkedin.com/embed/feed/update/urn:li:share:${parsed.id}`
@@ -75,6 +90,31 @@ function promoteHeroTitleToH1(html: string): string {
   return html.replace(
     /<span( style="[^"]*font-size: 52px;[^"]*")>([\s\S]*?)<\/span>(?=<span style="position: relative; width: 500px)/,
     '<h1$1>$2</h1>',
+  )
+}
+
+function escHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
+/** CE-13 — turn the hero sub into two lines + a lime-italic rotating word. */
+function injectHeroSubRotator(html: string, content: ForEngineersContent): string {
+  const sub = content.hero.sub
+  const words = content.hero.subRotate?.filter(Boolean) ?? []
+  if (!sub || words.length === 0) return html
+  const first = escHtml(words[0] ?? '')
+  const lead = (content.hero.subRotateLead ?? '').trim()
+  const leadHtml = lead ? `<span class="fe2-rotator-lead">${escHtml(lead)} </span>` : ''
+  const escapedSub = escHtml(sub)
+  const escapedSubRe = escapedSub.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  // The hydrated sub sits as text inside its span; rewrite that node and keep a
+  // class hook for the larger type size.
+  if (!html.includes(`>${escapedSub}</span>`)) return html
+  return html.replace(
+    new RegExp(
+      `(<span style="position: relative;[^"]*font-size: 18px;[^"]*")>${escapedSubRe}</span>`,
+    ),
+    `$1 class="fe2-hero-sub">${escapedSub}<span class="fe2-rotator" data-fe2-rotator aria-live="polite">${leadHtml}<em class="fe2-rotator-word">${first}</em></span></span>`,
   )
 }
 
@@ -384,7 +424,9 @@ export function ForEngineersTemplate({
   // reproducing the export byte-for-byte when nothing is overridden.
   // H1 promotion runs after hydrate so verify-fe2-parity still sees a clean
   // hydrate(template, defaults) === export match.
-  const preHtml = promoteHeroTitleToH1(hydrateFe2(FE2_PRE_HTML, content))
+  const preHtml = promoteHeroTitleToH1(
+    injectHeroSubRotator(hydrateFe2(FE2_PRE_HTML, content), content),
+  )
   const postHtml = hydrateFe2(FE2_POST_HTML, content)
   const [heroHtml, restHtml] = splitHeroBlock(preHtml)
 
@@ -447,9 +489,73 @@ export function ForEngineersTemplate({
       spot.addEventListener('mousemove', onMove)
     }
 
-    // ---- pill CTAs follow Studio-owned hrefs (default #join / /how-it-works) ----
+    // CE-28 — pin an in-page id on the "How it works / THE PROCESS" block so the
+    // hero ghost CTA can scroll here instead of leaving for /how-it-works.
+    const howEyebrow = [...root.querySelectorAll('span')].find(
+      (el) => el.textContent?.trim() === content.how.eyebrow,
+    )
+    const howSection = howEyebrow?.closest<HTMLElement>('div[style*="padding"]')
+    if (howSection && !howSection.id) {
+      howSection.id = 'fe2-how'
+      howSection.style.scrollMarginTop = '96px'
+    }
+
+    // Why-this-exists stats: mark the row + each body so CSS can unlock the
+    // frozen 280px / overflow:hidden that was truncating "publicly".
+    const seventy = [...root.querySelectorAll('span')].find(
+      (el) => el.textContent?.trim() === '70%',
+    )
+    const statsRow = seventy?.parentElement?.parentElement
+    if (statsRow) {
+      statsRow.setAttribute('data-fe2-problem-stats', '1')
+      for (const col of statsRow.children) {
+        const body = col.querySelector('span:last-of-type')
+        if (body) body.setAttribute('data-fe2-stat-body', '1')
+      }
+    }
+
+    // Hide "A community, in person" + the three photo cards (placeholder subs).
+    if (content.benefits.hideCommunityBlock) {
+      const community = [...root.querySelectorAll('span')].find(
+        (el) => el.textContent?.trim() === 'A community, in person.',
+      )
+      // Item cell (icon + copy) — climb to the flex row that holds the 4th benefit.
+      const communityCell = community?.closest<HTMLElement>('div[style*="flex-grow:1"]')
+      const communityRow = communityCell?.parentElement
+      if (communityRow) communityRow.setAttribute('data-fe2-community-hidden', '1')
+      const photo = root.querySelector<HTMLElement>(
+        '.fig-asset-8165165c9b13b738-2f197fb6',
+      )
+      const photosRow = photo?.parentElement?.parentElement
+      if (photosRow) photosRow.setAttribute('data-fe2-community-hidden', '1')
+    }
+
+    // CE-13 — cycle the lime-italic rotating word under the hero subhead.
+    const rotateWords = (content.hero.subRotate ?? []).filter(Boolean)
+    const rotatorWord = root.querySelector<HTMLElement>('[data-fe2-rotator] .fe2-rotator-word')
+    let rotateTimer: number | undefined
+    if (rotatorWord && rotateWords.length > 1 && !reduce) {
+      let i = 0
+      rotateTimer = window.setInterval(() => {
+        rotatorWord.classList.add('is-out')
+        window.setTimeout(() => {
+          i = (i + 1) % rotateWords.length
+          rotatorWord.textContent = rotateWords[i] ?? ''
+          rotatorWord.classList.remove('is-out')
+        }, 280)
+      }, 2600)
+    }
+
+    // ---- pill CTAs follow Studio-owned hrefs (default #join / #fe2-how) ----
+    // Ghost CTA stays on this page and scrolls to THE PROCESS (#fe2-how). The old
+    // /how-it-works value is treated as stale so a Studio leftover cannot send
+    // candidates off-page.
     const primaryHref = content.hero.ctaPrimaryHref || '#join'
-    const ghostHref = content.hero.ctaGhostHref || '/how-it-works'
+    const rawGhost = (content.hero.ctaGhostHref || '').trim()
+    const ghostHref =
+      !rawGhost || rawGhost === '/how-it-works' || rawGhost === '/uk/how-it-works'
+        ? '#fe2-how'
+        : rawGhost
     const finalHref = content.final.ctaHref || '#join'
     const ctas = [...root.querySelectorAll<HTMLElement>('[data-fe2-cta]')]
     // First data-fe2-cta = hero primary; last = final CTA (frozen HTML order).
@@ -469,29 +575,95 @@ export function ForEngineersTemplate({
       ghostEl.addEventListener('click', onGhost)
     }
 
-    // ---- testimonial video: play real embed when tests.videoUrl is set ----
+    // ---- testimonial video: silent looping wallpaper when videoUrl is set ----
+    // Mounted into the poster div rather than the tile, so the pill and caption
+    // that sit later in the export's markup keep painting over the video.
     const videoUrl = (content.tests.videoUrl || '').trim()
     const parsedVideo = videoUrl ? parseVideoUrl(videoUrl) : null
     const poster = root.querySelector<HTMLElement>(`.${VIDEO_POSTER_CLASS}`)
-    // Climb to the rounded video tile that holds the poster + play chrome.
-    const videoTile = poster?.closest<HTMLElement>('div[style*="border-radius:16px"]') ?? poster?.parentElement
+    // The tile is the poster's parent: it holds the poster plus the pill, play
+    // button and caption. Do NOT reach for it with closest() on the border
+    // radius - the poster carries the same 16px radius, so closest() returns
+    // the poster itself and the play chrome is never found.
+    const videoTile = poster?.parentElement ?? null
+    let playTarget: HTMLElement | null = null
     let onVideo: (() => void) | null = null
-    if (videoTile && parsedVideo) {
-      videoTile.style.cursor = 'pointer'
-      onVideo = () => {
-        if (videoTile.querySelector('iframe')) return
+    let onVideoKey: ((e: KeyboardEvent) => void) | null = null
+
+    if (poster && videoTile && parsedVideo) {
+      const playButton = videoTile.querySelector<HTMLElement>('div[style*="border-radius:58px"]')
+      // Figma ships the button's display inline; hiding it overwrites that, so
+      // keep the original to put back rather than clearing to the UA default.
+      const inlineDisplay = playButton?.style.display
+      const playDisplay = inlineDisplay && inlineDisplay !== 'none' ? inlineDisplay : 'flex'
+      // The player iframe is painted later in the same stacking context, so the
+      // button needs to be lifted or the iframe eats the click.
+      if (playButton) playButton.style.zIndex = '3'
+      poster.style.overflow = 'hidden'
+
+      // Spinner over the poster art until the player reports itself loaded.
+      const loader = document.createElement('div')
+      loader.className = 'fe2-video-loading'
+      loader.setAttribute('aria-hidden', 'true')
+
+      const mountVideo = (ambient: boolean) => {
+        // Always a fresh iframe: pressing play has to restart from zero, which
+        // reusing the looping one cannot do without the Vimeo player SDK.
+        poster.querySelectorAll('iframe').forEach((f) => f.remove())
+
+        // Play button and spinner both want the centre, so they take turns.
+        if (playButton) playButton.style.display = 'none'
+        poster.appendChild(loader)
+
         const iframe = document.createElement('iframe')
-        iframe.src = fe2EmbedSrc(parsedVideo)
-        iframe.title = content.tests.videoLabel || 'Engineer testimonial'
-        iframe.allow =
-          'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
+        iframe.src = fe2EmbedSrc(parsedVideo, ambient)
+        iframe.title = content.tests.videoLabel || 'Cloud Employee video'
+        iframe.allow = 'autoplay; fullscreen; picture-in-picture'
         iframe.allowFullscreen = true
+        // The poster frame is wider than 16:9. Sizing the iframe to the frame's
+        // WIDTH and letting the overflow crop top and bottom fills the tile
+        // edge to edge; sizing it to fit would pillarbox it in player black.
         iframe.style.cssText =
-          'position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:16px;z-index:5'
-        videoTile.style.position = 'relative'
-        videoTile.appendChild(iframe)
+          'position:absolute;left:0;top:50%;transform:translateY(-50%);width:100%;aspect-ratio:16/9;border:0;display:block;z-index:1'
+        iframe.addEventListener(
+          'load',
+          () => {
+            loader.remove()
+            // The ambient loop keeps the play button, because it is silent and
+            // starts wherever the loop happens to be - there is still a video
+            // to actually watch. The full player has its own controls.
+            if (ambient && playButton) playButton.style.display = playDisplay
+          },
+          { once: true },
+        )
+        poster.appendChild(iframe)
       }
-      videoTile.addEventListener('click', onVideo)
+
+      // Silent loop straight away. Someone who asked for less motion gets the
+      // poster art and the play button instead.
+      if (reduce) {
+        loader.remove()
+        if (playButton) playButton.style.display = playDisplay
+      } else {
+        mountVideo(true)
+      }
+
+      // Play = the real thing, from the top, with sound.
+      if (playButton) {
+        playButton.style.cursor = 'pointer'
+        playButton.setAttribute('role', 'button')
+        playButton.setAttribute('tabindex', '0')
+        playButton.setAttribute('aria-label', content.tests.videoLabel || 'Play video')
+        onVideo = () => mountVideo(false)
+        playButton.addEventListener('click', onVideo)
+        onVideoKey = (e: KeyboardEvent) => {
+          if (e.key !== 'Enter' && e.key !== ' ') return
+          e.preventDefault()
+          mountVideo(false)
+        }
+        playButton.addEventListener('keydown', onVideoKey)
+      }
+      playTarget = playButton
     }
 
     // ---- responsive scaler: pixel-match at 1920, scale down below ----
@@ -529,6 +701,7 @@ export function ForEngineersTemplate({
     return () => {
       io?.disconnect()
       clearTimeout(revealTimer)
+      if (rotateTimer !== undefined) window.clearInterval(rotateTimer)
       if (spot && !reduce) {
         spot.removeEventListener('mouseenter', onEnter)
         spot.removeEventListener('mouseleave', onLeave)
@@ -537,12 +710,15 @@ export function ForEngineersTemplate({
       heroPrimary?.removeEventListener('click', onPrimary)
       if (finalCta && finalCta !== heroPrimary) finalCta.removeEventListener('click', onFinal)
       ghostEl?.removeEventListener('click', onGhost)
-      if (videoTile && onVideo) videoTile.removeEventListener('click', onVideo)
+      if (playTarget && onVideo) playTarget.removeEventListener('click', onVideo)
+      if (playTarget && onVideoKey) playTarget.removeEventListener('keydown', onVideoKey)
       window.removeEventListener('resize', fit)
     }
   }, [
     content.hero.ctaPrimaryHref,
     content.hero.ctaGhostHref,
+    content.hero.subRotate,
+    content.how.eyebrow,
     content.final.ctaHref,
     content.tests.videoUrl,
     content.tests.videoLabel,

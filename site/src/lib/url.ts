@@ -52,6 +52,16 @@ export type InternalHref = {
   isExternal: boolean
 }
 
+// Files served from the app root have no locale twin. /sitemap.xml exists;
+// /uk/sitemap.xml does not, and neither does it on the live Webflow site, whose
+// UK footer also points at the unprefixed /sitemap.xml. Prefixing these produced
+// a 404 in the footer of every UK page.
+const ROOT_FILE_PATH = /\.[a-z0-9]{2,5}$/i
+
+function isRootFile(path: string): boolean {
+  return ROOT_FILE_PATH.test(path.split(/[?#]/)[0] ?? '')
+}
+
 /**
  * Normalise a Sanity-stored link to an internal path, and put it in `locale`.
  *
@@ -81,6 +91,7 @@ export function toInternalHref(
 
   // Already-relative paths are internal; they just need the locale.
   if (rawHref.startsWith('/')) {
+    if (isRootFile(rawHref)) return { href: rawHref, isExternal: false }
     return { href: buildLocalePath(rawHref, locale), isExternal: false }
   }
 
@@ -98,6 +109,7 @@ export function toInternalHref(
 
   if (KNOWN_HOSTS.has(parsed.host)) {
     const path = parsed.pathname + parsed.search + parsed.hash
+    if (isRootFile(path)) return { href: path, isExternal: false }
     return { href: buildLocalePath(path || '/', locale), isExternal: false }
   }
 

@@ -368,8 +368,25 @@ export function toForEngineersContent(data: ForDevelopersPageData): ForEngineers
     ? {
         ...FE.hero,
         ...c.hero,
+        // Studio still stores the old one-line sub ("…fit your work style").
+        // Keep the short line-1 string so the CE-13 rotator can own line 2.
+        sub: (() => {
+          const raw = (c.hero.sub || '').trim()
+          if (!raw || /work style\s*$/i.test(raw)) return FE.hero.sub
+          return raw
+        })(),
+        subRotateLead: FE.hero.subRotateLead,
+        subRotate: FE.hero.subRotate,
         ctaPrimaryHref: c.hero.ctaPrimaryHref || FE.hero.ctaPrimaryHref,
-        ctaGhostHref: c.hero.ctaGhostHref || FE.hero.ctaGhostHref,
+        // In-page process scroll is the product default. Treat legacy
+        // /how-it-works values as unset so they cannot override #fe2-how.
+        ctaGhostHref: (() => {
+          const raw = (c.hero.ctaGhostHref || '').trim()
+          if (!raw || raw === '/how-it-works' || raw === '/uk/how-it-works') {
+            return FE.hero.ctaGhostHref
+          }
+          return raw
+        })(),
         card: { ...FE.hero.card, ...c.hero.card, image: cleanUrl(c.hero.card?.image) },
       }
     : FE.hero
@@ -392,6 +409,8 @@ export function toForEngineersContent(data: ForDevelopersPageData): ForEngineers
     ? {
         ...c.benefits,
         photos: (c.benefits.photos ?? []).map((p) => ({ ...p, image: cleanUrl(p.image) })),
+        // Code-only flag — Studio has no field; keep the hide across Sanity merges.
+        hideCommunityBlock: FE.benefits.hideCommunityBlock,
       }
     : FE.benefits
 
@@ -399,7 +418,9 @@ export function toForEngineersContent(data: ForDevelopersPageData): ForEngineers
     ? {
         ...c.tests,
         videoImage: cleanUrl(c.tests.videoImage),
-        videoUrl: cleanUrl(c.tests.videoUrl) || '',
+        // Falls back to code the same way ctaHref does below, so the video
+        // still plays if the Studio field is ever cleared.
+        videoUrl: cleanUrl(c.tests.videoUrl) || FE.tests.videoUrl || '',
         quotes: (c.tests.quotes ?? []).map((q) => ({ ...q, image: cleanUrl(q.image) })),
       }
     : FE.tests
@@ -414,7 +435,17 @@ export function toForEngineersContent(data: ForDevelopersPageData): ForEngineers
 
   return {
     hero,
-    problem: c.problem ?? FE.problem,
+    problem: (() => {
+      const base = c.problem ?? FE.problem
+      const twoBody = FE.problem.stats.find((s) => s.num === '2')?.body
+      return {
+        ...base,
+        // Keep the intentional line-break on the "2" stat (layout fix, code-owned).
+        stats: base.stats.map((s) =>
+          s.num === '2' && twoBody ? { ...s, body: twoBody } : s,
+        ),
+      }
+    })(),
     how,
     benefits,
     mission: c.mission ?? FE.mission,

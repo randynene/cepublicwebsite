@@ -400,15 +400,66 @@ export function toLocationContent(data: LocationPageData, fallback: LocationCont
     logosLabel: fallback.logosLabel,
     logosLabelLines,
     logos,
+    // Hero visual mode (stack vs home-style slideshow) is code-driven — Studio
+    // has no field for it, so a Sanity merge must not wipe the registry value.
+    hero: {
+      ...merged.hero,
+      visual: fallback.hero.visual ?? 'stack',
+      // Prefer Sanity cards when present; otherwise the registry slideshow /
+      // stack list (EE needs every European roster face, not a truncated trio).
+      // objectPosition is code-only (not in Studio) — stitch it back by name
+      // so Anto's center-top crop survives a Sanity merge.
+      cards: (() => {
+        const cards = merged.hero?.cards?.length ? merged.hero.cards : fallback.hero.cards
+        if (!fallback.hero.cards?.length) return cards
+        const posByName = new Map(
+          fallback.hero.cards
+            .filter((c) => c.objectPosition)
+            .map((c) => [c.name, c.objectPosition] as const),
+        )
+        if (posByName.size === 0) return cards
+        return cards.map((c) => {
+          const pos = posByName.get(c.name)
+          return pos ? { ...c, objectPosition: pos } : c
+        })
+      })(),
+    },
+    // Empty Studio videoUrl must not wipe the registry Vimeo link (seed left
+    // videoUrl blank on purpose; PH/EE now ship known Vimeo IDs in code).
+    video: {
+      ...merged.video,
+      videoUrl: merged.video?.videoUrl?.trim() || fallback.video.videoUrl,
+      videoSrc: merged.video?.videoSrc?.trim() || fallback.video.videoSrc,
+    },
     // PH regions strip + quiz stay available from the registry when Sanity
     // docs predate those fields.
     regionsStrip: merged.regionsStrip ?? fallback.regionsStrip,
     // Quiz config stays code-driven (roles list + CTAs) when Sanity has no quiz.
+    // CTA destinations are code-owned as of 3 Aug: /start-hiring is retired from
+    // marketing CTAs (→ /book-a-call or /contact). Remap any Sanity leftover.
     start: {
       ...merged.start,
       variant: merged.start?.variant ?? fallback.start.variant,
-      quiz: merged.start?.quiz ?? fallback.start.quiz,
-      cards: merged.start?.cards?.length ? merged.start.cards : fallback.start.cards,
+      quiz: (() => {
+        const quiz = merged.start?.quiz ?? fallback.start.quiz
+        if (!quiz || !fallback.start.quiz) return quiz
+        const href = quiz.ctaHref?.includes('start-hiring')
+          ? fallback.start.quiz.ctaHref
+          : quiz.ctaHref
+        const cta = quiz.ctaHref?.includes('start-hiring')
+          ? fallback.start.quiz.cta
+          : quiz.cta
+        return { ...quiz, ctaHref: href, cta }
+      })(),
+      cards: (() => {
+        const cards = merged.start?.cards?.length ? merged.start.cards : fallback.start.cards
+        return cards.map((card, i) => {
+          const fb = fallback.start.cards[i]
+          if (!fb) return card
+          if (!card.ctaHref?.includes('start-hiring')) return card
+          return { ...card, ctaHref: fb.ctaHref, cta: fb.cta }
+        })
+      })(),
     },
     calculator: {
       ...merged.calculator,
@@ -417,6 +468,11 @@ export function toLocationContent(data: LocationPageData, fallback: LocationCont
       currency: fallback.calculator.currency,
       comparisonMultiple: fallback.calculator.comparisonMultiple,
       seniorityOptions: fallback.calculator.seniorityOptions,
+    },
+    // `hidden` is code-only (not in Studio) — preserve LATAM's temporary hide.
+    engineers: {
+      ...merged.engineers,
+      hidden: fallback.engineers.hidden,
     },
   }
 }

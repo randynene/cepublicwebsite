@@ -9,7 +9,7 @@
  *                                      retention for one monthly fee."
  *   2. homePage.hero.bottomPills     - 3 trust points (One monthly fee /
  *                                      We handle HR & payroll / 300+ teams built)
- *   3. homePage.clientStory.eyebrow  - "Client story" -> "Jobs boards don't work anymore"
+ *   3. homePage.clientStory.eyebrow  - "Client story" -> "JOB BOARDS DON'T WORK"
  *   4. homePage.whereWeWork.hubs     - remove the Cape Town panel (6 -> 5)
  *   5. hireEngineersPage.final.cta   - "Start hiring" -> "Contact us today"
  *
@@ -34,7 +34,7 @@ const HERO_PARAGRAPH_LINES = [
   'Not recruiters guessing. We embed senior engineers full-time in your team, your tools, and your timezone - in 7 days',
 ]
 const HERO_BOTTOM_PILLS = ['One monthly fee', 'We handle HR & payroll', '300+ teams built']
-const CLIENT_STORY_EYEBROW = "Jobs boards don't work anymore"
+const CLIENT_STORY_EYEBROW = "JOB BOARDS DON'T WORK"
 const REMOVE_HUB = 'cape town'
 const HIRE_FINAL_CTA = 'Contact us today'
 

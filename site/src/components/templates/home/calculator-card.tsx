@@ -66,8 +66,13 @@ function initial(options: string[], authored: string | undefined, labels?: Recor
   return match ?? options[0]
 }
 
+// The <select> IS the full hit target (padding lives on the select, chevron is
+// absolute + pointer-events-none). A padded shell with a nested select leaves
+// dead click zones around the edges and next to the arrow.
 const SELECT_SHELL =
-  'flex items-center justify-between rounded-[12px] border border-[#22314D] bg-[#16233B] px-[16px] py-[12px] transition-colors focus-within:border-brand-primary/60'
+  'relative rounded-[12px] border border-[#22314D] bg-[#16233B] transition-colors focus-within:border-brand-primary/60'
+const SELECT_CONTROL =
+  'w-full cursor-pointer appearance-none bg-transparent px-[16px] py-[12px] pr-[44px] text-[17px] font-semibold text-white outline-none'
 
 export function HomeCalculatorCard({ calculator }: { calculator: HomeContent['calculator'] }) {
   const fields = calculator.fields ?? []
@@ -151,7 +156,7 @@ export function HomeCalculatorCard({ calculator }: { calculator: HomeContent['ca
                   setTouched(true)
                   c.onChange(e.target.value)
                 }}
-                className="w-full cursor-pointer appearance-none bg-transparent text-[17px] font-semibold text-white outline-none"
+                className={SELECT_CONTROL}
               >
                 {c.options.map((o) => (
                   <option key={o} value={o} className="bg-[#16233B] text-white">
@@ -161,7 +166,7 @@ export function HomeCalculatorCard({ calculator }: { calculator: HomeContent['ca
               </select>
               <span
                 aria-hidden
-                className="pointer-events-none ml-[10px] text-[16px] leading-none text-brand-primary"
+                className="pointer-events-none absolute right-[16px] top-1/2 -translate-y-1/2 text-[16px] leading-none text-brand-primary"
               >
                 {CHEVRON}
               </span>

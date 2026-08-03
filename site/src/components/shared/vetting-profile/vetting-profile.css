@@ -1,0 +1,1071 @@
+/* Vetting Profile section.
+ *
+ * Faithful port of docs/design/Vetting Profile.html. That file is a standalone
+ * artifact built entirely from inline styles; every one of them is reproduced
+ * here as a class, scoped under `.vp` so the section can be dropped onto any
+ * page without leaking into the shared chrome (the self-contained pattern
+ * where-we-work.css and hire-engineers.css already use).
+ *
+ * Every rule is written as `.vp .vp-thing`, not `.vp-thing`. The scoped reset
+ * below is `.vp *`, which outranks a bare single class, so a rule written
+ * without the `.vp ` prefix would silently lose its padding and margin to the
+ * reset. Same reason `.he` writes its rules the same way.
+ *
+ * Deliberate deviations from the reference, all three of them:
+ *
+ *  1. The band is 1440/64 - the site's content band, shared by the header, the
+ *     footer, the home page and the Hire Engineers page - instead of the
+ *     reference's 1200/40. The reference is a page of one section and had
+ *     nothing to line up with; here the section sits between other sections,
+ *     and a band 112px narrower than its neighbours reads as a misaligned
+ *     block rather than as a design.
+ *
+ *  2. All six panels are always in the DOM, stacked in one grid cell, with the
+ *     inactive ones `visibility: hidden`. The panel area is therefore always as
+ *     tall as the TALLEST panel, so autoplay never moves the page. The
+ *     reference mounts one panel at a time and grows/shrinks the card by ~40px
+ *     per tab, which is a layout shift on a six-second loop.
+ *
+ *  3. The mono face is IBM Plex Mono (already loaded sitewide for /ask) rather
+ *     than the reference's JetBrains Mono. A fourth webfont family for a
+ *     handful of dates and four lines of diff is not worth the request.
+ *
+ * Fonts map to the site's next/font faces (--font-inter, --font-source-serif,
+ * --font-ibm-plex-mono); nothing here re-declares @font-face.
+ */
+
+/* `section.vp`, not `.vp`, and deliberately so.
+ *
+ * Host pages carry their own scoped resets - hire-engineers.css opens with
+ * `.he, .he * { margin: 0; padding: 0 }`. The component mounts INSIDE that, so
+ * `.he *` matches this element at the same specificity as a bare `.vp` and,
+ * loading later, wins: the section lost its vertical padding entirely and the
+ * card sat flush against the next section. Adding the element name puts this
+ * rule above any single-class reset on whatever page it is dropped into.
+ *
+ * Only the padding is actually at risk - every other rule in this file is
+ * `.vp .vp-thing`, which already outranks a host reset. */
+section.vp {
+  --vp-bg: #070d18;
+  --vp-card: #101b30;
+  --vp-card-2: #1b2a45;
+  --vp-panel: #0b1424;
+  --vp-code: #060f1e;
+  --vp-line: #22314d;
+  --vp-line-2: #1e2c46;
+  --vp-line-3: #32435f;
+  --vp-dot-off: #2a3a5a;
+  --vp-lime: #d4ff3c;
+  --vp-teal: #4a9b9b;
+  --vp-ink: #060f1e;
+  --vp-body: #dce3ec;
+  --vp-text: #b8c2d1;
+  --vp-dim: #7f8ca0;
+  --vp-dim-2: #5f6c82;
+  --vp-sans: var(--font-inter), system-ui, sans-serif;
+  --vp-serif: var(--font-source-serif), Georgia, serif;
+  --vp-mono: var(--font-ibm-plex-mono), ui-monospace, monospace;
+
+  /* Bottom is deliberately shorter than top: this section runs straight into
+     the next one with no divider between them, so it does not need a full
+     gap of its own on that side. */
+  padding: 92px 0 64px;
+  background: var(--vp-bg);
+  font-family: var(--vp-sans);
+  color: #fff;
+  line-height: 1.5;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+}
+/* `.vp` itself is NOT in this selector. It used to be, and since the reset sits
+   below the block above and carries the same specificity, it silently zeroed
+   the section's own padding - the card ended up flush against the next
+   section's top border. Reset the descendants only. */
+.vp * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Same geometry as the Header, the Footer and `.he .wrap`. */
+.vp .vp-band {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 64px;
+}
+
+/* Holds the eyebrow, the heading and the points as one column, so the card
+   opposite it starts at the same y as the eyebrow. */
+.vp .vp-col {
+  padding-top: 0;
+}
+
+.vp .vp-eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--vp-lime);
+}
+.vp .vp-heading {
+  font-size: clamp(30px, 4vw, 46px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+  margin-top: 16px;
+  max-width: 22ch;
+  text-wrap: balance;
+}
+.vp .vp-heading em {
+  font-family: var(--vp-serif);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--vp-lime);
+}
+
+.vp .vp-grid {
+  display: grid;
+  grid-template-columns: 0.85fr 1.15fr;
+  gap: 88px;
+  align-items: start;
+}
+.vp .vp-grid > * {
+  min-width: 0;
+}
+
+/* ── Left column ── */
+.vp .vp-points {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding-top: 34px;
+}
+.vp .vp-point {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.vp .vp-point-mark {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: rgba(212, 255, 60, 0.1);
+  display: grid;
+  place-items: center;
+  flex: none;
+  margin-top: 2px;
+  color: var(--vp-lime);
+  font-size: 13px;
+  font-weight: 700;
+}
+.vp .vp-point h3 {
+  font-size: 16px;
+  font-weight: 700;
+}
+.vp .vp-point p {
+  font-size: 14px;
+  color: var(--vp-text);
+  line-height: 1.55;
+  margin-top: 5px;
+}
+
+.vp .vp-explainer {
+  margin-top: 6px;
+  padding: 20px;
+  border: 1px solid var(--vp-line);
+  border-radius: 14px;
+  background: var(--vp-panel);
+}
+.vp .vp-explainer-body {
+  font-size: 13.5px;
+  color: var(--vp-body);
+  line-height: 1.55;
+}
+.vp .vp-stages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 14px;
+  list-style: none;
+}
+.vp .vp-stages li {
+  font-size: 11.5px;
+  color: var(--vp-text);
+  background: var(--vp-card);
+  border: 1px solid var(--vp-line);
+  border-radius: 999px;
+  padding: 5px 11px;
+  white-space: nowrap;
+}
+.vp .vp-explainer-note {
+  font-size: 12.5px;
+  color: var(--vp-dim);
+  line-height: 1.5;
+  margin-top: 14px;
+}
+
+/* ── Candidate card ── */
+.vp .vp-card {
+  /* Optical alignment against the eyebrow opposite it. Sitting at the exact
+     top of the grid row puts the card's border level with the eyebrow's LINE
+     BOX, but the eyebrow's letters start lower inside that box (12px type in
+     an 18px line, then the gap above the cap height), so the card read as
+     riding high. This drops it onto the eyebrow's cap line instead. */
+  margin-top: 7px;
+  background: var(--vp-card);
+  border: 1px solid var(--vp-line);
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 30px 80px -24px rgba(0, 0, 0, 0.65);
+}
+
+.vp .vp-card-head {
+  padding: 22px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-bottom: 1px solid var(--vp-line);
+  background: linear-gradient(180deg, rgba(212, 255, 60, 0.045), rgba(212, 255, 60, 0));
+}
+.vp .vp-photo-wrap {
+  position: relative;
+  flex: none;
+  line-height: 0;
+}
+/* The file in /public is already cropped to the square the reference produced
+   with object-position: 52% 22% on the original 1402x1122 photo, so cover has
+   nothing left to crop. Both declarations stay: they are what makes the box
+   authoritative if the photo is ever swapped for an uncropped one. */
+.vp .vp-photo {
+  width: 76px;
+  height: 76px;
+  border-radius: 18px;
+  object-fit: cover;
+  object-position: 52% 22%;
+  border: 1px solid var(--vp-line-3);
+  display: block;
+}
+.vp .vp-photo-check {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--vp-lime);
+  color: var(--vp-ink);
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  border: 3px solid var(--vp-card);
+  animation: vpPulse 2.8s ease-out 1.2s 2;
+}
+.vp .vp-identity {
+  min-width: 0;
+}
+.vp .vp-name-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.vp .vp-name {
+  font-weight: 700;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+}
+.vp .vp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--vp-lime);
+  background: rgba(212, 255, 60, 0.1);
+  border: 1px solid rgba(212, 255, 60, 0.25);
+  padding: 4px 9px;
+  border-radius: 999px;
+}
+.vp .vp-role {
+  font-size: 13px;
+  color: var(--vp-dim);
+  margin-top: 4px;
+}
+.vp .vp-meta {
+  display: flex;
+  gap: 16px;
+  margin-top: 9px;
+  font-size: 12.5px;
+  color: var(--vp-text);
+  flex-wrap: wrap;
+}
+.vp .vp-rate {
+  font-family: var(--vp-serif);
+  font-style: italic;
+  color: var(--vp-lime);
+  font-size: 15px;
+}
+.vp .vp-meta-sep {
+  color: var(--vp-line-3);
+}
+
+/* ── Tab bar ── */
+.vp .vp-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--vp-line);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.vp .vp-tabs::-webkit-scrollbar {
+  display: none;
+}
+.vp .vp-tab {
+  position: relative;
+  overflow: hidden;
+  flex: none;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  background: transparent;
+  color: var(--vp-dim);
+  border: 1px solid transparent;
+  padding: 7px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, color 0.2s, transform 0.15s;
+}
+.vp .vp-tab:hover {
+  color: #fff;
+  background: var(--vp-card-2);
+}
+.vp .vp-tab[aria-selected='true'],
+.vp .vp-tab[aria-selected='true']:hover {
+  background: var(--vp-lime);
+  color: var(--vp-ink);
+  font-weight: 700;
+}
+.vp .vp-tab:focus-visible {
+  outline: 2px solid var(--vp-lime);
+  outline-offset: 2px;
+}
+.vp .vp-sweep {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 100%;
+  background: var(--vp-lime);
+  transform-origin: left;
+  border-radius: 999px;
+  animation: vpSweep 6s linear both;
+}
+/* The sweep only ever runs on the ACTIVE pill, which is lime - so on the pill
+   it has to be ink, or it is a lime line on a lime background. */
+.vp .vp-tab[aria-selected='true'] .vp-sweep {
+  background: var(--vp-ink);
+  opacity: 0.35;
+}
+
+/* ── Panels ──
+ * All six live in one grid cell, so the card is always as tall as the tallest
+ * panel and cycling never shifts the page. */
+.vp .vp-panels {
+  display: grid;
+  padding: 24px;
+  min-height: 288px;
+}
+.vp .vp-panel {
+  grid-area: 1 / 1;
+  visibility: hidden;
+}
+.vp .vp-panel.is-active {
+  visibility: visible;
+  animation: vpIn 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.vp .vp-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--vp-dim);
+}
+.vp .vp-summary {
+  font-size: 14.5px;
+  color: var(--vp-body);
+  line-height: 1.6;
+  margin-top: 12px;
+  max-width: 56ch;
+}
+
+/* Score bars */
+.vp .vp-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  margin-top: 20px;
+}
+.vp .vp-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.vp .vp-bar-label {
+  font-size: 12.5px;
+  color: var(--vp-text);
+  min-width: 104px;
+}
+.vp .vp-bar-track {
+  flex: 1;
+  height: 7px;
+  background: var(--vp-line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.vp .vp-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--vp-teal), var(--vp-lime));
+  transform-origin: left;
+}
+.vp .vp-bar-value {
+  font-size: 12.5px;
+  font-weight: 700;
+  min-width: 42px;
+  text-align: right;
+}
+
+/* Bordered fact tiles */
+.vp .vp-tiles {
+  display: grid;
+  gap: 10px;
+}
+.vp .vp-tiles-4 {
+  grid-template-columns: repeat(4, 1fr);
+  margin-top: 22px;
+}
+.vp .vp-tiles-3 {
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: 18px;
+}
+.vp .vp-tiles-2 {
+  grid-template-columns: 1fr 1fr;
+  margin-top: 10px;
+}
+.vp .vp-tile {
+  border: 1px solid var(--vp-line);
+  border-radius: 12px;
+  padding: 13px 14px;
+  background: var(--vp-panel);
+}
+.vp .vp-tiles-2 .vp-tile {
+  padding: 13px 15px;
+}
+.vp .vp-tile-label {
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vp-dim-2);
+}
+.vp .vp-tile-value {
+  font-size: 13.5px;
+  font-weight: 600;
+  margin-top: 5px;
+}
+.vp .vp-tiles-3 .vp-tile-value {
+  font-size: 15px;
+  font-weight: 700;
+}
+.vp .vp-tile-value.is-accent {
+  color: var(--vp-lime);
+}
+
+/* Footnote with a lime pill in front of it */
+.vp .vp-note-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  margin-top: 16px;
+  font-size: 12.5px;
+  color: var(--vp-dim);
+  line-height: 1.5;
+}
+.vp .vp-pill {
+  flex: none;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vp-lime);
+  background: rgba(212, 255, 60, 0.1);
+  border: 1px solid rgba(212, 255, 60, 0.25);
+  border-radius: 999px;
+  padding: 4px 9px;
+}
+
+/* Career history */
+.vp .vp-history {
+  display: flex;
+  flex-direction: column;
+  margin-top: 14px;
+}
+.vp .vp-role-row {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--vp-line-2);
+}
+.vp .vp-role-row:last-child {
+  border-bottom: 0;
+}
+.vp .vp-role-period {
+  font-family: var(--vp-mono);
+  font-size: 11.5px;
+  color: var(--vp-dim-2);
+  padding-top: 2px;
+}
+.vp .vp-role-title {
+  font-size: 14.5px;
+  font-weight: 700;
+}
+.vp .vp-role-org {
+  font-size: 12.5px;
+  color: var(--vp-dim);
+  margin-top: 2px;
+}
+.vp .vp-role-body {
+  font-size: 13px;
+  color: var(--vp-text);
+  line-height: 1.5;
+  margin-top: 6px;
+}
+.vp .vp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 18px;
+  list-style: none;
+}
+.vp .vp-chips li {
+  font-size: 12px;
+  color: var(--vp-body);
+  background: var(--vp-panel);
+  border: 1px solid var(--vp-line);
+  border-radius: 999px;
+  padding: 6px 12px;
+  white-space: nowrap;
+}
+
+/* Panel header with a right-hand aside */
+.vp .vp-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.vp .vp-panel-head.is-centred {
+  align-items: center;
+}
+.vp .vp-assessor {
+  font-size: 13.5px;
+  color: var(--vp-body);
+  margin-top: 8px;
+}
+.vp .vp-assessor strong {
+  font-weight: 700;
+  color: #fff;
+}
+.vp .vp-stamp {
+  font-family: var(--vp-mono);
+  font-size: 11.5px;
+  color: var(--vp-dim-2);
+  text-align: right;
+  line-height: 1.5;
+}
+.vp .vp-lead {
+  font-size: 14.5px;
+  color: var(--vp-body);
+  margin-top: 8px;
+}
+.vp .vp-task-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-top: 8px;
+}
+.vp .vp-task-meta {
+  font-size: 12.5px;
+  color: var(--vp-dim);
+  margin-top: 3px;
+}
+.vp .vp-score {
+  text-align: right;
+}
+.vp .vp-score-value {
+  font-family: var(--vp-serif);
+  font-style: italic;
+  font-size: 30px;
+  color: var(--vp-lime);
+  line-height: 1;
+}
+.vp .vp-score-label {
+  font-size: 11px;
+  color: var(--vp-dim-2);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Dot ratings */
+.vp .vp-ratings {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 18px;
+}
+.vp .vp-ratings.is-tight {
+  margin-top: 16px;
+}
+.vp .vp-rating {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--vp-line);
+  border-radius: 12px;
+  padding: 13px 15px;
+  background: var(--vp-panel);
+}
+.vp .vp-rating-label {
+  font-size: 13px;
+  color: var(--vp-body);
+}
+.vp .vp-dots {
+  display: flex;
+  gap: 4px;
+  flex: none;
+}
+.vp .vp-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--vp-dot-off);
+  display: block;
+}
+.vp .vp-dot.is-on {
+  background: var(--vp-lime);
+}
+
+/* Pull quote */
+.vp .vp-quote {
+  margin-top: 18px;
+  padding: 16px 18px;
+  border-left: 2px solid var(--vp-lime);
+  background: rgba(212, 255, 60, 0.04);
+  border-radius: 0 12px 12px 0;
+}
+.vp .vp-quote.is-tight {
+  margin-top: 16px;
+}
+.vp .vp-quote p {
+  font-family: var(--vp-serif);
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.55;
+  color: #fff;
+}
+.vp .vp-quote footer {
+  font-size: 12px;
+  color: var(--vp-dim);
+  margin-top: 8px;
+}
+
+/* Submitted diff */
+.vp .vp-code {
+  margin-top: 16px;
+  border: 1px solid var(--vp-line);
+  border-radius: 12px;
+  background: var(--vp-code);
+  overflow: hidden;
+}
+.vp .vp-code-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--vp-line-2);
+  font-family: var(--vp-mono);
+  font-size: 11px;
+  color: var(--vp-dim-2);
+}
+.vp .vp-code-body {
+  padding: 14px;
+  font-family: var(--vp-mono);
+  font-size: 11.5px;
+  line-height: 1.7;
+  color: var(--vp-text);
+  overflow-x: auto;
+  white-space: pre;
+}
+.vp .vp-code-body span {
+  display: block;
+}
+.vp .vp-code-body .is-remove {
+  color: var(--vp-teal);
+}
+.vp .vp-code-body .is-add {
+  color: var(--vp-lime);
+}
+
+/* Percentile badge */
+.vp .vp-percentile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(212, 255, 60, 0.28);
+  background: rgba(212, 255, 60, 0.08);
+  border-radius: 999px;
+  padding: 8px 16px;
+  flex: none;
+}
+.vp .vp-percentile-value {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--vp-lime);
+  line-height: 1;
+  white-space: nowrap;
+}
+.vp .vp-percentile-sub {
+  font-size: 11.5px;
+  color: var(--vp-text);
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+/* Trait bars sit on a wider label column than the overview bars. */
+.vp .vp-bars.is-traits {
+  gap: 11px;
+}
+.vp .vp-bars.is-traits .vp-bar-label {
+  min-width: 168px;
+}
+.vp .vp-bars.is-traits .vp-bar-track {
+  height: 6px;
+}
+.vp .vp-bars.is-traits .vp-bar-fill {
+  background: var(--vp-lime);
+}
+.vp .vp-bars.is-traits .vp-bar-fill.is-muted {
+  background: var(--vp-teal);
+}
+.vp .vp-bars.is-traits .vp-bar-value {
+  min-width: 34px;
+}
+
+.vp .vp-tags {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+  list-style: none;
+}
+.vp .vp-tags li {
+  font-size: 11.5px;
+  color: var(--vp-body);
+  background: var(--vp-panel);
+  border: 1px solid var(--vp-line);
+  border-radius: 999px;
+  padding: 6px 12px;
+  white-space: nowrap;
+}
+.vp .vp-tags li:first-child {
+  color: var(--vp-ink);
+  background: var(--vp-lime);
+  border-color: var(--vp-lime);
+  font-weight: 700;
+}
+.vp .vp-panel-note {
+  font-size: 12.5px;
+  color: var(--vp-dim);
+  line-height: 1.55;
+  margin-top: 16px;
+  max-width: 64ch;
+}
+
+/* ── Card footer ── */
+.vp .vp-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--vp-line);
+  background: rgba(212, 255, 60, 0.05);
+}
+.vp .vp-card-foot-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #fff;
+}
+.vp .vp-card-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--vp-lime);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: gap 0.2s ease, color 0.2s ease;
+}
+.vp .vp-card-cta:hover,
+.vp .vp-card-cta:focus-visible {
+  gap: 12px;
+  color: #e6ff85;
+}
+
+/* The text equivalent of the dot ratings. */
+.vp .vp-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ── Staggered entrance, active panel only ──
+ * Inactive panels carry no animation at all, so switching `.is-active` moves
+ * animation-name from none to a name, which is what re-triggers the run. */
+.vp .vp-panel.is-active .vp-bar-fill {
+  animation: vpBar 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.vp .vp-panel.is-active .vp-bar:nth-child(2) .vp-bar-fill {
+  animation-delay: 0.08s;
+}
+.vp .vp-panel.is-active .vp-bar:nth-child(3) .vp-bar-fill {
+  animation-delay: 0.16s;
+}
+.vp .vp-panel.is-active .vp-bars.is-traits .vp-bar-fill {
+  animation-duration: 0.9s;
+}
+.vp .vp-panel.is-active .vp-bars.is-traits .vp-bar:nth-child(2) .vp-bar-fill {
+  animation-delay: 0.07s;
+}
+.vp .vp-panel.is-active .vp-bars.is-traits .vp-bar:nth-child(3) .vp-bar-fill {
+  animation-delay: 0.14s;
+}
+.vp .vp-panel.is-active .vp-bars.is-traits .vp-bar:nth-child(4) .vp-bar-fill {
+  animation-delay: 0.21s;
+}
+.vp .vp-panel.is-active .vp-bars.is-traits .vp-bar:nth-child(5) .vp-bar-fill {
+  animation-delay: 0.28s;
+}
+
+.vp .vp-panel.is-active .vp-tiles-4 .vp-tile {
+  animation: vpPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
+.vp .vp-panel.is-active .vp-tiles-4 .vp-tile:nth-child(2) {
+  animation-delay: 0.16s;
+}
+.vp .vp-panel.is-active .vp-tiles-4 .vp-tile:nth-child(3) {
+  animation-delay: 0.22s;
+}
+.vp .vp-panel.is-active .vp-tiles-4 .vp-tile:nth-child(4) {
+  animation-delay: 0.28s;
+}
+.vp .vp-panel.is-active .vp-tiles-3 .vp-tile {
+  animation: vpPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.06s both;
+}
+.vp .vp-panel.is-active .vp-tiles-3 .vp-tile:nth-child(2) {
+  animation-delay: 0.12s;
+}
+.vp .vp-panel.is-active .vp-tiles-3 .vp-tile:nth-child(3) {
+  animation-delay: 0.18s;
+}
+.vp .vp-panel.is-active .vp-tiles-2 .vp-tile {
+  animation: vpPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.26s both;
+}
+.vp .vp-panel.is-active .vp-tiles-2 .vp-tile:nth-child(2) {
+  animation-delay: 0.32s;
+}
+
+.vp .vp-panel.is-active .vp-role-row {
+  animation: vpIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.04s both;
+}
+.vp .vp-panel.is-active .vp-role-row:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.vp .vp-panel.is-active .vp-role-row:nth-child(3) {
+  animation-delay: 0.16s;
+}
+
+.vp .vp-panel.is-active .vp-rating {
+  animation: vpIn 0.4s ease 0.04s both;
+}
+.vp .vp-panel.is-active .vp-rating:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.vp .vp-panel.is-active .vp-rating:nth-child(3) {
+  animation-delay: 0.16s;
+}
+.vp .vp-panel.is-active .vp-rating:nth-child(4) {
+  animation-delay: 0.22s;
+}
+
+.vp .vp-panel.is-active .vp-quote {
+  animation: vpIn 0.4s ease 0.26s both;
+}
+.vp .vp-panel.is-active .vp-quote.is-tight {
+  animation-delay: 0.3s;
+}
+.vp .vp-panel.is-active .vp-code {
+  animation: vpIn 0.4s ease 0.2s both;
+}
+.vp .vp-panel.is-active .vp-tags li {
+  animation: vpPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.24s both;
+}
+.vp .vp-panel.is-active .vp-tags li:nth-child(2) {
+  animation-delay: 0.3s;
+}
+.vp .vp-panel.is-active .vp-tags li:nth-child(3) {
+  animation-delay: 0.36s;
+}
+
+@keyframes vpIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes vpBar {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes vpSweep {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes vpPop {
+  from {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes vpPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(212, 255, 60, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 9px rgba(212, 255, 60, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(212, 255, 60, 0);
+  }
+}
+
+/* ── Responsive ──
+ * The reference is a single-width artifact; these are the breakpoints the
+ * handoff asked for (stack under ~980px, no horizontal scroll down to 390px). */
+@media (max-width: 980px) {
+  section.vp {
+    padding: 80px 0 56px;
+  }
+  .vp .vp-grid {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+  .vp .vp-heading {
+    max-width: none;
+  }
+}
+@media (max-width: 900px) {
+  .vp .vp-band {
+    padding: 0 24px;
+  }
+}
+@media (max-width: 680px) {
+  section.vp {
+    padding: 64px 0 48px;
+  }
+  .vp .vp-card-head {
+    padding: 18px;
+  }
+  .vp .vp-tabs {
+    padding: 12px 18px;
+  }
+  .vp .vp-panels {
+    padding: 18px;
+  }
+  .vp .vp-card-foot {
+    padding: 14px 18px;
+    flex-wrap: wrap;
+  }
+  .vp .vp-tiles-4 {
+    grid-template-columns: 1fr 1fr;
+  }
+  .vp .vp-ratings {
+    grid-template-columns: 1fr;
+  }
+  .vp .vp-stamp {
+    text-align: left;
+  }
+  .vp .vp-bars.is-traits .vp-bar-label {
+    min-width: 128px;
+  }
+}
+@media (max-width: 460px) {
+  .vp .vp-tiles-3,
+  .vp .vp-tiles-2 {
+    grid-template-columns: 1fr;
+  }
+  .vp .vp-role-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .vp .vp-bar-label {
+    min-width: 88px;
+  }
+  .vp .vp-bars.is-traits .vp-bar-label {
+    min-width: 104px;
+  }
+  .vp .vp-percentile {
+    padding: 8px 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vp *,
+  .vp *::before,
+  .vp *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

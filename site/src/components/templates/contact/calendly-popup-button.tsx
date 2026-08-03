@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 
+import { withCalendlyCeTheme } from '@/components/templates/book-a-call/calendly-inline-embed'
+
 // Calendly popup trigger. The live contact page opens the intro call in
 // Calendly's overlay rather than embedding a 700px inline scheduler, because
 // the right-hand column is already the enquiry form. Same self-loading
@@ -36,6 +38,7 @@ export interface CalendlyPopupButtonProps {
 export function CalendlyPopupButton({ url, className, children }: CalendlyPopupButtonProps) {
   const [ready, setReady] = useState(false)
   const pollRef = useRef<number>(0)
+  const themedUrl = withCalendlyCeTheme(url)
 
   useEffect(() => {
     if (!document.querySelector(`link[href="${CALENDLY_CSS_URL}"]`)) {
@@ -78,14 +81,14 @@ export function CalendlyPopupButton({ url, className, children }: CalendlyPopupB
       const calendly = getCalendlyPopupApi()
       if (!calendly) return // let the browser follow the href
       event.preventDefault()
-      calendly.initPopupWidget({ url })
+      calendly.initPopupWidget({ url: themedUrl })
     },
-    [url],
+    [themedUrl],
   )
 
   return (
     <a
-      href={url}
+      href={themedUrl}
       target={ready ? undefined : NEW_TAB}
       rel="noopener noreferrer"
       onClick={openPopup}

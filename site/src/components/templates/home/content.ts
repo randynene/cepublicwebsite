@@ -12,6 +12,14 @@
 // when the editability wiring lands.
 
 import { CLIENT_LOGOS } from '@/components/social-proof/client-logo-strip'
+export {
+  HERO_SLIDESHOW_PROFILES,
+  REAL_ENGINEER_PROFILES,
+} from '@/lib/talent/home-profiles'
+import {
+  HERO_SLIDESHOW_PROFILES,
+  REAL_ENGINEER_PROFILES,
+} from '@/lib/talent/home-profiles'
 
 const IMG = '/design/home'
 
@@ -130,40 +138,9 @@ const HERO_PROOF_BULLETS = ['One monthly fee', 'We handle HR & payroll', '300+ t
 
 // Fallback slideshow when Sanity hero.profiles is empty / invalid.
 // Canonical editable source is homePage.hero.profiles (seeded from HOME_CONTENT).
-export const HERO_PROFILE_CARD_PEOPLE: ProfileCardPerson[] = [
-  {
-    name: 'Kyla. T',
-    role: 'Senior Backend Engineer · 6 yrs | Remote',
-    flag: '🇵🇭',
-    chips: ['Node.js', 'Python', 'AWS', 'Owns end-to-end'],
-    image: `${IMG}/engineers/hero-card/kyla.jpg`,
-    pos: 'center',
-  },
-  {
-    name: 'Marcello. P',
-    role: 'Senior Data Engineer · 9 yrs | Remote',
-    flag: '🇦🇷',
-    chips: ['Python', 'Snowflake', 'Airflow', 'Async-first'],
-    image: `${IMG}/engineers/hero-card/marcello.jpg`,
-    pos: 'center',
-  },
-  {
-    name: 'Petra. K',
-    role: 'Senior AI Engineer · 7 yrs | Remote',
-    flag: '🇭🇷',
-    chips: ['RAG', 'LangChain', 'AWS', 'Product-minded'],
-    image: `${IMG}/engineers/hero-card/petra.jpg`,
-    pos: 'center',
-  },
-  {
-    name: 'Gabriel. K',
-    role: 'Devops Engineer · 10 yrs | Remote',
-    flag: '🇧🇷',
-    chips: ['Kubernetes', 'Docker', 'AWS', 'Mentors Juniors'],
-    image: `${IMG}/engineers/hero-card/gabriel.jpg`,
-    pos: 'center',
-  },
-]
+export const HERO_PROFILE_CARD_PEOPLE: ProfileCardPerson[] =
+  toProfileCardPeople(HERO_SLIDESHOW_PROFILES) ?? []
+
 
 // "Where we work" expanding-hub section (sits just above the FAQ; replaces the
 // old Locations marquee). Each hub is one tall image panel that widens on hover
@@ -241,41 +218,7 @@ export const HOME_CONTENT = {
     bottomPills: HERO_PROOF_BULLETS,
     floatingPills: ['Live pair programming', '7-day shortlist'],
     // Hero slideshow order (desktop auto-cycle + mobile lead photo = [0]).
-    // Dedicated 488×280 crops under engineers/hero-card/.
-    profiles: [
-      {
-        name: 'Kyla. T',
-        role: 'Senior Backend Engineer · 6 yrs | Remote',
-        flag: '🇵🇭',
-        tags: ['Node.js', 'Python', 'AWS', 'Owns end-to-end'],
-        image: `${IMG}/engineers/hero-card/kyla.jpg`,
-        objectPosition: 'center',
-      },
-      {
-        name: 'Marcello. P',
-        role: 'Senior Data Engineer · 9 yrs | Remote',
-        flag: '🇦🇷',
-        tags: ['Python', 'Snowflake', 'Airflow', 'Async-first'],
-        image: `${IMG}/engineers/hero-card/marcello.jpg`,
-        objectPosition: 'center',
-      },
-      {
-        name: 'Petra. K',
-        role: 'Senior AI Engineer · 7 yrs | Remote',
-        flag: '🇭🇷',
-        tags: ['RAG', 'LangChain', 'AWS', 'Product-minded'],
-        image: `${IMG}/engineers/hero-card/petra.jpg`,
-        objectPosition: 'center',
-      },
-      {
-        name: 'Gabriel. K',
-        role: 'Devops Engineer · 10 yrs | Remote',
-        flag: '🇧🇷',
-        tags: ['Kubernetes', 'Docker', 'AWS', 'Mentors Juniors'],
-        image: `${IMG}/engineers/hero-card/gabriel.jpg`,
-        objectPosition: 'center',
-      },
-    ] as HomeProfile[],
+    profiles: HERO_SLIDESHOW_PROFILES,
   },
   whereWeWork: WHERE_WE_WORK,
   trustedBy: {
@@ -287,7 +230,7 @@ export const HOME_CONTENT = {
     logos: CLIENT_LOGOS as HomeLogo[],
   },
   clientStory: {
-    eyebrow: "Jobs boards don't work anymore",
+    eyebrow: "JOB BOARDS DON'T WORK",
     quoteLines: [
       "Cloud Employee didn't send us 100s of CVs.",
       'Their engineers did the screening and handed us',
@@ -455,29 +398,10 @@ export const HOME_CONTENT = {
     titleLead: 'Hired from top companies.',
     titleAccent: 'Vetted by us',
     badge: 'Vetted by senior eng',
-    profiles: [
-      {
-        name: 'Petar K.',
-        role: 'Senior Data Eng · 9 yrs',
-        flag: '🇭🇷',
-        tags: ['Python', 'Spark', 'GCP'],
-        image: `${IMG}/engineers/petar-k.jpg`,
-      },
-      {
-        name: 'Kyla T.',
-        role: 'Senior Full-Stack · 6 yrs',
-        flag: '🇨🇴',
-        tags: ['React', 'Node.js', 'TypeScript'],
-        image: `${IMG}/engineers/kyla.jpg`,
-      },
-      {
-        name: 'Marcelo D.',
-        role: 'Full-stack Engineer · 8 yrs',
-        flag: '🇲🇽',
-        tags: ['K8s', 'Terraform', 'AWS'],
-        image: `${IMG}/engineers/marcelo.jpg`,
-      },
-    ] as HomeProfile[],
+    // Every engineer in the shared roster, so the marquee shows the whole
+    // bench rather than the three faces this section used to hard-code (which
+    // also carried the wrong flags - Kyla is Filipina, not Colombian).
+    profiles: REAL_ENGINEER_PROFILES,
   },
   readyToFind: {
     eyebrow: 'Ready to find your engineer?',

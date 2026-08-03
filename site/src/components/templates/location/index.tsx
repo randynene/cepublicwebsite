@@ -6,13 +6,17 @@ import { TypewriterText } from '@/components/motion/typewriter-text'
 import { MegaMenuPillLabel } from '@/components/ui/mega-menu-pill-label'
 
 import type { AdvantageCard, EngineerProfile, HubCard, LocationContent, LocationLogo, StartCard } from './content'
-import type { HomeProfile } from '@/components/templates/home/content'
+import type { HomeProfile, ProfileCardPerson } from '@/components/templates/home/content'
 import { HeroCards } from '@/components/templates/home/hero-cards'
+import { ProfileCard as HeroSlideshowCard } from '@/components/templates/home/profile-card'
 import { LocationCalculator } from './calculator'
 import { LocationStartQuiz } from './start-quiz'
 import { LocationVideo } from './video'
 import { Spotlight } from '@/components/motion/spotlight'
 import { FaqChatCard } from '@/components/shared/faq-chat-card'
+import { ChatLink } from '@/components/shared/chat-link'
+import { isChatHref } from '@/lib/chat'
+import { toInternalHref } from '@/lib/url'
 import { HubPanels } from '@/components/shared/hub-panels'
 import { STICKY_ASIDE } from '@/components/layout/sticky-aside'
 
@@ -212,12 +216,13 @@ function Heading({
 }
 
 // ── Hero ────────────────────────────────────────────────────────────────────
-// Left column is region-specific copy; the right column is the polished photo-
-// card stack (HeroCards), now fed from this region's own editable hero.cards
-// (photo, name, role, flag, skills) so Seb can edit each region in Studio. The
-// visual layout is fixed by HeroCards; only the card content is data-driven.
-function Hero({ content }: { content: LocationContent }) {
+// Left column is region-specific copy. Right column is either:
+//   - `slideshow` (Eastern Europe): the home hero's rotating ProfileCard,
+//     cycling every person in hero.cards
+//   - `stack` (LATAM / Philippines): the three overlapping HeroCards
+function Hero({ content, locale }: { content: LocationContent; locale: Locale }) {
   const { hero } = content
+  const useSlideshow = hero.visual === 'slideshow' && (hero.cards?.length ?? 0) >= 2
   const heroProfiles: HomeProfile[] = (hero.cards ?? []).map((c) => ({
     name: c.name,
     role: c.role,
@@ -225,8 +230,19 @@ function Hero({ content }: { content: LocationContent }) {
     tags: c.skills,
     image: c.image,
   }))
+  const slideshowPeople: ProfileCardPerson[] = (hero.cards ?? []).map((c) => ({
+    name: c.name,
+    role: c.role,
+    flag: c.flag,
+    chips: c.skills,
+    image: c.image,
+    // Landscape `-slide` crops are already face-framed for this card shape.
+    // Per-card override (e.g. Anto → center top) keeps painted headroom.
+    pos: c.objectPosition?.trim() || 'center',
+  }))
   const heroPills = hero.floatingBadges
-  const heroMain = heroProfiles[heroProfiles.length - 1] ?? heroProfiles[0]
+  const heroMain = heroProfiles[0] ?? heroProfiles[heroProfiles.length - 1]
+  const primaryHref = toInternalHref('/book-a-call', locale).href
   return (
     <section className={cn(BAND, 'grid grid-cols-1 items-center gap-[56px] py-[64px] lg:grid-cols-[600px_1fr] lg:py-[88px]')}>
       <div>
@@ -243,7 +259,7 @@ function Hero({ content }: { content: LocationContent }) {
         <div className="mt-8 flex flex-wrap items-center gap-[14px]">
           <MegaMenuPillLabel
             as="a"
-            href="/start-hiring"
+            href={primaryHref}
             variant="pill-green"
             size="cta"
             leadingArrow
@@ -270,29 +286,39 @@ function Hero({ content }: { content: LocationContent }) {
         </ul>
       </div>
 
-      {/* Right column - reuses the home page photo-card stack (same on all three
-          regions for now). Desktop = hover-parallax stack; mobile = single photo. */}
       <div className="relative w-full">
-        <div className="hero-visual hidden lg:block">
-          <HeroCards profiles={heroProfiles} pills={heroPills} />
-        </div>
-        {heroMain ? (
-          <div
-            className="relative h-[360px] overflow-hidden rounded-[24px] lg:hidden"
-            style={{ boxShadow: 'inset 0 0 0 10px #22314D' }}
-          >
-            <img src={heroMain.image} alt={heroMain.name} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
-            <span
-              aria-hidden="true"
-              className="absolute inset-0"
-              style={{ background: 'linear-gradient(0deg, rgba(6,15,30,.92) 0%, rgba(6,15,30,.4) 45%, transparent 70%)' }}
-            />
-            <div className="absolute inset-x-0 bottom-0 p-5">
-              <p className="text-[18px] font-semibold text-white">{heroMain.name}</p>
-              <p className="text-[13px] text-white/80">{heroMain.role}</p>
-            </div>
+        {useSlideshow ? (
+          // Same auto-cycling card as the home hero. Shown at every breakpoint
+          // (max-w-full) so mobile gets the rotation too, not a frozen face.
+          // mt nudge sits the card a little lower than the H1 top edge.
+          <div className="hero-visual flex justify-center lg:mt-[52px] lg:justify-end">
+            <HeroSlideshowCard profiles={slideshowPeople} />
           </div>
-        ) : null}
+        ) : (
+          <>
+            <div className="hero-visual hidden lg:block">
+              <HeroCards profiles={heroProfiles} pills={heroPills} variant="location" />
+            </div>
+            {heroMain ? (
+              <div
+                className="relative h-[360px] overflow-hidden rounded-[24px] lg:hidden"
+                style={{ boxShadow: 'inset 0 0 0 10px #22314D' }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element -- mobile stack fallback matches prior location hero */}
+                <img src={heroMain.image} alt={heroMain.name} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-0"
+                  style={{ background: 'linear-gradient(0deg, rgba(6,15,30,.92) 0%, rgba(6,15,30,.4) 45%, transparent 70%)' }}
+                />
+                <div className="absolute inset-x-0 bottom-0 p-5">
+                  <p className="text-[18px] font-semibold text-white">{heroMain.name}</p>
+                  <p className="text-[13px] text-white/80">{heroMain.role}</p>
+                </div>
+              </div>
+            ) : null}
+          </>
+        )}
       </div>
     </section>
   )
@@ -788,7 +814,7 @@ function FunFact({ content }: { content: LocationContent }) {
 }
 
 // ── Calculator ──────────────────────────────────────────────────────────────
-function Calculator({ content }: { content: LocationContent }) {
+function Calculator({ content, locale }: { content: LocationContent; locale: Locale }) {
   const { calculator } = content
   return (
     <section id="calculator" className={cn(BAND, 'py-[72px]')}>
@@ -815,7 +841,7 @@ function Calculator({ content }: { content: LocationContent }) {
             savedPrefix: calculator.savedPrefix ?? 'vs. hiring in the US',
             savedSuffix: '/yr saved',
             cta: 'Get matched at this rate',
-            ctaHref: '/start-hiring',
+            ctaHref: toInternalHref('/book-a-call', locale).href,
           }}
         />
       </div>
@@ -825,13 +851,35 @@ function Calculator({ content }: { content: LocationContent }) {
 }
 
 // ── Three ways to start ─────────────────────────────────────────────────────
-function StartTile({ card, featured }: { card: StartCard; featured?: boolean }) {
+function StartTile({
+  card,
+  featured,
+  locale,
+}: {
+  card: StartCard
+  featured?: boolean
+  locale: Locale
+}) {
+  const href = toInternalHref(card.ctaHref, locale).href
+  const ctaClass = featured
+    ? 'sf sf-p mt-auto inline-flex w-fit items-center gap-2 rounded-full px-6 py-[14px] text-[15px] font-semibold'
+    : 'sf sf-link -mx-1.5 -my-0.5 mt-auto inline-flex items-center gap-2 rounded-md px-1.5 py-0.5 text-[14px] font-semibold'
+  const ctaInner = (
+    <span className="c inline-flex items-center gap-2">
+      {card.cta}
+      <span aria-hidden="true" className={featured ? 'text-[15px] font-bold' : undefined}>
+        {GLYPH.arrow}
+      </span>
+    </span>
+  )
+
   return (
     <li className={cn(CARD, CARD_HOVER, 'flex flex-col gap-3 p-6', featured && 'h-full')}>
-      {card.eyebrow ? <p className="text-[10px] font-semibold uppercase tracking-[1.4px] text-brand-primary">{card.eyebrow}</p> : null}
+      {card.eyebrow ? (
+        <p className="text-[10px] font-semibold uppercase tracking-[1.4px] text-brand-primary">{card.eyebrow}</p>
+      ) : null}
       {featured ? (
         <span className={cn(ICON_TILE, 'mb-1 bg-brand-primary')}>
-          {/* Lime tile, so the line-icon inverts to dark ink rather than lime. */}
           <svg {...iconBase} stroke="#060F1E" className={ICON_GLYPH}>
             <path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" />
           </svg>
@@ -857,32 +905,20 @@ function StartTile({ card, featured }: { card: StartCard; featured?: boolean }) 
           ))}
         </ul>
       ) : null}
-      {featured ? (
-        <a
-          href={card.ctaHref}
-          className="sf sf-p mt-auto inline-flex w-fit items-center gap-2 rounded-full px-6 py-[14px] text-[15px] font-semibold"
-        >
-          <span className="c inline-flex items-center gap-2">
-            {card.cta}
-            <span aria-hidden="true" className="text-[15px] font-bold">{GLYPH.arrow}</span>
-          </span>
-        </a>
+      {isChatHref(card.ctaHref) ? (
+        <ChatLink href={card.ctaHref} locale={locale} className={ctaClass}>
+          {ctaInner}
+        </ChatLink>
       ) : (
-        <a
-          href={card.ctaHref}
-          className="sf sf-link -mx-1.5 -my-0.5 mt-auto inline-flex items-center gap-2 rounded-md px-1.5 py-0.5 text-[14px] font-semibold"
-        >
-          <span className="c inline-flex items-center gap-2">
-            {card.cta}
-            <span aria-hidden="true">{GLYPH.arrow}</span>
-          </span>
+        <a href={href} className={ctaClass}>
+          {ctaInner}
         </a>
       )}
     </li>
   )
 }
 
-function Start({ content }: { content: LocationContent }) {
+function Start({ content, locale }: { content: LocationContent; locale: Locale }) {
   const { start } = content
 
   if (start.variant === 'quiz' && start.quiz) {
@@ -899,7 +935,7 @@ function Start({ content }: { content: LocationContent }) {
             hint={start.quiz.hint}
             roles={start.quiz.roles}
             cta={start.quiz.cta}
-            ctaHref={start.quiz.ctaHref}
+            ctaHref={toInternalHref(start.quiz.ctaHref, locale).href}
             selectedPrefix={start.quiz.selectedPrefix}
             emptyStatus={start.quiz.emptyStatus}
           />
@@ -912,8 +948,6 @@ function Start({ content }: { content: LocationContent }) {
   return (
     <Spotlight className="py-[72px]">
       <div className={BAND}>
-        {/* Only the eyebrow + heading dim under the spotlight; the cards + CTAs
-            below stay full-bright. */}
         <div data-spot-item className="transition-opacity duration-300 motion-safe:opacity-50">
           <Eyebrow>{start.eyebrow}</Eyebrow>
           <div className="mt-3">
@@ -921,10 +955,10 @@ function Start({ content }: { content: LocationContent }) {
           </div>
         </div>
         <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <StartTile card={first} featured />
+          <StartTile card={first} featured locale={locale} />
           <ul className="flex flex-col gap-6">
             {rest.map((c) => (
-              <StartTile key={c.title} card={c} />
+              <StartTile key={c.title} card={c} locale={locale} />
             ))}
           </ul>
         </div>
@@ -934,7 +968,7 @@ function Start({ content }: { content: LocationContent }) {
 }
 
 // ── FAQ ─────────────────────────────────────────────────────────────────────
-function Faq({ content }: { content: LocationContent }) {
+function Faq({ content, locale }: { content: LocationContent; locale: Locale }) {
   const { faq } = content
   return (
     <section className={cn(BAND, 'pb-[112px] pt-[72px]')}>
@@ -947,6 +981,7 @@ function Faq({ content }: { content: LocationContent }) {
             label={faq.helpEyebrow}
             body={faq.helpBody}
             cta={faq.helpCta}
+            locale={locale}
           />
         </div>
         <div className="flex flex-col">
@@ -982,7 +1017,7 @@ export function LocationTemplate({
     <main id="main" className="overflow-x-clip">
       {/* Hero + trust bar claim the first screen together. */}
       <div className="hero-screen">
-        <Hero content={content} />
+        <Hero content={content} locale={locale} />
         <LogoStrip content={content} locale={locale} />
       </div>
       <Advantage content={content} />
@@ -992,7 +1027,7 @@ export function LocationTemplate({
           <RegionsStrip content={content} />
           <Eor content={content} />
           <Included content={content} />
-          <Engineers content={content} />
+          {!content.engineers.hidden ? <Engineers content={content} /> : null}
           <PrimaryHub content={content} />
         </>
       ) : (
@@ -1000,13 +1035,13 @@ export function LocationTemplate({
           <OnGround content={content} />
           <Included content={content} />
           <PrimaryHub content={content} />
-          <Engineers content={content} />
+          {!content.engineers.hidden ? <Engineers content={content} /> : null}
         </>
       )}
       <FunFact content={content} />
-      <Calculator content={content} />
-      <Start content={content} />
-      <Faq content={content} />
+      <Calculator content={content} locale={locale} />
+      <Start content={content} locale={locale} />
+      <Faq content={content} locale={locale} />
     </main>
   )
 }

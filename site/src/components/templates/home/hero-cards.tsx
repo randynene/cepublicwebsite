@@ -40,7 +40,7 @@ interface Slot {
   scrim: 'top' | 'bottom'
 }
 
-const SLOTS: Slot[] = [
+const HOME_SLOTS: Slot[] = [
   // 0 — back card, top-right
   {
     posStyle: { position: 'absolute', right: 0, top: -8, width: 300, height: 360, zIndex: 1 },
@@ -60,6 +60,29 @@ const SLOTS: Slot[] = [
     posStyle: { position: 'absolute', left: 0, top: 112, width: 300, height: 380, zIndex: 3 },
     baseRotate: 'rotate(-3deg)',
     rotDeg: -3,
+    scrim: 'bottom',
+  },
+]
+
+// Location pages: same composition, nudged so the back-card face is not
+// clipped by the top edge and the three cards read a little more open.
+const LOCATION_SLOTS: Slot[] = [
+  {
+    posStyle: { position: 'absolute', right: 4, top: 12, width: 292, height: 352, zIndex: 1 },
+    baseRotate: 'rotate(2deg)',
+    rotDeg: 2,
+    scrim: 'top',
+  },
+  {
+    posStyle: { position: 'absolute', right: 0, top: 198, width: 292, height: 352, zIndex: 2 },
+    baseRotate: 'rotate(2.5deg)',
+    rotDeg: 2.5,
+    scrim: 'bottom',
+  },
+  {
+    posStyle: { position: 'absolute', left: 4, top: 96, width: 300, height: 380, zIndex: 3 },
+    baseRotate: 'rotate(-2.5deg)',
+    rotDeg: -2.5,
     scrim: 'bottom',
   },
 ]
@@ -159,7 +182,11 @@ function HoverCard({
           </div>
         </div>
         {profile.flag ? (
-          <span className="flex h-[28px] w-[28px] items-center justify-center rounded-full bg-black/45 text-[14px] backdrop-blur-sm">
+          <span
+            aria-hidden="true"
+            className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-full bg-black/50 text-[24px] leading-none shadow-[0_2px_8px_rgba(0,0,0,.35)] backdrop-blur-sm"
+            title="Country"
+          >
             {profile.flag}
           </span>
         ) : null}
@@ -196,11 +223,15 @@ function HoverCard({
 export function HeroCards({
   profiles,
   pills,
+  variant = 'home',
 }: {
   profiles: readonly HomeProfile[]
   pills?: readonly string[]
+  /** `location` opens the stack a touch so faces read clearer on region pages. */
+  variant?: 'home' | 'location'
 }) {
-  const cards = profiles.slice(0, SLOTS.length)
+  const slots = variant === 'location' ? LOCATION_SLOTS : HOME_SLOTS
+  const cards = profiles.slice(0, slots.length)
   // When the caller passes an explicit pills array (including a 1-pill location
   // hero), honour it exactly. Only the home page's "omit pills" path uses the
   // two-pill fallbacks.
@@ -212,9 +243,9 @@ export function HeroCards({
   const secondaryPill = resolvedPills[1]
 
   return (
-    <div className="relative h-[518px] overflow-visible">
+    <div className={cn('relative overflow-visible', variant === 'location' ? 'h-[530px]' : 'h-[518px]')}>
       {cards.map((profile, i) => (
-        <HoverCard key={`${i}-${profile.name}`} profile={profile} slot={SLOTS[i]} index={i} />
+        <HoverCard key={`${i}-${profile.name}`} profile={profile} slot={slots[i]} index={i} />
       ))}
 
       {/* Floating pill: bolt — right side, z:5. Fades+rises in ~250ms after the

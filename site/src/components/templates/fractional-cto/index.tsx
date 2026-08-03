@@ -303,7 +303,14 @@ function MatchForm({ mf, locale }: { mf: FctoContent['matchform']; locale: Local
             id="mfNext"
             type="button"
             style={{ flexDirection: 'row-reverse', padding: '14px 14px 14px 24px' }}
-            onClick={() => setStep((s) => (s < 3 ? s + 1 : s))}
+            onClick={() => {
+              if (step < 3) {
+                setStep((s) => s + 1)
+                return
+              }
+              // Final "Done" — send them to book a call (retired /start-hiring funnel).
+              window.location.assign(buildLocalePath('/book-a-call', locale))
+            }}
           >
             {nextLabel}
             <span className="arw">
@@ -516,7 +523,9 @@ export function FractionalCtoTemplate({
       <section className="matchform" id="match">
         <div className="wrap">
           <div className="head">
-            <span className="eyebrow">{content.matchform.eyebrow}</span>
+            {content.matchform.eyebrow.trim() ? (
+              <span className="eyebrow">{content.matchform.eyebrow}</span>
+            ) : null}
             <h2>
               {content.matchform.h2Lead} <em>{content.matchform.h2Em}</em>
             </h2>
