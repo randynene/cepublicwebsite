@@ -65,6 +65,15 @@ html {
 .fcto .qh-form * {
   margin: revert-layer;
   padding: revert-layer;
+  /* Typography too. `.fcto h2` sets its own size and weight, which rendered the
+     form's question at 46px/700 instead of 26px/600 - the same block looked like
+     a different component on this page than on every other one. Reverting these
+     four hands them back to the utility layer for this subtree only, so the form
+     is identical everywhere regardless of what the host page does to elements. */
+  font-size: revert-layer;
+  font-weight: revert-layer;
+  line-height: revert-layer;
+  letter-spacing: revert-layer;
 }
 .fcto a {
   color: var(--lime);
