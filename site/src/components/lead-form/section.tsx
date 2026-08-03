@@ -13,6 +13,7 @@
 import { Container } from '@/components/ui/container'
 import { cn } from '@/components/ui/_utils/cn'
 
+import { ROLE_OPTIONS } from './content'
 import { QuickHiringForm, type QuickHiringFormProps } from './quick-hiring-form'
 
 // Matches the catalogue templates' band so the form lines up with the content
@@ -54,23 +55,42 @@ export function technologyNameToSkill(technologyName: string): string {
  * location services, where the question is where, not what.
  */
 const SERVICE_SLUG_TO_ROLE: Record<string, string> = {
-  'ai-engineers': 'ai-engineer',
-  'ai-consulting': 'ai-engineer',
-  'ai-product-builds': 'ai-engineer',
-  'data-scientists': 'data-ml',
+  'ai-engineers': 'ai-ml',
+  'ai-consulting': 'ai-ml',
+  'ai-product-builds': 'ai-ml',
+  'data-scientists': 'data',
   'devops-engineers': 'devops',
   'cloud-engineers': 'devops',
-  'software-engineers': 'product-engineer',
-  'full-stack-developers': 'product-engineer',
-  'front-end-developers': 'product-engineer',
-  'back-end-developers': 'product-engineer',
-  'web-developers': 'product-engineer',
-  'no-code-developers': 'product-engineer',
+  'software-engineers': 'full-stack',
+  'full-stack-developers': 'full-stack',
+  'web-developers': 'full-stack',
+  'no-code-developers': 'full-stack',
+  'front-end-developers': 'frontend',
+  'back-end-developers': 'backend',
   'mobile-developers': 'mobile',
   'ios-developers': 'mobile',
   'android-developers': 'mobile',
-  'qa-analysts-testers': 'qa',
-  'fractional-ctos': 'fractional-cto',
+  // NOT mapped, because the tile grid has no tile for them: QA Analysts &
+  // Testers and Fractional CTOs. Both are real services with their own pages, so
+  // their visitors simply start at the role question with nothing preselected.
+  // Worth a decision: either add two tiles (making it 10) or accept the gap.
+}
+
+/**
+ * Guard against exactly the bug this shipped with once. The role ids were renamed
+ * when the tile design landed and this map still held the old ones, so every
+ * service page silently stopped prefilling: no error, no type failure, the form
+ * just quietly asked a question it already knew the answer to. Cross-checking the
+ * two lists here turns that into a loud failure at module load instead.
+ */
+const KNOWN_ROLE_IDS = new Set(ROLE_OPTIONS.map((r) => r.id))
+for (const [slug, roleId] of Object.entries(SERVICE_SLUG_TO_ROLE)) {
+  if (!KNOWN_ROLE_IDS.has(roleId)) {
+    throw new Error(
+      `Service "${slug}" maps to role "${roleId}", which is not in ROLE_OPTIONS. ` +
+        `Prefill would silently do nothing. Valid ids: ${[...KNOWN_ROLE_IDS].join(', ')}`,
+    )
+  }
 }
 
 export function roleForServiceSlug(slug: string | null | undefined): string | undefined {
