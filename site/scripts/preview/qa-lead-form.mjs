@@ -47,7 +47,7 @@ const PAGES = [
  * clobbered layout, not to police a two-pixel design change.
  */
 const EXPECT = {
-  sectionPaddingTopMin: 40, // the band's own breathing room
+  formHeightMin: 300, // a collapsed form measured ~120px; a healthy one 500+
   tileHeightMin: 55,
   tileHeightMax: 110,
   tilePaddingLeftMin: 14,
@@ -71,7 +71,10 @@ for (const spec of PAGES) {
 
   await page.waitForTimeout(700)
 
-  const section = page.locator('section.qh-form').first()
+  // `.qh-form` not `section.qh-form`: the bare variant renders a div, and the
+  // first version of this check silently stopped finding the form when that
+  // landed. A selector is part of the assertion and can rot with the code.
+  const section = page.locator('.qh-form').first()
   const present = (await section.count()) > 0
 
   if (expectForm && !present) problems.push('form MISSING')
@@ -83,20 +86,17 @@ for (const spec of PAGES) {
     await page.waitForTimeout(400)
 
     measured = await page.evaluate((expect) => {
-      const sec = document.querySelector('section.qh-form')
+      const sec = document.querySelector('.qh-form')
       if (!sec) return null
-      // The vertical padding lives on the inner band, not on the section: the
-      // section only carries the full-bleed background. Measuring the section
-      // reported 0px on every page and failed all eleven of them, which is a
-      // reminder that a red check is a claim about the checker too.
-      const band = sec.firstElementChild ?? sec
-      const cs = getComputedStyle(band)
       const tile = sec.querySelector('button[aria-pressed]')
       const tileCs = tile ? getComputedStyle(tile) : null
       const num = sec.querySelector('ol li span')
       const out = {
-        sectionPaddingTop: parseFloat(cs.paddingTop),
-        sectionBg: cs.backgroundColor,
+        // Overall rendered height is the invariant that actually catches the
+        // failure mode. A form clobbered by a host reset collapsed to ~120px;
+        // laid out correctly it is 500px or more. Padding is measured per
+        // variant and differs between them, so height is the honest check.
+        formHeight: Math.round(sec.getBoundingClientRect().height),
         // Null on pages that prefill the role: those open on the skills step,
         // so no role tile exists. Absence there is correct, not a fault.
         tileHeight: tile ? Math.round(tile.getBoundingClientRect().height) : null,
@@ -107,8 +107,8 @@ for (const spec of PAGES) {
         steps: sec.querySelectorAll('ol li').length,
       }
       out.problems = []
-      if (out.sectionPaddingTop < expect.sectionPaddingTopMin)
-        out.problems.push(`section padding-top ${out.sectionPaddingTop}px`)
+      if (out.formHeight < expect.formHeightMin)
+        out.problems.push(`form only ${out.formHeight}px tall - collapsed layout`)
       if (out.tileHeight !== null && (out.tileHeight < expect.tileHeightMin || out.tileHeight > expect.tileHeightMax))
         out.problems.push(`tile height ${out.tileHeight}px`)
       if (out.tilePaddingLeft !== null && out.tilePaddingLeft < expect.tilePaddingLeftMin)
@@ -133,7 +133,7 @@ console.log(`\nQA: quick hiring form across ${PAGES.length} pages on ${BASE}\n`)
 for (const r of rows) {
   const verdict = r.problems.length === 0 ? 'OK  ' : 'FAIL'
   const detail = r.measured
-    ? `steps ${r.measured.steps}, tile ${r.measured.tileHeight}px, pad-l ${r.measured.tilePaddingLeft}px, band pad ${r.measured.sectionPaddingTop}px`
+    ? `steps ${r.measured.steps}, ${r.measured.formHeight}px tall, tile ${r.measured.tileHeight}px, pad-l ${r.measured.tilePaddingLeft}px`
     : r.present
       ? 'present'
       : 'no form (expected)'
