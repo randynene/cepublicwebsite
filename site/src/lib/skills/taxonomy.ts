@@ -65,14 +65,16 @@ const ROWS: Row[] = [
   ['rag', 'RAG pipelines', 'ai', 1, 'retrieval augmented generation', 'retrieval'],
   ['llm-fine-tuning', 'LLM fine-tuning', 'ai', 1, 'fine tuning', 'finetuning'],
   ['ai-agents', 'AI agents', 'ai', 1, 'agentic', 'agents', 'autonomous agents'],
-  ['prompt-engineering', 'Prompt engineering', 'ai', 1, 'prompting'],
+  ['langgraph', 'LangGraph', 'ai', 1, 'lang graph', 'agent orchestration'],
+  ['llm-evals', 'LLM evals & observability', 'ai', 1, 'evals', 'langsmith', 'braintrust', 'tracing'],
+  ['voice-ai', 'Voice AI', 'ai', 1, 'realtime voice', 'speech agents', 'stt', 'tts'],
   ['pytorch', 'PyTorch', 'ai', 1, 'torch'],
   ['tensorflow', 'TensorFlow', 'ai', 1],
   ['hugging-face', 'Hugging Face', 'ai', 1, 'huggingface', 'transformers'],
   ['computer-vision', 'Computer vision', 'ai', 2, 'cv', 'image recognition'],
   ['nlp', 'NLP', 'ai', 2, 'natural language processing'],
   ['mlops', 'MLOps', 'ai', 2, 'ml ops'],
-  ['vector-databases', 'Vector databases', 'ai', 2, 'vector db', 'embeddings'],
+  ['vector-databases', 'Vector databases', 'ai', 1, 'vector db', 'embeddings'],
   ['pinecone', 'Pinecone', 'ai', 2],
   ['weaviate', 'Weaviate', 'ai', 2],
   ['chroma', 'Chroma', 'ai', 3, 'chromadb'],
@@ -87,7 +89,7 @@ const ROWS: Row[] = [
   ['whisper', 'Whisper', 'ai', 3, 'speech to text'],
   ['scikit-learn', 'scikit-learn', 'ai', 3, 'sklearn'],
   ['keras', 'Keras', 'ai', 3],
-  ['mcp', 'MCP (Model Context Protocol)', 'ai', 3, 'model context protocol'],
+  ['mcp', 'MCP (Model Context Protocol)', 'ai', 2, 'model context protocol'],
   ['n8n-ai', 'n8n AI workflows', 'ai', 3],
   ['recommendation-systems', 'Recommendation systems', 'ai', 3, 'recsys'],
   ['forecasting', 'Forecasting & time series', 'ai', 3, 'time series'],
@@ -100,6 +102,7 @@ const ROWS: Row[] = [
   ['databricks', 'Databricks', 'data', 1],
   ['bigquery', 'BigQuery', 'data', 1, 'big query'],
   ['dbt', 'dbt', 'data', 1, 'data build tool'],
+  ['streaming-data', 'Streaming data', 'data', 2, 'real time data', 'cdc', 'change data capture'],
   ['airflow', 'Apache Airflow', 'data', 1, 'airflow'],
   ['spark', 'Apache Spark', 'data', 2, 'spark', 'pyspark'],
   ['kafka', 'Apache Kafka', 'data', 2, 'kafka'],
@@ -165,7 +168,7 @@ const ROWS: Row[] = [
   ['nestjs', 'NestJS', 'backend', 2, 'nest'],
   ['express', 'Express', 'backend', 2, 'expressjs'],
   ['spring-boot', 'Spring Boot', 'backend', 2, 'spring'],
-  ['rust', 'Rust', 'backend', 2],
+  ['rust', 'Rust', 'backend', 1],
   ['elixir', 'Elixir', 'backend', 3, 'phoenix'],
   ['scala', 'Scala', 'backend', 3],
   ['kotlin-backend', 'Kotlin', 'backend', 3],
@@ -179,12 +182,14 @@ const ROWS: Row[] = [
   ['deno', 'Deno', 'backend', 3],
   ['bun', 'Bun', 'backend', 3],
   ['websockets', 'WebSockets', 'backend', 3, 'realtime'],
+  ['webassembly', 'WebAssembly', 'backend', 3, 'wasm'],
   ['payments', 'Payments (Stripe)', 'backend', 2, 'stripe', 'billing'],
   ['auth', 'Auth & identity', 'backend', 2, 'oauth', 'sso', 'auth0', 'clerk'],
 
   // Frontend.
   ['react', 'React', 'frontend', 1, 'reactjs', 'react.js'],
   ['nextjs', 'Next.js', 'frontend', 1, 'next', 'nextjs'],
+  ['edge-runtime', 'Edge & serverless runtimes', 'devops', 2, 'edge functions', 'workers'],
   ['typescript', 'TypeScript', 'frontend', 1, 'ts'],
   ['javascript', 'JavaScript', 'frontend', 1, 'js', 'es6'],
   ['vue', 'Vue.js', 'frontend', 1, 'vue', 'vuejs', 'nuxt'],
@@ -288,7 +293,7 @@ export const SKILLS_BY_ID = new Map(SKILLS.map((s) => [s.id, s]))
  * does one thing. AI still leads, because the category order here is the order of
  * `SKILL_CATEGORIES` and that is deliberate, but it does not crowd out the rest.
  */
-export function defaultSkills(category?: SkillCategory, limit = 12): Skill[] {
+export function defaultSkills(category?: SkillCategory, limit = 16): Skill[] {
   if (category) {
     const pool = SKILLS.filter((s) => s.category === category)
     const tier1 = pool.filter((s) => s.tier === 1)

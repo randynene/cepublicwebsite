@@ -46,8 +46,11 @@ await page.waitForSelector('text=What role are you hiring for?')
 
 await shoot('01-role-empty', 'step 1, nothing chosen, Continue inactive')
 
+await page.getByRole('button', { name: 'Something else', exact: true }).click()
+await shoot('02a-role-something-else', 'Something else is an ordinary answer: Next continues')
+
 await page.getByRole('button', { name: 'AI / ML', exact: true }).click()
-await shoot('02-role-chosen', 'step 1, AI Engineer selected, Continue now lime')
+await shoot('02-role-chosen', 'step 1, AI / ML selected, Next now lime')
 
 await page.getByRole('button', { name: /Next|Book a call/ }).first().click()
 await page.waitForSelector('text=Any particular stack?')

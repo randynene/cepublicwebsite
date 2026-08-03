@@ -601,33 +601,33 @@ export function QuickHiringForm({
                 type scale and sweep hover, and it tracks any future change to it.
                 The previous hand-rolled pill with a 32px arrow disc was noticeably
                 larger than every other CTA on the page. */}
-            {role?.handoffToClara && step === 'role' ? (
-              <CtaButton href="/ask" variant="solid" label={C.actions.askClara} />
-            ) : (
-              <CtaButton
-                as="button"
-                variant="solid"
-                label={
-                  step === 'details'
-                    ? submitting
-                      ? C.actions.submitting
-                      : C.actions.submit
-                    : C.actions.continue
-                }
-                disabled={!canContinue() || submitting}
-                onClick={() => (step === 'details' ? void submit() : goNext())}
-                // Disabled is a different FILL, not lime at reduced opacity: dimmed
-                // lime on a dark ground reads as a rendering fault, not as "not yet".
-                // `!bg-none` matters as much as the colour. `.cta-sweep-solid`
-                // parks a 200%-wide lime gradient off-canvas as a background
-                // IMAGE, so overriding background-colour alone left a lime sliver
-                // down the left edge of the disabled button.
-                className={cn(
-                  (!canContinue() || submitting) &&
-                    'cursor-not-allowed border border-border-subtle !bg-surface-tertiary !bg-none !text-text-tertiary !shadow-none [&_span]:!text-text-tertiary',
-                )}
-              />
-            )}
+            {/* Every role, including "Something else", carries straight on to the
+                next step. It used to divert that one answer to Clara, which meant
+                the visitor who was least sure what they needed was the only one
+                thrown out of the form they had already started. */}
+            <CtaButton
+              as="button"
+              variant="solid"
+              label={
+                step === 'details'
+                  ? submitting
+                    ? C.actions.submitting
+                    : C.actions.submit
+                  : C.actions.continue
+              }
+              disabled={!canContinue() || submitting}
+              onClick={() => (step === 'details' ? void submit() : goNext())}
+              // Disabled is a different FILL, not lime at reduced opacity: dimmed
+              // lime on a dark ground reads as a rendering fault, not as "not yet".
+              // `!bg-none` matters as much as the colour. `.cta-sweep-solid`
+              // parks a 200%-wide lime gradient off-canvas as a background
+              // IMAGE, so overriding background-colour alone left a lime sliver
+              // down the left edge of the disabled button.
+              className={cn(
+                (!canContinue() || submitting) &&
+                  'cursor-not-allowed border border-border-subtle !bg-surface-tertiary !bg-none !text-text-tertiary !shadow-none [&_span]:!text-text-tertiary',
+              )}
+            />
           </div>
         </div>
       )}

@@ -22,10 +22,12 @@ import type { SkillCategory } from '@/lib/skills/taxonomy'
 export interface RoleOption {
   id: string
   label: string
-  /** Biases the stack step's suggestions. Not a filter; nothing is hidden. */
+  /**
+   * Biases the stack step's suggestions. Not a filter; nothing is hidden.
+   * "Something else" deliberately has none, so that visitor sees the broad
+   * cross-category spread rather than a guess at what they meant.
+   */
   category?: SkillCategory
-  /** "Not sure" hands over to Clara instead of continuing the form. */
-  handoffToClara?: boolean
 }
 
 export const ROLE_OPTIONS: RoleOption[] = [
@@ -36,7 +38,7 @@ export const ROLE_OPTIONS: RoleOption[] = [
   { id: 'data', label: 'Data', category: 'data' },
   { id: 'devops', label: 'DevOps', category: 'devops' },
   { id: 'mobile', label: 'Mobile', category: 'mobile' },
-  { id: 'something-else', label: 'Something else', handoffToClara: true },
+  { id: 'something-else', label: 'Something else' },
 ]
 
 /**
@@ -140,7 +142,6 @@ export const LEAD_FORM_COPY = {
     back: 'Back',
     submit: 'Book a call',
     submitting: 'Saving...',
-    askClara: 'Talk it through with our AI',
   },
   progress: {
     // Rendered as "Step 2 of 5" via two spans, so the numbers stay dynamic while
