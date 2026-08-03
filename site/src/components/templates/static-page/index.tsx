@@ -82,14 +82,36 @@ export default function StaticPageTemplate({
   page,
   breadcrumbs,
   showBreadcrumbs = true,
+  calendlyOnly = false,
 }: {
   page: StaticPage
   breadcrumbs: BreadcrumbItem[]
   /** Hide the `> …` breadcrumb row (book-a-call keeps the lime eyebrow only). */
   showBreadcrumbs?: boolean
+  /**
+   * Booking landing mode: header + Calendly + footer only. Drops the eyebrow,
+   * H1, hero copy, and body sections. A visually-hidden H1 stays for SEO/a11y.
+   */
+  calendlyOnly?: boolean
 }) {
   const hasCalendly = Boolean(page.calendlyUrl)
   const hasSections = (page.sections ?? []).length > 0
+
+  if (calendlyOnly && page.calendlyUrl) {
+    return (
+      <>
+        <Heading as="h1" className="sr-only">
+          {page.title}
+        </Heading>
+        <div className="w-full bg-bg-primary px-[22px] pb-16 pt-8 sm:px-8 lg:px-16 lg:pb-24 lg:pt-12">
+          <CalendlyInlineEmbed
+            url={page.calendlyUrl}
+            className="mx-auto w-full max-w-[1440px]"
+          />
+        </div>
+      </>
+    )
+  }
 
   return (
     <>

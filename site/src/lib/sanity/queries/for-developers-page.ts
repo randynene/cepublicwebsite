@@ -377,7 +377,10 @@ export function toForEngineersContent(data: ForDevelopersPageData): ForEngineers
         })(),
         subRotateLead: FE.hero.subRotateLead,
         subRotate: FE.hero.subRotate,
-        ctaPrimaryHref: c.hero.ctaPrimaryHref || FE.hero.ctaPrimaryHref,
+        // Live-jobs CTAs are code-owned: Studio still holds the old
+        // "Join the network" / #join pair and must not win on merge.
+        ctaPrimary: FE.hero.ctaPrimary,
+        ctaPrimaryHref: FE.hero.ctaPrimaryHref,
         // In-page process scroll is the product default. Treat legacy
         // /how-it-works values as unset so they cannot override #fe2-how.
         ctaGhostHref: (() => {
@@ -429,7 +432,9 @@ export function toForEngineersContent(data: ForDevelopersPageData): ForEngineers
     ? {
         ...FE.final,
         ...c.final,
-        ctaHref: c.final.ctaHref || FE.final.ctaHref,
+        // Same code-owned lock as the hero primary CTA above.
+        cta: FE.final.cta,
+        ctaHref: FE.final.ctaHref,
       }
     : FE.final
 

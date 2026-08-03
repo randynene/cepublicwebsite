@@ -15,7 +15,7 @@ import { draftMode, headers } from 'next/headers'
 import { VisualEditing } from 'next-sanity/visual-editing'
 
 import { env } from '@/lib/env'
-import { isAskPath } from '@/lib/ask/routes'
+import { isAskPath, isBookACallPath, isForDevelopersPath } from '@/lib/ask/routes'
 import Footer from '@/components/layout/footer'
 import Nav from '@/components/layout/nav'
 import { cn } from '@/components/ui/_utils/cn'
@@ -95,6 +95,11 @@ export default async function RootLayout({
   // App Router cannot subtract a parent's chrome from a nested layout, so the
   // opt-out is decided here, off the pathname the middleware already surfaces.
   const isAskPage = isAskPath(pathname)
+  // For-developers sends talent to the live job board; book-a-call is already
+  // the booking surface. The Clara "Ask about our services" pill fights both,
+  // so it stays off here the same way it stays off on /ask.
+  const suppressChatWidget =
+    isAskPage || isForDevelopersPath(pathname) || isBookACallPath(pathname)
 
   return (
     <html
@@ -159,7 +164,7 @@ export default async function RootLayout({
           refreshOnReconnect={isDraftMode}
         />
         {isDraftMode && <VisualEditing />}
-        <GlobalScripts suppressChatWidget={isAskPage} />
+        <GlobalScripts suppressChatWidget={suppressChatWidget} />
       </body>
     </html>
   )

@@ -84,7 +84,7 @@ export async function renderStaticPage(
   usPath: string,
   locale: Locale,
   breadcrumbName: string,
-  options?: { showBreadcrumbs?: boolean },
+  options?: { showBreadcrumbs?: boolean; calendlyOnly?: boolean },
 ) {
   const page = await fetchStaticPage(id)
 
@@ -114,6 +114,7 @@ export async function renderStaticPage(
         page={page}
         breadcrumbs={breadcrumbs}
         showBreadcrumbs={options?.showBreadcrumbs}
+        calendlyOnly={options?.calendlyOnly}
       />
     </main>
   )
