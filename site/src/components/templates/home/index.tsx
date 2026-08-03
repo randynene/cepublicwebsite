@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
+import { CtaButton } from '@/components/ui/cta-button'
 import { MegaMenuPillLabel } from '@/components/ui/mega-menu-pill-label'
 import { Marquee } from '@/components/ui/marquee'
 import { cn } from '@/components/ui/_utils/cn'
@@ -49,7 +50,10 @@ const EYEBROW =
   'text-[12px] font-semibold uppercase leading-[18.6px] tracking-[1.68px] text-brand-primary'
 const MUTED = 'text-[#7F8CA0]'
 const SEE_HOW_IT_WORKS_LABEL = 'See how it works'
-const SEE_HOW_IT_WORKS_ARROW = '\u2192'
+const SEE_HOW_IT_WORKS_HREF = '/how-it-works'
+const CASE_STUDIES_LABEL = 'All case studies'
+const CASE_STUDIES_HREF = '/customer-stories'
+const CASE_STUDIES_ARROW = '\u2192'
 
 // White display headings = Inter semibold. Only lime accent words = font-serif italic.
 const H1 =
@@ -379,7 +383,9 @@ function Process({ content }: SectionProps) {
   // Prefer the editor-set Sanity URL; fall back to the canonical Seb overview.
   const resolvedVideoUrl = process.video.videoUrl?.trim() || HOME_PROCESS_VIDEO_URL
   return (
-    <section id="process" className="scroll-mt-[96px] bg-[#070D18] py-[72px] lg:py-[104px]">
+    // Bottom pad is 0 on purpose: the See-how-it-works CTA owns the band
+    // between this video and Testimonials, with equal space above and below.
+    <section id="process" className="scroll-mt-[96px] bg-[#070D18] pt-[72px] lg:pt-[104px]">
       <div className={BAND}>
         <Eyebrow>{process.eyebrow}</Eyebrow>
         <h2 className={cn('mt-[16px]', H2)}>
@@ -423,15 +429,15 @@ function Process({ content }: SectionProps) {
           <ProcessVideo video={process.video} videoUrl={resolvedVideoUrl} />
         </Reveal>
 
-        {/* CE-18 — secondary CTA under the video, points at How it works. */}
-        <div className="mt-[28px] flex justify-center">
-          <Link
-            href="/how-it-works"
-            className="inline-flex items-center gap-[10px] rounded-full border border-white/25 bg-transparent px-[26px] py-[14px] text-[16px] font-semibold text-white transition-colors hover:border-brand-primary hover:text-brand-primary"
-          >
-            {SEE_HOW_IT_WORKS_LABEL}
-            <span aria-hidden>{SEE_HOW_IT_WORKS_ARROW}</span>
-          </Link>
+        {/* Centered in the gap between the video and Testimonials. Equal
+         * my-* above/below; Testimonials top pad is reduced to match. */}
+        <div className="flex justify-center py-[72px] lg:py-[88px]">
+          <CtaButton
+            as="a"
+            href={SEE_HOW_IT_WORKS_HREF}
+            variant="outline"
+            label={SEE_HOW_IT_WORKS_LABEL}
+          />
         </div>
       </div>
     </section>
@@ -445,7 +451,9 @@ function Process({ content }: SectionProps) {
 function Testimonials({ content }: SectionProps) {
   const { testimonials } = content
   return (
-    <section className="bg-[#070D18] py-[120px]">
+    // Top pad is 0: the Process CTA band already supplies the space above
+    // this heading, so the button sits centered between video and title.
+    <section className="bg-[#070D18] pb-[120px] pt-0">
       <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-[60px] px-[22px] sm:px-[32px] lg:px-[64px]">
         <div className="flex flex-col gap-[16px]">
           <p className="text-[12px] font-bold uppercase leading-[18.6px] tracking-[1.68px] text-[#D4FF3C]">
@@ -541,24 +549,37 @@ function Testimonials({ content }: SectionProps) {
             )
 
             return (
-              <Reveal
-                key={item.name}
-                delay={idx * 100}
-                className="hover-lift flex h-[540px] overflow-hidden rounded-[24px] bg-[#101B30] shadow-[0_4px_4px_rgba(0,0,0,.25)]"
-                style={{ border: '12px solid #22314D' }}
-              >
+              <div key={item.name} className="flex flex-col gap-[16px]">
+                <Reveal
+                  delay={idx * 100}
+                  className="hover-lift flex h-[540px] overflow-hidden rounded-[24px] bg-[#101B30] shadow-[0_4px_4px_rgba(0,0,0,.25)]"
+                  style={{ border: '12px solid #22314D' }}
+                >
+                  {photoRight ? (
+                    <>
+                      {textPanel}
+                      {photoPanel}
+                    </>
+                  ) : (
+                    <>
+                      {photoPanel}
+                      {textPanel}
+                    </>
+                  )}
+                </Reveal>
+                {/* Under Marcus / Salmon (photo on the right): link to all case studies. */}
                 {photoRight ? (
-                  <>
-                    {textPanel}
-                    {photoPanel}
-                  </>
-                ) : (
-                  <>
-                    {photoPanel}
-                    {textPanel}
-                  </>
-                )}
-              </Reveal>
+                  <div className="flex justify-end">
+                    <Link
+                      href={CASE_STUDIES_HREF}
+                      className="inline-flex items-center gap-[8px] text-[16px] font-semibold text-white transition-colors hover:text-brand-primary"
+                    >
+                      <span aria-hidden>{CASE_STUDIES_ARROW}</span>
+                      {CASE_STUDIES_LABEL}
+                    </Link>
+                  </div>
+                ) : null}
+              </div>
             )
           })}
         </div>
@@ -658,12 +679,23 @@ function Calculator({ content }: SectionProps) {
   )
 }
 
-// #6 — Profiles duplicated inline ([...profiles, ...profiles]) so the marquee
-// renders at least 6 cards per set, guaranteeing track > 2× viewport width
-// for a seamless gap-free loop on any screen size.
+// #6 — The whole talent roster, region-interleaved (see marqueeOrder()).
+//
+// Marquee animates one full set in a FIXED duration, so a longer track moves
+// proportionally faster. The roster is ~4x longer than the three profiles this
+// section began with, which made the default `slow` (120s) a blur. Duration is
+// therefore set from the card count to hold a steady ~26px/s drift, and the
+// old inline [...profiles, ...profiles] duplication is gone - the roster is
+// already far wider than 2x any viewport, and Marquee renders its own second
+// set for the seamless loop.
+const ENG_CARD_W = 360 // 340px card + 20px right margin
+const ENG_SCROLL_PX_PER_SEC = 26
+
 function RealEngineers({ content }: SectionProps) {
   const { realEngineers } = content
-  const loopedProfiles = [...realEngineers.profiles, ...realEngineers.profiles]
+  const duration = Math.round(
+    (realEngineers.profiles.length * ENG_CARD_W) / ENG_SCROLL_PX_PER_SEC,
+  )
   return (
     <section className="bg-[#070D18] py-[72px] lg:py-[104px]">
       <div className={BAND}>
@@ -672,8 +704,12 @@ function RealEngineers({ content }: SectionProps) {
           {realEngineers.titleLead} <span className={ACCENT}>{realEngineers.titleAccent}</span>
         </h2>
       </div>
-      <Marquee speed="slow" pauseOnHover className="mt-[40px] pb-[8px]">
-        {loopedProfiles.map((profile, idx) => (
+      <Marquee
+        pauseOnHover
+        className="mt-[40px] pb-[8px]"
+        style={{ '--marquee-duration': `${duration}s` } as React.CSSProperties}
+      >
+        {realEngineers.profiles.map((profile, idx) => (
           <div
             key={`${profile.name}-${idx}`}
             className="hover-lift relative mr-[20px] h-[420px] w-[340px] shrink-0 overflow-hidden rounded-[24px]"
@@ -694,7 +730,7 @@ function RealEngineers({ content }: SectionProps) {
                   'linear-gradient(0deg, rgba(6,15,30,.98) 0%, rgba(6,15,30,.7) 22%, rgba(6,15,30,0) 55%)',
               }}
             />
-            <span className="absolute right-[14px] top-[14px] flex h-[28px] w-[28px] items-center justify-center rounded-full bg-black/45 text-[14px] backdrop-blur-sm">
+            <span className="absolute right-[14px] top-[14px] flex h-[40px] w-[40px] items-center justify-center rounded-full bg-black/45 text-[22px] leading-none backdrop-blur-sm">
               {profile.flag}
             </span>
             <div className="absolute inset-x-0 bottom-0 flex flex-col gap-[9px] p-[18px]">
