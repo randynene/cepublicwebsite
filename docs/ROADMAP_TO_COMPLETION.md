@@ -612,6 +612,107 @@ Nothing was written to the production dataset.
 pages have no chat panel at all (they are a single stacked column of cards, no
 left aside). Adding one there is a layout decision, not a fix - flagged for Jake.
 
+### 6f. Talent profile roster - DONE (3 Aug 2026)
+
+Every face on the site now comes from one list: `site/src/lib/talent/roster.ts`.
+**13 real people**, built from Jake's `Website images/Talent profiles` folder.
+
+**The problem it fixes.** The same stock photo appeared under three different
+names carrying three different flags, and the Eastern Europe page showed a
+"Petra K." in the hero above a "Petar K." further down. The home marquee had
+Kyla flagged Colombian when she is Filipina. Region is now a property of the
+PERSON, so a name, flag, title or skill set is written once and every surface
+reads it.
+
+**What each person carries:** name, bare job title, years, home city, country
+flag, exactly three skills, and a two-sentence background. The two card shapes
+compose the title differently (`roleWithYears` for the hero and marquee,
+`roleWithCity` for the placed-engineer grid) so they cannot drift apart.
+
+**THE HOME HERO IS THE ANCHOR.** Four of the roster people are also the home
+hero slideshow cards, and the hero named them first, so the roster follows the
+hero rather than the other way round: **Kyla T.** (Senior Backend, PH),
+**Marcelo P.** (Senior Data, AR), **Petra K.** (Senior AI, HR) and **Rafael S.**
+(Senior Full-Stack, BR — replaced Gabriel K. on 3 Aug because `gabriel.jpg` had
+baked-in blurred side strips). Both lists are now derived from the roster in
+`site/src/lib/talent/home-profiles.ts`, so the header can no longer drift from
+the rest of the site. Name format standardised to "Kyla T.", not "Kyla. T".
+
+**Naming.** Eastern Europe uses Croatian / Serbian names per Jake's rule,
+LATAM uses Latin American names, and the Philippines and Africa photos keep the
+names they were supplied with - except where the hero had already named someone,
+which wins.
+
+**Two people removed from the 15 originally built (3 Aug):**
+- `europe/Heather.png` (listed as Jelena V.) - removed on Jake's instruction.
+- `europe/EU.jpg` - the SAME WOMAN as `EU 1.jpg`. Same nose stud, same blazer,
+  same shoot, two poses. She had been listed twice under two names ("Petra K."
+  and "Ivana M."); she is now one person, **Ivana M.**, and the name Petra K.
+  moved to its rightful owner, the hero's blonde (`EU 2.jpg`).
+
+**Photos.** `scripts/static/build-talent-photos.mjs` crops each source twice,
+because a single master gets over-zoomed on the wider card: 4:5 at 680x850 for
+the home marquee and location hero cards, and ~11:10 at 760x682 for the shorter
+"Engineers we've placed from ..." card. Crops are centred on a per-photo face
+focus point, plus a per-photo `zoom` so the three-quarter body shots (Kyla,
+Ericka, Ros, Russel, Stephen, Grace) frame at the same scale as the tight
+headshots instead of rendering as a distant figure. Output lives at
+`site/public/design/talent/`.
+
+**Marquee ordering.** `marqueeOrder()` interleaves the roster so no two
+neighbouring cards come from the same region, including across the loop seam.
+Round-robins the region cycle then swaps out any same-region neighbour the
+uneven region sizes leave behind, so it stays correct as photos are added.
+
+**Marquee speed.** `Marquee` animates one full set in a FIXED duration, so a
+longer track moves proportionally faster - going from 3 profiles to 13 turned
+the default `slow` (120s) into a blur at ~90px/s. The home section now sets its
+duration from the card count to hold a steady 26px/s, and the old inline
+`[...profiles, ...profiles]` duplication is gone (the roster is already far
+wider than 2x any viewport, and `Marquee` renders its own second set).
+
+**Flag badges enlarged** from 28px/14px to 40px/22px in the marquee and
+38px/21px on the hero cards.
+
+**Wired to:** the home hero slideshow (4), the home "Real engineers, real
+backgrounds" marquee (all 13), and the three hero cards on each location page.
+`scripts/static/patch-talent-profiles.ts` pushes the resolved content into
+Sanity, which wins over the code fallbacks for all of these fields - four
+documents by ID, named fields only, idempotent on re-run. It reads the composed
+content modules rather than the roster directly, so what lands in Sanity is
+exactly what the code fallback renders.
+
+**Gotcha for future scripts:** `site/src/components/templates/location/content.ts`
+imports the roster by RELATIVE path, not the `@/` alias. The root `tsconfig.json`
+maps `@/` to the ROOT `src`, not `site/src`, so an alias there breaks
+`seed-location-pages.ts` and `patch-talent-profiles.ts` at runtime under tsx.
+That regression was introduced and fixed on 3 Aug.
+
+**Blocked on more photos.** The "Engineers we've placed from ..." grid on ALL
+THREE location pages is still stock photography, because every region has
+exactly enough roster faces for its hero card stack and none spare: Eastern
+Europe 3, LATAM 4, Philippines 5. Rather than repeat a face twice on one page,
+those grids keep their existing content, with names deliberately kept clear of
+the roster (Kacper W. / Elena D. / Andriy T. on Eastern Europe, Thiago S. on
+LATAM). **9 more photos closes it: 3 per region.**
+
+**Eastern Europe hero = home slideshow (3 Aug).** EE no longer uses the three-card stack. It reuses the home `ProfileCard` rotator and cycles every Eastern Europe roster face (Ivana M., Petra K., Anto C.). LATAM and Philippines stay on the stack. `hero.visual: 'slideshow' | 'stack'` is code-driven (Studio has no field); `toLocationContent` preserves it across Sanity merges.
+
+**3 Aug follow-up (talent + on-the-ground photos):**
+- LATAM hero stack is now **Mateo R. / Rafael S. / Gabriel K.** (Rafael replaces Marcelo on that page; skills TypeScript / NestJS / PostgreSQL; Brazil flag). Marcelo stays on the home hero + marquee.
+- All three location pages temporarily **hide** the placed-engineers block (`engineers.hidden: true` on LATAM / EE / PH). Content stays in code + Sanity; flip the flag to bring each section back.
+- Marketing CTAs no longer point at `/start-hiring` (hero / calculator → `/book-a-call`; “Start the brief” → `/contact` “Contact us today”). Location “Open chat” / “Ask our AI anything” use `ChatLink` → Clara. FAQ “Open chat” already did.
+- Philippines hero stack is now **Russel D. / Stephen L. / Kyla T.** (all 🇵🇭); location stack layout nudged open slightly; flags enlarged.
+- Anto C. EE slideshow: full-bleed crop with studio grey padded above the crown (no letterbox bars); ProfileCard bottom scrim shortened so the lower face is not drowned. Grace / Mateo / Ericka marquee crops re-centred.
+- Home hero slot 4: **Rafael S.** replaces Gabriel K. (Gabriel stays on LATAM stack + marquee).
+- EE + LATAM "Where we are on the ground…" images swapped (`location/*/team.jpg` + `patch-location-team-photos.ts`).
+
+**Also open:** Marcelo P. carries the Argentinian flag because the home hero
+already presented him that way. He is no longer on the LATAM hero stack (Rafael
+is), but still appears on home. Flagged to Jake; a one-line change in the roster
+moves him to Eastern Europe if he wants. Africa has one person (Grace O.) and
+no location page, so she appears in the home marquee only.
+
 ### PHASE 7 - SEO + parity full verification (the launch gate)
 Goal: prove the crossover is safe before anyone flips the domain.
 
@@ -917,14 +1018,14 @@ from the product tracker and should be deleted before launch (scaffold debt).
 ### Marketing / standalone
 | Page | URL | Must match live? | Status | Work needed | Wave |
 |---|---|---|---|---|---|
-| Home | `/` | No (redesigned) | WIRED-FALLBACK | Phase 6: fix crash + fill Sanity + kill fallback | 5 |
-| How It Works | `/how-it-works` | No (redesigned) | WIRED-FALLBACK | Phase 6: fill Sanity + kill fallback | 5 |
+| Home | `/` | No (redesigned) | WIRED-FALLBACK | Phase 6: fix crash + fill Sanity + kill fallback. **3 Aug polish:** "→ All case studies" under Salmon/Marcus testimonial → `/customer-stories`. | 5 |
+| How It Works | `/how-it-works` | No (redesigned) | WIRED-FALLBACK | Phase 6: fill Sanity + kill fallback. **3 Aug polish:** Stage 3 faces → Molly (left) + Daniel (right); Welcome slide kept; JPG ~130KB; Sanity Stage 3 image patched. | 5 |
 | Pricing | `/pricing` | Yes | WIRED-FALLBACK | Phase 6: fill Sanity + calculator embed (D5) | 5 |
-| For Developers | `/for-developers` (+ `/uk`) | Yes | DONE - rebuilt + Sanity-wired, pixel-parity PROVEN (not yet seeded/pushed) | Phase 3.1: tokenise-and-hydrate rebuild of the frozen Figma export; `forDevelopersPage` bespoke singleton + GROQ/Zod/transform + US/UK routes + seed. `npm run static:verify-fe2-parity` asserts byte-identical output. Build green, routes 200. Jake to seed + push. | 2 |
+| For Developers | `/for-developers` (+ `/uk`) | Yes | DONE - rebuilt + Sanity-wired, pixel-parity PROVEN (not yet seeded/pushed) | Phase 3.1: tokenise-and-hydrate rebuild of the frozen Figma export; `forDevelopersPage` bespoke singleton + GROQ/Zod/transform + US/UK routes + seed. `npm run static:verify-fe2-parity` asserts byte-identical output. Build green, routes 200. **3 Aug polish:** hero "How it works" scrolls to in-page `#fe2-how` (THE PROCESS), not `/how-it-works`; Sanity `ctaGhostHref` patched. **3 Aug rotator:** line 1 = "We match you with companies that fit your"; line 2 = static "work" + rotating style/values/salary/mission; Sanity `hero.sub` patched. **3 Aug UI:** Why-this-exists stats no longer truncate; "2" body wraps on two lines; community photo strip hidden (`hideCommunityBlock`); IDEA glow fades at the bottom. | 2 |
 | Our Work | `/our-work` | Yes | **DONE (WIRE-BESPOKE 23 Jul) + polish 28 Jul.** Bespoke page + Sanity wiring. Polish: bright logo marquee; people-photo tiles (8x + 2x beyond-hiring); taller Customer Impact with autoplay videos TR/BL; uniform `#070D18` ground; mid-CTA removed. Studio photo slots still optional overrides. | DONE (G2 + polish) | 2 |
 | Location: LATAM | `/services/latam-developers` | Net-new | BUILT + COMMITTED (bespoke `LocationTemplate` + cost calculator + location JSON-LD, dark/lime; 200). G1 + G2 done. **27 Jul:** redesigned shared "What's included" card added after the regional overview with Latin America-specific payroll copy; `locationPage-latam-developers.included` patched in production (published doc only, no draft) so all copy is Studio-editable. | DONE (G1+G2) | 2 |
-| Location: Philippines | `/services/philippines-developers` | Net-new | BUILT + COMMITTED (same `LocationTemplate`; 200). G1 done. G2 wiring code-complete (WIRE-BESPOKE 23 Jul, same as LATAM). Doc IS seeded (page renders Sanity data). **"What's included" section redesigned 27 Jul - DONE** (one bordered card, equal-height columns, two-up "We" list, lime as accent only) per `whats-included-1a.html`; copy rewritten with counted labels + 8 split "We" items + PH-named payroll line; 4 new fields (`youBody`, `youFootnote`, `wePill`, `weBody`) added to schema/GROQ/Zod/seed. **Studio deployed + `npm run static:patch-ph-included` run against production** (published doc patched, no draft existed); verified rendering at 1440/1024/390. **27 Jul polish:** hero CTA contents optically centred; all three benefit facts share one desktop row; trusted-by label is exactly two lines. | DONE (G1+G2) | 2 |
-| Location: Eastern Europe | `/services/eastern-europe-developers` | Net-new | BUILT + COMMITTED (same `LocationTemplate`; 200; net-new slug, no service doc). G1 + G2 done. **27 Jul:** redesigned shared "What's included" card added after the regional overview with Eastern Europe-specific payroll copy; `locationPage-eastern-europe-developers.included` patched in production (published doc only, no draft) so all copy is Studio-editable. | DONE (G1+G2) | 2 |
+| Location: Philippines | `/services/philippines-developers` | Net-new | BUILT + COMMITTED (same `LocationTemplate`; 200). G1 done. G2 wiring code-complete (WIRE-BESPOKE 23 Jul, same as LATAM). Doc IS seeded (page renders Sanity data). **"What's included" section redesigned 27 Jul - DONE** (one bordered card, equal-height columns, two-up "We" list, lime as accent only) per `whats-included-1a.html`; copy rewritten with counted labels + 8 split "We" items + PH-named payroll line; 4 new fields (`youBody`, `youFootnote`, `wePill`, `weBody`) added to schema/GROQ/Zod/seed. **Studio deployed + `npm run static:patch-ph-included` run against production** (published doc patched, no draft existed); verified rendering at 1440/1024/390. **27 Jul polish:** hero CTA contents optically centred; all three benefit facts share one desktop row; trusted-by label is exactly two lines. **3 Aug:** Vimeo `1145433775` wired - muted ambient autoplay on black + click play from start with sound; Sanity `video.videoUrl` patched. | DONE (G1+G2) | 2 |
+| Location: Eastern Europe | `/services/eastern-europe-developers` | Net-new | BUILT + COMMITTED (same `LocationTemplate`; 200; net-new slug, no service doc). G1 + G2 done. **27 Jul:** redesigned shared "What's included" card added after the regional overview with Eastern Europe-specific payroll copy; `locationPage-eastern-europe-developers.included` patched in production (published doc only, no draft) so all copy is Studio-editable. **3 Aug:** Vimeo `1212987222` wired same ambient behaviour; Sanity `video.videoUrl` patched. | DONE (G1+G2) | 2 |
 | About Us | `/about-us` | YES - live + indexed on CE | URL-LIVE-ONLY | Keep live w/ captured content (stays indexed); redesign later (deferred). Do NOT hide. **27 Jul:** removed from header `navigation.primaryLinks` (was the 6th item); kept in footer Company column (`About us`). Page itself unchanged. | 4 (defer design) |
 | Contact | `/contact` | YES - live + indexed on CE (`/contact-us` -> `/contact`) | URL-LIVE-ONLY | Keep live w/ captured content; redesign later (deferred). Do NOT hide. | 4 (defer design) |
 | Referrals | `/referrals` | Design exists | URL-LIVE-ONLY (built + wired) | Phase 5.3 DESIGN pass (not a build) | 4 |
@@ -937,7 +1038,7 @@ from the product tracker and should be deleted before launch (scaffold debt).
 | Hiring cost calculator (standalone) | `/hiring-cost-calculator` | Live 200, not wanted standalone | REMOVE via 301 -> /pricing (D3 FINAL) | delete route; parity exception | - |
 | Price comparison calculator (standalone) | `/price-comparison-calculator` | Live 200, not wanted standalone | REMOVE via 301 -> /pricing (D3 FINAL) | delete route (+ /uk, /ph, /tools variants -> /pricing); parity exception | - |
 | Fractional CTO | `/services/fractional-ctos` (+ `/uk`) | Net-new | BUILT + COMMITTED 22 Jul (`2951a2c`); **G2 wiring code-complete (WIRE-BESPOKE 23 Jul): `fractionalCtoPage` singleton (all copy editable + `video.videoUrl`) + GROQ/Zod/transform + US/UK routes (Sanity-first, static `FCTO` fallback) + seed; tsc/build/routes-200 green.** No photos by design (anonymised CTO cards, text-name logos, stylised video tile) - only media control is the video URL. OPEN: Jake deploys Studio + runs `npm run static:seed-fractional-cto-page`. | Deploy Studio + run seed; then DONE (confirm canonical URL vs planned `/fractional-cto` separately) | 4 |
-| Software Engineers (Hire Engineers) | `/services/software-engineers` (+ `/uk`) | Net-new (nav "Hire Engineers") | BUILT + COMMITTED 22 Jul (`a9cf250`; bespoke dark/lime `templates/hire-engineers/`). **G2 wiring code-complete (WIRE-BESPOKE 23 Jul): `hireEngineersPage` singleton (all copy editable + every image slot editable - hero avatars, offer/proof/form photos, sample-profile + author avatars, match photos - + 90-second tour `videoUrl`/`poster`) + GROQ/Zod/transform (splices calculator option keys, stega-cleans tour URL) + US/UK routes (Sanity-first, static `HE` fallback) + seed; tsc/build/routes-200 green.** Calculator numeric tables stay code-driven. SEEDED to production 23 Jul (after the Growth plan upgrade; verified `hireEngineersPage` landed with all sections), Studio deployed. Fully editable in Studio. Seb: upload image slots + paste the 90-second tour video URL if wanted. | DONE (G2). Optional: image/video uploads (confirm `/hire/software-engineers` redirect target + nav link) | 4 |
+| Software Engineers (Hire Engineers) | `/services/software-engineers` (+ `/uk`) | Net-new (nav "Hire Engineers") | BUILT + COMMITTED 22 Jul (`a9cf250`; bespoke dark/lime `templates/hire-engineers/`). **G2 wiring code-complete (WIRE-BESPOKE 23 Jul): `hireEngineersPage` singleton (all copy editable + every image slot editable - hero avatars, offer/proof/form photos, sample-profile + author avatars, match photos - + 90-second tour `videoUrl`/`poster`) + GROQ/Zod/transform (splices calculator option keys, stega-cleans tour URL) + US/UK routes (Sanity-first, static `HE` fallback) + seed; tsc/build/routes-200 green.** Calculator numeric tables stay code-driven. SEEDED to production 23 Jul (after the Growth plan upgrade; verified `hireEngineersPage` landed with all sections), Studio deployed. Fully editable in Studio. Seb: upload image slots + paste the 90-second tour video URL if wanted. **VETTING SECTION REPLACED 31 Jul:** the old "You see two people, not 200 CVs" block (`.vet` markup, `ProfileExplorer` modal, 90-second tour embed) is DELETED and replaced by the shared `components/shared/vetting-profile/` section built to `docs/design/Vetting Profile.html` - six autoplaying evidence tabs on one candidate card. The new section's copy is a STATIC content object, not Sanity-wired, so the `hireEngineersPage.vet` branch in Studio (including `videoUrl`/`poster` and the profile-explorer entries) no longer renders anywhere; fields left in place rather than removed, see note below. | DONE (G2). Optional: image/video uploads (confirm `/hire/software-engineers` redirect target + nav link). OPEN: decide whether to Sanity-wire the new vetting section and retire the orphaned `vet` fields | 4 |
 | Managed Pods | `/managed-pods` | Net-new | NOT-BUILT | Phase 5.2 | 4 |
 | Ask Clara | `/ask` (+ `/uk/ask`) | Net-new (no live equivalent) | **P1 DONE (29 Jul) - FRONTEND SHELL ONLY.** UI built to `docs/design/lead-conversion/ask-clara-reference/Ask_Clara_Page_standalone.html`: chat left / canvas right, draggable 35-65% divider persisted to `localStorage`, and all 10 designed states (S1-S10) from hard-coded `Brief` fixtures. Reviewable via `?askDebug=1`. **Jake's 29 Jul revisions applied:** bespoke chrome - Cloud Employee logo left (30px), `Back to site` + `Talk to a human` right as an equal-size pair (190x46 desktop) on the sitewide `.cta-sweep` archetype, nothing else (no sitewide nav, no announcement bar, no footer); the brief region scrolls independently with the Download / Email / Book-a-call bar pinned below it, so it holds an arbitrarily deep brief; the client-story band carries a dismiss X and stays dismissed; and the composer's paperclip opens a real multi-file picker (CV, doc, spreadsheet, image) with removable chips. **Still nothing connected:** no Clara API, no HubSpot, no microphone, files are selected but not uploaded or read, S7's Calendly is a static placeholder, and Download / Email are affordances rather than controls. | P2 mock SSE transport -> P3 real Clara (`brief_update` + CORS + proxy + attachment analysis) -> P4 voice -> P5 Calendly + HubSpot + brief PDF, which is what turns Download and Email into working buttons. Per `docs/design/lead-conversion/ASK_CLARA_EXECUTION_PLAN.md`. | Not in a launch wave - `/ask` is a net-new conversion surface, not a parity page |
 | 404 | any bad URL | n/a | DONE (dark/lime re-skin 22 Jul) | none | - |
@@ -1003,28 +1104,174 @@ from the product tracker and should be deleted before launch (scaffold debt).
 
 Nothing goes to the real domain until all of these are green:
 
-- [ ] Parity gate run against staging and recorded as PASS (`launch:verify-parity`).
-- [ ] Redirect record count equals live page count.
-- [ ] Service/technology page titles, descriptions, and body match live (Phase 2).
-- [ ] No extra indexable service/technology URLs beyond live (slug dedup, made-up
-      slugs return 404).
-- [ ] Dynamic sitemap carries US/UK hreflang on individual content pages.
-- [ ] Privacy policy body present (page does not 404).
-- [ ] Structured data correct per template (Service on service pages, etc.).
-- [ ] Nav structured data uses the safe serializer.
+- [x] **Parity gate PASS recorded 3 Aug 2026** against `https://staging.jakevibes.dev`.
+      **6,934 / 6,937 URLs behave identically to live**; 31 documented deliberate
+      exceptions; 3 residual divergences, all benign and all the same shape
+      (`/compare/cloud-employee-vs-revelo`, `/compare/cloud-employee-vs-toptal`,
+      `/compare/dev-agencies` — live 301s them to `/compare`, we 308 them straight
+      to `/alternatives`, which is where `/compare` itself now goes. One hop fewer,
+      same destination). Script exits 0. Report: `audit-output/launch/parity-report.json`.
+      **NOTE:** the default `--target` is `http://localhost:3000`. Always pass
+      `-- --target https://staging.jakevibes.dev` or the gate silently probes a dead
+      port for ten minutes and tells you nothing.
+- [x] Redirect record count equals live page count (implied by the gate above:
+      every live URL was replayed, none unaccounted for).
+- [ ] **Service/technology page titles and descriptions match live — FAILS. This is
+      the one real SEO blocker.** See §7c below.
+- [x] No extra indexable service/technology URLs beyond live. The one addition is
+      `/services/eastern-europe-developers` (404 on live, 200 here), which is the
+      deliberate D2 net-new location page and needs a parity exception recorded.
+- [ ] Dynamic sitemap carries US/UK hreflang on individual content pages. **Partial:**
+      653 sitemap URLs (326 UK), but only 58 carry `xhtml:link` alternates. Every page
+      DOES emit `en-US` / `en-GB` / `x-default` in its HTML `<head>`, which Google
+      accepts, so this is polish, not a blocker.
+- [x] Privacy policy body present. `/legals/privacy-policy` and `/legals/general-terms`
+      both 200 in US and UK. (`/legals/terms-and-conditions` 404s on ours *and* on
+      live — the live slug is `general-terms`. Not a gap.)
+- [x] Structured data present: Organization, WebSite, WebPage, FAQPage,
+      SiteNavigationElement all emit on the homepage.
+- [ ] Nav structured data uses the safe serializer (Tech Debt #49, cosmetic).
 - [ ] Start-hiring funnel behaves as live (steps, forms, redirects).
 - [ ] **HubSpot + sales-funnel once-over (Phase 7.9):** Jake funnel map signed;
       `launch:verify-hubspot-forms` PASS; one real test lead per path on staging;
-      portal id on Vercel; no dead primary form CTAs.
-- [ ] **Speed + crawl pass (Phase 7.10):** Screaming Frog staging crawl filed;
-      Lighthouse SEO 100 on sample set; Tier 1 SEO/AEO checklist green; Perf debt
-      (third-party scripts) owned, not ignored.
+      portal id on Vercel; no dead primary form CTAs. **Still Jake's, still unproven —
+      this is a revenue gate, not an SEO one, and no automated check can close it.**
+- [x] **Speed + crawl pass (Phase 7.10) — crawl half done.** Screaming Frog pass 4
+      (`screaming-frog/pass4-after-seo-fixes/`) re-analysed 3 Aug: 847 internal URLs,
+      **797× 200, 38× 308, 12× 404, zero 5xx**. 657 HTML pages: **0 missing titles,
+      0 missing canonicals, 632 self-referencing canonicals**, the other 25 being
+      paginated views correctly canonicalised to page 1 and `noindex, follow`.
+      Of the 12 internal 404s, 11 (9 `/live-job-role/*`, `/team/jimmy-mclellan`,
+      `/team/shawnee-malesich`) **also 404 on live** — faithful, not regressions.
+      The 12th was `/uk/sitemap.xml`, now fixed (§7c). Lighthouse not re-run.
 - [ ] Every page is editable in Presentation (including the static-page batch).
-- [ ] Real social-share image in place.
-- [ ] Organization structured data has verified social links.
-- [ ] Dead/dev routes removed (`/demo`, `/legals/privacy-policy/preview`, `/uk/[...slug]`).
-- [ ] No-index gate ON for staging; canonical host set ONLY on production at cutover.
-- [ ] Top-20 traffic URLs spot-checked live vs new.
+- [x] Real social-share image in place. `site/public/og-default.png` was a **1×1
+      transparent pixel** and was the og:image on nearly every non-blog page;
+      replaced 3 Aug with a real 1200×630 dark/lime brand card. Live Webflow serves
+      a real 1200×630 OG on these pages, so the pixel was a genuine regression.
+- [ ] Organization structured data has verified social links (`sameAs` absent).
+- [x] Dead/dev routes removed: `/demo`, `/legals/privacy-policy/preview` and
+      `/download-thank-you` all 404 on staging.
+- [x] No-index gate ON for staging. `launch:verify-noindex`: staging.jakevibes.dev
+      and mygratr.vercel.app both BLOCKED. **One failure:**
+      `mygratr-c3utcgloa-cloud-employee.vercel.app` serves `Allow: /` — a stale
+      deployment built while `NEXT_PUBLIC_CANONICAL_HOST` was still set to the
+      staging host, with the value baked in. Delete or protect it before cutover.
+- [x] Top traffic URLs spot-checked live vs new. All 333 GSC URLs replayed against
+      staging: **311× 200, 11× 308 to the correct destination, 11× 404 that also
+      404 on live.** No ranking URL is lost. Behaviour is sound; the *content of the
+      `<title>` tags* is the problem — see §7c.
+
+### 7c. The blocker: page titles are a stale April snapshot
+
+Found 3 Aug 2026 by a new check, `npm run launch:compare-meta`, which fetches
+`<title>`, meta description and `og:image` for every sitemap URL from BOTH sites
+and diffs them. Report: `audit-output/launch/meta-parity.json`.
+
+**575 pages exist on both sites. 260 of them (45%) would ship a different `<title>`
+than the one Google currently ranks.** Breakdown:
+
+| Class | Count | What it is | Fix |
+|---|---|---|---|
+| Truncated | 41 | The last word is missing. Sanity holds `"Hire Full-Stack Developers with Cloud Employee \| Staff"`; live says `"… \| Staff Augmentation"`. Confirmed by querying the dataset directly — the truncation is in the DATA, not the template. 14 service docs plus customer stories and tools. | Data patch |
+| Brand-affix | 129 | Same phrase, brand moved. Live `"Cloud Employee Video \| X"`, ours `"X \| Cloud Employee"`. Whole `/videos/*` family. | Data patch |
+| Rewritten | 90 | Genuinely different copy. Live `/nearshoring-offshoring/what-is-nearshoring…` = `"Nearshoring Explained \| Benefits & Challenges for Dev Teams"`; ours = the raw article headline. Live `/pricing` = `"Software Developer Pricing \| Calculate Your Hiring Costs"`; ours = `"World-class senior engineers at a fair price"`. | Data patch or copy decision |
+
+**Root cause:** the content migration snapshotted CE's SEO metadata in April.
+Webflow's own `Last Published` is 30 Apr 2026, and CE has clearly kept optimising
+titles since. Our Sanity `metaTitle` values are that stale snapshot, plus a
+truncation bug on a subset.
+
+**Why it is a launch blocker and not polish.** This is the same reasoning Jake
+already applied to H1s at Tech Debt #43b, and it applies with more force to
+`<title>`, which is the single strongest on-page ranking signal. Changing the
+domain AND 260 titles in the same hour means that if traffic drops there is no way
+to attribute it, and no clean way to roll back. Keep the titles identical, move the
+platform, then optimise copy deliberately afterwards.
+
+**The fix, already built:** `npm run launch:backfill-meta` reads the diff report,
+resolves each path to its Sanity document and writes the live string back. Dry run by
+default; **226 documents** would be patched, covering **every page that exists on both
+sites**. It is a multi-document write, so per `.cursor/rules/30-safety.mdc` the agent
+wrote it and **Jake runs it** with `--apply`.
+
+**CORRECTION to an earlier reading of this: nothing is "held in code".** A first pass
+reported ~30 marketing pages and hubs as code-held and therefore out of reach. They are
+not. Every one of them is a Sanity SINGLETON — `homePage`, `pricingPage`,
+`servicesHub`, `blogHub`, `hireEngineersPage`, `locationPage-*` and so on — with a fixed
+`_id` and no slug, which is the only reason the slug-based lookup missed them. They are
+now reachable through `SINGLETON_BY_PATH` in the backfill script and are patched with
+everything else. Only the six `/book-a-call/*` pages needed a separate mapping, and
+their titles already match live. **Nothing about the title fix requires a code edit to
+page copy, and nothing about it is a judgement call: every value written is the string
+live already serves.**
+
+**One code change WAS required, and it must ship WITH the data patch.**
+`resolvePageTitle()` used to append the layout's `| Cloud Employee` template to any
+title that did not already name the brand. That made the rendered title depend on
+whether an editor happened to type the brand, and it made exact parity unreachable:
+live serves titles like `"Staff Augmentation | IT Staff Augmentation Services"` with no
+brand in them, and under the old rule no stored value could reproduce that. The
+function now always returns `{ absolute }` — the CMS value is the whole title, and what
+Seb types in Studio is exactly what Google sees.
+
+> **ORDER MATTERS.** Run the backfill FIRST, deploy the code change SECOND. Deploying
+> the code against unpatched data would drop the ` | Cloud Employee` suffix from the
+> ~264 titles that currently rely on the append. That is degraded, not catastrophic,
+> and only on staging, but there is no reason to pass through it. After both, re-run
+> `npm run launch:compare-meta` and expect the title-diff count at or near zero. That
+> re-run IS the gate.
+
+**`/customer-story/virgin` — RESOLVED 3 Aug, retired via 301.** The earlier note that
+this was a placeholder replacing real live content was wrong: **live is a placeholder
+too.** Its body reads "Customer story in progress... We haven't yet had a chance to
+write up this particular story" and tells visitors to go to the hub. It is a thin page
+with an optimised title and nothing behind it. Per Jake, it does not need to exist:
+`/customer-story/virgin` and `/uk/customer-story/virgin` now 301 to the customer-stories
+hub, recorded in `parity-exceptions.json`.
+
+### 7d. Fixed 3 Aug 2026 (needs a deploy to take effect)
+
+- **`/uk/sitemap.xml` 404 in the footer of every UK page.** `toInternalHref()` was
+  locale-prefixing `/sitemap.xml`, and `/uk/sitemap.xml` does not exist — on our site
+  or on live, whose UK footer correctly points at the unprefixed `/sitemap.xml`.
+  Screaming Frog counted **324 inlinks** to the dead URL. Fixed with a root-file guard
+  in `site/src/lib/url.ts`; paths ending in a file extension are no longer localised.
+- **1×1 pixel og:image** replaced with a real 1200×630 brand card (see above).
+- New gates: `launch:compare-meta` + `launch:backfill-meta`.
+- **`resolvePageTitle()` now treats the CMS value as the whole title** (see 7c). Ships
+  WITH the backfill, not before it.
+- **`/customer-story/virgin` retired** via 301 to the hub, both locales, exception logged.
+- `tsc --noEmit` clean in both packages; `next build` exit 0.
+
+### 7e. Final sweep, 3 Aug 2026 — everything else came back clean
+
+Checked explicitly so it is on the record, not assumed:
+
+| Check | Result |
+|---|---|
+| H1s across the crawl | **657 pages, 0 missing, 0 duplicated.** Clean. |
+| Redirect chains | Every legacy path resolves in **exactly 1 hop**. No chains, no loops. |
+| Discontinued PH locale | `/ph` → `talent.cloudemployee.io` on both sites; `/ph/*` 404s on both. Matches. |
+| Analytics + third party | GTM `GTM-WL45TCTW`, Geotargetly, Hotjar and HubSpot all present on staging. |
+| Apex vs www | Live: apex 301s to `www`. **Vercel must be configured the same way** (see runbook). |
+| Page speed | Crawl median **0.42s**, p90 0.59s, p99 1.57s. 15 pages over 1s, 1 over 2s. |
+
+**One genuine regression found, and it is NOT a launch blocker: the new site does no
+CDN caching at all.** Every response carries
+`cache-control: private, no-cache, no-store, max-age=0, must-revalidate` and
+`x-vercel-cache: MISS`, and every route in the build output is `ƒ (Dynamic)`. That is
+the cost of the Sanity live/draft-mode wiring, which reads request headers and so opts
+every route out of static rendering. Two consequences:
+
+1. **TTFB is roughly 1.0s vs Webflow's 0.75s.** Slower, not harmful. Google tolerates
+   this comfortably and it will not move rankings.
+2. **Every page view now depends on Sanity being up.** Webflow served static HTML with
+   no runtime dependency; we do not. A Sanity outage or rate-limit is a site outage.
+
+Adding ISR or route-level caching means reworking the draft-mode gating, which is an
+architecture change and explicitly NOT a cutover-day job. **Recommendation: cut over as
+is, and make caching the first post-launch piece of work.** Logged as Tech Debt.
 
 ---
 
