@@ -22,7 +22,8 @@ import {
 //
 // TESTIMONIALS: the three quotes (Kenneth / Jen / Lance) are PLACEHOLDER copy
 // carried from the frozen export - not real engineer testimonials. Seb replaces
-// them in Studio before a public relaunch. tests.videoUrl left empty for Studio.
+// them in Studio before a public relaunch. tests.videoUrl carries CE's Boracay
+// Cloudfest film, which the tile plays muted on loop.
 //
 // JOIN FORM: seeded from JOIN_CONTENT (D2 demo - editable copy, no HubSpot yet).
 //
@@ -78,7 +79,7 @@ function buildDoc() {
     ctaPrimary: FE.hero.ctaPrimary,
     ctaPrimaryHref: FE.hero.ctaPrimaryHref ?? '#join',
     ctaGhost: FE.hero.ctaGhost,
-    ctaGhostHref: FE.hero.ctaGhostHref ?? '/how-it-works',
+    ctaGhostHref: FE.hero.ctaGhostHref ?? '#fe2-how',
     trust: [...FE.hero.trust],
     card: {
       name: FE.hero.card.name,
@@ -164,7 +165,9 @@ function buildDoc() {
     titleAccent: FE.tests.titleAccent,
     videoPill: FE.tests.videoPill,
     videoLabel: FE.tests.videoLabel,
-    // videoImage / videoUrl left empty - Seb pastes a real URL in Studio.
+    videoUrl: FE.tests.videoUrl,
+    // videoImage left empty - the video covers the tile, so the poster only
+    // shows for the split second before the player mounts.
     quotes: keyed(
       FE.tests.quotes.map((q) => ({ name: q.name, role: q.role, quote: q.quote })),
       'quote',
