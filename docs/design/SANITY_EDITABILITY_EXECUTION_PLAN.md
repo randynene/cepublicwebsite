@@ -307,7 +307,7 @@ the Presentation click-to-edit smoke, which needs the `defineLocations` entry (W
 
 **Do**
 - [ ] Confirm D1 (rates stay in code by default)
-- [ ] Start-quiz copy (`start-quiz.tsx` props: eyebrow, prompt, hint, roles, cta, `selectedPrefix`, `emptyStatus`) into the `locationPage` schema, or record it as deliberately code-owned
+- [x] Start-quiz copy - **RETIRED (forms launch).** Quiz UI deleted; `variant` `quiz`/`none` skips Start. Lead form is the conversion path.
 - [ ] Hero CTA href fields + FAQ help href field
 - [ ] Make “VETTED BY SENIOR ENG” editable or UI_STRINGS
 - [ ] Ensure location docs seeded; video URLs filled in Studio

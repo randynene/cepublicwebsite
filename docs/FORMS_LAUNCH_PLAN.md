@@ -215,16 +215,16 @@ time changes nothing, which was tested rather than assumed.
 ### Steps 6 and 7 - built, fake capture flows removed
 
 The quick hiring form, shared skills taxonomy, and `/api/lead` endpoint are built.
-The real form now renders on eight templates: Home, How It Works, Hire Engineers,
-Fractional CTO, service detail, technology detail, the services hub, and the
-technology hub.
+The real form now renders on Home, How It Works, Hire Engineers, Fractional CTO,
+service detail, technology detail, the services hub, the technology hub, and all
+three location pages (above the FAQ).
 
 Every template importing `LeadFormSection` was checked for another form-shaped
-surface. The service and technology directories keep their genuine search forms;
+surface. The service and technology hubs keep their genuine search forms;
 those filter page content and are not lead capture. Service and technology detail
 had no collision.
 
-Four collisions were removed:
+Five collisions were removed:
 
 - Hire Engineers no longer renders `FindForm`, its dead `sendLead` path, or its
   fabricated engineer results. The real form occupies the existing `#find`
@@ -235,6 +235,10 @@ Four collisions were removed:
   the real form.
 - How It Works no longer shows the shared static matcher preview beside the real
   form. The unused preview component was deleted.
+- Philippines location no longer shows the old "STEP 1 OF 4" start quiz above the
+  real form. `start.variant` of `quiz` or `none` skips that Start block; the quiz
+  component was deleted. LATAM and Eastern Europe still keep their three start
+  cards above the form.
 
 `/for-developers` was not touched. Its fake talent application remains open under
 Jake decision J-D because it belongs to recruitment, not the client-lead form.

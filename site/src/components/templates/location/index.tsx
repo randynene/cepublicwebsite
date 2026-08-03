@@ -9,7 +9,6 @@ import type { AdvantageCard, EngineerProfile, HubCard, LocationContent, Location
 import type { HomeProfile } from '@/components/templates/home/content'
 import { HeroCards } from '@/components/templates/home/hero-cards'
 import { LocationCalculator } from './calculator'
-import { LocationStartQuiz } from './start-quiz'
 import { LocationVideo } from './video'
 import { Spotlight } from '@/components/motion/spotlight'
 import { LeadFormSection } from '@/components/lead-form/section'
@@ -886,27 +885,11 @@ function StartTile({ card, featured }: { card: StartCard; featured?: boolean }) 
 function Start({ content }: { content: LocationContent }) {
   const { start } = content
 
-  if (start.variant === 'quiz' && start.quiz) {
-    return (
-      <Spotlight className="py-[72px]">
-        <div className={BAND}>
-          <LocationStartQuiz
-            eyebrow={start.quiz.eyebrow || start.eyebrow}
-            title={start.titleLead}
-            titleAccent={start.titleAccent}
-            subtitle={start.quiz.subtitle}
-            stepLabel={start.quiz.stepLabel}
-            prompt={start.quiz.prompt}
-            hint={start.quiz.hint}
-            roles={start.quiz.roles}
-            cta={start.quiz.cta}
-            ctaHref={start.quiz.ctaHref}
-            selectedPrefix={start.quiz.selectedPrefix}
-            emptyStatus={start.quiz.emptyStatus}
-          />
-        </div>
-      </Spotlight>
-    )
+  // Quiz / none: the quick hiring form (LeadFormSection below) replaced the
+  // old STEP-1-OF-4 role picker. Skip this whole block so the page only shows
+  // one conversion path. 'quiz' stays as a Sanity-compat value for the PH doc.
+  if (start.variant === 'quiz' || start.variant === 'none') {
+    return null
   }
 
   const [first, ...rest] = start.cards

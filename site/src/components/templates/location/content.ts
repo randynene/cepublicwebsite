@@ -224,21 +224,12 @@ export interface LocationContent {
     titleLead: string
     titleAccent: string
     cards: StartCard[]
-    /** 'quiz' renders LocationStartQuiz instead of the three start cards. */
-    variant?: 'cards' | 'quiz'
-    quiz?: {
-      eyebrow: string
-      title: string
-      subtitle: string
-      stepLabel: string
-      prompt: string
-      hint: string
-      roles: string[]
-      cta: string
-      ctaHref: string
-      selectedPrefix: string
-      emptyStatus: string
-    }
+    /**
+     * 'cards' = three start tiles.
+     * 'none' / 'quiz' = skip Start; LeadFormSection is the conversion path.
+     * 'quiz' is retained only so older Sanity docs still parse and skip cleanly.
+     */
+    variant?: 'cards' | 'quiz' | 'none'
   }
   faq: {
     eyebrow: string
@@ -1015,47 +1006,13 @@ export const PHILIPPINES_CONTENT: LocationContent = {
     disclaimer: 'Ranges based on actual placements. Final price confirmed after discovery call.',
   },
   start: {
-    variant: 'quiz',
+    // LeadFormSection on this page is the conversion path. Skip the old Start
+    // block (quiz + three cards) so PH only shows one form above the FAQ.
+    variant: 'none',
     eyebrow: 'Ready to find your engineer?',
     titleLead: 'See real engineer profiles, rates, and timelines.',
     titleAccent: 'In 90 seconds.',
-    cards: [
-      {
-        eyebrow: '',
-        title: 'Get two Philippine engineers in 7 days.',
-        body: 'Tell us what you need. Four quick questions about your stack, team, and budget.',
-        bullets: ['Free to interview, no card required', 'No job boards, no CVs, no time wasted'],
-        cta: 'Start the brief',
-        ctaHref: '/book-a-call',
-      },
-      {
-        eyebrow: 'Want guidance',
-        title: 'Talk to a CTO.',
-        body: "30-minute call. We'll help you figure out the seniority and stack that fit your team.",
-        cta: 'Talk to a human',
-        ctaHref: '/book-a-call',
-      },
-      {
-        eyebrow: 'Have questions',
-        title: 'Chat with our AI.',
-        body: "Trained on every sales call we've had. Ask anything about hiring in the Philippines.",
-        cta: 'Open chat',
-        ctaHref: '#chat',
-      },
-    ],
-    quiz: {
-      eyebrow: 'Ready to find your engineer?',
-      title: 'See real engineer profiles, rates, and timelines.',
-      subtitle: "Four quick questions. See who we'd build your team with.",
-      stepLabel: 'Step 1 of 4 · Takes 90 seconds',
-      prompt: 'What role are you hiring for?',
-      hint: "Pick one to start - you'll see matching engineers at the end.",
-      roles: ['Backend', 'Frontend', 'Full-Stack', 'AI / ML', 'Data', 'DevOps', 'Mobile', 'Something else'],
-      cta: 'Next',
-      ctaHref: '/book-a-call',
-      selectedPrefix: 'Selected: ',
-      emptyStatus: 'Select a role to continue',
-    },
+    cards: [],
   },
   faq: {
     eyebrow: 'Philippines · FAQ',

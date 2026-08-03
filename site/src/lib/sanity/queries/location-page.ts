@@ -263,7 +263,7 @@ export const LocationPageSchema = z.object({
       eyebrow: nzs,
       titleLead: nzs,
       titleAccent: nzs,
-      variant: z.enum(['cards', 'quiz']).nullable().optional(),
+      variant: z.enum(['cards', 'quiz', 'none']).nullable().optional(),
       cards: z.array(zStartCard).nullable().optional(),
     })
     .nullable()
@@ -400,14 +400,13 @@ export function toLocationContent(data: LocationPageData, fallback: LocationCont
     logosLabel: fallback.logosLabel,
     logosLabelLines,
     logos,
-    // PH regions strip + quiz stay available from the registry when Sanity
-    // docs predate those fields.
+    // PH regions strip stays available from the registry when Sanity docs
+    // predate that field. Start quiz is retired (LeadFormSection replaces it);
+    // 'quiz' / 'none' both skip the Start block in the template.
     regionsStrip: merged.regionsStrip ?? fallback.regionsStrip,
-    // Quiz config stays code-driven (roles list + CTAs) when Sanity has no quiz.
     start: {
       ...merged.start,
       variant: merged.start?.variant ?? fallback.start.variant,
-      quiz: merged.start?.quiz ?? fallback.start.quiz,
       cards: merged.start?.cards?.length ? merged.start.cards : fallback.start.cards,
     },
     calculator: {
