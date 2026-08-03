@@ -16,9 +16,14 @@ import type { AskCanvas as AskCanvasData } from '@/lib/ask/types'
 // canvas (see brief-canvas.tsx) and rotates in a band underneath it, exactly as
 // the S3/S4/S5 frames draw it.
 
-export function AskCanvas({ canvas, onSchedule }: {
+export function AskCanvas({
+  canvas,
+  onSchedule,
+  onBookingBack,
+}: {
   canvas: AskCanvasData
   onSchedule: () => void
+  onBookingBack?: () => void
 }) {
   switch (canvas.kind) {
     case 'proof':
@@ -34,7 +39,9 @@ export function AskCanvas({ canvas, onSchedule }: {
         />
       )
     case 'booking':
-      return <BookingCanvas booking={canvas.booking} />
+      return (
+        <BookingCanvas booking={canvas.booking} onBack={onBookingBack} />
+      )
     case 'booked':
       return <BookedCanvas booked={canvas.booked} />
   }
@@ -44,9 +51,14 @@ export function AskCanvas({ canvas, onSchedule }: {
  * The mobile counterpart: a single card pinned above the thread. Booking and
  * booked states keep the full panels, which scroll under the thread on a phone.
  */
-export function AskCanvasMobile({ canvas, onSchedule }: {
+export function AskCanvasMobile({
+  canvas,
+  onSchedule,
+  onBookingBack,
+}: {
   canvas: AskCanvasData
   onSchedule: () => void
+  onBookingBack?: () => void
 }) {
   switch (canvas.kind) {
     case 'proof':
@@ -62,7 +74,9 @@ export function AskCanvasMobile({ canvas, onSchedule }: {
         />
       )
     case 'booking':
-      return <BookingCanvas booking={canvas.booking} />
+      return (
+        <BookingCanvas booking={canvas.booking} onBack={onBookingBack} />
+      )
     case 'booked':
       return <BookedCanvas booked={canvas.booked} />
   }

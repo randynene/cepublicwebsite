@@ -3,31 +3,46 @@
 import { useState } from 'react'
 
 import { cn } from '@/components/ui/_utils/cn'
+import { ASK_SCREENS, ASK_SCREEN_ORDER } from '@/lib/ask/fixtures'
+import {
+  MOCK_SCRIPT_ORDER,
+  MOCK_SCRIPTS,
+  type MockScriptId,
+} from '@/lib/ask/clara/scripts'
+import type { AskScreenId } from '@/lib/ask/types'
 
 import { ASK_DEBUG } from './content'
 import { FOCUS_RING } from './primitives'
-import { ASK_SCREENS, ASK_SCREEN_ORDER } from '@/lib/ask/fixtures'
-import type { AskScreenId } from '@/lib/ask/types'
 
-// Dev-only state switcher, mounted when the URL carries ?askDebug=1.
+// Dev-only controls, mounted when the URL carries ?askDebug=1.
 //
-// It exists because P1 has no Clara and no way to walk the conversation forwards,
-// and every one of the ten designed states still has to be reviewable. It is a
-// review instrument, not a feature: it renders nothing without the query
-// parameter, and P2's scripted transport removes the need for most of it.
+// Two instruments sit side by side:
+//   1. Fixture frames (S1-S10 + DEEP) - freeze a designed state for review.
+//   2. Mock scripts - run a scripted SSE conversation that fills the brief live.
 //
-// It deliberately does NOT gate on NODE_ENV. The states have to be clickable on the
+// Deliberately does NOT gate on NODE_ENV: states have to be clickable on the
 // Vercel preview, which is a production build.
 
+export type AskDebugMode =
+  | { kind: 'live'; scriptId: MockScriptId }
+  | { kind: 'fixture'; screenId: AskScreenId }
+
 export function AskDebugSwitcher({
-  screenId,
-  onSelect,
+  mode,
+  onSelectFixture,
+  onSelectScript,
+  onResetScript,
 }: {
-  screenId: AskScreenId
-  onSelect: (id: AskScreenId) => void
+  mode: AskDebugMode
+  onSelectFixture: (id: AskScreenId) => void
+  onSelectScript: (id: MockScriptId) => void
+  onResetScript: () => void
 }) {
   const [open, setOpen] = useState(true)
-  const active = ASK_SCREENS[screenId]
+  const fixtureId = mode.kind === 'fixture' ? mode.screenId : null
+  const scriptId = mode.kind === 'live' ? mode.scriptId : null
+  const activeFixture = fixtureId ? ASK_SCREENS[fixtureId] : null
+  const activeScript = scriptId ? MOCK_SCRIPTS[scriptId] : null
 
   if (!open) {
     return (
@@ -45,7 +60,7 @@ export function AskDebugSwitcher({
   }
 
   return (
-    <div className="fixed bottom-[16px] left-1/2 z-50 w-[min(760px,calc(100vw-32px))] -translate-x-1/2 rounded-[16px] border border-[#2c3f33] bg-[#0B1424]/95 p-[14px] shadow-[0_18px_40px_-12px_rgba(0,0,0,0.7)] backdrop-blur">
+    <div className="fixed bottom-[16px] left-1/2 z-50 w-[min(860px,calc(100vw-32px))] -translate-x-1/2 rounded-[16px] border border-[#2c3f33] bg-[#0B1424]/95 p-[14px] shadow-[0_18px_40px_-12px_rgba(0,0,0,0.7)] backdrop-blur">
       <div className="mb-[10px] flex items-center justify-between gap-[12px]">
         <span className="font-plex text-[10px] font-medium uppercase tracking-[1.2px] text-brand-primary">
           {ASK_DEBUG.title}
@@ -65,15 +80,55 @@ export function AskDebugSwitcher({
         </button>
       </div>
 
-      <div className="mb-[10px] flex flex-wrap gap-[6px]">
-        {ASK_SCREEN_ORDER.map((id) => {
-          const screen = ASK_SCREENS[id]
-          const isActive = id === screenId
+      <div className="mb-[8px] font-plex text-[10px] uppercase tracking-[1px] text-text-tertiary">
+        {ASK_DEBUG.scriptsLabel}
+      </div>
+      <div className="mb-[12px] flex flex-wrap items-center gap-[6px]">
+        {MOCK_SCRIPT_ORDER.map((id) => {
+          const script = MOCK_SCRIPTS[id]
+          const isActive = id === scriptId
           return (
             <button
               key={id}
               type="button"
-              onClick={() => onSelect(id)}
+              onClick={() => onSelectScript(id)}
+              aria-pressed={isActive}
+              className={cn(
+                'rounded-pill border px-[10px] py-[6px] text-[11.5px] font-semibold leading-none transition-colors duration-reveal ease-reveal motion-reduce:transition-none',
+                isActive
+                  ? 'border-brand-primary bg-brand-primary text-text-dark'
+                  : 'border-border-subtle text-text-secondary hover:border-brand-primary hover:text-white',
+                FOCUS_RING,
+              )}
+            >
+              {script.label}
+            </button>
+          )
+        })}
+        <button
+          type="button"
+          onClick={onResetScript}
+          className={cn(
+            'rounded-pill border border-border-subtle px-[10px] py-[6px] text-[11.5px] font-semibold text-text-secondary hover:border-brand-primary hover:text-white',
+            FOCUS_RING,
+          )}
+        >
+          {ASK_DEBUG.resetScript}
+        </button>
+      </div>
+
+      <div className="mb-[8px] font-plex text-[10px] uppercase tracking-[1px] text-text-tertiary">
+        {ASK_DEBUG.fixturesLabel}
+      </div>
+      <div className="mb-[10px] flex flex-wrap gap-[6px]">
+        {ASK_SCREEN_ORDER.map((id) => {
+          const screen = ASK_SCREENS[id]
+          const isActive = id === fixtureId
+          return (
+            <button
+              key={id}
+              type="button"
+              onClick={() => onSelectFixture(id)}
               aria-pressed={isActive}
               className={cn(
                 'rounded-pill border px-[10px] py-[6px] text-[11.5px] font-semibold leading-none transition-colors duration-reveal ease-reveal motion-reduce:transition-none',
@@ -91,20 +146,46 @@ export function AskDebugSwitcher({
       </div>
 
       <dl className="grid grid-cols-2 gap-x-[16px] gap-y-[4px] border-t border-[#1a2740] pt-[10px] @max-[62rem]:grid-cols-1">
-        <div className="flex gap-[8px]">
-          <dt className="font-plex text-[10px] uppercase tracking-[1px] text-text-tertiary">
-            {ASK_DEBUG.triggerLabel}
-          </dt>
-          <dd className="text-[11.5px] text-text-secondary">{active.trigger}</dd>
-        </div>
-        <div className="flex gap-[8px]">
-          <dt className="font-plex text-[10px] uppercase tracking-[1px] text-text-tertiary">
-            {ASK_DEBUG.canvasLabel}
-          </dt>
-          <dd className="text-[11.5px] text-text-secondary">
-            {active.canvasNote}
-          </dd>
-        </div>
+        {activeScript ? (
+          <>
+            <div className="flex gap-[8px]">
+              <dt className="font-plex text-[10px] uppercase tracking-[1px] text-text-tertiary">
+                {ASK_DEBUG.liveLabel}
+              </dt>
+              <dd className="text-[11.5px] text-text-secondary">
+                {activeScript.description}
+              </dd>
+            </div>
+            <div className="flex gap-[8px]">
+              <dt className="font-plex text-[10px] uppercase tracking-[1px] text-text-tertiary">
+                {ASK_DEBUG.canvasLabel}
+              </dt>
+              <dd className="text-[11.5px] text-text-secondary">
+                {activeScript.label}
+              </dd>
+            </div>
+          </>
+        ) : null}
+        {activeFixture ? (
+          <>
+            <div className="flex gap-[8px]">
+              <dt className="font-plex text-[10px] uppercase tracking-[1px] text-text-tertiary">
+                {ASK_DEBUG.triggerLabel}
+              </dt>
+              <dd className="text-[11.5px] text-text-secondary">
+                {activeFixture.trigger}
+              </dd>
+            </div>
+            <div className="flex gap-[8px]">
+              <dt className="font-plex text-[10px] uppercase tracking-[1px] text-text-tertiary">
+                {ASK_DEBUG.canvasLabel}
+              </dt>
+              <dd className="text-[11.5px] text-text-secondary">
+                {activeFixture.canvasNote}
+              </dd>
+            </div>
+          </>
+        ) : null}
       </dl>
     </div>
   )

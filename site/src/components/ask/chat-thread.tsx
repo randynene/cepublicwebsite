@@ -1,5 +1,7 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
+
 import { MegaMenuPillLabel } from '@/components/ui/mega-menu-pill-label'
 import { cn } from '@/components/ui/_utils/cn'
 
@@ -183,12 +185,21 @@ export function ChatThread({
   onSchedule: () => void
   onSuggestion: (value: string) => void
 }) {
+  const endRef = useRef<HTMLDivElement>(null)
+  const lastEntry = entries[entries.length - 1]
+  const scrollKey = `${entries.length}:${lastEntry?.id ?? ''}:${
+    lastEntry && lastEntry.kind === 'clara' ? lastEntry.text.length : 0
+  }`
+
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ block: 'end' })
+  }, [scrollKey])
+
   return (
     <div
-      // aria-live is deliberately absent. In P1 nothing streams in, and once P3
-      // does stream, announcing every token would be hostile - the live region
-      // will be scoped to completed turns at that point.
-      className="flex min-h-0 flex-1 flex-col justify-end gap-[20px] overflow-hidden py-[28px] @max-[62rem]:gap-[16px] @max-[62rem]:px-[14px] @max-[62rem]:py-[16px]"
+      // aria-live is deliberately absent. Announcing every streamed token would
+      // be hostile; completed turns are visible in the thread for AT users.
+      className="ask-scroll flex min-h-0 flex-1 flex-col justify-end gap-[20px] overflow-y-auto overscroll-contain py-[28px] @max-[62rem]:gap-[16px] @max-[62rem]:px-[14px] @max-[62rem]:py-[16px]"
     >
       {entries.map((entry) => {
         switch (entry.kind) {
@@ -226,6 +237,7 @@ export function ChatThread({
             )
         }
       })}
+      <div ref={endRef} aria-hidden="true" className="h-px w-full shrink-0" />
     </div>
   )
 }

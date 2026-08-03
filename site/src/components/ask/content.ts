@@ -174,11 +174,20 @@ export const WAVEFORM_HEIGHTS = [
 ] as const
 
 export const ASK_DEBUG = {
-  title: 'State switcher',
-  note: 'Dev only. Add ?askDebug=1 to any /ask URL.',
+  title: 'Ask Clara debug',
+  note: 'Dev only. ?askDebug=1 · fixtures freeze a frame · scripts run the mock.',
   triggerLabel: 'Trigger',
   canvasLabel: 'Canvas',
+  fixturesLabel: 'Fixtures',
+  scriptsLabel: 'Mock scripts',
+  liveLabel: 'Live mock',
+  resetScript: 'Reset script',
   close: 'Hide',
-  open: 'States',
+  open: 'Debug',
   mobileFrameNote: 'Mobile frame, 390 x 844',
+} as const
+
+export const ASK_LIVE = {
+  /** Shown under the composer when the mock stream errors mid-turn. */
+  streamErrorPrefix: 'Stream error',
 } as const

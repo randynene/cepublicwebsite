@@ -103,7 +103,7 @@ const FACT_MANILA_OVERLAP: ProofItem = {
     'Eastern Europe gives you a full working-day overlap; LATAM covers US hours.',
 }
 
-const DISCOVERY_PROOF: ProofPanel = {
+export const DISCOVERY_PROOF: ProofPanel = {
   eyebrow: 'While we talk',
   items: [
     STORY_SALMON_SUPPLIERS,
@@ -132,7 +132,7 @@ const VOICE_PROOF: ProofPanel = {
   rotating: false,
 }
 
-const SINGLE_HIRE_STRIP: ProofPanel = {
+export const SINGLE_HIRE_STRIP: ProofPanel = {
   items: [
     STORY_WILLO_WEEK_TWO,
     {
@@ -160,7 +160,7 @@ const SINGLE_HIRE_STRIP: ProofPanel = {
   rotating: true,
 }
 
-const TEAM_STRIP: ProofPanel = {
+export const TEAM_STRIP: ProofPanel = {
   items: [
     {
       kind: 'client-story',
@@ -187,7 +187,7 @@ const TEAM_STRIP: ProofPanel = {
   rotating: true,
 }
 
-const PRODUCT_STRIP: ProofPanel = {
+export const PRODUCT_STRIP: ProofPanel = {
   items: [
     {
       kind: 'client-story',
@@ -238,7 +238,8 @@ const MOBILE_PROOF: ProofPanel = {
 
 // ─── Briefs ──────────────────────────────────────────────────────────────────
 
-const SINGLE_HIRE_BRIEF: Brief = {
+/** Exported so P2 mock scripts can reuse these as end states / regression targets. */
+export const SINGLE_HIRE_BRIEF: Brief = {
   version: 2,
   intent: 'single_hire',
   headcount: 1,
@@ -250,7 +251,7 @@ const SINGLE_HIRE_BRIEF: Brief = {
   strength: 58,
 }
 
-const TEAM_BRIEF: Brief = {
+export const TEAM_BRIEF: Brief = {
   version: 3,
   intent: 'team_hire',
   headcount: 3,
@@ -274,7 +275,7 @@ const TEAM_BRIEF: Brief = {
   strength: 74,
 }
 
-const PRODUCT_BRIEF: Brief = {
+export const PRODUCT_BRIEF: Brief = {
   version: 3,
   intent: 'product_build',
   techStacks: ['Next.js', 'Node', 'Postgres', 'Stripe'],
@@ -294,7 +295,7 @@ const PRODUCT_BRIEF: Brief = {
   strength: 67,
 }
 
-const READY_BRIEF: Brief = {
+export const READY_BRIEF: Brief = {
   version: 4,
   intent: 'single_hire',
   headcount: 1,
@@ -924,19 +925,25 @@ function firstValue(value: string | string[] | undefined): string | null {
 /**
  * Reads the review controls off the query string.
  *
- * `?askDebug=1` mounts the state switcher; `&askState=S4` deep-links a state so a
- * single frame can be shared as a URL. An unrecognised state falls back to the
- * default rather than erroring - this is a review aid, not an API.
+ * `?askDebug=1` mounts the state switcher + mock-script picker.
+ * `&askState=S4` freezes a single designed frame for review.
+ * `&askScript=single-to-squad` picks which mock conversation to run (live mode).
+ * An unrecognised value falls back rather than erroring - this is a review aid.
  */
 export function resolveAskParams(params: RawSearchParams): {
   debug: boolean
   screenId: AskScreenId
+  /** True when `askState` explicitly selected a fixture frame. */
+  fixtureMode: boolean
+  scriptId: string | null
 } {
   const debug = firstValue(params.askDebug) === '1'
   const requested = firstValue(params.askState)?.toUpperCase() ?? null
+  const fixtureMode = debug && isAskScreenId(requested)
   return {
     debug,
-    screenId:
-      debug && isAskScreenId(requested) ? requested : ASK_DEFAULT_SCREEN,
+    fixtureMode,
+    screenId: fixtureMode ? requested : ASK_DEFAULT_SCREEN,
+    scriptId: firstValue(params.askScript),
   }
 }

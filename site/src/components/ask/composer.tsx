@@ -242,24 +242,30 @@ export function Composer({
   composer,
   value,
   attachments,
+  sending = false,
   onValueChange,
   onToggleRecording,
   onChip,
+  onSend,
   onAddFiles,
   onRemoveFile,
 }: {
   composer: ComposerState
   value: string
   attachments: AskAttachment[]
+  /** True while a mock/Clara turn is streaming - send is a no-op. */
+  sending?: boolean
   onValueChange: (value: string) => void
   onToggleRecording: () => void
   onChip: (value: string) => void
+  onSend?: () => void
   onAddFiles: (files: FileList) => void
   onRemoveFile: (id: string) => void
 }) {
   const inputId = useId()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const isRecording = composer.mode === 'recording'
+  const canSend = Boolean(onSend) && value.trim().length > 0 && !sending
 
   return (
     <div className="shrink-0 pb-[24px] @max-[62rem]:px-[12px] @max-[62rem]:pb-[18px] @max-[62rem]:pt-[12px]">
@@ -270,8 +276,9 @@ export function Composer({
               key={chip}
               type="button"
               onClick={() => onChip(chip)}
+              disabled={sending}
               className={cn(
-                'rounded-pill border border-border-subtle px-[12px] py-[8px] text-[12.5px] font-medium leading-none text-text-secondary transition-colors duration-reveal ease-reveal hover:border-brand-primary hover:text-white motion-reduce:transition-none',
+                'rounded-pill border border-border-subtle px-[12px] py-[8px] text-[12.5px] font-medium leading-none text-text-secondary transition-colors duration-reveal ease-reveal hover:border-brand-primary hover:text-white motion-reduce:transition-none disabled:opacity-50',
                 FOCUS_RING,
               )}
             >
@@ -294,8 +301,15 @@ export function Composer({
             type="text"
             value={value}
             onChange={(event) => onValueChange(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault()
+                if (canSend) onSend?.()
+              }
+            }}
             placeholder={composer.placeholder}
-            className="block w-full bg-transparent px-[4px] pb-[16px] pt-[4px] text-[15.5px] leading-none text-white outline-none placeholder:text-[#5f6b7d] @max-[62rem]:pb-[13px] @max-[62rem]:text-[14.5px]"
+            disabled={sending}
+            className="block w-full bg-transparent px-[4px] pb-[16px] pt-[4px] text-[15.5px] leading-none text-white outline-none placeholder:text-[#5f6b7d] disabled:opacity-70 @max-[62rem]:pb-[13px] @max-[62rem]:text-[14.5px]"
           />
           <div className="flex items-center justify-end gap-[10px] @max-[62rem]:gap-[9px]">
             <input
@@ -336,7 +350,13 @@ export function Composer({
               label={ASK_LABELS.send}
               glyph={GLYPH.arrowUp}
               tone="accent"
-              className="size-[34px] text-[14px] @max-[62rem]:size-[32px] @max-[62rem]:text-[13px]"
+              onClick={() => {
+                if (canSend) onSend?.()
+              }}
+              className={cn(
+                'size-[34px] text-[14px] @max-[62rem]:size-[32px] @max-[62rem]:text-[13px]',
+                !canSend && 'opacity-50',
+              )}
             />
           </div>
         </div>

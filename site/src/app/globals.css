@@ -1022,3 +1022,35 @@ body.ask-page {
     opacity: 0;
   }
 }
+
+/* P2 brief motion. Fields settling (version bump) and an S3 → S4 reshape both
+   remount the card with these classes. Reduced motion skips the animation and
+   leaves the card in its final position - still correct, simply still. */
+@media (prefers-reduced-motion: no-preference) {
+  .ask-brief-settle {
+    animation: ask-brief-settle 420ms var(--ease-reveal, ease) both;
+  }
+  .ask-shape-morph {
+    animation: ask-shape-morph 480ms var(--ease-reveal, ease) both;
+  }
+}
+@keyframes ask-brief-settle {
+  from {
+    opacity: 0.55;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes ask-shape-morph {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
