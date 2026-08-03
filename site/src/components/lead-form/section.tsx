@@ -10,7 +10,6 @@
 // interrupts that; a form at the bottom catches the person who has finished
 // deciding and is looking for what to do next.
 
-import { Container } from '@/components/ui/container'
 import { cn } from '@/components/ui/_utils/cn'
 
 import { ROLE_OPTIONS } from './content'
@@ -25,13 +24,16 @@ export type LeadFormSectionProps = QuickHiringFormProps
 
 export function LeadFormSection(props: LeadFormSectionProps) {
   return (
-    <Container>
-      <div className={BAND_CLASS}>
-        <section className={cn(BAND_PX_CLASS, 'pt-[32px] pb-[80px] lg:pt-[48px]')}>
-          <QuickHiringForm {...props} />
-        </section>
+    // Full-bleed band. The blue belongs to the SECTION, edge to edge, rather than
+    // to a rounded card floating on the page ground. A boxed form at the foot of a
+    // long page reads as an advert someone pasted in; a band reads as part of the
+    // page. Only the content inside is constrained to the 1152px band, so it still
+    // lines up with everything above it.
+    <section className="bg-section-bg-card">
+      <div className={cn(BAND_CLASS, BAND_PX_CLASS, 'py-[52px] lg:py-[68px]')}>
+        <QuickHiringForm {...props} />
       </div>
-    </Container>
+    </section>
   )
 }
 

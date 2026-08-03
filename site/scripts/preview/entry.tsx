@@ -8,13 +8,15 @@
 
 import { createRoot } from 'react-dom/client'
 
-import { QuickHiringForm } from '../../src/components/lead-form/quick-hiring-form'
+import { LeadFormSection } from '../../src/components/lead-form/section'
 
 const container = document.getElementById('root')
 if (!container) throw new Error('no #root')
 
 createRoot(container).render(
-  <div className="mx-auto max-w-[1280px] px-[22px] py-16 sm:px-[32px] lg:px-[64px]">
-    <QuickHiringForm sourcePage="/technology/react-developers" />
-  </div>,
+  <>
+    <div className="h-24 bg-bg-primary" />
+    <LeadFormSection sourcePage="/technology/react-developers" />
+    <div className="h-24 bg-bg-primary" />
+  </>,
 )

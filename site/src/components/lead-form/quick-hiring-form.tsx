@@ -25,6 +25,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { roleIcon } from '@/components/shared/role-icons'
 import { CalendlyInlineEmbed } from '@/components/templates/book-a-call/calendly-inline-embed'
 import { Checkbox } from '@/components/ui/checkbox'
+import { CtaButton } from '@/components/ui/cta-button'
 import { cn } from '@/components/ui/_utils/cn'
 import { Heading } from '@/components/ui/heading'
 import { Text } from '@/components/ui/text'
@@ -38,7 +39,7 @@ import {
   LEAD_FORM_COPY as C,
   LENGTH_OPTIONS,
   ROLE_OPTIONS,
-  STEP_GROUPS,
+  STEP_LABELS,
   TRUST_POINTS,
   type RoleOption,
 } from './content'
@@ -270,30 +271,25 @@ export function QuickHiringForm({
   const stepCount = steps.length
   const { heading, sub } = STEP_COPY[step]
 
-  // Which of the four tabs the current screen belongs to. Six screens, four tabs:
-  // see STEP_GROUPS for why.
-  const activeGroup = STEP_GROUPS.findIndex((g) => (g.steps as readonly string[]).includes(step))
-
   return (
-    <section
-      className={cn(
-        'rounded-[20px] border border-border-subtle bg-section-bg-card p-6 sm:p-8 lg:p-10',
-        className,
-      )}
-      aria-labelledby="quick-hiring-form-heading"
-    >
-      {/* Tab rail. Horizontal and numbered, so the whole shape of the task is
-          visible before the visitor commits to the first answer. Not clickable:
-          jumping to "Your match" before answering anything would show a form
-          with nothing to match on. */}
-      <ol className="-mx-1 mb-7 flex items-center gap-x-5 overflow-x-auto px-1 pb-1 [scrollbar-width:none] lg:gap-x-8 [&::-webkit-scrollbar]:hidden">
-        {STEP_GROUPS.map((group, index) => {
-          const state = index === activeGroup ? 'current' : index < activeGroup ? 'done' : 'todo'
+    // No card. The blue is now the SECTION background (see section.tsx), so the
+    // form is part of the page rather than a box sitting on top of one.
+    <div className={className} aria-labelledby="quick-hiring-form-heading">
+      {/* Step rail: one entry per REAL screen, with a connector so it reads as a
+          sequence rather than a row of loose labels.
+          It replaced a four-tab version that grouped length and commitment under
+          "Team size". That looked tidier and it lied: on the commitment screen the
+          rail still said Team size, so the visitor could not tell where they were.
+          Not clickable, because jumping to Book a call before answering anything
+          leaves nothing to match on. */}
+      <ol className="-mx-[4px] mb-[24px] flex items-center overflow-x-auto px-[4px] pb-[4px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {steps.map((id, index) => {
+          const state = index === stepIndex ? 'current' : index < stepIndex ? 'done' : 'todo'
           return (
-            <li key={group.id} className="flex shrink-0 items-center gap-2.5">
+            <li key={id} className="flex shrink-0 items-center">
               <span
                 className={cn(
-                  'flex size-6 items-center justify-center rounded-full text-[11px] font-semibold tabular-nums',
+                  'flex size-[21px] items-center justify-center rounded-full text-[10px] font-semibold tabular-nums',
                   state === 'current' && 'bg-accent-primary text-text-dark',
                   state === 'done' && 'bg-accent-primary/25 text-accent-primary',
                   state === 'todo' && 'bg-surface-tertiary text-text-tertiary',
@@ -304,13 +300,22 @@ export function QuickHiringForm({
               </span>
               <span
                 className={cn(
-                  'text-[13px] font-medium',
+                  'ml-[8px] whitespace-nowrap text-[12px] font-medium',
                   state === 'todo' ? 'text-text-tertiary' : 'text-text-primary',
                 )}
                 aria-current={state === 'current' ? ARIA_CURRENT_STEP : undefined}
               >
-                {group.label}
+                {STEP_LABELS[id]}
               </span>
+              {index < steps.length - 1 && (
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    'mx-[12px] h-px w-[16px] lg:w-[28px]',
+                    index < stepIndex ? 'bg-accent-primary/40' : 'bg-border-default',
+                  )}
+                />
+              )}
             </li>
           )
         })}
@@ -322,20 +327,28 @@ export function QuickHiringForm({
         id="quick-hiring-form-heading"
         ref={headingRef}
         tabIndex={-1}
-        className="text-[24px] font-semibold leading-[30px] tracking-[-0.6px] text-text-primary outline-none lg:text-[30px] lg:leading-[36px] lg:tracking-[-0.9px]"
+        className="text-[21px] font-semibold leading-[27px] tracking-[-0.5px] text-text-primary outline-none lg:text-[26px] lg:leading-[32px] lg:tracking-[-0.7px]"
       >
         {heading}
       </Heading>
-      <Text size="small" className="mt-2 mb-7 text-text-tertiary">
+      <Text size="small" className="mt-[6px] mb-[24px] text-[13px] text-text-tertiary">
         {sub}
       </Text>
 
       <div className="sr-only" role="progressbar" aria-valuenow={stepNumber} aria-valuemin={1} aria-valuemax={stepCount} />
 
+      <div
+        className="sr-only"
+        role="progressbar"
+        aria-valuenow={stepNumber}
+        aria-valuemin={1}
+        aria-valuemax={stepCount}
+      />
+
       <div>
         {step === 'role' && (
           <StepShell>
-            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-[10px] lg:grid-cols-4">
               {ROLE_OPTIONS.map((option) => (
                 <button
                   key={option.id}
@@ -343,7 +356,7 @@ export function QuickHiringForm({
                   onClick={() => setRole(option)}
                   aria-pressed={role?.id === option.id}
                   className={cn(
-                    'group flex flex-col items-start gap-3 rounded-xl border px-3 py-3 text-left transition-colors lg:gap-3.5 lg:px-4 lg:py-3.5',
+                    'group flex flex-col items-start gap-[10px] rounded-xl border px-[12px] py-[11px] text-left transition-colors lg:px-[14px] lg:py-[12px]',
                     role?.id === option.id
                       ? 'border-accent-primary bg-accent-primary/[0.12]'
                       : 'border-border-subtle bg-surface-tertiary/50 hover:border-accent-primary/50 hover:bg-surface-tertiary',
@@ -358,7 +371,7 @@ export function QuickHiringForm({
                   >
                     {roleIcon(option.label)}
                   </span>
-                  <span className="whitespace-nowrap text-[13.5px] font-medium leading-tight text-text-primary lg:text-[15px]">
+                  <span className="whitespace-nowrap text-[13.5px] font-medium leading-tight text-text-primary lg:text-[14px]">
                     {option.label}
                   </span>
                 </button>
@@ -385,11 +398,11 @@ export function QuickHiringForm({
               }}
               placeholder={C.skills.searchPlaceholder}
               autoComplete="off"
-              className="w-full rounded-full border border-border-default bg-surface-tertiary px-5 py-3 text-text-primary placeholder:text-text-tertiary focus:border-accent-primary focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full max-w-[420px] rounded-full border border-border-default bg-surface-tertiary px-[18px] py-[10px] text-[14px] text-text-primary placeholder:text-text-tertiary focus:border-accent-primary focus:outline-none focus:ring-2 focus:ring-ring"
             />
 
             {query.trim().length > 0 && (
-              <ul className="mt-3 flex flex-wrap gap-2">
+              <ul className="mt-[12px] flex flex-wrap gap-[8px]">
                 {suggestions.map((s) => (
                   <li key={s.id}>
                     <SkillPill
@@ -408,17 +421,17 @@ export function QuickHiringForm({
             )}
 
             {skills.length > 0 && (
-              <div className="mt-6">
-                <Text size="small" className="mb-2 text-text-tertiary">
+              <div className="mt-[24px]">
+                <Text size="small" className="mb-[8px] text-[12px] text-text-tertiary">
                   {C.skills.selectedLabel}
                 </Text>
-                <ul className="flex flex-wrap gap-2">
+                <ul className="flex flex-wrap gap-[8px]">
                   {skills.map((s) => (
                     <li key={s.id}>
                       <button
                         type="button"
                         onClick={() => removeSkill(s.id)}
-                        className="inline-flex items-center gap-2 rounded-full bg-accent-primary px-4 py-2 text-text-dark"
+                        className="inline-flex items-center gap-[6px] rounded-full bg-accent-primary px-[14px] py-[6px] text-[13px] text-text-dark"
                       >
                         <span>{s.label}</span>
                         <span aria-hidden="true">{REMOVE_GLYPH}</span>
@@ -471,7 +484,7 @@ export function QuickHiringForm({
 
         {step === 'details' && (
           <StepShell>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-[14px] sm:grid-cols-2">
               <Field
                 id="qh-first-name"
                 label={C.details.firstName}
@@ -519,12 +532,12 @@ export function QuickHiringForm({
               />
             </div>
 
-            <label className="mt-6 flex items-start gap-3 text-text-secondary">
+            <label className="mt-[22px] flex items-start gap-[10px] text-text-secondary">
               <Checkbox
                 checked={details.consent}
                 onCheckedChange={(checked) => updateDetail('consent', checked === true)}
                 aria-invalid={Boolean(errors.consent)}
-                className="mt-[2px] shrink-0"
+                className="mt-[2px] size-[17px] shrink-0 rounded-[5px]"
               />
               <span className="text-sm">
                 {C.details.consent}
@@ -544,7 +557,7 @@ export function QuickHiringForm({
 
         {step === 'booking' && (
           <StepShell>
-            <CalendlyInlineEmbed url={calendlyUrl} className="mt-2 rounded-2xl" />
+            <CalendlyInlineEmbed url={calendlyUrl} className="mt-[8px] rounded-2xl" />
           </StepShell>
         )}
 
@@ -555,14 +568,14 @@ export function QuickHiringForm({
           than a form: the claims carry their own weight while the button sits
           where the eye finishes. */}
       {step !== 'booking' && (
-        <div className="mt-8 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-          <ul className="flex flex-wrap items-center gap-x-5 gap-y-2">
+        <div className="mt-[28px] flex flex-col gap-[16px] sm:flex-row sm:items-center sm:justify-between">
+          <ul className="flex flex-wrap items-center gap-x-[20px] gap-y-[8px]">
             {TRUST_POINTS.map((point) => (
-              <li key={point} className="flex items-center gap-2 text-[13px] text-text-secondary">
+              <li key={point} className="flex items-center gap-[8px] text-[13px] text-text-secondary">
                 <svg
                   viewBox="0 0 16 16"
                   aria-hidden="true"
-                  className="size-3 shrink-0 fill-none stroke-accent-primary stroke-[1.75]"
+                  className="size-[13px] shrink-0 fill-none stroke-accent-primary stroke-[1.75]"
                 >
                   <path d="M3 8.5l3 3 7-7" />
                 </svg>
@@ -571,75 +584,43 @@ export function QuickHiringForm({
             ))}
           </ul>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-[10px]">
             {stepIndex > 0 && (
-              <button
-                type="button"
-                onClick={goBack}
-                className="whitespace-nowrap rounded-full border border-border-default px-6 py-3 text-[15px] text-text-secondary transition-colors hover:border-accent-primary/60"
-              >
-                {C.actions.back}
-              </button>
+              <CtaButton as="button" variant="outline" label={C.actions.back} onClick={goBack} />
             )}
 
+            {/* The same primitive as the sitewide "Talk to a human" CTA, so this
+                button IS that button rather than a lookalike: identical padding,
+                type scale and sweep hover, and it tracks any future change to it.
+                The previous hand-rolled pill with a 32px arrow disc was noticeably
+                larger than every other CTA on the page. */}
             {role?.handoffToClara && step === 'role' ? (
-              <Link
-                href="/ask"
-                className="inline-flex items-center gap-3 whitespace-nowrap rounded-full bg-accent-primary py-2 pl-6 pr-2 text-[15px] font-medium text-text-dark"
-              >
-                {C.actions.askClara}
-                <ArrowBadge />
-              </Link>
+              <CtaButton href="/ask" variant="solid" label={C.actions.askClara} />
             ) : (
-              <button
-                type="button"
+              <CtaButton
+                as="button"
+                variant="solid"
+                label={
+                  step === 'details'
+                    ? submitting
+                      ? C.actions.submitting
+                      : C.actions.submit
+                    : C.actions.continue
+                }
                 disabled={!canContinue() || submitting}
                 onClick={() => (step === 'details' ? void submit() : goNext())}
-                // Disabled is a different FILL, not lime at 40%. Lime dimmed over
-                // a dark card renders as a muddy olive that reads as a rendering
-                // bug rather than as "not yet". A flat dark surface reads inactive.
+                // Disabled is a different FILL, not lime at reduced opacity: dimmed
+                // lime on a dark ground reads as a rendering fault, not as "not yet".
                 className={cn(
-                  'inline-flex items-center gap-3 whitespace-nowrap rounded-full py-2 pl-6 pr-2 text-[15px] font-medium transition-colors',
-                  !canContinue() || submitting
-                    ? 'cursor-not-allowed border border-border-subtle bg-surface-tertiary text-text-tertiary'
-                    : 'bg-accent-primary text-text-dark hover:bg-accent-deep',
+                  (!canContinue() || submitting) &&
+                    'cursor-not-allowed border border-border-subtle !bg-surface-tertiary !text-text-tertiary [&_span]:!text-text-tertiary',
                 )}
-              >
-                {step === 'details'
-                  ? submitting
-                    ? C.actions.submitting
-                    : C.actions.submit
-                  : C.actions.continue}
-                <ArrowBadge muted={!canContinue() || submitting} />
-              </button>
+              />
             )}
           </div>
         </div>
       )}
-    </section>
-  )
-}
-
-/** Dark disc with an arrow, sitting inside the lime pill. */
-function ArrowBadge({ muted }: { muted?: boolean }) {
-  return (
-    <span
-      aria-hidden="true"
-      className={cn(
-        'flex size-8 items-center justify-center rounded-full',
-        muted ? 'bg-border-subtle' : 'bg-text-dark',
-      )}
-    >
-      <svg
-        viewBox="0 0 16 16"
-        className={cn(
-          'size-3.5 fill-none stroke-[1.8]',
-          muted ? 'stroke-text-tertiary' : 'stroke-accent-primary',
-        )}
-      >
-        <path d="M2.5 8h11M9.5 4l4 4-4 4" />
-      </svg>
-    </span>
+    </div>
   )
 }
 
@@ -671,7 +652,7 @@ function SkillPill({
       onClick={onClick}
       disabled={selected}
       className={cn(
-        'rounded-full border px-4 py-2 text-sm transition-colors',
+        'rounded-full border px-[14px] py-[6px] text-[13px] transition-colors',
         selected
           ? 'border-accent-primary/40 text-text-tertiary'
           : 'border-border-default text-text-secondary hover:border-accent-primary hover:text-text-primary',
@@ -697,12 +678,12 @@ function ChoiceList({
   onChange: (value: string) => void
 }) {
   return (
-    <div role="radiogroup" className="grid gap-3">
+    <div role="radiogroup" className="grid gap-[10px]">
       {options.map((option) => (
         <label
           key={option.value}
           className={cn(
-            'flex cursor-pointer items-center gap-3 rounded-2xl border px-5 py-4 transition-colors',
+            'flex cursor-pointer items-center gap-[10px] rounded-xl border px-[16px] py-[11px] text-[14px] transition-colors',
             value === option.value
               ? 'border-accent-primary bg-accent-primary/15 text-text-primary'
               : 'border-border-default text-text-secondary hover:border-accent-primary/50',
@@ -714,7 +695,7 @@ function ChoiceList({
             value={option.value}
             checked={value === option.value}
             onChange={() => onChange(option.value)}
-            className="size-4 accent-[#D4FF3C]"
+            className="size-[16px] accent-[#D4FF3C]"
           />
           <span>{option.label}</span>
         </label>
@@ -748,7 +729,7 @@ function Field({
   const errorId = `${id}-error`
   return (
     <div>
-      <label htmlFor={id} className="mb-2 block text-sm text-text-secondary">
+      <label htmlFor={id} className="mb-[6px] block text-[13px] text-text-secondary">
         {labelText}
       </label>
       <input
@@ -761,7 +742,7 @@ function Field({
         aria-describedby={error ? errorId : undefined}
         onChange={(e) => onChange(e.target.value)}
         className={cn(
-          'w-full rounded-xl border bg-surface-tertiary px-4 py-3 text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-ring',
+          'w-full rounded-xl border bg-surface-tertiary px-[14px] py-[10px] text-[14px] text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-ring',
           error ? 'border-[#FF6B6B]' : 'border-border-default focus:border-accent-primary',
         )}
       />

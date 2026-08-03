@@ -40,17 +40,23 @@ export const ROLE_OPTIONS: RoleOption[] = [
 ]
 
 /**
- * The four tabs the visitor sees. There are six SCREENS behind them: length and
- * commitment are both "team size" questions, and details plus booking are both
- * "your match". Four tabs of two questions reads as less work than six tabs of
- * one, and the count is what a visitor uses to decide whether to start.
+ * One rail entry per ACTUAL screen, numbered in order.
+ *
+ * This replaced a four-tab version that grouped length and commitment under
+ * "Team size" and details and booking under "Your match". It looked tidier and it
+ * lied: on the commitment screen the rail still said Team size, so the visitor
+ * could not tell where they were. A rail that does not match the screen is worse
+ * than no rail. Six honest steps, and the count varies with prefill because a
+ * prefilled step is genuinely not a step the visitor has to take.
  */
-export const STEP_GROUPS = [
-  { id: 'role', label: 'Role', steps: ['role'] },
-  { id: 'skills', label: 'Skills', steps: ['skills'] },
-  { id: 'team', label: 'Team size', steps: ['length', 'commitment'] },
-  { id: 'match', label: 'Your match', steps: ['details', 'booking'] },
-] as const
+export const STEP_LABELS = {
+  role: 'Role',
+  skills: 'Skills',
+  length: 'Duration',
+  commitment: 'Commitment',
+  details: 'Details',
+  booking: 'Book a call',
+} as const
 
 /**
  * Proof line under the form.

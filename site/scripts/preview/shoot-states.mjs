@@ -36,7 +36,7 @@ const SETTLE_MS = 500
 async function shoot(name, note) {
   await page.waitForTimeout(SETTLE_MS)
   const file = `${OUT}/${name}.png`
-  await page.locator('section').first().screenshot({ path: file })
+  await page.screenshot({ path: file })
   shots.push(`${name}: ${note}`)
   console.log(`  ${name}`)
 }
