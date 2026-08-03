@@ -26,6 +26,7 @@ import { roleIcon } from '@/components/shared/role-icons'
 import { CalendlyInlineEmbed } from '@/components/templates/book-a-call/calendly-inline-embed'
 import { Checkbox } from '@/components/ui/checkbox'
 import { CtaButton } from '@/components/ui/cta-button'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { cn } from '@/components/ui/_utils/cn'
 import { Heading } from '@/components/ui/heading'
 import { Text } from '@/components/ui/text'
@@ -467,6 +468,7 @@ export function QuickHiringForm({
               options={LENGTH_OPTIONS}
               value={length}
               onChange={setLength}
+              columns="lg:grid-cols-4"
             />
           </StepShell>
         )}
@@ -478,6 +480,7 @@ export function QuickHiringForm({
               options={COMMITMENT_OPTIONS}
               value={commitment}
               onChange={setCommitment}
+              columns="lg:grid-cols-3"
             />
           </StepShell>
         )}
@@ -671,36 +674,44 @@ function ChoiceList({
   options,
   value,
   onChange,
+  columns,
 }: {
   name: string
   options: ReadonlyArray<{ value: string; label: string }>
   value: string
   onChange: (value: string) => void
+  /** Desktop column count. One per option, so the row fills the band. */
+  columns?: string
 }) {
   return (
-    <div role="radiogroup" className="grid gap-[10px]">
-      {options.map((option) => (
-        <label
-          key={option.value}
-          className={cn(
-            'flex cursor-pointer items-center gap-[10px] rounded-xl border px-[16px] py-[11px] text-[14px] transition-colors',
-            value === option.value
-              ? 'border-accent-primary bg-accent-primary/15 text-text-primary'
-              : 'border-border-default text-text-secondary hover:border-accent-primary/50',
-          )}
-        >
-          <input
-            type="radio"
-            name={name}
-            value={option.value}
-            checked={value === option.value}
-            onChange={() => onChange(option.value)}
-            className="size-[16px] accent-[#D4FF3C]"
-          />
-          <span>{option.label}</span>
-        </label>
-      ))}
-    </div>
+    // The design system's radio, not a native input tinted with accent-color.
+    // Native radios render as a heavy grey disc on a dark ground, which was the
+    // one control here that still looked unstyled next to the lime checkbox.
+    <RadioGroup
+      value={value}
+      onValueChange={onChange}
+      name={name}
+      className={cn('grid gap-[10px] sm:grid-cols-2', columns)}
+    >
+      {options.map((option) => {
+        const id = `${name}-${option.value}`
+        return (
+          <label
+            key={option.value}
+            htmlFor={id}
+            className={cn(
+              'flex cursor-pointer items-center gap-[10px] rounded-xl border px-[16px] py-[11px] text-[14px] transition-colors',
+              value === option.value
+                ? 'border-accent-primary bg-accent-primary/[0.12] text-text-primary'
+                : 'border-border-default text-text-secondary hover:border-accent-primary/50',
+            )}
+          >
+            <RadioGroupItem id={id} value={option.value} className="size-[17px]" />
+            <span>{option.label}</span>
+          </label>
+        )
+      })}
+    </RadioGroup>
   )
 }
 

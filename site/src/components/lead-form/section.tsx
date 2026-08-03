@@ -24,14 +24,16 @@ export type LeadFormSectionProps = QuickHiringFormProps
 
 export function LeadFormSection(props: LeadFormSectionProps) {
   return (
-    // Full-bleed band. The blue belongs to the SECTION, edge to edge, rather than
-    // to a rounded card floating on the page ground. A boxed form at the foot of a
-    // long page reads as an advert someone pasted in; a band reads as part of the
-    // page. Only the content inside is constrained to the 1152px band, so it still
-    // lines up with everything above it.
-    <section className="bg-section-bg-card">
+    // Page ground, not a lighter band. The form is defined by a hairline instead
+    // of by a fill, so it sits ON the page rather than interrupting it with a
+    // different colour. `bg-bg-primary` is set explicitly rather than inherited:
+    // several of the pages this lands on end in a gradient section, and inheriting
+    // would put the box on a different shade page to page.
+    <section className="bg-bg-primary">
       <div className={cn(BAND_CLASS, BAND_PX_CLASS, 'py-[52px] lg:py-[68px]')}>
-        <QuickHiringForm {...props} />
+        <div className="rounded-[20px] border border-white/[0.14] p-[22px] sm:p-[30px] lg:p-[40px]">
+          <QuickHiringForm {...props} />
+        </div>
       </div>
     </section>
   )
