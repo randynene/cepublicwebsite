@@ -849,8 +849,8 @@ export function HomeTemplate({
       <RealEngineers content={content} />
       <ReadyToFind content={content} />
       <WhereWeWork content={content.whereWeWork} />
-      <Faq content={content} />
       <LeadFormSection sourcePage={buildLocalePath('/', locale)} />
+      <Faq content={content} />
     </main>
   )
 }

@@ -22,6 +22,7 @@
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
+import { roleIcon } from '@/components/shared/role-icons'
 import { CalendlyInlineEmbed } from '@/components/templates/book-a-call/calendly-inline-embed'
 import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/components/ui/_utils/cn'
@@ -37,6 +38,8 @@ import {
   LEAD_FORM_COPY as C,
   LENGTH_OPTIONS,
   ROLE_OPTIONS,
+  STEP_GROUPS,
+  TRUST_POINTS,
   type RoleOption,
 } from './content'
 
@@ -78,6 +81,9 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 // inside JSX, and a multiplication sign is not a string a translator should see.
 const REMOVE_GLYPH = '\u00D7'
 const ADD_GLYPH = '+'
+
+/** ARIA keyword, not copy. Hoisted so the UI_STRINGS rule does not flag it. */
+const ARIA_CURRENT_STEP = 'step' as const
 
 /**
  * Validation messages are red, not lime.
@@ -264,89 +270,72 @@ export function QuickHiringForm({
   const stepCount = steps.length
   const { heading, sub } = STEP_COPY[step]
 
-  // The booking step takes the full width. A Calendly month view squeezed into a
-  // 60% column is unusable, and by then there is no question left to ask, so the
-  // left rail has nothing to hold.
-  const fullWidth = step === 'booking'
+  // Which of the four tabs the current screen belongs to. Six screens, four tabs:
+  // see STEP_GROUPS for why.
+  const activeGroup = STEP_GROUPS.findIndex((g) => (g.steps as readonly string[]).includes(step))
 
   return (
     <section
       className={cn(
-        'rounded-[20px] border border-border-subtle bg-section-bg-card p-6 sm:p-10 lg:p-12',
+        'rounded-[20px] border border-border-subtle bg-section-bg-card p-6 sm:p-8 lg:p-10',
         className,
       )}
       aria-labelledby="quick-hiring-form-heading"
     >
-      <div
-        className={cn(
-          'gap-10 lg:gap-16',
-          fullWidth ? 'block' : 'lg:grid lg:grid-cols-[minmax(0,360px)_1fr]',
-        )}
+      {/* Tab rail. Horizontal and numbered, so the whole shape of the task is
+          visible before the visitor commits to the first answer. Not clickable:
+          jumping to "Your match" before answering anything would show a form
+          with nothing to match on. */}
+      <ol className="-mx-1 mb-7 flex items-center gap-x-5 overflow-x-auto px-1 pb-1 [scrollbar-width:none] lg:gap-x-8 [&::-webkit-scrollbar]:hidden">
+        {STEP_GROUPS.map((group, index) => {
+          const state = index === activeGroup ? 'current' : index < activeGroup ? 'done' : 'todo'
+          return (
+            <li key={group.id} className="flex shrink-0 items-center gap-2.5">
+              <span
+                className={cn(
+                  'flex size-6 items-center justify-center rounded-full text-[11px] font-semibold tabular-nums',
+                  state === 'current' && 'bg-accent-primary text-text-dark',
+                  state === 'done' && 'bg-accent-primary/25 text-accent-primary',
+                  state === 'todo' && 'bg-surface-tertiary text-text-tertiary',
+                )}
+                aria-hidden="true"
+              >
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <span
+                className={cn(
+                  'text-[13px] font-medium',
+                  state === 'todo' ? 'text-text-tertiary' : 'text-text-primary',
+                )}
+                aria-current={state === 'current' ? ARIA_CURRENT_STEP : undefined}
+              >
+                {group.label}
+              </span>
+            </li>
+          )
+        })}
+      </ol>
+
+      <Heading
+        as="h2"
+        size="h4"
+        id="quick-hiring-form-heading"
+        ref={headingRef}
+        tabIndex={-1}
+        className="text-[24px] font-semibold leading-[30px] tracking-[-0.6px] text-text-primary outline-none lg:text-[30px] lg:leading-[36px] lg:tracking-[-0.9px]"
       >
-        {/* Left rail: what is being asked. Landscape, because this block sits at
-            the bottom of a long page and a tall portrait card there reads as a
-            second page rather than as the last section of this one. */}
-        <div className="mb-8 lg:mb-0">
-          {/* Both halves are nowrap. At 390px the eyebrow was breaking after
-              "FIND YOUR" and the counter after "Step 1 of", which turned a
-              one-line header into a ragged four-line block. */}
-          <div className="mb-5 flex items-baseline justify-between gap-4">
-            <p className="whitespace-nowrap text-[11.5px] font-semibold uppercase leading-none tracking-[1.68px] text-accent-primary">
-              {C.eyebrow}
-            </p>
-            <p className="whitespace-nowrap text-[13px] leading-none text-text-tertiary lg:hidden">
-              {C.progress.step}
-              {' '}
-              {stepNumber}
-              {' '}
-              {C.progress.of}
-              {' '}
-              {stepCount}
-            </p>
-          </div>
+        {heading}
+      </Heading>
+      <Text size="small" className="mt-2 mb-7 text-text-tertiary">
+        {sub}
+      </Text>
 
-          <Heading
-            as="h2"
-            size="h4"
-            id="quick-hiring-form-heading"
-            ref={headingRef}
-            tabIndex={-1}
-            className="text-[26px] font-semibold leading-[32px] tracking-[-0.6px] text-text-primary outline-none lg:text-[34px] lg:leading-[40px] lg:tracking-[-0.9px]"
-          >
-            {heading}
-          </Heading>
-          <Text className="mt-3 text-text-secondary">{sub}</Text>
+      <div className="sr-only" role="progressbar" aria-valuenow={stepNumber} aria-valuemin={1} aria-valuemax={stepCount} />
 
-          <div className="mt-7 flex items-center gap-4">
-            <div
-              className="h-[3px] w-full max-w-[220px] overflow-hidden rounded-full bg-surface-tertiary"
-              role="progressbar"
-              aria-valuenow={stepNumber}
-              aria-valuemin={1}
-              aria-valuemax={stepCount}
-            >
-              <div
-                className="h-full rounded-full bg-accent-primary transition-[width] duration-300"
-                style={{ width: `${(stepNumber / stepCount) * 100}%` }}
-              />
-            </div>
-            <p className="hidden whitespace-nowrap text-[13px] leading-none text-text-tertiary lg:block">
-              {C.progress.step}
-              {' '}
-              {stepNumber}
-              {' '}
-              {C.progress.of}
-              {' '}
-              {stepCount}
-            </p>
-          </div>
-        </div>
-
-        {/* Right column: the controls. */}
-        <div className="min-w-0">
+      <div>
         {step === 'role' && (
           <StepShell>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
               {ROLE_OPTIONS.map((option) => (
                 <button
                   key={option.id}
@@ -354,13 +343,24 @@ export function QuickHiringForm({
                   onClick={() => setRole(option)}
                   aria-pressed={role?.id === option.id}
                   className={cn(
-                    'rounded-xl border px-5 py-[14px] text-left text-[15px] transition-colors',
+                    'group flex flex-col items-start gap-3 rounded-xl border px-3 py-3 text-left transition-colors lg:gap-3.5 lg:px-4 lg:py-3.5',
                     role?.id === option.id
-                      ? 'border-accent-primary bg-accent-primary/15 text-text-primary'
-                      : 'border-border-default text-text-primary hover:border-accent-primary/50 hover:bg-surface-tertiary/40',
+                      ? 'border-accent-primary bg-accent-primary/[0.12]'
+                      : 'border-border-subtle bg-surface-tertiary/50 hover:border-accent-primary/50 hover:bg-surface-tertiary',
                   )}
                 >
-                  {option.label}
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      '[&_svg]:size-[18px] [&_svg]:fill-none [&_svg]:stroke-current [&_svg]:stroke-[1.6]',
+                      role?.id === option.id ? 'text-accent-primary' : 'text-accent-primary/70',
+                    )}
+                  >
+                    {roleIcon(option.label)}
+                  </span>
+                  <span className="whitespace-nowrap text-[13.5px] font-medium leading-tight text-text-primary lg:text-[15px]">
+                    {option.label}
+                  </span>
                 </button>
               ))}
             </div>
@@ -548,52 +548,98 @@ export function QuickHiringForm({
           </StepShell>
         )}
 
-        {step !== 'booking' && (
-          <div className="mt-8 flex items-center gap-3">
-          {stepIndex > 0 && (
-            <button
-              type="button"
-              onClick={goBack}
-              className="rounded-full border border-border-default px-6 py-3 text-text-secondary transition-colors hover:border-accent-primary/60"
-            >
-              {C.actions.back}
-            </button>
-          )}
-
-          {role?.handoffToClara && step === 'role' ? (
-            <Link
-              href="/ask"
-              className="rounded-full bg-accent-primary px-7 py-3 font-medium text-text-dark"
-            >
-              {C.actions.askClara}
-            </Link>
-          ) : (
-            <button
-              type="button"
-              disabled={!canContinue() || submitting}
-              onClick={() => (step === 'details' ? void submit() : goNext())}
-              // Disabled is a different FILL, not lime at 40%. Lime dimmed over a
-              // dark card renders as a muddy olive that reads as a rendering bug
-              // rather than as "not yet". A flat dark surface reads as inactive.
-              className={cn(
-                'rounded-full px-7 py-3 font-medium transition-colors',
-                !canContinue() || submitting
-                  ? 'cursor-not-allowed border border-border-subtle bg-surface-tertiary text-text-tertiary'
-                  : 'bg-accent-primary text-text-dark hover:bg-accent-deep',
-              )}
-            >
-              {step === 'details'
-                ? submitting
-                  ? C.actions.submitting
-                  : C.actions.submit
-                : C.actions.continue}
-            </button>
-          )}
-          </div>
-        )}
-        </div>
       </div>
+
+      {/* Proof on the left, action on the right, on one line. In the reference
+          this row is what makes the block read as a section of the page rather
+          than a form: the claims carry their own weight while the button sits
+          where the eye finishes. */}
+      {step !== 'booking' && (
+        <div className="mt-8 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+          <ul className="flex flex-wrap items-center gap-x-5 gap-y-2">
+            {TRUST_POINTS.map((point) => (
+              <li key={point} className="flex items-center gap-2 text-[13px] text-text-secondary">
+                <svg
+                  viewBox="0 0 16 16"
+                  aria-hidden="true"
+                  className="size-3 shrink-0 fill-none stroke-accent-primary stroke-[1.75]"
+                >
+                  <path d="M3 8.5l3 3 7-7" />
+                </svg>
+                {point}
+              </li>
+            ))}
+          </ul>
+
+          <div className="flex items-center gap-3">
+            {stepIndex > 0 && (
+              <button
+                type="button"
+                onClick={goBack}
+                className="whitespace-nowrap rounded-full border border-border-default px-6 py-3 text-[15px] text-text-secondary transition-colors hover:border-accent-primary/60"
+              >
+                {C.actions.back}
+              </button>
+            )}
+
+            {role?.handoffToClara && step === 'role' ? (
+              <Link
+                href="/ask"
+                className="inline-flex items-center gap-3 whitespace-nowrap rounded-full bg-accent-primary py-2 pl-6 pr-2 text-[15px] font-medium text-text-dark"
+              >
+                {C.actions.askClara}
+                <ArrowBadge />
+              </Link>
+            ) : (
+              <button
+                type="button"
+                disabled={!canContinue() || submitting}
+                onClick={() => (step === 'details' ? void submit() : goNext())}
+                // Disabled is a different FILL, not lime at 40%. Lime dimmed over
+                // a dark card renders as a muddy olive that reads as a rendering
+                // bug rather than as "not yet". A flat dark surface reads inactive.
+                className={cn(
+                  'inline-flex items-center gap-3 whitespace-nowrap rounded-full py-2 pl-6 pr-2 text-[15px] font-medium transition-colors',
+                  !canContinue() || submitting
+                    ? 'cursor-not-allowed border border-border-subtle bg-surface-tertiary text-text-tertiary'
+                    : 'bg-accent-primary text-text-dark hover:bg-accent-deep',
+                )}
+              >
+                {step === 'details'
+                  ? submitting
+                    ? C.actions.submitting
+                    : C.actions.submit
+                  : C.actions.continue}
+                <ArrowBadge muted={!canContinue() || submitting} />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </section>
+  )
+}
+
+/** Dark disc with an arrow, sitting inside the lime pill. */
+function ArrowBadge({ muted }: { muted?: boolean }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        'flex size-8 items-center justify-center rounded-full',
+        muted ? 'bg-border-subtle' : 'bg-text-dark',
+      )}
+    >
+      <svg
+        viewBox="0 0 16 16"
+        className={cn(
+          'size-3.5 fill-none stroke-[1.8]',
+          muted ? 'stroke-text-tertiary' : 'stroke-accent-primary',
+        )}
+      >
+        <path d="M2.5 8h11M9.5 4l4 4-4 4" />
+      </svg>
+    </span>
   )
 }
 

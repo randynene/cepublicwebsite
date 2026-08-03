@@ -29,15 +29,44 @@ export interface RoleOption {
 }
 
 export const ROLE_OPTIONS: RoleOption[] = [
-  { id: 'ai-engineer', label: 'AI Engineer', category: 'ai' },
-  { id: 'data-ml', label: 'Data & ML', category: 'data' },
-  { id: 'devops', label: 'DevOps, Cloud & Platform', category: 'devops' },
-  { id: 'product-engineer', label: 'Product Engineer (full-stack)', category: 'backend' },
+  { id: 'backend', label: 'Backend', category: 'backend' },
+  { id: 'frontend', label: 'Frontend', category: 'frontend' },
+  { id: 'full-stack', label: 'Full-Stack', category: 'backend' },
+  { id: 'ai-ml', label: 'AI / ML', category: 'ai' },
+  { id: 'data', label: 'Data', category: 'data' },
+  { id: 'devops', label: 'DevOps', category: 'devops' },
   { id: 'mobile', label: 'Mobile', category: 'mobile' },
-  { id: 'qa', label: 'QA Automation', category: 'qa' },
-  { id: 'fractional-cto', label: 'Fractional CTO' },
-  { id: 'not-sure', label: 'Not sure, help me work it out', handoffToClara: true },
+  { id: 'something-else', label: 'Something else', handoffToClara: true },
 ]
+
+/**
+ * The four tabs the visitor sees. There are six SCREENS behind them: length and
+ * commitment are both "team size" questions, and details plus booking are both
+ * "your match". Four tabs of two questions reads as less work than six tabs of
+ * one, and the count is what a visitor uses to decide whether to start.
+ */
+export const STEP_GROUPS = [
+  { id: 'role', label: 'Role', steps: ['role'] },
+  { id: 'skills', label: 'Skills', steps: ['skills'] },
+  { id: 'team', label: 'Team size', steps: ['length', 'commitment'] },
+  { id: 'match', label: 'Your match', steps: ['details', 'booking'] },
+] as const
+
+/**
+ * Proof line under the form.
+ *
+ * "300+" and "97% stay 2+ years" are both already used on the site (the sitewide
+ * trust bar and /for-developers respectively), so they are established claims
+ * rather than new ones. "Replace if it isn't working" is new copy, taken from
+ * Jake's design reference. Flagged rather than assumed: if legal or Seb has not
+ * signed off on stating a replacement guarantee on 250 pages, remove that third
+ * item, and nothing else changes.
+ */
+export const TRUST_POINTS = [
+  '300+ teams built',
+  '97% stay 2+ years',
+  "Replace if it isn't working",
+] as const
 
 /** Values must match the HubSpot dropdown options exactly or the submit is rejected. */
 export const LENGTH_OPTIONS = [
@@ -56,8 +85,8 @@ export const COMMITMENT_OPTIONS = [
 export const LEAD_FORM_COPY = {
   eyebrow: 'Find your engineer',
   role: {
-    heading: 'What kind of engineer do you need?',
-    sub: 'Pick the closest one. We will refine it on the call.',
+    heading: 'What role are you hiring for?',
+    sub: "Pick one to start - you'll see matching engineers at the end.",
   },
   skills: {
     heading: 'Any particular stack?',
@@ -101,7 +130,7 @@ export const LEAD_FORM_COPY = {
     sub: 'Pick a time and we will come to it with your requirements already in hand.',
   },
   actions: {
-    continue: 'Continue',
+    continue: 'Next',
     back: 'Back',
     submit: 'Book a call',
     submitting: 'Saving...',

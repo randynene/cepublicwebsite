@@ -443,15 +443,15 @@ export function FractionalCtoTemplate({
             </h2>
             <p className="lead">{content.matchform.lead}</p>
           </div>
-          <LeadFormSection
-            sourcePage={buildLocalePath('/services/fractional-ctos', locale)}
-            prefillRole="fractional-cto"
-          />
           <MatchReassurance mf={content.matchform} locale={locale} />
         </div>
       </section>
 
       {/* 10. FAQ */}
+      <LeadFormSection
+            sourcePage={buildLocalePath('/services/fractional-ctos', locale)}
+            prefillRole="fractional-cto"
+          />
       <section className="faq">
         <div className="wrap faq-grid">
           <div className="faq-left">

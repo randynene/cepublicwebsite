@@ -175,6 +175,8 @@ export function ServicesHubTemplate({ content, pathPrefix = '' }: { content: Ser
       <HubStories eyebrow="Shared · Customer stories" heading="Hear from our customers" stories={h.stories} />
       <HubQuotes eyebrow="Reviews from real teams" lead="What the difference" accent="feels like" quotes={h.quotes} />
 
+      <LeadFormSection sourcePage={`${pathPrefix}/services`} />
+
       {/* FAQ */}
       <section className={cn(BAND, 'py-[64px]')}>
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-[0.8fr_1.2fr]">
@@ -187,7 +189,6 @@ export function ServicesHubTemplate({ content, pathPrefix = '' }: { content: Ser
           <CatalogueFaq items={h.faqs} />
         </div>
       </section>
-      <LeadFormSection sourcePage={`${pathPrefix}/services`} />
     </main>
   )
 }

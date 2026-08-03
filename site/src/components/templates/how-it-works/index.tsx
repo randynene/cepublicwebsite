@@ -516,8 +516,8 @@ export function HowItWorksTemplate({
       <Stages content={content} />
       <DeRisk content={content} />
       <Testimonials content={content} />
-      <Faq content={content} locale={locale} />
       <LeadFormSection sourcePage={buildLocalePath('/how-it-works', locale)} />
+      <Faq content={content} locale={locale} />
     </main>
   )
 }

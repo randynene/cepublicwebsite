@@ -80,6 +80,8 @@ export function TechnologyHubTemplate({ content, pathPrefix = '' }: { content: T
       <HubStories eyebrow="Real teams, real results" heading="Hear from our customers" stories={h.stories} />
       <HubQuotes eyebrow="In their words" lead="What the difference" accent="feels like" quotes={h.quotes} />
 
+      <LeadFormSection sourcePage={`${pathPrefix}/technology`} />
+
       {/* FAQ */}
       <section className={cn(BAND, 'py-[64px]')}>
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-[0.8fr_1.2fr]">
@@ -92,7 +94,6 @@ export function TechnologyHubTemplate({ content, pathPrefix = '' }: { content: T
           <CatalogueFaq items={h.faqs} />
         </div>
       </section>
-      <LeadFormSection sourcePage={`${pathPrefix}/technology`} />
     </main>
   )
 }

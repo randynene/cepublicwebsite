@@ -345,6 +345,7 @@ export function CatalogueDetail({ content, hireHref = '/book-a-call', scheduleHr
       </section>
 
       {/* 8b. FAQs (per-page override else shared block; matches live) */}
+      {leadForm && <LeadFormSection {...leadForm} />}
       {faqs.length > 0 ? <CatalogueFaqPanel items={faqs} /> : null}
 
       {/* 9. CTA BAND */}
@@ -423,7 +424,6 @@ export function CatalogueDetail({ content, hireHref = '/book-a-call', scheduleHr
         </div>
       </section>
 
-      {leadForm && <LeadFormSection {...leadForm} />}
     </main>
   )
 }

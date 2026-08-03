@@ -42,14 +42,14 @@ async function shoot(name, note) {
 }
 
 await page.goto(URL, { waitUntil: 'networkidle' })
-await page.waitForSelector('text=What kind of engineer do you need?')
+await page.waitForSelector('text=What role are you hiring for?')
 
 await shoot('01-role-empty', 'step 1, nothing chosen, Continue inactive')
 
-await page.getByRole('button', { name: 'AI Engineer', exact: true }).click()
+await page.getByRole('button', { name: 'AI / ML', exact: true }).click()
 await shoot('02-role-chosen', 'step 1, AI Engineer selected, Continue now lime')
 
-await page.getByRole('button', { name: 'Continue' }).click()
+await page.getByRole('button', { name: /Next|Book a call/ }).first().click()
 await page.waitForSelector('text=Any particular stack?')
 await shoot('03-skills-default', 'step 2, AI-biased pills because the role was AI Engineer')
 
@@ -69,17 +69,17 @@ await page.keyboard.press('Enter')
 await page.waitForTimeout(150)
 await shoot('06-skills-selected', 'three selected, including the custom one')
 
-await page.getByRole('button', { name: 'Continue' }).click()
+await page.getByRole('button', { name: /Next|Book a call/ }).first().click()
 await page.waitForSelector('text=How long do you need help for?')
 await shoot('07-length', 'step 3')
 
 await page.getByText('More than 6 months').click()
-await page.getByRole('button', { name: 'Continue' }).click()
+await page.getByRole('button', { name: /Next|Book a call/ }).first().click()
 await page.waitForSelector('text=What level of commitment do you need?')
 await page.getByText('Full-time (40h/week)').click()
 await shoot('08-commitment', 'step 4, full-time selected')
 
-await page.getByRole('button', { name: 'Continue' }).click()
+await page.getByRole('button', { name: /Next|Book a call/ }).first().click()
 await page.waitForSelector('text=Where do we send your matches?')
 await shoot('09-details-empty', 'step 5, empty')
 
