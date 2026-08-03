@@ -414,24 +414,9 @@ export function FractionalCtoTemplate({
       </section>
 
       {/* 8. SELF CHECK */}
-      <section className="selfcheck">
-        <div className="wrap">
-          <div className="head">
-            <span className="eyebrow">{content.selfcheck.eyebrow}</span>
-            <h2 className="section-title">
-              {content.selfcheck.h2Lead} <em>{content.selfcheck.h2Em}</em>
-            </h2>
-          </div>
-          <div className="sc-grid">
-            {content.selfcheck.items.map((it) => (
-              <div key={it.n} className="sc-item">
-                <span className="n">{it.n}</span>
-                <p>{it.p}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* REMOVED - "Do any of these sound familiar?" self-check. Jake's call,
+          3 Aug: pulled for now. Content and styles are still in content.ts and
+          fractional-cto.css if it comes back. */}
 
       {/* 9. MATCH FORM */}
       <section className="matchform" id="match">
@@ -443,13 +428,15 @@ export function FractionalCtoTemplate({
             </h2>
             <p className="lead">{content.matchform.lead}</p>
           </div>
+          {/* `bare`: this section supplies the eyebrow, headline and lead, and the
+              reassurance block below closes it. No prefill, because the eight role
+              tiles have no Fractional CTO option and there is nothing truthful to
+              preselect. */}
+          <LeadFormSection bare sourcePage={buildLocalePath('/services/fractional-ctos', locale)} />
+
           <MatchReassurance mf={content.matchform} locale={locale} />
         </div>
       </section>
-
-      {/* No prefill: the eight role tiles have no Fractional CTO option, so there
-          is nothing truthful to preselect here. */}
-      <LeadFormSection sourcePage={buildLocalePath('/services/fractional-ctos', locale)} />
 
       {/* 10. FAQ */}
       <section className="faq">

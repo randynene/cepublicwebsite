@@ -395,7 +395,6 @@ html {
 .he .offer {
   padding: 92px 0;
   background: var(--navy);
-  border-top: 1px solid var(--line);
 }
 .he .offer-inner {
   display: grid;
@@ -512,7 +511,6 @@ html {
 .he .how {
   padding: 92px 0;
   background: var(--navy);
-  border-top: 1px solid var(--line);
 }
 .he .how-strip {
   display: grid;
@@ -737,7 +735,6 @@ html {
   justify-content: space-between;
   gap: 12px;
   padding: 15px 22px;
-  border-top: 1px solid var(--line);
   background: rgba(212, 255, 60, 0.05);
 }
 .he .prof-open .po-t {
@@ -816,7 +813,6 @@ html {
 .he .proof {
   padding: 92px 0;
   background: var(--navy);
-  border-top: 1px solid var(--line);
 }
 .he .cs-grid {
   display: grid;
@@ -1008,7 +1004,6 @@ html {
 .he .findform {
   padding: 92px 0;
   background: var(--navy);
-  border-top: 1px solid var(--line);
 }
 .he .ff-head {
   max-width: none;

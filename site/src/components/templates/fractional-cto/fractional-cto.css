@@ -725,7 +725,6 @@ html {
 .fcto .video {
   padding: 96px 0;
   background: var(--bg);
-  border-top: 1px solid var(--line);
 }
 .fcto .video-shell {
   margin-top: 34px;
@@ -862,7 +861,6 @@ html {
 .fcto .does {
   padding: 96px 0;
   background: var(--navy);
-  border-top: 1px solid var(--line);
 }
 .fcto .does .head {
   text-align: center;
@@ -1000,7 +998,6 @@ html {
 .fcto .matched {
   padding: 104px 0;
   background: var(--navy);
-  border-top: 1px solid var(--line);
 }
 .fcto .matched .top {
   display: flex;
@@ -1148,7 +1145,6 @@ html {
 .fcto .derisk {
   padding: 120px 0;
   background: var(--bg);
-  border-top: 1px solid var(--line);
   overflow: hidden;
 }
 .fcto .derisk .wrap {
@@ -1205,7 +1201,6 @@ html {
 .fcto .selfcheck {
   padding: 96px 0;
   background: var(--navy);
-  border-top: 1px solid var(--line);
 }
 .fcto .selfcheck .head {
   text-align: center;
@@ -1254,7 +1249,6 @@ html {
 .fcto .matchform {
   padding: 100px 0;
   background: var(--bg);
-  border-top: 1px solid var(--line);
 }
 .fcto .matchform .head {
   text-align: center;
@@ -1425,7 +1419,6 @@ html {
 .fcto .faq {
   padding: 96px 0 104px;
   background: var(--navy);
-  border-top: 1px solid var(--line);
 }
 .fcto .faq-grid {
   display: grid;
