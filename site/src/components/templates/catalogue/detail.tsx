@@ -327,7 +327,7 @@ export function CatalogueDetail({ content, hireHref = '/book-a-call', leadForm }
 
       {/* 8. NO UPFRONT FEES */}
       <section className={cn(BAND_1280, 'grid grid-cols-1 items-center gap-12 py-[72px] lg:grid-cols-[380px_1fr]')}>
-        <Placeholder src="/how-it-works/stage3-onboard.png" alt="Onboarding and agreement paperwork" className="h-[360px] rounded-[20px] border border-[#22314D]" />
+        <Placeholder src="/how-it-works/stage3-onboard.jpg" alt="Molly and Daniel on a welcome-to-the-team onboarding call" className="h-[360px] rounded-[20px] border border-[#22314D]" />
         <div>
           <Eyebrow>{DC.noFeeEyebrow}</Eyebrow>
           <h2 className="mt-3 text-[34px] font-semibold leading-[1.1] tracking-[-1.2px] text-white lg:text-[46px] lg:leading-[54px]">

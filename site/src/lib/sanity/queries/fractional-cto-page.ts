@@ -255,5 +255,12 @@ export function toFctoContent(data: FractionalCtoPageData): FctoContent {
       }
     : FCTO.video
 
-  return { ...c, hero, video }
+  // Match-form eyebrow is code-owned for now (empty = hidden). Sanity still
+  // holds the old "Ready to find…" string; do not let it win until Jake restores it.
+  const matchform: FctoContent['matchform'] = {
+    ...(c.matchform ?? FCTO.matchform),
+    eyebrow: FCTO.matchform.eyebrow,
+  }
+
+  return { ...c, hero, video, matchform }
 }

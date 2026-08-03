@@ -21,8 +21,9 @@ import { TestimonialsSlider } from './testimonials-slider'
 // TEMPLATE-HOW-IT-WORKS — faithful reproduction of the locked "How It Works"
 // export (docs/raw-html/How It Works.html desktop artboard + PDF), with the
 // approved design corrections applied: hero cards flank the centered headline
-// (Ana left, Reinaldo right); stages 1-3 are text-left / photo-right with the
-// funnel widget inside Stage 2's text column; testimonials alternate photo and
+// (two roster engineers, one either side); stages 1-3 are text-left /
+// photo-right with the funnel widget inside Stage 2's text column;
+// testimonials alternate photo and
 // quote cards. Same design system as TEMPLATE-HOME: dark ground #070D18, lime
 // accent #D4FF3C, elevated card #101B30 / border #22314D, Inter semibold
 // headings, Source Serif 4 italic accent word. All copy arrives via the
@@ -54,7 +55,7 @@ type SectionProps = { content: HiwContent; locale: Locale }
 
 function Hero({ content, locale }: SectionProps) {
   const { hero } = content
-  const [ana, reinaldo] = hero.people
+  const [leftPerson, rightPerson] = hero.people
   const textStack = (
     <div className="text-center">
       <span
@@ -111,17 +112,17 @@ function Hero({ content, locale }: SectionProps) {
         {/* Desktop: two cards flank the centered headline */}
         <div className="grid items-center gap-[24px] lg:grid-cols-[minmax(0,310px)_minmax(0,1fr)_minmax(0,310px)] lg:gap-[32px]">
           <div className="hero-visual hidden lg:block">
-            <HeroCard person={ana} vetted={hero.vetted} />
+            <HeroCard person={leftPerson} vetted={hero.vetted} />
           </div>
           {textStack}
           <div className="hero-visual hidden lg:block">
-            <HeroCard person={reinaldo} vetted={hero.vetted} />
+            <HeroCard person={rightPerson} vetted={hero.vetted} />
           </div>
         </div>
         {/* Mobile: cards drop below the headline */}
         <div className="mx-auto mt-[40px] grid max-w-[440px] grid-cols-2 gap-[16px] lg:hidden">
-          <HeroCard person={ana} vetted={hero.vetted} />
-          <HeroCard person={reinaldo} vetted={hero.vetted} />
+          <HeroCard person={leftPerson} vetted={hero.vetted} />
+          <HeroCard person={rightPerson} vetted={hero.vetted} />
         </div>
       </div>
       {/* Same hero trust bar as every other marketing page. */}

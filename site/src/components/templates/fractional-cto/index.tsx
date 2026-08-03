@@ -422,7 +422,9 @@ export function FractionalCtoTemplate({
       <section className="matchform" id="match">
         <div className="wrap">
           <div className="head">
-            <span className="eyebrow">{content.matchform.eyebrow}</span>
+            {content.matchform.eyebrow.trim() ? (
+              <span className="eyebrow">{content.matchform.eyebrow}</span>
+            ) : null}
             <h2>
               {content.matchform.h2Lead} <em>{content.matchform.h2Em}</em>
             </h2>

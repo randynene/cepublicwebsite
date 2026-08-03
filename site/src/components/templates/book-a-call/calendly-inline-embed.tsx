@@ -13,11 +13,25 @@ import { useEffect, useRef } from 'react'
 const CALENDLY_CSS_URL = 'https://assets.calendly.com/assets/external/widget.css'
 const CALENDLY_JS_URL = 'https://assets.calendly.com/assets/external/widget.js'
 
-// CE dark/lime skin for the Calendly iframe. Hex without `#` — Calendly's
-// supported embed theme params. Layout stays Calendly's canonical UI.
+// CE skin for the Calendly iframe. Hex without `#`.
+//
+// Read Calendly's own booking CSS/JS before changing `text_color`. Two facts
+// from their bundle constrain this pair:
+//   1. Invitee inputs are `background: var(--colorSurfaceStandard,
+//      var(--coreColorNeutral0))` and that token is hard-coded WHITE. It is
+//      never derived from `background_color`, so the form boxes stay white
+//      however dark the panel is.
+//   2. Their theme code sets `--colorTextStandard` to exactly `text_color`,
+//      and the input's `color` reads that token. So `text_color` is BOTH the
+//      panel text and the text a visitor types into a white box.
+//
+// A pure-white `text_color` therefore typed white-on-white (the original bug);
+// a near-black one fixed typing but greyed out the dark panel. This slate is
+// the balance point - it clears 4:1 against the navy panel AND against the
+// white input, so nothing on the widget is invisible in either place.
 const CE_CALENDLY_THEME = {
   background_color: '101B30',
-  text_color: 'ffffff',
+  text_color: '6F7F99',
   primary_color: 'D4FF3C',
 } as const
 
@@ -30,12 +44,12 @@ type CalendlyInlineApi = {
   }) => void
 }
 
-/** Append CE theme params unless the URL already sets them (Studio override). */
+/** Apply CE theme params (always — contrast-critical). */
 export function withCalendlyCeTheme(url: string): string {
   try {
     const parsed = new URL(url)
     for (const [key, value] of Object.entries(CE_CALENDLY_THEME)) {
-      if (!parsed.searchParams.has(key)) parsed.searchParams.set(key, value)
+      parsed.searchParams.set(key, value)
     }
     return parsed.toString()
   } catch {
@@ -115,9 +129,9 @@ export function CalendlyInlineEmbed({ url, className }: CalendlyInlineEmbedProps
     <div
       ref={containerRef}
       className={className}
-      // Outer plate = page ground (#070D18). Inner Calendly UI stays #101B30
-      // via CE_CALENDLY_THEME. color-scheme:light stops the browser forcing
-      // an opaque white iframe fill on a dark host page.
+      // Outer plate = page ground (#070D18); the Calendly panel itself is the
+      // slightly lifted navy from CE_CALENDLY_THEME. color-scheme:light stops
+      // the browser forcing an opaque fill mismatch on the iframe.
       style={{
         minWidth: 320,
         width: '100%',

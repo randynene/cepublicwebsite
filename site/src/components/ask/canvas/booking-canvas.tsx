@@ -226,7 +226,13 @@ function DatePicker() {
   )
 }
 
-export function BookingCanvas({ booking }: { booking: BookingCanvasData }) {
+export function BookingCanvas({
+  booking,
+  onBack,
+}: {
+  booking: BookingCanvasData
+  onBack?: () => void
+}) {
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-[16px] px-[24px] pb-[24px] pt-[22px] @max-[62rem]:px-[12px] @max-[62rem]:pb-[12px] @max-[62rem]:pt-[12px]">
       <div className="flex shrink-0 flex-wrap items-center gap-[10px]">
@@ -244,9 +250,19 @@ export function BookingCanvas({ booking }: { booking: BookingCanvasData }) {
             {chip}
           </span>
         ))}
-        <span className="ml-auto text-[12.5px] font-semibold text-brand-primary">
-          {booking.backLabel}
-        </span>
+        {onBack ? (
+          <button
+            type="button"
+            onClick={onBack}
+            className="ml-auto text-[12.5px] font-semibold text-brand-primary hover:text-accent-alt"
+          >
+            {booking.backLabel}
+          </button>
+        ) : (
+          <span className="ml-auto text-[12.5px] font-semibold text-brand-primary">
+            {booking.backLabel}
+          </span>
+        )}
       </div>
 
       <div

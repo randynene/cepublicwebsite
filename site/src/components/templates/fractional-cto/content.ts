@@ -266,7 +266,9 @@ export const FCTO: FctoContent = {
     ],
   },
   matchform: {
-    eyebrow: 'Ready to find your fractional CTO?',
+    // Hidden for now (Jake, 3 Aug) — quiz H2 stands alone. Restore the string
+    // to bring the lime eyebrow back.
+    eyebrow: '',
     h2Lead: "Tell us where you are. We'll",
     h2Em: 'match you in days',
     lead: 'Four quick questions. A US-based account manager personally matches you within 7 days.',

@@ -127,19 +127,22 @@ async function buildDoc() {
     ),
   }
 
-  // Hub photos are still Picsum placeholders (external URLs) — seed via
-  // imageUrl so Studio can later swap in a real Sanity image asset.
+  // Hub photos are real CE office shots now, so they upload as Sanity assets
+  // and Seb can swap any panel in Studio. imageUrl stays in the schema as the
+  // external-URL escape hatch but is no longer written.
   const whereWeWork = {
     eyebrow: HC.whereWeWork.eyebrow,
     titleLead: HC.whereWeWork.titleLead,
     titleAccent: HC.whereWeWork.titleAccent,
     paragraph: HC.whereWeWork.paragraph,
     hubs: keyed(
-      HC.whereWeWork.hubs.map((h) => ({
-        name: h.name,
-        href: h.href,
-        imageUrl: h.image,
-      })),
+      await Promise.all(
+        HC.whereWeWork.hubs.map(async (h) => ({
+          name: h.name,
+          href: h.href,
+          image: await img(h.image, `The Cloud Employee team at work in ${h.name}`),
+        })),
+      ),
       'hub',
     ),
   }

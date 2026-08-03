@@ -113,6 +113,19 @@ const lockedRules: Redirect[] = [
   { source: '/schedule-a-call', destination: '/book-a-call', permanent: true },
   { source: '/uk/schedule-a-call', destination: '/uk/book-a-call', permanent: true },
 
+  // DELIBERATE DIVERGENCE FROM LIVE - Jake, 3 Aug 2026.
+  //
+  // /customer-story/virgin returns 200 on Webflow, but the page has no story on
+  // it: the body reads "Customer story in progress... We haven't yet had a chance
+  // to write up this particular story." It is a thin page with an optimised title
+  // and nothing behind it, on both sites. Rather than carry it across, it goes to
+  // the hub, which is where its own body already tells visitors to go.
+  //
+  // A 301 rather than a 404 because it is a live indexed URL, and the hub is the
+  // honest destination. Recorded in parity-exceptions.json.
+  { source: '/customer-story/virgin', destination: '/customer-stories', permanent: true },
+  { source: '/uk/customer-story/virgin', destination: '/uk/customer-stories', permanent: true },
+
   { source: '/sourcing', destination: '/how-it-works', permanent: true },
   { source: '/embedding', destination: '/how-it-works', permanent: true },
   { source: '/retention', destination: '/how-it-works', permanent: true },

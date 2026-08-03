@@ -400,14 +400,57 @@ export function toLocationContent(data: LocationPageData, fallback: LocationCont
     logosLabel: fallback.logosLabel,
     logosLabelLines,
     logos,
+    // Hero visual mode (stack vs home-style slideshow) is code-driven — Studio
+    // has no field for it, so a Sanity merge must not wipe the registry value.
+    hero: {
+      ...merged.hero,
+      visual: fallback.hero.visual ?? 'stack',
+      // Prefer Sanity cards when present; otherwise the registry slideshow /
+      // stack list (EE needs every European roster face, not a truncated trio).
+      // objectPosition is code-only (not in Studio) — stitch it back by name
+      // so Anto's center-top crop survives a Sanity merge.
+      cards: (() => {
+        const cards = merged.hero?.cards?.length ? merged.hero.cards : fallback.hero.cards
+        if (!fallback.hero.cards?.length) return cards
+        const posByName = new Map(
+          fallback.hero.cards
+            .filter((c) => c.objectPosition)
+            .map((c) => [c.name, c.objectPosition] as const),
+        )
+        if (posByName.size === 0) return cards
+        return cards.map((c) => {
+          const pos = posByName.get(c.name)
+          return pos ? { ...c, objectPosition: pos } : c
+        })
+      })(),
+    },
+    // Empty Studio videoUrl must not wipe the registry Vimeo link (seed left
+    // videoUrl blank on purpose; PH/EE now ship known Vimeo IDs in code).
+    video: {
+      ...merged.video,
+      videoUrl: merged.video?.videoUrl?.trim() || fallback.video.videoUrl,
+      videoSrc: merged.video?.videoSrc?.trim() || fallback.video.videoSrc,
+    },
     // PH regions strip stays available from the registry when Sanity docs
-    // predate that field. Start quiz is retired (LeadFormSection replaces it);
-    // 'quiz' / 'none' both skip the Start block in the template.
+    // predate that field.
     regionsStrip: merged.regionsStrip ?? fallback.regionsStrip,
+    // The start quiz is retired (LeadFormSection replaces it); 'quiz' and 'none'
+    // both skip the Start block, so a legacy Sanity `variant: 'quiz'` needs no
+    // dataset write. CTA destinations are code-owned as of 3 Aug: /start-hiring
+    // is retired from marketing CTAs (→ /book-a-call or /contact). Remap any
+    // Sanity leftover.
     start: {
       ...merged.start,
       variant: merged.start?.variant ?? fallback.start.variant,
-      cards: merged.start?.cards?.length ? merged.start.cards : fallback.start.cards,
+      cards: (() => {
+        const cards = merged.start?.cards?.length ? merged.start.cards : fallback.start.cards
+        return cards.map((card, i) => {
+          const fb = fallback.start.cards[i]
+          if (!fb) return card
+          if (!card.ctaHref?.includes('start-hiring')) return card
+          return { ...card, ctaHref: fb.ctaHref, cta: fb.cta }
+        })
+      })(),
     },
     calculator: {
       ...merged.calculator,
@@ -416,6 +459,11 @@ export function toLocationContent(data: LocationPageData, fallback: LocationCont
       currency: fallback.calculator.currency,
       comparisonMultiple: fallback.calculator.comparisonMultiple,
       seniorityOptions: fallback.calculator.seniorityOptions,
+    },
+    // `hidden` is code-only (not in Studio) — preserve LATAM's temporary hide.
+    engineers: {
+      ...merged.engineers,
+      hidden: fallback.engineers.hidden,
     },
   }
 }

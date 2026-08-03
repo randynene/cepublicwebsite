@@ -50,35 +50,48 @@ function fmtMoney(n: number, symbol: string): string {
 }
 
 const SELECT =
-  'w-full appearance-none rounded-[12px] border border-[#22314D] bg-[#0A1628] px-4 py-4 pr-10 text-[16px] font-medium text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-[#070D18]'
+  'w-full cursor-pointer appearance-none rounded-[12px] border border-[#22314D] bg-[#0A1628] px-4 py-4 pr-10 text-[16px] font-medium text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-[#070D18]'
 
 function Field({
   label,
   value,
   onChange,
   options,
+  id,
 }: {
   label: string
   value: string
   onChange: (v: string) => void
   options: readonly { id: string; label: string }[]
+  id: string
 }) {
+  // htmlFor (not wrapping <label>) so Chrome does not open-then-close the native
+  // popup. The <select> carries its own padding so the whole box is the hit target;
+  // the chevron is decorative only (pointer-events-none).
   return (
-    <label className="flex flex-col gap-2">
-      <span className="text-[11px] font-semibold uppercase tracking-[1.4px] text-text-default/50">{label}</span>
+    <div className="flex flex-col gap-2">
+      <label
+        htmlFor={id}
+        className="text-[11px] font-semibold uppercase tracking-[1.4px] text-text-default/50"
+      >
+        {label}
+      </label>
       <span className="relative block">
-        <select value={value} onChange={(e) => onChange(e.target.value)} className={SELECT}>
+        <select id={id} value={value} onChange={(e) => onChange(e.target.value)} className={SELECT}>
           {options.map((o) => (
             <option key={o.id} value={o.id}>
               {o.label}
             </option>
           ))}
         </select>
-        <span aria-hidden="true" className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[14px] text-text-default/50">
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[14px] text-text-default/50"
+        >
           {GLYPH.chevron}
         </span>
       </span>
-    </label>
+    </div>
   )
 }
 
@@ -155,9 +168,27 @@ export function LocationCalculator({
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_1fr]">
       {/* Inputs */}
       <div className="flex flex-col gap-5 rounded-[20px] border border-[#22314D] bg-[#0A1628] p-6 lg:p-8">
-        <Field label={labels.roleLabel} value={roleId} onChange={setRoleId} options={roles} />
-        <Field label={labels.regionLabel} value={regionId} onChange={setRegionId} options={regions} />
-        <Field label={labels.seniorityLabel} value={seniorityId} onChange={setSeniorityId} options={seniorityOptions} />
+        <Field
+          id="loc-calc-role"
+          label={labels.roleLabel}
+          value={roleId}
+          onChange={setRoleId}
+          options={roles}
+        />
+        <Field
+          id="loc-calc-region"
+          label={labels.regionLabel}
+          value={regionId}
+          onChange={setRegionId}
+          options={regions}
+        />
+        <Field
+          id="loc-calc-seniority"
+          label={labels.seniorityLabel}
+          value={seniorityId}
+          onChange={setSeniorityId}
+          options={seniorityOptions}
+        />
       </div>
 
       {/* Result - lime card */}

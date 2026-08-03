@@ -158,6 +158,16 @@
       "decidedBy": "Claude",
       "decidedAt": "2026-07-14",
       "reason": "Live serves /404 with HTTP 200. That is a Webflow artifact: it hosts the 404 template at a real URL, so requesting it directly returns a page that SAYS 'not found' with a status that says 'found'. That is a soft 404, and Google can index it. We return a genuine 404 for /404, and our real not-found page (styled, from the notFoundPage singleton) is served with a 404 status on every unknown URL, which is what actually matters. Deliberately better than live rather than bug-compatible with it."
+    },
+    {
+      "paths": [
+        "/customer-story/virgin",
+        "/uk/customer-story/virgin"
+      ],
+      "expect": "permanent",
+      "decidedBy": "Jake",
+      "decidedAt": "2026-08-03",
+      "reason": "Live serves this 200, but there is no story on it. The body reads 'Customer story in progress... We haven't yet had a chance to write up this particular story' and points visitors at the hub. It is a thin page with an optimised title and nothing behind it. 301 to /customer-stories rather than carrying an empty page across, and rather than 404ing a live indexed URL."
     }
   ]
 }

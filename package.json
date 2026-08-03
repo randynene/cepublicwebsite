@@ -20,6 +20,8 @@
     "launch:verify-hubspot-forms": "tsx scripts/launch/verify-hubspot-forms.ts",
     "launch:verify-hubspot-forms-staging": "tsx scripts/launch/verify-hubspot-forms-staging.ts",
     "launch:verify-noindex": "tsx scripts/launch/verify-noindex.ts",
+    "launch:compare-meta": "tsx scripts/launch/compare-live-meta.ts",
+    "launch:backfill-meta": "tsx scripts/launch/backfill-live-meta.ts",
     "hubspot:audit-forms": "tsx scripts/hubspot/audit-forms.ts",
     "hubspot:audit-slack-notifications": "tsx scripts/hubspot/audit-slack-notifications.ts",
     "hubspot:find-lead": "tsx scripts/hubspot/find-lead.ts",
