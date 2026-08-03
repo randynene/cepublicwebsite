@@ -28,6 +28,7 @@ import {
   GlobalScripts,
   GtmHeadScript,
   GtmNoScript,
+  VisitorCountryScript,
 } from '@/components/third-party-scripts'
 import { ToastProvider, ToastViewport } from '@/components/ui/toast'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -107,6 +108,8 @@ export default async function RootLayout({
       className={`${inter.variable} ${sourceSerif.variable} ${ibmPlexMono.variable} h-full antialiased`}
     >
       <head>
+        {/* Must precede every other script: the Hotjar gate reads it. */}
+        <VisitorCountryScript />
         <GeoTargetlyScript />
         <GtmHeadScript />
         {/* STATIC-3 — Material Symbols web font for discriminated icon

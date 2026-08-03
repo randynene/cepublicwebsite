@@ -1,3 +1,4 @@
+import { headers } from 'next/headers'
 import Script from 'next/script'
 
 // Global third-party scripts confirmed in audit-output/ce-scripts.json.
@@ -15,8 +16,32 @@ const CLARA_WORKSPACE_ID = '09aa62df-5af6-4cec-b565-c335e907327d'
 const FACEBOOK_PIXEL_ID = '160820827844254'
 const HUBSPOT_PORTAL_ID = '22809822'
 const MARKER_PROJECT_ID = '6a607cb9bba82be8b774fc61'
-const GEOTARGETLY_SRC =
-  'https://g10498469755.co/gr?id=-OJz6mUkL51tX4CyQPmd&refurl=https://www.google.com'
+// GeoTargetly runs THREE separate georedirect rules on the live site, not one.
+// Each rule is an independent snippet from the GeoTargetly dashboard with its own
+// rule id and its own timestamp-derived callback name; the timestamps are part of
+// the contract, because the loader calls `georedirect<TIMESTAMP>loaded` by name.
+//
+// Verified against the live HTML of www.cloudemployee.io on 3 Aug 2026. Do not
+// "tidy" these: the ids, the timestamps and the query-string shape all have to
+// match what is configured in the GeoTargetly account or the rule silently
+// stops firing.
+const GEOTARGETLY_RULES = [
+  { timestamp: '1740520761398', id: '-OJz6mUkL51tX4CyQPmd' },
+  { timestamp: '1740692320540', id: '-OK8LE2WwpalZvadeMTu' },
+  { timestamp: '1740693636858', id: '-OK8QFN5yqnrUvZ_ZFAC' },
+] as const
+
+function geoTargetlySnippet(timestamp: string, id: string): string {
+  return `(function(g,e,o,t,a,r,ge,tl,y,s){
+g.getElementsByTagName(o)[0].insertAdjacentHTML('afterbegin','<style id="georedirect${timestamp}style">body{opacity:0.0 !important;}</style>');
+s=function(){g.getElementById('georedirect${timestamp}style').innerHTML='body{opacity:1.0 !important;}';};
+t=g.getElementsByTagName(o)[0];y=g.createElement(e);y.async=true;
+y.src='https://g10498469755.co/gr?id=${id}&refurl='+g.referrer+'&winurl='+encodeURIComponent(window.location);
+t.parentNode.insertBefore(y,t);y.onerror=function(){s()};
+window.georedirect${timestamp}loaded=function(redirect){var to=0;if(redirect){to=5000};
+setTimeout(function(){s();},to)};
+})(document,'script','head');`
+}
 
 // Marker.io is a review/bug-report widget for the staging review waves — it must
 // NOT render for real visitors on the live domain. This mirrors robots.ts: the
@@ -34,15 +59,48 @@ function isCanonicalProductionSite(): boolean {
   return !!canonicalHost && !!servingHost && canonicalHost === servingHost
 }
 
-// GeoTargetly — must fire before render to redirect at the edge.
-// Inline strategy="beforeInteractive" works only inside the root layout.
+// `window.VISITOR_COUNTRY` — the visitor's two-letter country code, exposed to
+// client scripts. Read by the Hotjar gate below, exactly as on the live site.
+//
+// On Webflow this came from a Cloudflare Worker (`country-check`) that injected the
+// value off Cloudflare's CF-IPCountry header. That Worker only runs on PROXIED
+// traffic, and Vercel requires the Cloudflare proxy to be OFF for its own records,
+// so the Worker stops firing at cutover. Vercel supplies the same information
+// natively in `x-vercel-ip-country`, so we emit the tag ourselves and drop the
+// dependency on Cloudflare entirely.
+//
+// "XX" mirrors the Worker's fallback for an unknown country.
+export async function VisitorCountryScript() {
+  const country = (await headers()).get('x-vercel-ip-country') ?? 'XX'
+  // Country codes are two ASCII letters. Anything else is not going in a script tag.
+  const safe = /^[A-Z]{2}$/.test(country) ? country : 'XX'
+  return <script dangerouslySetInnerHTML={{ __html: `window.VISITOR_COUNTRY="${safe}"` }} />
+}
+
+// GeoTargetly — geo-based traffic routing. Must execute before first paint,
+// because the first thing each snippet does is hide the body so the visitor never
+// sees the wrong page flash up before being redirected.
+//
+// Deliberately RAW <script> tags rather than next/script. The snippets have to run
+// in document order, synchronously, ahead of everything else in <head>, and they
+// register global callbacks that GeoTargetly's loader invokes by name. next/script
+// owns injection order and would take that guarantee away for no benefit; live
+// serves plain inline tags and so do we.
+//
+// What this replaced: a single <Script src> pointing at ONE of the three rules,
+// with `refurl` hardcoded to "https://www.google.com" and no `winurl`. That was
+// broken three ways over - two rules missing, a fabricated referrer, and no
+// callback for the loader to call, so the redirect could never actually fire.
 export function GeoTargetlyScript() {
   return (
-    <Script
-      id="geotargetly"
-      src={GEOTARGETLY_SRC}
-      strategy="beforeInteractive"
-    />
+    <>
+      {GEOTARGETLY_RULES.map((rule) => (
+        <script
+          key={rule.timestamp}
+          dangerouslySetInnerHTML={{ __html: geoTargetlySnippet(rule.timestamp, rule.id) }}
+        />
+      ))}
+    </>
   )
 }
 
@@ -119,13 +177,26 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);`}
         />
       )}
 
+      {/* Hotjar loads for US and UK visitors ONLY, exactly as it does on live.
+        * `window.VISITOR_COUNTRY` is injected into <head> by the Cloudflare Worker
+        * `country-check`, which runs on www.cloudemployee.io/* and reads Cloudflare's
+        * CF-IPCountry header. The gate is deliberate: Hotjar bills per recorded
+        * session, and CE only wants sessions from the two markets they sell into.
+        *
+        * This depends on the Cloudflare proxy (orange cloud) staying ON for the
+        * domain - a Worker does not run on DNS-only traffic. If the proxy is ever
+        * turned off, VISITOR_COUNTRY is undefined and Hotjar simply does not load,
+        * which is the same fail-closed behaviour live has today. */}
       {HOTJAR_SITE_ID && (
         <Script id="hotjar" strategy="afterInteractive">
-          {`(function(h,o,t,j,a,r){h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+          {`(function(){
+if (window.VISITOR_COUNTRY !== "US" && window.VISITOR_COUNTRY !== "GB") return;
+(function(h,o,t,j,a,r){h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
 h._hjSettings={hjid:${HOTJAR_SITE_ID},hjsv:6};
 a=o.getElementsByTagName('head')[0];r=o.createElement('script');r.async=1;
 r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;a.appendChild(r);
-})(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');`}
+})(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
+})();`}
         </Script>
       )}
 
