@@ -14,7 +14,42 @@ Parent brand: Saxon.io. Owner: Jake Hall (non-developer, directs Claude Code).
 
 ## Current Phase
 
-> **ACTIVE ACTION PLAN (READ FIRST): `docs/ROADMAP_TO_COMPLETION.md`.** This is the
+> # 🚀 THE SITE IS LIVE (3 Aug 2026)
+>
+> **cloudemployee.io serves this codebase.** Pushing to `main` deploys to
+> PRODUCTION. There is no longer a staging buffer between a commit and real
+> visitors. Treat every push accordingly.
+>
+> **ACTIVE PLAN: `docs/seo/POST_LAUNCH_AUDIT.md`** — the post-launch audit
+> (4 Aug) and the prioritised list of what to do next. It supersedes
+> `docs/ROADMAP_TO_COMPLETION.md` for day-to-day work; the roadmap is kept as the
+> record of what shipped pre-launch.
+>
+> **Live-site facts a fresh session must know:**
+> - All four entry points (http/https × apex/www) 308 to `https://www.cloudemployee.io`.
+> - `NEXT_PUBLIC_CANONICAL_HOST` IS now set on production. `robots.ts` is
+>   host-aware (reads the request host, not the build-time var), so staging stays
+>   `Disallow: /` regardless. Do not revert that to a build-time check.
+>   `npm run launch:verify-noindex` still guards it.
+> - Cloudflare proxy is OFF (grey cloud) for apex + www, as Vercel requires. Every
+>   Cloudflare edge feature is therefore dead for those hostnames: the
+>   `country-check` Worker was replaced by `VisitorCountryScript` reading Vercel's
+>   `x-vercel-ip-country`.
+> - **Do not re-enable the Vercel firewall country-challenge rule.** It blocked
+>   CE's own Philippines team and every Filipino visitor on launch night. See
+>   Tech Debt #63.
+> - `talent.cloudemployee.io` is a SEPARATE, still-live Webflow site. It is not
+>   ours, it was not migrated, and its URLs will show up in Search Console and
+>   Ahrefs data. Do not test its paths against www.
+> - Audit tooling is wired and repeatable: `scripts/seo/{gsc-pull,verify-gsc-urls,ahrefs-pull}.ts`.
+>
+> **Post-launch state: zero regressions.** 309/330 Search Console URLs clean, and
+> every exception verified as either faithful-to-Webflow or on the talent
+> subdomain. The open work is optimisation, not repair.
+>
+> ---
+>
+> **PRE-LAUNCH RECORD (superseded, kept for context): `docs/ROADMAP_TO_COMPLETION.md`.** This was the
 > definitive, sequenced plan to finish the site and cut over to production cleanly.
 > It holds the MASTER PAGE TRACKER (every URL, its real status, the work needed, its
 > Marker.io review wave), the 9 execution phases, the SEO/parity launch gate, the
@@ -108,10 +143,10 @@ Parent brand: Saxon.io. Owner: Jake Hall (non-developer, directs Claude Code).
 | **MYGRATR-TEMPLATE-BOOK_A_CALL** | **Book-a-call detail (`/book-a-call/[slug]` + UK; self-loading Calendly inline embed; 6 docs)** | ✅ **Complete (Jul 2026)** |
 | **MYGRATR-TEMPLATE-COMPARE** | **Compare detail (`/compare/[slug]` + UK; 30 docs)** | ✅ **Complete (Jul 2026)** |
 | MYGRATR-TEMPLATE-CUSTOMER_STORY / SERVICE / TECHNOLOGY / DOWNLOAD_THANK_YOU | Detail templates — **BUILT AND COMMITTED**, contrary to the "Planned" this row used to claim. Routes, Sanity queries and JSON-LD all ship; `site/src/components/templates/{service,technology,customer-story,download-thank-you}/`. Not yet through TEMPLATE_FIDELITY_LOOP against the D3 designs. | ✅ Built (fidelity pass outstanding) |
-| MYGRATR-TEMPLATE-* (remaining) | EVENT (no design export), plus the STATIC marketing pages enumerated by the parity gate (`/about-us`, `/contact`, `/for-developers`, `/pricing`, `/our-work`, `/alternatives`, 16 UK hubs, …) | Planned — see Phase 2 |
-| MYGRATR-QA-1 | Visual + Structural QA | Planned |
-| MYGRATR-LAUNCH | Cutover + Redirects | Planned |
-| MYGRATR-MONITOR-1 | Post-cutover SEO | Planned |
+| MYGRATR-TEMPLATE-* (remaining) | The STATIC marketing pages this row used to call "Planned" all SHIPPED and are live 200s (`/about-us`, `/contact`, `/for-developers`, `/pricing`, `/our-work`, `/alternatives`, the UK hubs) — captured from live during LAUNCH-PARITY and present in the 653-URL sitemap. **Still genuinely outstanding:** Event detail (no design export), Managed Pods (net-new, not built), and a design pass on `/referrals`. Several shipped pages have no design of their own (About Us, For Developers, Pricing, Our Work, Contact, both calculators, the thank-you pages) — they are live and correct, not designed. | ✅ Shipped, except Event / Managed Pods / Referral design |
+| MYGRATR-QA-1 | Visual + Structural QA | Partially absorbed into LAUNCH-PARITY (parity gate 6,937/6,937) + the post-launch audit. A production Screaming Frog crawl + Core Web Vitals pass is still outstanding. |
+| **MYGRATR-LAUNCH** | **Cutover + Redirects — DNS moved at Cloudflare, certs issued for apex + www, all four entry points funnel to `https://www.cloudemployee.io`, robots flipped to `Allow: /`, 653-URL sitemap live** | ✅ **Complete (3 Aug 2026)** |
+| **MYGRATR-MONITOR-1** | **Post-cutover SEO — GSC + Ahrefs APIs wired, 330 URLs replayed against production (309 clean, zero regressions), findings in `docs/seo/POST_LAUNCH_AUDIT.md`** | 🚧 **First audit done (4 Aug 2026); ongoing monitoring + optimisation open** |
 
 ## First Customer: Cloud Employee
 
@@ -326,7 +361,7 @@ Only after ALL of the above are complete do you start planning the next phase.
 | 1 | MYGRATR-0 | `src/lib/types.ts` is a single flat file — will need splitting by domain once QA and template types are added | MYGRATR-SCAFFOLD-1 |
 | 2 | AUDIT-1 | AUDIT-1 called Webflow REST directly instead of using `CmsAdapter` — the adapter interface was not ready. Adapter must wrap Webflow v2 calls before CONTENT-1. | MYGRATR-SCAFFOLD-1 |
 | 3 | AUDIT-1 | Firecrawl v4 SDK was bypassed in favour of direct REST calls — align once we upgrade to the new `Firecrawl` / `FirecrawlClient` class. | MYGRATR-CONTENT-1 |
-| 4 | AUDIT-1 | Ahrefs account subscription doesn't include cloudemployee.io — baseline snapshot is empty. Needs Ahrefs plan verification before MONITOR-1. | MYGRATR-MONITOR-1 |
+| 4 | AUDIT-1 | ~~Ahrefs account subscription doesn't include cloudemployee.io — baseline snapshot is empty.~~ **RESOLVED 4 Aug 2026.** The plan now covers the domain; `AHREFS_API_KEY` in `.env` returns live data (DR 36, Ahrefs rank 2,140,702). Wired up in `scripts/seo/ahrefs-pull.ts`. Note the v3 API exposes different columns per plan, so read the available-columns error rather than assuming a schema. | ✅ RESOLVED |
 | 5 | AUDIT-1 | Nav Technology dropdown merged into Services in `ce-global-components.json` — selector tweak needed before nav is built. | MYGRATR-SCAFFOLD-1 |
 | 6 | AUDIT-1 | Playwright `networkidle` times out on Vimeo-embedded video pages (2 captures failed across runs). Switch to `domcontentloaded` for VIDEO template. | MYGRATR-QA-1 |
 | 7 | AUDIT-1 | Step 3e `semi_global` count (745+) is inflated because the global-script 80%-of-pages threshold misses scripts that appear on most but not all templates. Consider lowering to 60% or moving more patterns into the explicit `SCRIPT_PATTERNS` list. | MYGRATR-CONTENT-1 |
@@ -389,7 +424,14 @@ Only after ALL of the above are complete do you start planning the next phase.
 | 63 | Footer newsletter (Aug 2026) | **The footer subscribe block is gone, and it orphaned live Sanity fields.** Jake retired the HubSpot newsletter form; `FooterSubscribe` + `FooterSubscribeForm` are deleted and the footer no longer renders it. `footer.subscribe` (`heading`, `description`, `formId`, `submitLabel`) is still in the schema, still populated in production, and still projected by `fetchFooter()` - but nothing reads it, so the Studio form now edits nothing (same shape as #62). Deliberately not unset: removing fields from a live singleton is a stop-and-ask. Retire the fields in the same pass as the #62 cleanup. The HubSpot form itself ('NewsLetter Subscribe (via cloudemployee.io)', 104 submissions) still exists in HubSpot and is untouched. | Pre-launch schema cleanup (with #62) |
 | 62 | Vetting Profile section (Jul 2026) | **The new vetting section is static, and it orphaned live Sanity fields.** `site/src/components/shared/vetting-profile/` replaced the old `.vet` block on `/services/software-engineers` (+ `/uk`) and carries its copy in a local `content.ts`, so nothing in it is editable in Studio. Two consequences. (1) The `hireEngineersPage.vet` branch - headline, the three explainer points, the profile-explorer entries, and the 90-second tour `videoUrl`/`poster` - is still populated in the production dataset but is no longer read by any component. Deliberately NOT unset: removing fields from a live singleton is a stop-and-ask, and the data is inert where it sits. (2) The candidate on the card (Lucas M., $42/hr, all six tab panels) is marketing copy in code, so Seb cannot change it. Decide which way this goes before launch: either Sanity-wire the new section and then retire the `vet` fields in one pass, or accept it as static and retire the fields anyway. Doing neither leaves a Studio form that edits nothing. | Pre-launch: Sanity-wire decision + `vet` field cleanup |
 
-*Last updated: Jul 2026 (LAUNCH-PARITY track). **The build is in a launch-parity push, not a template push.** The governing artefact is now the PARITY GATE (`npm run launch:verify-parity`): capture what the LIVE site does for every known URL (6,937 of them, from the April crawl + Webflow's redirect export + the live sitemap + Search Console + Ahrefs + Webflow's page-list API), replay it against the new site, and fail on any behavioural difference. Deliberate divergences are recorded in `data/webflow/parity-exceptions.json` with who decided them and why - it is an allowlist, not a mute button.
+| 63 | LAUNCH (3 Aug 2026) | **Do not re-enable the Vercel firewall country-challenge rule.** A rule challenging Philippines / China / Russia / Singapore was ported from the old Cloudflare WAF and published just before cutover. It returned HTTP 429 + `x-vercel-mitigated: challenge` on every path for those countries, locking out CE's entire Philippines delivery team and the Filipino engineer audience the site exists to recruit. Disabled after ~25 minutes. The rule still exists in the Vercel dashboard, toggled off. **The generalisable lesson: a security config does not port between platforms without being re-checked against who the audience actually is.** Vercel already runs DDoS mitigation and bot protection by default. If protection is wanted later, it must exclude the team's countries and start in Log mode. The companion rate-limit rule was deliberately never added. | Won't fix (leave disabled) |
+| 64 | Post-launch audit (4 Aug 2026) | **8 dead Webflow RSS feeds are registered as sitemaps in Search Console** (`/customer-story/rss.xml`, `/compare/rss.xml`, `/ai-in-software-development/rss.xml`, `/nearshoring-offshoring/rss.xml`, `/staff-augmentation/rss.xml`, `/managing-engineers/rss.xml`, `/scaling-teams/rss.xml`, `/hiring-tips/rss.xml`), all now 404. Also `https://cloudemployee.io/sitemap.xml` (non-www) is registered and 308s. Consequence is cosmetic but corrosive: sitemap fetch errors accumulate and bury real ones. Fix is to delete the 9 submissions in Search Console. No code change; we have no reason to serve RSS. | Jake, in Search Console |
+| 65 | Post-launch audit (4 Aug 2026) | **24 URLs hold live backlinks and return 404**, from sources at DR 91, 75, 73, 61, 59, 58. Mostly retired Webflow blog posts under the old `/blog/<category>/<slug>` pattern, some from 2018. **23 of the 24 were already 404 before the cutover**, so this is inherited link rot, not migration damage — a reclaim opportunity. Needs a human decision per URL on the redirect target, because a 301 to an irrelevant page is treated as a soft 404 and wastes the link; where no relevant page exists the honest options are to leave the 404 or write the replacement. Full list: `audit-output/seo-post-launch/ahrefs-broken-backlinks.json`. The DR 91 link has a trailing `%20` and needs a whitespace-tolerant rule. | Post-launch SEO track |
+| 66 | Post-launch audit (4 Aug 2026) | **Core Web Vitals and Lighthouse have never been measured on the production build.** The only Lighthouse numbers on record are from TEMPLATE-BLOG (Jul 2026, desktop, staging) and carry known third-party-script debt (#29-#32: 770ms TBT from GTM + GA4 + LinkedIn + HubSpot + Hotjar + Facebook Pixel + Calendly + GSAP + Swiper + Finsweet). Jake's stated goal is a high Lighthouse score on every page, which makes this measurable-at-scale work: connect PageSpeed Insights inside Screaming Frog to get per-URL CWV across all 653 sitemap URLs in one pass, rather than spot-checking. | Optimisation track |
+
+*Last updated: 4 Aug 2026 (LAUNCH complete + first post-launch audit). **The site is LIVE at cloudemployee.io; pushing to `main` deploys to production.** Prior context below describes the pre-launch build.*
+
+*Prior: Jul 2026 (LAUNCH-PARITY track). **The build is in a launch-parity push, not a template push.** The governing artefact is now the PARITY GATE (`npm run launch:verify-parity`): capture what the LIVE site does for every known URL (6,937 of them, from the April crawl + Webflow's redirect export + the live sitemap + Search Console + Ahrefs + Webflow's page-list API), replay it against the new site, and fail on any behavioural difference. Deliberate divergences are recorded in `data/webflow/parity-exceptions.json` with who decided them and why - it is an allowlist, not a mute button.
 
 **Shipped in this track:** the whole redirect layer (Next runs `redirects()` BEFORE routing, Webflow does the opposite, which is why redirect bugs are invisible on Webflow and fatal on Next); locale-awareness across chrome, hubs and the start-hiring funnel; EVERY HubSpot form (the portal ID was never exposed to the app - every form on the site rendered nothing, silently); the legal pages; 8 marketing pages captured from live; the 7 post-conversion pages (book-a-call + the thank-yous - what forms and Calendly redirect TO, and the easiest pages in a migration to forget); hub body copy + FAQs (6,578 words, 54 FAQs, #44); and BOTH calculators, rebuilt from CE's real cost models and verified exact against live.
 

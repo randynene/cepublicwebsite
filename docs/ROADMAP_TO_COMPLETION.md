@@ -1,10 +1,28 @@
 # ROADMAP TO COMPLETION - Cloud Employee crossover
 
+> **LAUNCHED 3 Aug 2026.** cloudemployee.io now serves the Next.js + Sanity site.
+> Both www and apex resolve to Vercel over HTTPS, all four entry points funnel to
+> `https://www.cloudemployee.io`, robots.txt flipped to `Allow: /`, and the 653-URL
+> sitemap is live. This file's pre-launch purpose is served; it is kept as the
+> record of what shipped.
+>
+> **Post-launch work is now tracked in `docs/seo/POST_LAUNCH_AUDIT.md`** (audit of
+> 4 Aug: zero migration regressions across 330 Search Console URLs; the open items
+> are dead RSS sitemap registrations, 24 pre-existing broken backlink targets, and
+> a production Screaming Frog crawl).
+>
+> **Launch-day incident worth remembering.** A Vercel firewall rule challenging
+> traffic from Philippines / China / Russia / Singapore was added shortly before
+> cutover, mirroring an old Cloudflare config. It locked out CE's own Philippines
+> team and every Filipino visitor for roughly 25 minutes until it was disabled.
+> Copying a security config between platforms without checking it against the
+> audience is the mistake; do not re-enable that rule.
+>
 > The single source of truth for finishing the cloudemployee.io rebuild and taking
 > it live on staging, ready for a zero-loss crossover. If any other doc disagrees
 > with this file about "what is done", this file wins until launch.
 >
-> Owner: Jake. Author of record: planning brain. Last updated: 28 Jul 2026.
+> Owner: Jake. Author of record: planning brain. Last updated: 4 Aug 2026 (launch + post-launch audit).
 >
 > **28 Jul - Seb page-by-page review.** The whole call is consolidated, tagged
 > and mapped to real files in `docs/briefs/active/SEB-CALL-EDITS-28JUL.md`. The
