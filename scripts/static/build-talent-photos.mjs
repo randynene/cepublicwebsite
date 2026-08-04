@@ -89,7 +89,20 @@ const PHOTOS = [
   // Mateo: face was high in the 4:5 marquee crop — lower focusY + ease zoom.
   { slug: 'mateo-r', src: 'latam/LATAM.png', focusX: 0.5, focusY: 0.34, zoom: 1.1 },
   { slug: 'gabriel-k', src: 'latam/LATAM 2.png', focusY: 0.4 },
-  { slug: 'rafael-s', src: 'latam/LATAM 3.png', focusY: 0.4, zoom: 1.3 },
+  // Rafael: the 4:5 marquee crop wants zoom 1.3, but the landscape slide
+  // inherited it and clipped his crown - which is what CE-38 surfaced when LATAM
+  // moved to the rotating card. His SOURCE has ample headroom (crown well inside
+  // a 1131x1391 frame), so this is a crop bug, not a bad photo: back the slide
+  // off to zoom 1.0 and sit the focus high enough to keep hair and shoulders.
+  {
+    slug: 'rafael-s',
+    src: 'latam/LATAM 3.png',
+    focusY: 0.4,
+    zoom: 1.3,
+    // 0.30 still shaved the top of his hair; 0.26 clears it with real headroom.
+    slideFocusY: 0.26,
+    slideZoom: 1.0,
+  },
   // Philippines
   { slug: 'kyla-t', src: 'philippines/Kyla.png', focusX: 0.46, focusY: 0.3, zoom: 1.75 },
   // Ericka: face sits slightly right of centre in the source.

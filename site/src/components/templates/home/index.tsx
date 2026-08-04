@@ -145,7 +145,7 @@ function ReasonIcon({
   )
 }
 
-function Hero({ content }: SectionProps) {
+function Hero({ content, locale }: SectionProps & { locale: Locale }) {
   const { hero } = content
   // Prefer Sanity/HOME_CONTENT hero.profiles; fall back to the static slideshow
   // constant when profiles are missing or incomplete (< 2 people).
@@ -205,7 +205,7 @@ function Hero({ content }: SectionProps) {
           <div className="mt-[30px] flex flex-wrap items-center gap-[14px]">
             <MegaMenuPillLabel
               as="a"
-              href="#pricing"
+              href={buildLocalePath('/book-a-call', locale)}
               variant="pill-green"
               size="cta"
               leadingArrow
@@ -274,8 +274,8 @@ function Hero({ content }: SectionProps) {
 }
 
 // Two-line label: "TRUSTED BY 300+" / "ENGINEERING TEAMS". Per-logo max-heights
-// from displayH in content.ts (Virgin 29, Salmon 22, Hotelplan 20, Willo 22,
-// Travelex 22, Tidal 22, Scorpion 14 at 0.8 opacity).
+// come from CLIENT_LOGOS / ASSET_OVERRIDE in client-logo-strip.tsx, which is the
+// single source for all pages - do not re-list them here, it goes stale.
 // The shared hero trust bar, same as every other marketing page. Home keeps
 // passing its own (Sanity-overridable) logo list; the label, the AI CTA and the
 // "See more" button all come from the shared component.
@@ -877,7 +877,7 @@ export function HomeTemplate({
     <main id="main" className="bg-[#070D18]">
       {/* Hero + trust bar claim the first screen together. */}
       <div className="hero-screen">
-        <Hero content={content} />
+        <Hero content={content} locale={locale} />
         <TrustedBy content={content} />
       </div>
       <ClientStorySection content={content} />

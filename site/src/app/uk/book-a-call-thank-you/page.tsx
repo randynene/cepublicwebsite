@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 
+import { PostBookingNext } from '@/components/shared/post-booking-next'
 import {
   buildStaticPageMetadata,
   renderStaticPage,
@@ -20,5 +21,9 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function BookACallThankYouUkPage() {
-  return renderStaticPage('bookACallThankYouPage', '/book-a-call-thank-you', 'en-GB', 'Thank You')
+  // See the US route for why breadcrumbs are off and what `after` carries (CE-41).
+  return renderStaticPage('bookACallThankYouPage', '/book-a-call-thank-you', 'en-GB', 'Thank You', {
+    showBreadcrumbs: false,
+    after: <PostBookingNext locale="en-GB" />,
+  })
 }

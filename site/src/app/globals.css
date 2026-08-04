@@ -1054,3 +1054,40 @@ body.ask-page {
     transform: translateY(0) scale(1);
   }
 }
+
+/* ── Clara chat widget: brand palette (CE-39) ────────────────────────────────
+ *
+ * Seb: "Update pop up color to match new site palette."
+ *
+ * The widget (clara.cloudemployee.io/widget.js) renders inside an open shadow
+ * root, so ordinary page CSS cannot reach its internals. It does, however,
+ * declare its palette as custom properties on `:host`:
+ *
+ *   --ce-navy #213D66   --ce-navy-dark #1a2d4d   --ce-lime #C5E84D
+ *
+ * Custom properties inherit through a shadow boundary, and declarations from
+ * the outer document win over `:host` rules for the host element itself. So
+ * re-declaring them on the host is the widget's own theming hook, not an
+ * override fight with vendor CSS - nothing here depends on their class names,
+ * and a widget restyle cannot silently break it.
+ *
+ * Only the three BRAND colours are remapped. The greys are left alone: they
+ * carry the widget's internal contrast relationships, and re-tinting them
+ * blind is how you turn a colour tweak into an accessibility regression.
+ *
+ * Its lime was already close (#C5E84D vs our #D4FF3C) and its navy a few
+ * shades lighter; this lines both up with the site.
+ *
+ * NOTE: Clara does not mount on localhost (its API rejects non-allowed
+ * origins), so this cannot be verified in local dev - check it on a deployed
+ * origin. Related: Tech Debt #31 (the launcher pill already fails WCAG AA
+ * contrast). Our lime is BRIGHTER than theirs, so this moves that in the right
+ * direction, but it does not by itself close #31.
+ */
+#clara-shadow-host,
+#clara-widget-trigger,
+#clara-widget-frame {
+  --ce-lime: #d4ff3c;
+  --ce-navy: #101b30;
+  --ce-navy-dark: #070d18;
+}

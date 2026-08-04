@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 
+import { PostBookingNext } from '@/components/shared/post-booking-next'
 import {
   buildStaticPageMetadata,
   renderStaticPage,
@@ -20,5 +21,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function BookACallThankYouPage() {
-  return renderStaticPage('bookACallThankYouPage', '/book-a-call-thank-you', 'en-US', 'Thank You')
+  // CE-41: breadcrumbs off (a "> Thank You" crumb on a page nobody navigates to
+  // is noise), and the onward-paths block replaces the Calendly embed that used
+  // to sit here - which offered a second booking to someone who had just booked.
+  return renderStaticPage('bookACallThankYouPage', '/book-a-call-thank-you', 'en-US', 'Thank You', {
+    showBreadcrumbs: false,
+    after: <PostBookingNext locale="en-US" />,
+  })
 }

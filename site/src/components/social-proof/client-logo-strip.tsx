@@ -53,9 +53,22 @@ export const CLIENT_LOGOS: ClientLogo[] = [
   // Every filter treatment left a visible box sitting in the middle of the row.
   // travelex-wordmark.png is that wordmark lifted onto transparency (generated
   // from the original, which is untouched), so it behaves like the other six.
-  { name: 'Travelex', src: `${IMG}/travelex-wordmark.png`, width: 103, height: 22, displayH: 22 },
+  // CE-31 (Aug 2026): Seb asked for Travelex to be bigger - it sat at 22, the
+  // smallest in a row of 26-36. Raised to 28. It cannot go much further: the
+  // wordmark asset is natively 103x22, and the only source is the 260x75
+  // scraped card above, whose text is barely larger. Past ~28 it visibly softens
+  // on retina. A vector Travelex logo from Seb would lift this ceiling.
+  { name: 'Travelex', src: `${IMG}/travelex-wordmark.png`, width: 103, height: 22, displayH: 28 },
   { name: 'Tidal', src: `${IMG}/tidal.png`, width: 260, height: 124, displayH: 36 },
   { name: 'Scorpion', src: `${IMG}/scorpion.png`, width: 260, height: 37, displayH: 20, displayOpacity: 0.85 },
+  // CE-32 (Aug 2026): added on Seb's request. Source is the SVG he attached to
+  // the issue, kept alongside as vector.svg; this PNG is rasterised from it
+  // because every other mark here is a PNG and next/image will not run SVG
+  // through the optimiser without `dangerouslyAllowSVG`. Black artwork on
+  // transparency, so the default 'lineart' treatment flattens it to white. Wide
+  // wordmark (4.6:1), hence a lower displayH than the squarer logos beside it -
+  // at 26 it renders 120px wide, inside MAX_LOGO_W.
+  { name: 'Vector', src: `${IMG}/vector.png`, width: 1040, height: 225, displayH: 26 },
 ]
 
 /**
@@ -76,7 +89,10 @@ const ASSET_OVERRIDE: Record<string, ClientLogo> = {
     src: `${IMG}/travelex-wordmark.png`,
     width: 103,
     height: 22,
-    displayH: 22,
+    // CE-31: keep in step with the Travelex entry in CLIENT_LOGOS above. This
+    // override returns a WHOLE logo, so it wins outright - editing displayH in
+    // CLIENT_LOGOS alone changes nothing on any page that goes through here.
+    displayH: 28,
   },
 }
 

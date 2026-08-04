@@ -26,7 +26,9 @@
 //   placed-engineer -> "Senior Data Engineer · Buenos Aires"
 // so the two never drift apart.
 
-export type TalentRegion = 'eastern-europe' | 'latam' | 'philippines' | 'africa'
+// CE-30 (Aug 2026): 'africa' retired. Grace O. was its only member and moved to
+// 'latam'; an empty region in the marquee cycle is dead config.
+export type TalentRegion = 'eastern-europe' | 'latam' | 'philippines'
 
 export interface TalentProfile {
   /** Photo file name at /design/talent/<slug>.jpg. */
@@ -232,19 +234,21 @@ export const TALENT_ROSTER: TalentProfile[] = [
     bio: 'A decade on enterprise .NET for banking clients. Placed with an AU insurer for 2 years. Works AU hours.',
   },
 
-  // ── Africa ────────────────────────────────────────────────────────────
   {
     slug: 'grace-o',
     name: 'Grace O.',
     role: 'Senior AI Engineer',
     years: 8,
-    city: 'Lagos',
-    flag: '🇳🇬',
+    // CE-30 (Aug 2026): relocated from Lagos, Nigeria to Bogota, Colombia on
+    // Seb's request. The flag was the reported issue, but city, region and bio
+    // all carried the Nigerian origin, so changing the flag alone would have
+    // left her a Lagos-based engineer flying a Colombian flag.
+    city: 'Bogota',
+    flag: '🇨🇴',
     tags: ['Python', 'TensorFlow', 'AWS'],
-    region: 'africa',
-    // Fourth home hero card (3 Aug).
+    region: 'latam',
     heroTrait: 'Ships weekly',
-    bio: 'Previously at a Nigerian payments company. Placed with a US data team for 18 months.',
+    bio: 'Previously at a Colombian payments company. Placed with a US data team for 18 months.',
   },
 ]
 
@@ -290,7 +294,6 @@ const REGION_CYCLE: TalentRegion[] = [
   'eastern-europe',
   'philippines',
   'latam',
-  'africa',
 ]
 
 /**

@@ -32,7 +32,11 @@ export default async function UkHomePage() {
         description={description}
         faqItems={content.faq.items}
       />
-      <HomeTemplate content={content} />
+      {/* locale is load-bearing, not decoration: HomeTemplate defaults to
+          'en-US', and it drives both the hero CTA target (/uk/book-a-call) and
+          the lead form's sourcePage. Omitting it sent UK visitors to the US
+          booking page. */}
+      <HomeTemplate content={content} locale="en-GB" />
     </>
   )
 }

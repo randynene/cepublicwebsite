@@ -73,18 +73,6 @@ const currencyMember = defineArrayMember({
   preview: { select: { title: 'label', subtitle: 'symbol' } },
 })
 
-const breakdownRowMember = defineArrayMember({
-  type: 'object',
-  name: 'breakdownRow',
-  title: 'Breakdown row',
-  fields: [
-    defineField({ name: 'label', title: 'Label', type: 'string', validation: (R) => R.required() }),
-    defineField({ name: 'desc', title: 'Description', type: 'string' }),
-    defineField({ name: 'amount', title: 'Amount (GBP/mo)', type: 'number', validation: (R) => R.required() }),
-  ],
-  preview: { select: { title: 'label', subtitle: 'amount' } },
-})
-
 const benefitMember = defineArrayMember({
   type: 'object',
   name: 'benefitCard',
@@ -187,7 +175,16 @@ const calculatorSection = defineField({
         defineField({ name: 'countries', title: 'Company countries', type: 'array', of: [countryMember] }),
         defineField({ name: 'currencies', title: 'Currencies', type: 'array', of: [currencyMember] }),
         defineField({ name: 'breakdownRole', title: 'Breakdown role', type: 'string' }),
-        defineField({ name: 'breakdownRows', title: 'Breakdown rows', type: 'array', of: [breakdownRowMember] }),
+        // CE-29 (Aug 2026): `breakdownRows` removed. It itemised base salary,
+        // employer taxes, benefits and the Cloud Employee management fee, which
+        // published CE's gross margin on an indexable page. The all-in total is
+        // now stated directly. Do not reintroduce a per-line split.
+        defineField({
+          name: 'breakdownTotalAmount',
+          title: 'All-in rate (GBP/mo)',
+          type: 'number',
+          description: 'All-in monthly cost per developer. Stated as a single total, never itemised.',
+        }),
         defineField({ name: 'hoursPerMonth', title: 'Hours per month', type: 'number' }),
       ],
     }),

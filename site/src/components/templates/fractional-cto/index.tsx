@@ -381,12 +381,16 @@ export function FractionalCtoTemplate({
               </div>
               <h3>{content.matched.feature.h3}</h3>
               <p>{content.matched.feature.p}</p>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <div className="m-photo">
-                {content.matched.feature.image ? (
+              {/* The container is conditional too, not just the <img>. It carries
+                  its own background and min-height, so rendering it without an
+                  image shipped an empty navy box - which is exactly what was on
+                  the page until the audit (Aug 2026) caught it. */}
+              {content.matched.feature.image ? (
+                <div className="m-photo">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={content.matched.feature.image} alt={content.matched.feature.h3} />
-                ) : null}
-              </div>
+                </div>
+              ) : null}
               <div className="foot">{content.matched.feature.foot}</div>
             </div>
             <div className="m-steps">

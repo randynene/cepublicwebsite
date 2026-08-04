@@ -6,10 +6,19 @@
 > sitemap is live. This file's pre-launch purpose is served; it is kept as the
 > record of what shipped.
 >
-> **Post-launch work is now tracked in `docs/seo/POST_LAUNCH_AUDIT.md`** (audit of
-> 4 Aug: zero migration regressions across 330 Search Console URLs; the open items
-> are dead RSS sitemap registrations, 24 pre-existing broken backlink targets, and
-> a production Screaming Frog crawl).
+> **Post-launch work is now governed by `docs/seo/SEO_PROGRAMME.md`** (4 Aug). That
+> is the sequenced roadmap (SEO-1 … SEO-7), the locked decisions, and the data-source
+> inventory. `docs/seo/POST_LAUNCH_AUDIT.md` remains the launch-day audit record but
+> its priority list is superseded.
+>
+> Headline from the programme audit: the migration did no damage (SEO scores 100 on
+> every page tested, CLS 0 sitewide, zero regressions across 330 Search Console URLs),
+> but every page is hidden by a `body{opacity:0}` rule until a JavaScript callback
+> un-hides it, and that callback is starved by heavy third-party scripts, so pages sit
+> blank for seconds (controlled test: blocking HubSpot and the geo script TOGETHER cuts
+> render delay from 5,007 ms to 1,496 ms; blocking either one ALONE changes nothing).
+> The Marker.io review widget is live for real customers, and 326 of 653 sitemap URLs
+> are word-for-word clones of their US equivalents.
 >
 > **Launch-day incident worth remembering.** A Vercel firewall rule challenging
 > traffic from Philippines / China / Russia / Singapore was added shortly before
@@ -1001,6 +1010,78 @@ people to review**, in waves tied to the phases above.
 
 Rule of thumb: a page enters a review wave the moment it is green on G1 + G2. G3
 (SEO parity) is verified centrally in Phase 7, not by reviewers.
+
+### 5a. Marker.io triage round 1 - CLOSED (4 Aug 2026)
+
+41 issues filed by Seb; 24 already Resolved, **17 outstanding, 16 now fixed**.
+
+**Material discovery: the cutover had already happened.** CE-29 onward were filed
+against `www.cloudemployee.io`, which serves this Next app from Vercel. `main` is
+the production branch and `staging.jakevibes.dev` is an ALIAS on the same
+deployment - there is no separate staging environment to check first.
+
+**The recurring trap, worth reading before the next round.** Six fixes would have
+silently failed as code-only changes, because the real value lives in Sanity and
+the GROQ transforms prefer the document over the code default:
+
+| Issue | What the code-only fix would have missed |
+|---|---|
+| CE-29 | `breakdownRows` still on `pricingPage` - the margin stays published |
+| CE-30 | Grace still in `homePage.hero.profiles`, still flying 🇳🇬 |
+| CE-32 | `homePage.trustedBy.logos` is Sanity-owned; Vector never appears |
+| CE-36 | `/how-it-works` serves every image from Sanity; the stale one wins |
+| CE-37 | `included` on all three `locationPage` docs overrides the factory |
+| CE-38 | `hero.cards` preferred from Sanity - LATAM/PH kept the PORTRAIT crops, so the rotating card would still have clipped faces |
+
+Rule for future rounds: **before claiming a fix, check whether the field is
+Sanity-owned and which side the transform prefers.**
+
+**Fixed:** CE-29 (margin removed, `breakdownTotalAmount` replaces the split; D5 is
+totals-only from here), CE-30, CE-31, CE-32, CE-34, CE-35, CE-36, CE-37, CE-38,
+CE-39, CE-40, CE-41. **Closed as already-fixed or duplicate:** CE-27, CE-10,
+CE-26. **Deferred:** CE-17 (skills autocomplete - feature, not a defect).
+**Blocked:** CE-33 - every validation rule on `homePage` passes and no draft
+survives, so it is not reproducible; needs Seb's error detail.
+
+**Bugs found by the work rather than reported:**
+- `/uk` rendered `<HomeTemplate>` with no `locale`, so it defaulted to `en-US` -
+  the UK hero CTA pointed at the US booking page (and the lead form's
+  `sourcePage` was wrong). Pre-existing; CE-35 would have shipped it visibly.
+- Philippines carried its own inline copy of `included` instead of calling the
+  shared factory, so it silently missed the CE-37 alignment.
+- Travelex's `ASSET_OVERRIDE` entry returns a WHOLE logo object, so editing
+  `displayH` in `CLIENT_LOGOS` alone does nothing.
+- Rafael's hero crop was clipping his crown. The note that "his source photo has
+  no headroom" is WRONG - the source is fine, the slide crop was inheriting
+  `zoom: 1.3` from the portrait config. Fixed with `slideZoom: 1.0`.
+
+**CE-40, decided by browser test not by docs.** Calendly exposes only
+`background_color` / `text_color` / `primary_color`, no dark mode, and
+`text_color` colours BOTH the panel text and the text typed into inputs whose
+background it hard-codes white. Dark panel + white text = invisible typing.
+The booking widget therefore runs a LIGHT theme; `primary_color` is navy, not
+lime, because lime-on-white made the selectable dates unreadable. A bespoke side
+panel was built and rejected by Jake - the widget stands alone.
+
+**Empty image slots (audited 4 Aug).** Zero empty image fields across all 30 page
+singletons - the blanks were CODE rendering a styled container with no image.
+Two found and filled from the existing 571-asset library
+(`fractionalCtoPage.matched.feature.image`, `aboutUsPage.founderImage`); both
+templates now render the container only when an image exists. The
+`/for-developers` hits were false positives (video-call tiles that do have
+photos).
+
+**Known divergences left deliberately open:**
+1. Vector is on the homepage logo strip only. The 3 location pages and
+   `/pricing` keep their own Sanity logo lists (7 each).
+2. The location "What's included" lost the "Included in the fee" pill, both
+   explainer paragraphs, the `youFootnote` and the fee bar when it moved to the
+   homepage layout. Fields remain in Sanity; retire with Tech Debt #62/#63.
+3. Code would produce 4 LATAM / 5 PH hero cards; Sanity has 3 each and Sanity
+   wins. Harmless now, but **re-running `seed-location-pages` would change what
+   is live.**
+4. Copy for the post-booking block and the Calendly page furniture sits in
+   `content.ts`, not Sanity - Seb cannot edit it. Same shape as Tech Debt #62.
 
 ---
 

@@ -122,7 +122,7 @@ export function CostCalculator({ content }: { content: PricingCalculator }) {
     const savingsGbp = locAnnualMid - ceAnnualMid
     const pctHigher = Math.round(((locAnnualMid - ceAnnualMid) / locAnnualMid) * 100)
 
-    const breakdownTotal = model.breakdownRows.reduce((s, r) => s + r.amount, 0)
+    const breakdownTotal = model.breakdownTotalAmount
     const usCountry = model.countries.find((c) => c.id === 'united-states') ?? country
     const usAnnualMid = ((usCountry.localMonthly[0] + usCountry.localMonthly[1]) / 2) * 12
     const breakdownSavedGbp = usAnnualMid - breakdownTotal * 12
@@ -145,7 +145,6 @@ export function CostCalculator({ content }: { content: PricingCalculator }) {
       savings: `${content.saveAvgPrefix} ${fmtMoney(savingsGbp, symbol, rate)}${content.saveAvgYearSuffix}`,
       breakdown: {
         total: fmtMoney(breakdownTotal, symbol, rate),
-        rows: model.breakdownRows.map((r) => ({ ...r, val: fmtMoney(r.amount, symbol, rate) })),
         intro: `${content.breakdownIntroPrefix} ${fmtMoney(breakdownTotal, symbol, rate)}/mo, ${content.breakdownIntroSuffix}`,
         saved: content.breakdownSavedTemplate.replace('{amount}', fmtMoney(breakdownSavedGbp, symbol, rate)),
       },
@@ -300,19 +299,7 @@ export function CostCalculator({ content }: { content: PricingCalculator }) {
             </p>
             <p className="mt-2 text-[15px] text-text-default/70">{view.breakdown.intro}</p>
 
-            <ul className="mt-6 flex flex-col divide-y divide-[#22314D]">
-              {view.breakdown.rows.map((r) => (
-                <li key={r.label} className="flex items-baseline justify-between gap-4 py-3">
-                  <span className="min-w-0">
-                    <span className="block text-[15px] font-medium text-text-default">{r.label}</span>
-                    <span className="block text-[13px] text-text-default/55">{r.desc}</span>
-                  </span>
-                  <span className="shrink-0 text-[15px] font-semibold tabular-nums text-text-default">{r.val}</span>
-                </li>
-              ))}
-            </ul>
-
-            <div className="mt-5 flex items-center justify-between gap-4 rounded-[14px] bg-[#1B2A45] px-6 py-5">
+            <div className="mt-6 flex items-center justify-between gap-4 rounded-[14px] bg-[#1B2A45] px-6 py-5">
               <span className="text-[13px] font-semibold uppercase tracking-[1.2px] text-text-default/70">
                 {content.breakdownTotalLabel}
               </span>

@@ -52,14 +52,16 @@ export const HERO_SLIDESHOW_PROFILES: TalentCard[] = [
   heroCard('kyla-t', 'kyla.jpg'),
   heroCard('marcelo-p', 'marcello.jpg'),
   heroCard('petra-k', 'petra.jpg'),
-  // Three added 3 Aug so the rotation carries more faces. All three are
-  // straight crops with real headroom — see build-talent-photos.mjs.
+  // Added 3 Aug so the rotation carries more faces. Straight crops with real
+  // headroom — see build-talent-photos.mjs.
   //
   // Rafael was tried here and pulled: his source is framed with the crown
   // flush to the top edge, so this landscape card clipped his head whatever
   // the crop. Gabriel's earlier rejection was the old hand-made hero asset,
   // which had blurred side strips baked in; his photo itself is fine.
-  heroCard('grace-o', 'grace.jpg'),
+  //
+  // Grace was removed from the hero on Seb's request (CE-38, Aug 2026). She
+  // remains in the REAL_ENGINEER_PROFILES marquee below.
   heroCard('gabriel-k', 'gabriel.jpg'),
   heroCard('russel-d', 'russel.jpg'),
 ]

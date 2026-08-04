@@ -2,6 +2,7 @@ import 'server-only'
 
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import type { ReactNode } from 'react'
 
 import type { BreadcrumbItem } from '@/components/shared/breadcrumbs'
 import StaticPageTemplate from '@/components/templates/static-page'
@@ -84,7 +85,17 @@ export async function renderStaticPage(
   usPath: string,
   locale: Locale,
   breadcrumbName: string,
-  options?: { showBreadcrumbs?: boolean; calendlyOnly?: boolean },
+  options?: {
+    showBreadcrumbs?: boolean
+    calendlyOnly?: boolean
+    /**
+     * Extra content rendered inside <main>, after the static page body. Used by
+     * the post-booking thank-you pages (CE-41) to add onward paths that the
+     * static-page shape has no field for. Kept as a slot rather than baked in so
+     * the other six static pages are untouched.
+     */
+    after?: ReactNode
+  },
 ) {
   const page = await fetchStaticPage(id)
 
@@ -115,7 +126,9 @@ export async function renderStaticPage(
         breadcrumbs={breadcrumbs}
         showBreadcrumbs={options?.showBreadcrumbs}
         calendlyOnly={options?.calendlyOnly}
+        tightBottom={Boolean(options?.after)}
       />
+      {options?.after ?? null}
     </main>
   )
 }

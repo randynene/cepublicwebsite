@@ -136,7 +136,7 @@ function buildDoc() {
         ),
         currencies: keyed([...m.currencies], 'currency'),
         breakdownRole: m.breakdownRole,
-        breakdownRows: keyed([...m.breakdownRows], 'breakdown-row'),
+        breakdownTotalAmount: m.breakdownTotalAmount,
         hoursPerMonth: m.hoursPerMonth,
       },
     },

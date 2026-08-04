@@ -2,7 +2,11 @@ import { headers } from 'next/headers'
 
 import { CHROME_CONTENT_BAND } from '@/components/layout/chrome-band'
 import { cn } from '@/components/ui/_utils/cn'
-import { isBookACallPath, isForDevelopersPath } from '@/lib/ask/routes'
+import {
+  isBookACallPath,
+  isBookACallThankYouPath,
+  isForDevelopersPath,
+} from '@/lib/ask/routes'
 import { UI_STRINGS } from '@/lib/ui-strings'
 import { fetchFooter } from '@/lib/sanity/queries/footer'
 
@@ -30,7 +34,10 @@ export default async function Footer({ locale }: { locale: Locale }) {
   // that ends on "View Live jobs". The "Ready to hire…" band is a hiring CTA, so
   // it stays off both.
   const pathname = (await headers()).get('x-pathname') ?? '/'
-  const showTopCta = !isBookACallPath(pathname) && !isForDevelopersPath(pathname)
+  const showTopCta =
+    !isBookACallPath(pathname) &&
+    !isBookACallThankYouPath(pathname) &&
+    !isForDevelopersPath(pathname)
 
   if (!data) {
     return (

@@ -35,7 +35,7 @@ const PRICING_QUERY = /* groq */ `
       countries[]{ id, label, flag, monthlyLow, monthlyHigh },
       currencies[]{ id, label, symbol, rate },
       breakdownRole,
-      breakdownRows[]{ label, desc, amount },
+      breakdownTotalAmount,
       hoursPerMonth
     }
   },
@@ -124,8 +124,8 @@ export function toPricingContent(doc: PricingPageDoc): PricingContent {
     countries: toTuples(modelDoc.countries as never, baseModel.countries, 'localMonthly'),
     currencies:
       (modelDoc.currencies as never[])?.length ? (modelDoc.currencies as never) : baseModel.currencies,
-    breakdownRows:
-      (modelDoc.breakdownRows as never[])?.length ? (modelDoc.breakdownRows as never) : baseModel.breakdownRows,
+    breakdownTotalAmount:
+      (modelDoc.breakdownTotalAmount as number) || baseModel.breakdownTotalAmount,
     breakdownRole: (modelDoc.breakdownRole as string) || baseModel.breakdownRole,
     hoursPerMonth: (modelDoc.hoursPerMonth as number) || baseModel.hoursPerMonth,
   } as PricingContent['calculator']['model']

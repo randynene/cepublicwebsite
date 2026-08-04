@@ -92,20 +92,24 @@ export interface CalcCurrency {
   rate: number
 }
 
-export interface BreakdownRow {
-  label: string
-  desc: string
-  /** GBP per developer per month; the total is the sum of the rows. */
-  amount: number
-}
-
 export interface CalcModel {
   regions: CalcRegion[]
   countries: CalcCountry[]
   currencies: CalcCurrency[]
-  /** Reference role the full breakdown itemises. */
+  /** Reference role the all-in rate is quoted for. */
   breakdownRole: string
-  breakdownRows: BreakdownRow[]
+  /**
+   * All-in GBP per developer per month.
+   *
+   * CE-29 (Aug 2026): this was a `breakdownRows` array itemising base salary,
+   * employer taxes, benefits and the Cloud Employee management fee, and the
+   * total was their sum. That published CE's gross margin (the management-fee
+   * row) on an indexable page, so the split was removed on Jake's instruction
+   * and the total is now stated directly. Do not reintroduce a per-line split
+   * here: D5 (the planned calculator embed on /pricing) is totals-only for the
+   * same reason.
+   */
+  breakdownTotalAmount: number
   /** Assumed billable hours per month, for the "per hour" derivation. */
   hoursPerMonth: number
 }
@@ -322,10 +326,10 @@ export const PRICING_CONTENT: PricingContent = {
     saveAvgPrefix: 'Save an avg. of',
     saveAvgYearSuffix: '/year',
     higherCostSuffix: 'Higher annual cost',
-    breakdownShowLabel: 'Show full breakdown',
-    breakdownHideLabel: 'Hide full breakdown',
-    breakdownEyebrow: 'The full breakdown',
-    breakdownIntroPrefix: "Here's exactly what makes up the",
+    breakdownShowLabel: 'Show the all-in rate',
+    breakdownHideLabel: 'Hide the all-in rate',
+    breakdownEyebrow: 'The all-in rate',
+    breakdownIntroPrefix: "Here's the",
     breakdownIntroSuffix: 'all-in rate for a Senior Backend Engineer.',
     breakdownTotalLabel: 'Total monthly cost',
     breakdownSavedTemplate: 'vs. hiring in the US: {amount}/yr saved',
@@ -351,13 +355,8 @@ export const PRICING_CONTENT: PricingContent = {
         { id: 'eur', label: 'EUR', symbol: '€', rate: 1.17 },
       ],
       breakdownRole: 'Senior Backend Engineer',
-      // Sums to 5,400 - the design's reference all-in monthly rate.
-      breakdownRows: [
-        { label: 'Base salary', desc: 'Paid to the engineer, in full', amount: 3200 },
-        { label: 'Employer taxes', desc: 'Statutory contributions, fully covered', amount: 850 },
-        { label: 'Benefits & private healthcare', desc: 'Medical cover plus statutory benefits', amount: 600 },
-        { label: 'Cloud Employee management fee', desc: 'Sourcing, payroll, HR and account management', amount: 750 },
-      ],
+      // The design's reference all-in monthly rate.
+      breakdownTotalAmount: 5400,
       hoursPerMonth: 160,
     },
   },

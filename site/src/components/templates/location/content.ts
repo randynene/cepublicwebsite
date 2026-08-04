@@ -14,10 +14,8 @@
 // serves it at /services/<region>-developers instead of the preview route.
 
 import {
-  heroTrio,
   roleWithYears,
   talentByRegion,
-  talentPhoto,
   talentPhotoSlide,
   type TalentRegion,
   // Relative, not the '@/' alias: the seed + patch scripts under /scripts
@@ -48,30 +46,19 @@ export interface HeroCard {
   objectPosition?: string
 }
 
-// Stack rotations, by slot: [0] back, [1] middle, [2] front (the main face).
+// Per-card tilt, cycled across the slideshow so successive faces are not
+// identically angled.
 const HERO_CARD_ROTATIONS = [2.5, 3, -3]
 
 /**
- * The three hero cards for a region, drawn from the shared talent roster so a
- * face, name and flag cannot drift between this page and the home marquee.
- */
-function heroCardTrio(region: TalentRegion): HeroCard[] {
-  return heroTrio(region).map((p, i) => ({
-    name: p.name,
-    role: roleWithYears(p),
-    vettedLabel: 'Vetted by Senior Eng',
-    skills: [...p.tags],
-    image: talentPhoto(p.slug),
-    rotate: HERO_CARD_ROTATIONS[i],
-    flag: p.flag,
-  }))
-}
-
-/**
  * Every roster person in a region, shaped for the home-style rotating
- * ProfileCard slideshow (used on Eastern Europe; LATAM/PH keep the 3-card stack).
- * Uses the dedicated landscape `-slide` crop so faces are not truncated in the
- * 488x280 photo area.
+ * ProfileCard slideshow. Used by all three location pages.
+ *
+ * CE-38 (Aug 2026): LATAM and Philippines previously used a three-card
+ * overlapping stack (`heroCardTrio`, now removed). The front card cropped the
+ * face behind it - Seb reported Mateo R. being cut off on LATAM. The slideshow
+ * uses the dedicated landscape `-slide` crop so faces are not truncated in the
+ * 488x280 photo area, which is why it is the fix rather than a re-stack.
  */
 function heroSlideshowCards(region: TalentRegion): HeroCard[] {
   return talentByRegion(region).map((p, i) => ({
@@ -313,21 +300,35 @@ export interface LocationContent {
 
 const A = '/location/latam'
 
+/**
+ * The "What's included" block, shared by all three location pages.
+ *
+ * CE-37 (Aug 2026): re-cut to match the homepage YOU / US block verbatim, on
+ * Jake's instruction, with one deliberate exception - the payroll line still
+ * names the region ("across Latin America") where the homepage says the generic
+ * "in their country". That regional specificity is the whole reason a location
+ * page exists, so it was kept when the rest was aligned.
+ *
+ * `youBody`, `youFootnote`, `wePill` and `weBody` are no longer rendered (the
+ * homepage layout has nowhere for them). They stay here and in Sanity rather
+ * than being deleted mid-flight; retire them in the same pass as Tech Debt
+ * #62/#63.
+ */
 function regionalIncluded(region: string): NonNullable<LocationContent['included']> {
   return {
     eyebrow: "What's included",
     titleLead: 'You get the engineer.',
     titleAccent: 'We handle everything else.',
-    youLabel: 'You - 3 things',
+    youLabel: 'You',
     youSubhead: 'Run your team. Ship your product.',
     youBody: "The engineer works like any other member of your team. That's the only part you touch.",
     you: [
       "Direct your engineer's work",
-      'Bring them into standups and Slack',
+      'Bring them into your standups & Slack',
       'Treat them like a full-time hire',
     ],
     youFootnote: 'No HR. No payroll. No local entity. No admin.',
-    weLabel: 'We - 8 things',
+    weLabel: 'Us',
     wePill: 'Included in the fee',
     weSubhead: 'The full operational stack.',
     weBody:
@@ -335,12 +336,11 @@ function regionalIncluded(region: string): NonNullable<LocationContent['included
     we: [
       "Source and vet the engineer (free if you don't hire)",
       'Employ them locally with full benefits and private healthcare',
-      `Handle payroll, taxes and compliance across ${region}`,
+      `Handle payroll, taxes, and compliance across ${region}`,
       'Provide a US or UK-based account manager',
       "Replace them at no cost if it isn't working",
-      'Support training, performance and retention long-term',
-      'Liability insurance on every contract',
-      'IP and data protection assigned to you',
+      'Support their training, performance, and retention long-term',
+      'Liability insurance + IP/data protection on every contract',
     ],
     footnote: 'One monthly fee. No setup. No placement fees. 30 days notice on a rolling contract.',
   }
@@ -359,7 +359,8 @@ export const LATAM_CONTENT: LocationContent = {
     ctaPrimary: 'Meet your engineer in 7 days',
     ctaSecondary: 'See the cost calculator',
     trustPills: ['Senior engineers, US hours', 'Same-day standups', 'Rolling monthly, no lock-ins'],
-    cards: heroCardTrio('latam'),
+    visual: 'slideshow',
+    cards: heroSlideshowCards('latam'),
     floatingBadges: ['Live pair programming', '7-day shortlist'],
   },
   logosLabel: 'Trusted by 300+ engineering teams',
@@ -819,7 +820,8 @@ export const PHILIPPINES_CONTENT: LocationContent = {
     ctaPrimary: 'Meet your engineer in 7 days',
     ctaSecondary: 'See the cost calculator',
     trustPills: ['Works your exact hours', 'English official language', '20+ years tech delivery'],
-    cards: heroCardTrio('philippines'),
+    visual: 'slideshow',
+    cards: heroSlideshowCards('philippines'),
     floatingBadges: ['Your exact hours', '7-day shortlist'],
   },
   logosLabel: 'Trusted by 300+ engineering teams',
@@ -906,36 +908,10 @@ export const PHILIPPINES_CONTENT: LocationContent = {
       },
     ],
   },
-  included: {
-    eyebrow: "What's included",
-    titleLead: 'You get the engineer.',
-    titleAccent: 'We handle everything else.',
-    youLabel: 'You - 3 things',
-    youSubhead: 'Run your team. Ship your product.',
-    youBody: "The engineer works like any other member of your team. That's the only part you touch.",
-    you: [
-      "Direct your engineer's work",
-      'Bring them into standups and Slack',
-      'Treat them like a full-time hire',
-    ],
-    youFootnote: 'No HR. No payroll. No local entity. No admin.',
-    weLabel: 'We - 8 things',
-    wePill: 'Included in the fee',
-    weSubhead: 'The full operational stack.',
-    weBody:
-      'Employment, compliance, retention and risk - handled in their country, billed as one line.',
-    we: [
-      "Source and vet the engineer (free if you don't hire)",
-      'Employ them locally with full benefits and private healthcare',
-      'Handle payroll, taxes and compliance in the Philippines',
-      'Provide a US or UK-based account manager',
-      "Replace them at no cost if it isn't working",
-      'Support training, performance and retention long-term',
-      'Liability insurance on every contract',
-      'IP and data protection assigned to you',
-    ],
-    footnote: 'One monthly fee. No setup. No placement fees. 30 days notice on a rolling contract.',
-  },
+  // CE-37: Philippines carried its own inline copy of this block rather than
+  // calling the shared factory, so it silently missed the LATAM/EE alignment.
+  // Now on the same factory as the other two regions.
+  included: regionalIncluded('the Philippines'),
   primaryHub: {
     eyebrow: 'Where we are on the ground',
     titleLead: 'Makati is our heart in the',
