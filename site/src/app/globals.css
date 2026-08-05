@@ -1,6 +1,15 @@
 @import "tailwindcss";
 @import "./tokens.css";
 
+/* CE-44: the canvas colour has to be on `html`, not only `body`. Safari paints
+   the root background before body styles resolve, which showed as a white flash
+   on every navigation. The meta color-scheme in layout.tsx covers the window
+   before this stylesheet even arrives; this covers everything after. */
+html {
+  background: var(--color-bg-primary);
+  color-scheme: dark;
+}
+
 body {
   /* D2: dark ground is the default skin (spec §1b). */
   background: var(--color-bg-primary);

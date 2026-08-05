@@ -9,7 +9,7 @@
 //   /og-default.png is a 1×1 placeholder — Seb replaces with the real
 //   1200×630 brand asset before launch.
 
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { IBM_Plex_Mono, Inter, Source_Serif_4 } from 'next/font/google'
 import { draftMode, headers } from 'next/headers'
 import { VisualEditing } from 'next-sanity/visual-editing'
@@ -80,6 +80,15 @@ export const metadata: Metadata = {
   openGraph: {
     images: ['/og-default.png'],
   },
+}
+
+// CE-44 — Safari flashes a white canvas on load. The dark ground lives on
+// `body` in globals.css, so until the stylesheet arrives the browser paints its
+// default white. `<meta name="color-scheme" content="dark">` is honoured during
+// parsing, before any CSS, so the canvas starts dark. Chrome masked this; Safari
+// paints earlier. Paired with an `html` background rule in globals.css.
+export const viewport: Viewport = {
+  colorScheme: 'dark',
 }
 
 export default async function RootLayout({
