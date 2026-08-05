@@ -214,7 +214,14 @@ export default function ReviewTemplate({
   return (
     <article>
       <Container width="default" className="pt-8 lg:pt-12">
-        <Breadcrumbs items={breadcrumbItems} className="mb-8" />
+        {/* Visual breadcrumb removed on Jake's instruction (Aug 2026). It was
+         * also rendering its first two crumbs blank, so what shipped read
+         * "> > Tidal".
+         *
+         * The BreadcrumbList JSON-LD is built separately in review/json-ld.tsx
+         * and is UNAFFECTED - Google still gets the full Home > Reviews >
+         * Company trail, so nothing is lost in search. `breadcrumbItems` stays
+         * because the JSON-LD builder derives from the same values. */}
 
         <div
           className={cn(

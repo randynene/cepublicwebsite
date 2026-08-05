@@ -102,6 +102,7 @@
     "static:patch-ph-included": "tsx scripts/static/patch-ph-included.ts",
     "static:patch-location-included": "tsx scripts/static/patch-location-included.ts",
     "static:patch-pricing-remove-breakdown": "tsx scripts/static/patch-pricing-remove-breakdown.ts",
+    "static:patch-pricing-breakdown-copy": "tsx scripts/static/patch-pricing-breakdown-copy.ts",
     "static:patch-add-vector-logo": "tsx scripts/static/patch-add-vector-logo.ts",
     "static:patch-location-included-homepage": "tsx scripts/static/patch-location-included-homepage-shape.ts",
     "static:patch-hiw-stage2-image": "tsx scripts/static/patch-hiw-stage2-image.ts",

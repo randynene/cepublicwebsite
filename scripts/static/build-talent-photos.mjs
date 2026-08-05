@@ -87,7 +87,20 @@ const PHOTOS = [
   },
   // LATAM
   // Mateo: face was high in the 4:5 marquee crop — lower focusY + ease zoom.
-  { slug: 'mateo-r', src: 'latam/LATAM.png', focusX: 0.5, focusY: 0.34, zoom: 1.1 },
+  // Mateo: the 4:5 marquee crop wants zoom 1.1, but the landscape slide
+  // inherited it and framed him too tight - Jake reported him looking cut off on
+  // the LATAM rotating card. Same shape of bug as Rafael below. slideFocusY 0.46
+  // sits his face high enough that the card's name overlay lands on his jacket
+  // rather than his chin.
+  {
+    slug: 'mateo-r',
+    src: 'latam/LATAM.png',
+    focusX: 0.5,
+    focusY: 0.34,
+    zoom: 1.1,
+    slideFocusY: 0.46,
+    slideZoom: 1.0,
+  },
   { slug: 'gabriel-k', src: 'latam/LATAM 2.png', focusY: 0.4 },
   // Rafael: the 4:5 marquee crop wants zoom 1.3, but the landscape slide
   // inherited it and clipped his crown - which is what CE-38 surfaced when LATAM

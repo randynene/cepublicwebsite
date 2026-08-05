@@ -104,7 +104,6 @@ export function CostCalculator({ content }: { content: PricingCalculator }) {
   const [countryId, setCountryId] = useState(defaultCountry)
   const [regionId, setRegionId] = useState(model.regions[0]?.id ?? '')
   const [currencyId, setCurrencyId] = useState(model.currencies[0]?.id ?? '')
-  const [showBreakdown, setShowBreakdown] = useState(true)
 
   const view = useMemo(() => {
     const region = model.regions.find((r) => r.id === regionId) ?? model.regions[0]
@@ -265,35 +264,17 @@ export function CostCalculator({ content }: { content: PricingCalculator }) {
         </div>
       </div>
 
-      {/* Centered toggle on the page background */}
-      <div className="flex justify-center">
-        <button
-          type="button"
-          onClick={() => setShowBreakdown((v) => !v)}
-          aria-expanded={showBreakdown}
-          className="inline-flex items-center gap-2 rounded-pill border border-[#22314D] bg-[#101B30] px-5 py-2.5 text-[14px] font-semibold text-brand-primary hover:border-brand-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-[#070D18]"
-        >
-          {showBreakdown ? content.breakdownHideLabel : content.breakdownShowLabel}
-          <span aria-hidden="true" className={cn('text-[11px] transition-transform duration-200 motion-reduce:transition-none', showBreakdown && 'rotate-180')}>
-            {GLYPH.chevron}
-          </span>
-        </button>
-      </div>
-
-      {/* Standalone breakdown card - animated expand/collapse (reduced-motion safe) */}
-      <div
-        className={cn(
-          'grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none',
-          showBreakdown ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
-        )}
-      >
-        <div className="overflow-hidden">
-          <div
-            className={cn(
-              'mx-auto max-w-[900px] rounded-[20px] bg-[#101B30] p-6 shadow-[inset_0_0_0_1px_#22314D,0_30px_50px_rgba(0,0,0,.35)] transition-opacity duration-300 motion-reduce:transition-none lg:p-8',
-              showBreakdown ? 'opacity-100' : 'opacity-0',
-            )}
-          >
+      {/* The show/hide toggle came out on Jake's instruction (Aug 2026).
+       *
+       * It existed to collapse a long itemised table. CE-29 removed those line
+       * items, so the panel is now a single all-in figure - and a button that
+       * collapses one number is furniture, not a control. The panel is always
+       * open; `breakdownShowLabel` / `breakdownHideLabel` are consequently
+       * unread (left in the schema rather than removed mid-flight, same as the
+       * orphaned fields in Tech Debt #62/#63). */}
+      <div>
+        <div>
+          <div className="mx-auto max-w-[900px] rounded-[20px] bg-[#101B30] p-6 shadow-[inset_0_0_0_1px_#22314D,0_30px_50px_rgba(0,0,0,.35)] lg:p-8">
             <p className="text-[12px] font-semibold uppercase tracking-[1.6px] text-brand-primary">
               {content.breakdownEyebrow}
             </p>
