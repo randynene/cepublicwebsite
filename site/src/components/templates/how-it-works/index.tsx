@@ -196,12 +196,23 @@ function MatchingBriefCard({ content }: { content: HiwContent }) {
   )
 }
 
-function StagePhoto({ src, alt }: { src: string; alt: string }) {
+// CE-46. Stage 3 is photography and crops happily into the 4/3.4 card. Stage 2
+// is a SCREENSHOT of the live coding-interview tool (523x284, so 1.84:1), and a
+// UI never survives a crop: object-cover into 1.18:1 sliced the editor's icon
+// rail off the left and cut the webcam column on the right. The card therefore
+// takes the asset's own ratio rather than the asset being forced into the card.
+// Aspect is passed per call site because the stage items come from Sanity
+// wholesale (toHiwContent returns the document as-is), so a field added to the
+// static content.ts would never reach the render.
+function StagePhoto({ src, alt, aspect }: { src: string; alt: string; aspect: string }) {
   return (
     <Reveal
       variant="scale"
       scaleFrom={0.98}
-      className="relative aspect-[4/3.4] w-full overflow-hidden rounded-[24px] border border-[#22314D] shadow-[0_24px_40px_rgba(0,0,0,.3)]"
+      className={cn(
+        'relative w-full overflow-hidden rounded-[24px] border border-[#22314D] shadow-[0_24px_40px_rgba(0,0,0,.3)]',
+        aspect,
+      )}
     >
       <Image
         src={src}
@@ -355,7 +366,11 @@ function StageRow({ content, index }: { content: HiwContent; index: number }) {
     ) : index === 3 ? (
       <HandledCard content={content} />
     ) : stage.image ? (
-      <StagePhoto src={stage.image} alt={stage.imageAlt ?? stage.title} />
+      <StagePhoto
+        src={stage.image}
+        alt={stage.imageAlt ?? stage.title}
+        aspect={index === 1 ? 'aspect-[523/284]' : 'aspect-[4/3.4]'}
+      />
     ) : null
   // Sticky pins a column while the other scrolls past it, releasing at the next
   // stage (the grid is items-start, so the pin travels only within this row).
