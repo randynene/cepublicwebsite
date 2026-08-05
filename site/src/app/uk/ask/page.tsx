@@ -8,10 +8,12 @@ import { resolvePageTitle } from '@/lib/seo/page-title'
 
 // ASK-CLARA P2 — UK mirror of /ask. Same template, UK canonical.
 
+// noindex until P3, matching /ask. See the note there.
 export async function generateMetadata(): Promise<Metadata> {
   return {
     title: resolvePageTitle(ASK_META.title),
     description: ASK_META.description,
+    robots: { index: false, follow: true },
     alternates: {
       canonical: generateCanonical('/ask', 'en-GB'),
       languages: generateHreflang('/ask'),
