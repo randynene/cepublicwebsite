@@ -428,12 +428,22 @@ export function HireEngineersTemplate({
             <div className="cs-side">
               <div className="imgslot rvl" style={{ minHeight: '150px' }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                {content.proof.sideImg.image ? <img src={content.proof.sideImg.image} alt={content.proof.sideImg.t} style={COVER} /> : null}
-                <span className="tag">{content.proof.sideImg.tag}</span>
-                <div className="cap">
-                  <div className="t">{content.proof.sideImg.t}</div>
-                  <div className="s">{content.proof.sideImg.s}</div>
-                </div>
+                {/* Tag + caption are the PLACEHOLDER BRIEF, not a caption for a
+                    real photo. They must disappear once an image exists, the way
+                    offer.img already does - otherwise "IMAGE SUGGESTION" sits on
+                    top of the finished photograph, which is what shipped. */}
+                {content.proof.sideImg.image ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={content.proof.sideImg.image} alt={content.proof.sideImg.t} style={COVER} />
+                ) : (
+                  <>
+                    <span className="tag">{content.proof.sideImg.tag}</span>
+                    <div className="cap">
+                      <div className="t">{content.proof.sideImg.t}</div>
+                      <div className="s">{content.proof.sideImg.s}</div>
+                    </div>
+                  </>
+                )}
               </div>
               <div className="cs-mini rvl">
                 <div className="n">{content.proof.mini.n}</div>
@@ -444,15 +454,25 @@ export function HireEngineersTemplate({
           <div className="visit-band">
             <div className="imgslot rvl">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              {content.proof.visitImg.image ? <img src={content.proof.visitImg.image} alt={content.proof.visitImg.t} style={COVER} /> : null}
-              <span className="tag">{content.proof.visitImg.tag}</span>
-              <div className="cap">
-                <div className="t">{content.proof.visitImg.t}</div>
-                <div className="s">{content.proof.visitImg.s}</div>
-              </div>
+              {/* Same as sideImg above: the brief comes off once the photo lands. */}
+              {content.proof.visitImg.image ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={content.proof.visitImg.image} alt={content.proof.visitImg.t} style={COVER} />
+              ) : (
+                <>
+                  <span className="tag">{content.proof.visitImg.tag}</span>
+                  <div className="cap">
+                    <div className="t">{content.proof.visitImg.t}</div>
+                    <div className="s">{content.proof.visitImg.s}</div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
-          <p className="proof-note">{content.proof.note}</p>
+          {/* Guarded: this carried the "swap for real photography before
+              publish" brief. With real photos in, an unguarded <p> would ship an
+              empty paragraph instead of nothing. */}
+          {content.proof.note ? <p className="proof-note">{content.proof.note}</p> : null}
         </div>
       </Spotlight>
 
@@ -465,7 +485,7 @@ export function HireEngineersTemplate({
             <em>{content.price.h2Em}</em>
           </h2>
           <Calculator price={content.price} />
-          <p className="proof-note">{content.price.note}</p>
+          {content.price.note ? <p className="proof-note">{content.price.note}</p> : null}
         </div>
       </section>
 

@@ -259,7 +259,12 @@ export const HE: HireEngineersContent = {
     sideImg: { tag: 'Image suggestion', t: 'The team behind the engineer.', s: 'CE welfare / HR staff - proves the retention claim.' },
     mini: { n: '300+ teams · 97% stay 2+ yrs', l: 'Built and kept with Cloud Employee.' },
     visitImg: { tag: 'Image suggestion', t: 'A client meeting their team in person.', s: "Group shot / handshake at a hub - sells real relationships, not a faceless vendor. (e.g. Marcus's Manila visit.)" },
-    note: 'Placeholder proof + image suggestions - swap for real case-study assets and photography before publish.',
+    // Was: "Placeholder proof + image suggestions - swap for real case-study
+    // assets and photography before publish." Both proof photos are now real
+    // (Aug 2026), so the brief-to-self came off. Kept as an empty string rather
+    // than deleted because the field is Sanity-editable and the render is
+    // guarded - Seb can put a caption back here any time.
+    note: '',
   },
   price: {
     eyebrow: 'Pricing',

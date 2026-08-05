@@ -106,6 +106,7 @@
     "static:patch-location-included-homepage": "tsx scripts/static/patch-location-included-homepage-shape.ts",
     "static:patch-hiw-stage2-image": "tsx scripts/static/patch-hiw-stage2-image.ts",
     "static:patch-fill-image-slots": "tsx scripts/static/patch-fill-empty-image-slots.ts",
+    "static:patch-hire-engineers-photos": "tsx scripts/static/patch-hire-engineers-photos.ts",
     "static:patch-home-grace-colombia": "tsx scripts/static/patch-home-grace-colombia.ts",
     "static:patch-location-hero-slides": "tsx scripts/static/patch-location-hero-slide-crops.ts",
     "static:patch-book-a-call-thank-you": "tsx scripts/static/patch-book-a-call-thank-you.ts",
