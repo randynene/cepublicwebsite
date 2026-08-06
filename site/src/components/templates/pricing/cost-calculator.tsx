@@ -72,7 +72,7 @@ function Field({
   // Select fills the whole box (padding on the control); chevron is decorative.
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor={id} className="text-[13px] font-medium text-text-default/60">
+      <label htmlFor={id} className="text-[13px] font-medium text-text-default">
         {label}
       </label>
       <span className="relative block">
@@ -161,7 +161,7 @@ export function CostCalculator({ content }: { content: PricingCalculator }) {
         {/* Input column - bare dark background */}
         <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
-            <span className="text-[13px] font-medium text-text-default/60">{content.devCountLabel}</span>
+            <span className="text-[13px] font-medium text-text-default">{content.devCountLabel}</span>
             <span className="inline-flex items-center justify-between rounded-[12px] border border-[#22314D] bg-[#0A1628] px-3 py-2">
               <button
                 type="button"
