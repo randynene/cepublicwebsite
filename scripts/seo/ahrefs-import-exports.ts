@@ -46,32 +46,33 @@ interface ReportSpec {
 
 const REPORTS: ReportSpec[] = [
   {
-    name: 'content-gap',
-    requires: ['keyword'],
-    expected: null,
-    note: 'Keyword gap vs the 5 competitors. No API equivalent exists at any Ahrefs tier.',
-  },
-  {
     name: 'link-intersect',
-    requires: ['domain'],
+    // `intersect` is what separates this from every other domain-keyed report.
+    requires: ['domain', 'intersect'],
     expected: null,
     note: 'Domains linking to competitors but not to us. No API equivalent at any tier.',
+  },
+  {
+    name: 'content-gap',
+    requires: ['keyword', 'intents'],
+    expected: null,
+    note: 'Keyword gap vs the competitor set. No API equivalent at any Ahrefs tier.',
   },
   {
     name: 'backlinks',
     requires: ['referring page url', 'target url'],
     expected: 8800,
-    note: 'Live backlinks. The gap the exhausted API quota left biggest.',
+    note: 'Live plus recently lost backlinks, ungrouped.',
   },
   {
     name: 'refdomains',
-    requires: ['referring domain'],
+    requires: ['domain', 'links to target'],
     expected: 693,
-    note: 'Live referring domains.',
+    note: 'Referring domains.',
   },
   {
     name: 'anchors',
-    requires: ['anchor'],
+    requires: ['anchor text'],
     expected: null,
     note: 'Anchor text distribution.',
   },
@@ -83,7 +84,7 @@ const REPORTS: ReportSpec[] = [
   },
   {
     name: 'top-pages',
-    requires: ['url', 'traffic'],
+    requires: ['current url', 'current traffic'],
     expected: null,
     note: 'Top pages by organic traffic. Export once per location.',
   },
@@ -107,7 +108,7 @@ const REPORTS: ReportSpec[] = [
   },
   {
     name: 'matching-terms',
-    requires: ['keyword', 'volume'],
+    requires: ['keyword', 'volume', 'difficulty'],
     expected: null,
     note: 'Keywords Explorer term expansion.',
   },
