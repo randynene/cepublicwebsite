@@ -1,5 +1,14 @@
 # Post-launch SEO audit — cloudemployee.io
 
+> **The "Priority order" section below is SUPERSEDED by
+> `docs/seo/SEO_PROGRAMME.md`** (4 Aug 2026). That document carries the sequenced
+> roadmap, the locked decisions, and the full data-source inventory. It also adds
+> findings this audit did not have: every page is hidden by CSS until a JavaScript
+> callback un-hides it, and that callback is starved by heavy third-party scripts, so
+> pages sit blank for seconds; one HubSpot script blocks the main thread; and the
+> Marker.io review widget is live for real customers. The measured findings below
+> remain accurate and are still the reference for the launch-day state.
+
 Cutover: 3 Aug 2026. This audit: 4 Aug 2026, roughly 12 hours after DNS.
 
 Everything below is measured, not assumed. Every claim has a script behind it that
