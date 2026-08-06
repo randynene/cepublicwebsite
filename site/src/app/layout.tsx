@@ -13,6 +13,7 @@ import type { Metadata, Viewport } from 'next'
 import { IBM_Plex_Mono, Inter, Source_Serif_4 } from 'next/font/google'
 import { draftMode, headers } from 'next/headers'
 import { VisualEditing } from 'next-sanity/visual-editing'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 
 import { env } from '@/lib/env'
 import { isAskPath, isBookACallPath, isForDevelopersPath } from '@/lib/ask/routes'
@@ -176,6 +177,15 @@ export default async function RootLayout({
           refreshOnReconnect={isDraftMode}
         />
         {isDraftMode && <VisualEditing />}
+        {/* Vercel Speed Insights — first-party field Core Web Vitals from real
+         * visitors (SEO_PROGRAMME.md §5.2 item 1). The Next.js integration is
+         * NOT dashboard-only: Vercel's automatic script injection covers
+         * static/no-framework projects, but a Next.js app must mount this
+         * component or the dashboard stays permanently empty. It renders no
+         * DOM, self-disables outside Vercel, and collects nothing
+         * retroactively, so the clock only starts at first production deploy.
+         * Mounted last so the beacon never sits in front of page content. */}
+        <SpeedInsights />
         <GlobalScripts suppressChatWidget={suppressChatWidget} />
       </body>
     </html>
