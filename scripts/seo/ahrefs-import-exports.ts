@@ -307,6 +307,11 @@ function main(): void {
     importedSchema.parse(payload)
     writeFileSync(join(OUT_DIR, outFile), JSON.stringify(payload, null, 2))
 
+    // A row count landing exactly on a round export limit is almost never a
+    // coincidence: it is the UI's per-report cap. Say so, rather than letting a
+    // capped file pass as complete.
+    const EXPORT_CAPS = [1_000, 5_000, 10_000, 25_000, 30_000, 50_000, 100_000]
+    const cappedAt = EXPORT_CAPS.find((cap) => parsed.rows.length === cap)
     const short = spec.expected !== null && parsed.rows.length < spec.expected * 0.9
     results.push({
       outFile,
@@ -316,11 +321,17 @@ function main(): void {
       expected: spec.expected,
       warning: short
         ? `SHORT: expected about ${spec.expected}. Likely a page export rather than a full export.`
-        : '',
+        : cappedAt !== undefined
+          ? `CAPPED at exactly ${cappedAt} rows, which is an export limit rather than the true total. Check the row count the UI reported and note what was dropped.`
+          : '',
     })
     console.log(
       `${String(parsed.rows.length).padStart(7)} rows  ${outFile.padEnd(34)} <- ${basename(path)}` +
-        (short ? `  ** SHORT, expected ~${spec.expected} **` : ''),
+        (short
+          ? `  ** SHORT, expected ~${spec.expected} **`
+          : cappedAt !== undefined
+            ? `  ** CAPPED at the ${cappedAt}-row export limit **`
+            : ''),
     )
   }
 
@@ -354,10 +365,16 @@ function main(): void {
   writeFileSync(MANIFEST, lines.join('\n') + '\n')
 
   console.log(`\n${results.length} imported, ${unclaimed.length} unclaimed. Manifest: ${MANIFEST}`)
-  const short = results.filter((r) => r.warning !== '')
-  if (short.length > 0) {
+  const needsReexport = results.filter((r) => r.warning.startsWith('SHORT'))
+  if (needsReexport.length > 0) {
     console.log('\nRe-export these using "Full export" rather than the page export:')
-    for (const r of short) console.log(`  - ${r.report} (${r.rows} rows)`)
+    for (const r of needsReexport) console.log(`  - ${r.report} (${r.rows} rows)`)
+  }
+  // A cap is the plan's limit, not a mistake: nothing to re-export, but the
+  // shortfall has to travel with the data so analysis does not overclaim.
+  const capped = results.filter((r) => r.warning.startsWith('CAPPED'))
+  for (const r of capped) {
+    console.log(`\n${r.report} hit the UI export cap at ${r.rows} rows. Record what was dropped.`)
   }
 }
 
