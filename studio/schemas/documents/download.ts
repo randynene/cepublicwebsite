@@ -97,14 +97,14 @@ export default defineType({
       name: 'metaTitle',
       title: 'Meta title',
       type: 'string',
-      validation: (Rule) => Rule.required().max(60),
+      validation: (Rule) => [Rule.required(), Rule.max(60).warning()], // length is guidance, see _shared.ts metaFields
     }),
     defineField({
       name: 'metaDescription',
       title: 'Meta description',
       type: 'text',
       rows: 3,
-      validation: (Rule) => Rule.required().min(140).max(160),
+      validation: (Rule) => [Rule.required(), Rule.min(140).warning(), Rule.max(160).warning()], // length is guidance, see _shared.ts metaFields
     }),
     imageField('metaThumbnail', 'Meta thumbnail (Open Graph)'),
 

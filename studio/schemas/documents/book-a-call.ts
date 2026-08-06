@@ -48,7 +48,7 @@ export default defineType({
       name: 'metaTitle',
       title: 'Meta title',
       type: 'string',
-      validation: (Rule) => Rule.required().max(60),
+      validation: (Rule) => [Rule.required(), Rule.max(60).warning()], // length is guidance, see _shared.ts metaFields
     }),
     defineField({
       name: 'metaDescription',
@@ -56,7 +56,7 @@ export default defineType({
       type: 'text',
       rows: 3,
       description: 'Maps from the Webflow `title` field (mislabelled as a title, but used as a meta description — §3.14 / D9).',
-      validation: (Rule) => Rule.required().min(140).max(160),
+      validation: (Rule) => [Rule.required(), Rule.min(140).warning(), Rule.max(160).warning()], // length is guidance, see _shared.ts metaFields
     }),
     ...metaSourceFields(),
     ...sourceTrackingFieldsCarryover(),

@@ -23,14 +23,14 @@ export default defineType({
       name: 'defaultMetaTitle',
       title: 'Default meta title',
       type: 'string',
-      validation: (Rule) => Rule.required().max(60),
+      validation: (Rule) => [Rule.required(), Rule.max(60).warning()], // length is guidance, see _shared.ts metaFields
     }),
     defineField({
       name: 'defaultMetaDescription',
       title: 'Default meta description',
       type: 'text',
       rows: 3,
-      validation: (Rule) => Rule.required().min(140).max(160),
+      validation: (Rule) => [Rule.required(), Rule.min(140).warning(), Rule.max(160).warning()], // length is guidance, see _shared.ts metaFields
     }),
     imageField('defaultOgImage', 'Default Open Graph image', { required: true }),
 
