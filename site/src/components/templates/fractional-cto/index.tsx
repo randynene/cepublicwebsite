@@ -435,10 +435,20 @@ export function FractionalCtoTemplate({
             <p className="lead">{content.matchform.lead}</p>
           </div>
           {/* `bare`: this section supplies the eyebrow, headline and lead, and the
-              reassurance block below closes it. No prefill, because the eight role
-              tiles have no Fractional CTO option and there is nothing truthful to
-              preselect. */}
-          <LeadFormSection bare sourcePage={buildLocalePath('/services/fractional-ctos', locale)} />
+              reassurance block below closes it.
+
+              `variant="cto"` (CE-43). This rendered the engineer funnel until
+              Aug 2026, so a buyer looking for technical leadership was asked to
+              pick between Backend, Frontend and DevOps, then which stack they
+              wanted. The CTO variant asks for the engagement type instead and
+              drops the stack step. Prefill is intentionally still absent: the
+              engagement types are a real choice, not something the page can
+              answer on the visitor's behalf. */}
+          <LeadFormSection
+            bare
+            variant="cto"
+            sourcePage={buildLocalePath('/services/fractional-ctos', locale)}
+          />
 
           <MatchReassurance mf={content.matchform} locale={locale} />
         </div>

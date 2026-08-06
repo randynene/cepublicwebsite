@@ -36,6 +36,10 @@ import { defaultSkills, type SkillCategory } from '@/lib/skills/taxonomy'
 import {
   BOOKING_THANK_YOU_PATH,
   COMMITMENT_OPTIONS,
+  CTO_COMMITMENT_OPTIONS,
+  CTO_ENGAGEMENT_OPTIONS,
+  CTO_FORM_COPY,
+  CTO_STEP_LABEL_ROLE,
   DEFAULT_CALENDLY_URL,
   LEAD_FORM_COPY as C,
   LENGTH_OPTIONS,
@@ -48,9 +52,21 @@ import {
 
 type StepId = 'role' | 'skills' | 'length' | 'commitment' | 'details' | 'booking'
 
+/**
+ * CE-43. `hiring` is the engineer funnel every service page uses. `cto` is the
+ * Fractional CTO funnel: leadership engagement types instead of engineer roles,
+ * and no stack step, because which framework someone knows is not how you choose
+ * a CTO. Everything downstream of the questions - validation, submit shape,
+ * HubSpot fields, Calendly handoff - is deliberately shared, so the two funnels
+ * cannot drift apart in the plumbing.
+ */
+export type LeadFormVariant = 'hiring' | 'cto'
+
 export interface QuickHiringFormProps {
   /** Page path the form sits on. Stored on the lead as `ce_source_page`. */
   sourcePage: string
+  /** Which funnel to render. Defaults to the engineer-hiring one. */
+  variant?: LeadFormVariant
   /** Skips the role step. Typed, so a renamed role fails the build. */
   prefillRole?: RoleId
   /** Preselects a stack pill, e.g. "React" on the React Developers page. */
@@ -120,25 +136,47 @@ const STEP_COPY: Record<StepId, { heading: string; sub: string }> = {
   booking: C.booking,
 }
 
-function useSteps(hasPrefilledRole: boolean): StepId[] {
-  return useMemo(
-    () =>
-      (hasPrefilledRole
+/** As STEP_COPY, with the `cto` variant's overrides applied over the top. */
+const CTO_STEP_COPY: Record<StepId, { heading: string; sub: string }> = {
+  ...STEP_COPY,
+  role: CTO_FORM_COPY.role,
+  length: CTO_FORM_COPY.length,
+  commitment: CTO_FORM_COPY.commitment,
+}
+
+/**
+ * The `cto` variant drops the stack step. Prefill is an engineer-page concept
+ * (a service slug preselecting a role), so it only applies to the hiring
+ * variant; a prefilled CTO engagement type has no caller and is not modelled.
+ */
+function useSteps(variant: LeadFormVariant, hasPrefilledRole: boolean): StepId[] {
+  return useMemo(() => {
+    if (variant === 'cto') {
+      return ['role', 'length', 'commitment', 'details', 'booking'] as StepId[]
+    }
+    return (
+      hasPrefilledRole
         ? ['skills', 'length', 'commitment', 'details', 'booking']
-        : ['role', 'skills', 'length', 'commitment', 'details', 'booking']) as StepId[],
-    [hasPrefilledRole],
-  )
+        : ['role', 'skills', 'length', 'commitment', 'details', 'booking']
+    ) as StepId[]
+  }, [variant, hasPrefilledRole])
 }
 
 export function QuickHiringForm({
   sourcePage,
+  variant = 'hiring',
   prefillRole,
   prefillSkill,
   calendlyUrl = DEFAULT_CALENDLY_URL,
   className,
 }: QuickHiringFormProps) {
-  const prefilledRole = ROLE_OPTIONS.find((r) => r.id === prefillRole)
-  const steps = useSteps(Boolean(prefilledRole))
+  const isCto = variant === 'cto'
+  // Prefill is an engineer-page concept; ignored on the CTO funnel.
+  const prefilledRole = isCto ? undefined : ROLE_OPTIONS.find((r) => r.id === prefillRole)
+  const steps = useSteps(variant, Boolean(prefilledRole))
+  const copy = isCto ? CTO_STEP_COPY : STEP_COPY
+  const roleChoices: readonly RoleOption[] = isCto ? CTO_ENGAGEMENT_OPTIONS : ROLE_OPTIONS
+  const commitmentChoices = isCto ? CTO_COMMITMENT_OPTIONS : COMMITMENT_OPTIONS
 
   const [stepIndex, setStepIndex] = useState(0)
   const [role, setRole] = useState<RoleOption | undefined>(prefilledRole)
@@ -271,7 +309,7 @@ export function QuickHiringForm({
 
   const stepNumber = stepIndex + 1
   const stepCount = steps.length
-  const { heading, sub } = STEP_COPY[step]
+  const { heading, sub } = copy[step]
 
   return (
     // No card. The blue is now the SECTION background (see section.tsx), so the
@@ -307,7 +345,7 @@ export function QuickHiringForm({
                 )}
                 aria-current={state === 'current' ? ARIA_CURRENT_STEP : undefined}
               >
-                {STEP_LABELS[id]}
+                {isCto && id === 'role' ? CTO_STEP_LABEL_ROLE : STEP_LABELS[id]}
               </span>
               {index < steps.length - 1 && (
                 <span
@@ -350,8 +388,16 @@ export function QuickHiringForm({
       <div>
         {step === 'role' && (
           <StepShell>
-            <div className="grid grid-cols-2 gap-[10px] lg:grid-cols-4">
-              {ROLE_OPTIONS.map((option) => (
+            {/* 8 engineer roles sit 4-up. The 5 CTO options go 3-up instead:
+                4-up would strand a single tile on its own row, and the labels
+                ("Tech due diligence") need the extra width at whitespace-nowrap. */}
+            <div
+              className={cn(
+                'grid grid-cols-2 gap-[10px]',
+                isCto ? 'lg:grid-cols-3' : 'lg:grid-cols-4',
+              )}
+            >
+              {roleChoices.map((option) => (
                 <button
                   key={option.id}
                   type="button"
@@ -482,7 +528,7 @@ export function QuickHiringForm({
           <StepShell>
             <ChoiceList
               name="quick-hiring-commitment"
-              options={COMMITMENT_OPTIONS}
+              options={commitmentChoices}
               value={commitment}
               onChange={setCommitment}
               columns="lg:grid-cols-3"

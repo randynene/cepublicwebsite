@@ -50,6 +50,65 @@ export const ROLE_OPTIONS = [
 export type RoleId = (typeof ROLE_OPTIONS)[number]['id']
 
 /**
+ * CE-43. The Fractional CTO page was rendering the engineer-hiring form, so a
+ * buyer looking for technical leadership was asked to choose between Backend,
+ * Frontend and DevOps. These replace that first step on the `cto` variant.
+ *
+ * No `category`, deliberately: category only exists to bias the stack step's
+ * suggestions, and the `cto` variant has no stack step. Labels do not match any
+ * rule in `role-icons.tsx`, so every tile renders ROLE_ICON_FALLBACK. That is
+ * intended - a fabricated icon mapping would imply a taxonomy we do not have.
+ *
+ * Safe to change freely: `role` is submitted as a free-text label that goes only
+ * to Slack. It is NOT one of the HubSpot dropdown properties, so an unrecognised
+ * value cannot get a submission rejected. (See app/api/lead/route.ts - the
+ * HubSpot field list carries ce_engagement_length and ce_commitment, not role.)
+ */
+export const CTO_ENGAGEMENT_OPTIONS = [
+  { id: 'fractional-cto', label: 'Fractional CTO' },
+  { id: 'interim-cto', label: 'Interim CTO' },
+  { id: 'technical-advisor', label: 'Technical advisor' },
+  { id: 'tech-due-diligence', label: 'Tech due diligence' },
+  { id: 'not-sure', label: 'Not sure yet' },
+] as const satisfies readonly RoleOption[]
+
+/**
+ * Commitment, reworded for a leadership hire rather than an engineer.
+ *
+ * The `value` side is untouched on purpose. Those strings are submitted to
+ * HubSpot as `ce_commitment`, which is a dropdown property: a value outside its
+ * option list is rejected at submit. Only the visitor-facing `label` changes, so
+ * this needs no HubSpot configuration and cannot break lead capture.
+ */
+export const CTO_COMMITMENT_OPTIONS = [
+  { value: 'full_time', label: 'Full-time' },
+  { value: 'part_time', label: 'Part-time (2-3 days a week)' },
+  { value: 'hourly', label: 'Advisory (hourly)' },
+] as const
+
+/**
+ * Copy overrides for the `cto` variant. Only the screens that actually differ
+ * are listed; everything else falls through to LEAD_FORM_COPY.
+ */
+export const CTO_FORM_COPY = {
+  role: {
+    heading: 'What kind of CTO support do you need?',
+    sub: 'Pick the closest fit - we will refine it on the call.',
+  },
+  length: {
+    heading: 'How long do you need them for?',
+    sub: 'Most engagements start at three months and roll on.',
+  },
+  commitment: {
+    heading: 'How much of their time do you need?',
+    sub: 'Most fractional engagements run two to three days a week.',
+  },
+} as const
+
+/** Rail label for the first step on the `cto` variant. */
+export const CTO_STEP_LABEL_ROLE = 'Engagement'
+
+/**
  * One rail entry per ACTUAL screen, numbered in order.
  *
  * This replaced a four-tab version that grouped length and commitment under
