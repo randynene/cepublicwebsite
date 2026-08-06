@@ -126,20 +126,35 @@ export function metaSourceFields(): FieldDefinition[] {
 
 export function metaFields(opts: { og?: boolean } = {}): FieldDefinition[] {
   const fields: FieldDefinition[] = [
+    // Length rules are WARNINGS, not errors, and deliberately so.
+    //
+    // They were authored as hard errors against ideal SEO lengths, but the
+    // migrated content does not meet them: a full-dataset `sanity documents
+    // validate` on 6 Aug 2026 returned 352 documents failing, 312 of those on
+    // meta length alone (178 descriptions under 140, 78 titles over 60, 56
+    // descriptions over 160). Sanity blocks publish on ANY error in the
+    // document, so a rule about ideal character counts was preventing editors
+    // from saving unrelated copy changes anywhere on the site. That is how
+    // CE-33 surfaced: Seb deleted a line from the homepage and could not
+    // publish it, because the meta description was 20 characters too long.
+    //
+    // Presence is still a hard requirement - a page with no meta description
+    // is a real defect. The length target is guidance, so Studio still shows
+    // the nudge in amber without holding the editor hostage to it.
     defineField({
       name: 'metaTitle',
       title: 'Meta title',
       type: 'string',
-      description: 'SEO page title — max 60 chars',
-      validation: (Rule) => Rule.required().max(60),
+      description: 'SEO page title - aim for max 60 chars',
+      validation: (Rule) => [Rule.required(), Rule.max(60).warning()],
     }),
     defineField({
       name: 'metaDescription',
       title: 'Meta description',
       type: 'text',
       rows: 3,
-      description: 'SEO page description — 140-160 chars',
-      validation: (Rule) => Rule.required().min(140).max(160),
+      description: 'SEO page description - aim for 140-160 chars',
+      validation: (Rule) => [Rule.required(), Rule.min(140).warning(), Rule.max(160).warning()],
     }),
   ]
   if (opts.og !== false) {
