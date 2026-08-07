@@ -372,6 +372,11 @@ async function main(): Promise<void> {
 
   const inspectFile = `${OUT_DIR}/url-inspection.json`
   const inspectLimit = Number(argValue('inspect-limit') ?? 250)
+  // --force is about re-pulling performance data, which is cheap and fast.
+  // Inspections are neither: Google throttles this API to roughly 0.5-1.3 URLs
+  // per minute in practice, so re-doing a banked inspection costs hours and
+  // buys nothing. Discarding them takes its own flag.
+  const forceInspect = hasFlag('force-inspect')
 
   const inspectionSchema = z.object({
     inspectionResult: z.record(z.string(), z.unknown()).optional(),
@@ -395,10 +400,12 @@ async function main(): Promise<void> {
 
   const pageFile = `${OUT_DIR}/full-page.json`
   let inspectTargets: string[] = []
+  let ourPageCount = 0
   if (existsSync(pageFile)) {
     const pageRows = (JSON.parse(readFileSync(pageFile, 'utf8')) as { rows: Row[] }).rows
-    inspectTargets = pageRows
-      .filter((r) => ownerOf(r.keys?.[0] ?? '') === 'ours')
+    const ourPages = pageRows.filter((r) => ownerOf(r.keys?.[0] ?? '') === 'ours')
+    ourPageCount = ourPages.length
+    inspectTargets = ourPages
       .sort((a, b) => b.impressions - a.impressions)
       .slice(0, inspectLimit)
       .map((r) => r.keys?.[0] ?? '')
@@ -408,7 +415,7 @@ async function main(): Promise<void> {
   let inspectSupported: boolean | null = null
   let inspectError: string | undefined
   for (const url of inspectTargets) {
-    if (priorInspections[url]?.ok && !force) continue
+    if (priorInspections[url]?.ok && !forceInspect) continue
     try {
       const res = await sc.urlInspection.index.inspect({
         requestBody: { siteUrl: SITE, inspectionUrl: url, languageCode: 'en-GB' },
@@ -515,7 +522,9 @@ async function main(): Promise<void> {
     lines.push('')
     lines.push('Consequence: there is no API route to index-coverage state (indexed / crawled-not-indexed / discovered-not-indexed, canonical Google chose, last crawl time, robots verdict, mobile usability). That data exists only in the Search Console UI for this property and would have to be read or exported by hand.')
   } else {
-    lines.push(`\`url-inspection.json\`: ${inspectOk} URLs inspected successfully, ${inspectFailed} failed, out of the top ${inspectTargets.length} of OUR pages by impressions over the full window (\`--inspect-limit\` to change; talent and other hosts excluded, they are not ours to inspect).`)
+    lines.push(`\`url-inspection.json\`: **${inspectOk} URLs inspected**, ${inspectFailed} failed, from a target list of the top ${inspectTargets.length} of OUR pages by impressions, out of **${ourPageCount} of our pages that have impressions at all** over the full window. talent and other hosts are excluded: they are not ours to inspect.`)
+    lines.push('')
+    lines.push(`This is therefore a SAMPLE of the highest-traffic pages, not full index coverage of the site. Google throttles this API hard (observed throughput on this run: roughly 0.5 to 1.3 URLs per minute, well under the documented 2,000/day quota), so inspecting all ${ourPageCount} would take many hours of wall clock. Raise \`--inspect-limit\` and re-run to extend the sample; completed URLs are checkpointed after each call and are never re-fetched, so a re-run only does the new ones.`)
     lines.push('')
     lines.push('Each record holds the raw `inspectionResult`: `indexStatusResult` (verdict, coverage state, Google-selected canonical vs declared canonical, crawl time, robots and indexing state), plus `mobileUsabilityResult` / `richResultsResult` where Google returns them.')
     if (inspectError) lines.push(`\nRun stopped early on: \`${inspectError}\`. The URL Inspection quota is roughly 2,000 URLs/day; re-run tomorrow and it resumes from the last completed URL.`)
