@@ -500,30 +500,46 @@ async function main(): Promise<void> {
   const byPath = new Map(records.map((r) => [r.path, r]))
   const sitemapSet = new Set(sitemap.paths)
 
+  // A sitemap URL that redirects does not return 200 either, even though the
+  // chain lands on one. Both cases belong here: a sitemap should list the URL
+  // that serves the page, not one that points at it.
   const sitemapNot200 = records
-    .filter((r) => sitemapSet.has(r.path) && r.status !== 200)
+    .filter((r) => sitemapSet.has(r.path) && !(r.status === 200 && r.hopCount === 0))
     .map((r) => ({
       path: r.path,
       status: r.status,
       finalUrl: r.finalUrl,
       hopCount: r.hopCount,
+      reason: r.status === 200 ? ('redirects' as const) : (`status ${r.status}` as const),
+      redirectChain: r.redirectChain,
       error: r.error,
     }))
 
+  // An orphan is a URL that SERVES a 200 at the requested path, so hopCount must
+  // be 0. Without that guard a redirect counts as an orphan, because status and
+  // finalUrl describe where the chain landed, not what the requested path did:
+  // the ~2.9k /developers/* URLs all 308 to /technology and would otherwise read
+  // as 2.9k orphaned pages.
   const orphans = records
-    .filter((r) => r.status === 200 && !sitemapSet.has(r.path))
+    .filter((r) => r.status === 200 && r.hopCount === 0 && !sitemapSet.has(r.path))
     .map((r) => ({ path: r.path, sources: r.sources, title: r.title, wordCount: r.wordCount }))
 
   const longChains = records
     .filter((r) => r.hopCount > 1)
     .map((r) => ({ path: r.path, hopCount: r.hopCount, chain: r.redirectChain, finalUrl: r.finalUrl }))
 
+  // "Serves a 200 at the requested path". Everything page-level is measured on
+  // this set, never on the redirect landings: a redirect inherits its target's
+  // title, description, headings and word count, so counting it as a page turns
+  // one destination into thousands of false duplicates.
+  const servedDirectly = (r: UrlRecord): boolean => r.status === 200 && r.hopCount === 0
+
   const dupeGroups = (
     key: (r: UrlRecord) => string | null,
   ): Array<{ value: string; count: number; paths: string[] }> => {
     const m = new Map<string, string[]>()
     for (const r of records) {
-      if (r.status !== 200) continue
+      if (!servedDirectly(r)) continue
       const v = key(r)
       if (!v) continue
       if (!m.has(v)) m.set(v, [])
@@ -538,7 +554,11 @@ async function main(): Promise<void> {
   const duplicateTitles = dupeGroups((r) => r.title)
   const duplicateDescriptions = dupeGroups((r) => r.metaDescription)
 
-  const live200 = records.filter((r) => r.status === 200)
+  const live200 = records.filter(servedDirectly)
+  const redirectLandings = records.filter((r) => r.status === 200 && r.hopCount > 0).length
+  const offsiteFinals = records
+    .filter((r) => r.status === 200 && new URL(r.finalUrl).hostname !== HOST)
+    .map((r) => ({ path: r.path, finalUrl: r.finalUrl, hopCount: r.hopCount }))
   const h1Issues = live200
     .filter((r) => r.h1s.length !== 1)
     .map((r) => ({ path: r.path, h1Count: r.h1s.length, h1s: r.h1s }))
@@ -671,6 +691,7 @@ async function main(): Promise<void> {
     writeFileSync(join(OUT_DIR, name), JSON.stringify(data, null, 2))
 
   write('sources.json', sourceInventory)
+  write('offsite-final-destinations.json', offsiteFinals)
   write('sitemap-not-200.json', sitemapNot200)
   write('orphans.json', orphans)
   write('redirect-chains.json', longChains)
@@ -715,11 +736,22 @@ async function main(): Promise<void> {
     '',
     '## Response status',
     '',
+    'Status is the END of the redirect chain, so a URL that redirects to a live',
+    'page shows as 200. The two are separated below.',
+    '',
     '| Status | Count |',
     '|---|---|',
     ...[...statusCounts.entries()]
       .sort((a, b) => a[0] - b[0])
       .map(([s, n]) => `| ${s === 0 ? 'fetch failed' : s} | ${n} |`),
+    '',
+    `- Serve a 200 at the requested path (no redirect): **${live200.length}**`,
+    `- Redirect and then land on a 200: **${redirectLandings}**`,
+    `- Final destination is off ${HOST}: **${offsiteFinals.length}** (see offsite-final-destinations.json)`,
+    '',
+    'Every page-level finding below is measured on the first set only. A redirect',
+    'inherits its target title, description, headings and word count, so counting',
+    'redirects as pages turns one destination into thousands of false duplicates.',
     '',
     '## Findings',
     '',
@@ -727,8 +759,9 @@ async function main(): Promise<void> {
     '|---|---|---|',
     `| urls.json | ${records.length} | Full per-URL record |`,
     `| sources.json | ${collected.length} | Per-source counts plus the path list each contributed |`,
-    `| sitemap-not-200.json | ${sitemapNot200.length} | Sitemap URLs that do not return 200 |`,
-    `| orphans.json | ${orphans.length} | 200s that are NOT in the sitemap |`,
+    `| sitemap-not-200.json | ${sitemapNot200.length} | Sitemap URLs that do not serve a 200 at the listed URL (error, or a redirect) |`,
+    `| orphans.json | ${orphans.length} | Serve a 200 at the requested path and are NOT in the sitemap |`,
+    `| offsite-final-destinations.json | ${offsiteFinals.length} | Requested paths whose chain ends on another host |`,
     `| redirect-chains.json | ${longChains.length} | Chains longer than one hop |`,
     `| duplicate-titles.json | ${duplicateTitles.length} | Title strings shared by more than one 200 |`,
     `| duplicate-descriptions.json | ${duplicateDescriptions.length} | Descriptions shared by more than one 200 |`,
@@ -751,7 +784,10 @@ async function main(): Promise<void> {
     '',
     'Identity is measured on the heading outline plus title and description, and',
     'requires an equal body word count. Jaccard overlap is recorded per pair in',
-    'uk-us-pairs.json for the pairs that differ.',
+    'uk-us-pairs.json for the pairs that differ. A pair can be flagged differing',
+    'on metadata alone: jaccard 1.0 with equal word counts and titleIdentical',
+    'false means the body is the same and only the title or description moved.',
+    'Read titleIdentical and descriptionIdentical alongside the verdict.',
     '',
     '## Not captured',
     '',
@@ -760,6 +796,11 @@ async function main(): Promise<void> {
     '  They are counted in the "other/non-literal excluded" column above.',
     '- Word count is server-rendered HTML only. Client-rendered copy is not',
     '  counted, and nav, header and footer are stripped before counting.',
+    '- images-missing-alt.json counts every img with no alt or an empty alt,',
+    '  including decorative ones. The count is dominated by sitewide chrome, not',
+    '  by page content: the header logo and the mega-menu imagery repeat on every',
+    '  page, which is why almost every 200 appears in the file with 11 or more.',
+    '  Split chrome from in-content images before reading anything into it.',
     '- Response time is a single uncached sample from one location, taken under a',
     `  polite ${CONCURRENCY}-way concurrency limit. It is not a performance benchmark.`,
     '',
