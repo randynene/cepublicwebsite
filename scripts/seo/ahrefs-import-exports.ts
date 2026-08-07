@@ -26,6 +26,13 @@ const BASE = `audit-output/seo-intel/${DATE}`
 const DROP_DIR = `${BASE}/ahrefs-exports`
 const OUT_DIR = `${BASE}/ahrefs`
 const MANIFEST = `${BASE}/MANIFEST-ahrefs-exports.md`
+/**
+ * The manifest is regenerated wholesale on every run, so anything hand-written
+ * into it is lost. Durable notes (standing follow-ups, scheduled collections,
+ * baselines that cannot be recovered later) live here and are appended to the
+ * manifest each time instead.
+ */
+const NOTES = `${BASE}/MANIFEST-ahrefs-exports.notes.md`
 
 /**
  * Report fingerprints. Ahrefs names exports inconsistently and users rename
@@ -78,15 +85,21 @@ const REPORTS: ReportSpec[] = [
   },
   {
     name: 'best-by-links',
-    requires: ['url', 'referring domains'],
+    requires: ['page url', 'referring domains'],
     expected: null,
     note: 'Pages ranked by referring domains.',
   },
   {
     name: 'top-pages',
-    requires: ['current url', 'current traffic'],
+    requires: ['url', 'current traffic'],
     expected: null,
-    note: 'Top pages by organic traffic. Export once per location.',
+    note: 'Top pages by organic traffic. Exported once per location.',
+  },
+  {
+    name: 'traffic-history',
+    requires: ['date'],
+    expected: null,
+    note: 'Daily organic pages and organic traffic, 2-year chart series.',
   },
   {
     name: 'organic-keywords',
@@ -96,7 +109,7 @@ const REPORTS: ReportSpec[] = [
   },
   {
     name: 'organic-competitors',
-    requires: ['competitor domain'],
+    requires: ['domain', 'common keywords'],
     expected: null,
     note: 'Domains competing on the same keywords.',
   },
@@ -292,9 +305,11 @@ function main(): void {
     }
     // Several exports of one report (e.g. top-pages US and UK) get numbered
     // rather than silently overwriting each other.
+    const locale = /-(all|us|gb|uk)[-_]/.exec(basename(path).toLowerCase())?.[1]
     const n = (seen.get(spec.name) ?? 0) + 1
     seen.set(spec.name, n)
-    const outFile = n === 1 ? `${spec.name}.export.json` : `${spec.name}-${n}.export.json`
+    const suffix = locale !== undefined ? `-${locale}` : n === 1 ? '' : `-${n}`
+    const outFile = `${spec.name}${suffix}.export.json`
 
     const payload: Imported = {
       source: 'ui-export',
@@ -363,6 +378,9 @@ function main(): void {
       (r) => `- **${r.name}** - ${r.note}`,
     ),
   ]
+  if (existsSync(NOTES)) {
+    lines.push('', readFileSync(NOTES, 'utf8').trim())
+  }
   writeFileSync(MANIFEST, lines.join('\n') + '\n')
 
   console.log(`\n${results.length} imported, ${unclaimed.length} unclaimed. Manifest: ${MANIFEST}`)
