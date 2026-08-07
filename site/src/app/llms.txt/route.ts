@@ -1,3 +1,4 @@
+import { isCanonicalSite } from '@/lib/canonical-host'
 import { env } from '@/lib/env'
 
 // /llms.txt — the plain-text brief for AI assistants.
@@ -10,9 +11,10 @@ import { env } from '@/lib/env'
 // It answers the questions Seb listed as the ones buyers actually ask: what it
 // costs, how the fee works, how long it takes, and what makes CE different.
 //
-// Hostname-gated exactly like robots.ts: staging and preview deployments return
-// 404 rather than publishing a machine-readable company brief on a duplicate
-// domain. See the long note in robots.ts for why the gate is the hostname and
+// Hostname-gated exactly like robots.ts, through the same shared
+// `isCanonicalSite()` helper: staging and preview deployments return 404 rather
+// than publishing a machine-readable company brief on a duplicate domain. See
+// the note in `@/lib/canonical-host` for why the gate is the request hostname and
 // not Vercel's environment label.
 
 // Deliberately NOT force-static. Prerendering bakes whatever the hostname gate
@@ -20,17 +22,6 @@ import { env } from '@/lib/env'
 // is set would keep serving the 404 body forever. The Cache-Control header below
 // means the CDN still serves this from cache in practice.
 export const dynamic = 'force-dynamic'
-
-function isCanonicalSite(): boolean {
-  const canonicalHost = process.env.NEXT_PUBLIC_CANONICAL_HOST
-  let servingHost: string | null = null
-  try {
-    servingHost = new URL(env.NEXT_PUBLIC_SITE_URL).host
-  } catch {
-    servingHost = null
-  }
-  return !!canonicalHost && !!servingHost && canonicalHost === servingHost
-}
 
 function body(site: string): string {
   return `# Cloud Employee
@@ -114,8 +105,8 @@ ${site}/sitemap.xml
 `
 }
 
-export function GET(): Response {
-  if (!isCanonicalSite()) {
+export async function GET(): Promise<Response> {
+  if (!(await isCanonicalSite())) {
     return new Response('Not found', { status: 404 })
   }
   return new Response(body(env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '')), {

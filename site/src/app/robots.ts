@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
-import { headers } from 'next/headers'
 
+import { isCanonicalSite } from '@/lib/canonical-host'
 import { env } from '@/lib/env'
 
 // Indexing is OPT-IN, and the opt-in is the hostname.
@@ -24,32 +24,13 @@ import { env } from '@/lib/env'
 // label says. Being indexed now requires setting an environment variable on
 // purpose. It cannot happen by accident, which is the whole point.
 //
-// The serving host is read from the REQUEST, not from an environment variable.
-// That distinction is load-bearing. staging.jakevibes.dev and www.cloudemployee.io
-// are two domains pointing at the SAME Vercel production deployment, so they share
-// one set of build-time environment variables. Comparing one env var against
-// another would return the same answer for both hosts: the moment cutover set
-// NEXT_PUBLIC_CANONICAL_HOST, staging would have started serving `Allow: /` too,
-// handing Google exactly the indexable duplicate this file exists to prevent.
-//
-// Reading the real Host header makes the gate per-domain, so staging stays
-// disallowed no matter what the environment says, and stays disallowed even if
-// someone forgets to detach it from the project after cutover.
+// The gate itself is `isCanonicalSite()` in `@/lib/canonical-host`, which reads
+// the real request Host rather than an environment variable. See the note there
+// for why that distinction is load-bearing; in short, staging.jakevibes.dev and
+// www.cloudemployee.io are the same deployment and share one set of build-time
+// variables, so only the request tells them apart.
 export default async function robots(): Promise<MetadataRoute.Robots> {
-  const canonicalHost = process.env.NEXT_PUBLIC_CANONICAL_HOST?.trim().toLowerCase()
-
-  const requestHeaders = await headers()
-  // Cloudflare and Vercel both preserve the original Host; x-forwarded-host wins
-  // where a proxy rewrote it. Strip any port before comparing.
-  const rawHost = requestHeaders.get('x-forwarded-host') ?? requestHeaders.get('host') ?? ''
-  const servingHost = rawHost.split(':')[0]?.trim().toLowerCase() || null
-
-  // Both must be present AND match. An unset canonical host means "not the real
-  // site", which is the safe default: a deployment that forgets to configure itself
-  // stays out of the index rather than falling into it.
-  const isCanonicalSite = !!canonicalHost && !!servingHost && canonicalHost === servingHost
-
-  if (!isCanonicalSite) {
+  if (!(await isCanonicalSite())) {
     return { rules: [{ userAgent: '*', disallow: '/' }] }
   }
 

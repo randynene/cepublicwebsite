@@ -1,6 +1,8 @@
 import { headers } from 'next/headers'
 import Script from 'next/script'
 
+import { isCanonicalSite } from '@/lib/canonical-host'
+
 // Global third-party scripts confirmed in audit-output/ce-scripts.json.
 // Container/partner/measurement IDs come from the audit summary — never
 // hardcode a guessed value. If an ID is unconfirmed, render null.
@@ -41,22 +43,6 @@ t.parentNode.insertBefore(y,t);y.onerror=function(){s()};
 window.georedirect${timestamp}loaded=function(redirect){var to=0;if(redirect){to=5000};
 setTimeout(function(){s();},to)};
 })(document,'script','head');`
-}
-
-// Marker.io is a review/bug-report widget for the staging review waves — it must
-// NOT render for real visitors on the live domain. This mirrors robots.ts: the
-// real site is the one whose serving host matches NEXT_PUBLIC_CANONICAL_HOST
-// (only set on cloudemployee.io at cutover). Everywhere else (staging, previews)
-// is "not the real site", so the widget shows there.
-function isCanonicalProductionSite(): boolean {
-  const canonicalHost = process.env.NEXT_PUBLIC_CANONICAL_HOST
-  let servingHost: string | null = null
-  try {
-    servingHost = new URL(process.env.NEXT_PUBLIC_SITE_URL ?? '').host
-  } catch {
-    servingHost = null
-  }
-  return !!canonicalHost && !!servingHost && canonicalHost === servingHost
 }
 
 // `window.VISITOR_COUNTRY` — the visitor's two-letter country code, exposed to
@@ -133,7 +119,7 @@ export function GtmNoScript() {
 
 // Remaining global scripts. Each renders only when its identifier is
 // confirmed from audit output.
-export function GlobalScripts({
+export async function GlobalScripts({
   // ASK-CLARA P1: /ask IS the Clara conversation, full-page. Loading the floating
   // widget there would offer a second, separate Clara chat on the same screen and
   // park its launcher on top of the composer. Only the chat widget is skipped -
@@ -143,8 +129,13 @@ export function GlobalScripts({
 }: {
   suppressChatWidget?: boolean
 } = {}) {
-  // Off on the real live domain, on everywhere else (staging review waves).
-  const showMarker = !isCanonicalProductionSite()
+  // Marker.io is a review/bug-report widget for the staging review waves - it must
+  // NOT render for real visitors on the live domain. Off on the real live domain,
+  // on everywhere else (staging, previews). This used to compare two build-time
+  // env vars to each other and got the answer wrong on www.cloudemployee.io,
+  // showing paying customers a bug-report button; it now shares robots.ts's
+  // request-host check.
+  const showMarker = !(await isCanonicalSite())
 
   return (
     <>
