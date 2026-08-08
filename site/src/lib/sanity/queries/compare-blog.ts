@@ -4,6 +4,10 @@ import { sanityClient } from '@/lib/sanity/client'
 import { sanityFetch } from '@/lib/sanity/live'
 import { NOT_RETIRED } from '@/lib/sanity/queries/_filters'
 import {
+  HubChildItemSchema,
+  type HubChildItem,
+} from '@/lib/sanity/queries/hubs'
+import {
   CompareBlogMetaSchema,
   CompareBlogSchema,
   type CompareBlog,
@@ -55,6 +59,43 @@ export const COMPARE_BLOG_PARAMS_QUERY = /* groq */ `
 }
 `
 
+// Related-comparisons module (SEO S2, roadmap W1-04). The 27 compare pages hold
+// the site's best positions and ~45% of its AI citations but link only UPWARD to
+// the hub; this cross-links them laterally so equity flows between them.
+//
+// Relatedness is derived from DATA, never a hand-coded slug list: a shared
+// competitor scores highest, then shared tags, then recency. The recency tail is
+// a deliberate fallback so every one of the 27 pages links to three siblings even
+// when it shares no competitor or tag - the whole point is lateral link equity,
+// and `competitor` is null on most docs (the template parses it from the title).
+//
+// NOT_RETIRED + `slug.current != $slug` guarantee the module can never emit a link
+// to a retired doc or to itself. Projection mirrors the hub child shape so the
+// result renders through the same BlogCard as the /alternatives grid.
+export const RELATED_COMPARISONS_QUERY = /* groq */ `
+*[_type == "compareBlog"
+  && slug.current != $slug
+  && defined(slug.current)
+  && ${NOT_RETIRED}
+]{
+  _id, _type,
+  title, name, nameClient, customerStoryTitle, technologyName,
+  "slug": slug.current,
+  thumbnailImage, thumbnail, backupImage, headerFooterImage, featuredImage, techLogo, companyLogo,
+  date, dateTime,
+  resourceDescription, subHeader, headerDescription, mainDescription, descriptionOfVideo,
+  snippetForMeta, reviewSnippetForMeta, shortLabel, competitor,
+  metaDescription,
+  "author": author->{ name, teamMemberImage },
+  "category": category->{ name, "slug": slug.current },
+  companyName, position,
+  "sameCompetitor": defined($competitor) && defined(competitor) && competitor == $competitor,
+  "sharedTags": coalesce(count(tags[@._ref in $tagIds]), 0)
+}
+| order(sameCompetitor desc, sharedTags desc, defined(date) desc, date desc)
+[0...3]
+`
+
 export async function fetchCompareBlog(slug: string): Promise<CompareBlog | null> {
   const { data } = await sanityFetch({
     query: COMPARE_BLOG_QUERY,
@@ -73,6 +114,22 @@ export async function fetchCompareBlogMeta(
   })
   if (data === null || data === undefined) return null
   return CompareBlogMetaSchema.parse(data)
+}
+
+export async function fetchRelatedComparisons(
+  post: Pick<CompareBlog, 'slug' | 'competitor' | 'tags'>,
+): Promise<HubChildItem[]> {
+  const tagIds = (post.tags ?? []).map((tag) => tag._id)
+  const { data } = await sanityFetch({
+    query: RELATED_COMPARISONS_QUERY,
+    params: {
+      slug: post.slug,
+      competitor: post.competitor ?? null,
+      tagIds,
+    },
+  })
+  if (!Array.isArray(data)) return []
+  return data.map((item) => HubChildItemSchema.parse(item))
 }
 
 type RawCompareBlogParam = { slug: string | null }
