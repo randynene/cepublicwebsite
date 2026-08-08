@@ -1,0 +1,363 @@
+[
+  {
+    "id": "AUTH-01",
+    "title": "168 referring domains (17% of the profile) point at URLs that 301 into hub index pages - the soft-404 trap, dominated by 69 dead blog posts funnelled to /blog",
+    "lens": "authority",
+    "severity": "high",
+    "evidence": [
+      {
+        "claim": "168 of 995 distinct referring domains in the live backlink export link to a URL whose crawl finalUrl is a hub index (/blog, /technology, /, /contact, etc.); 142 of them with at least one dofollow link",
+        "source": "ahrefs/backlinks.export.json (12,795 rows) joined to crawl/urls.json finalUrl",
+        "value": "168/995 domains; /blog receives 154 domains via 69 dead blog URLs (359 links); /technology's 2,929 links are only 4 scraper domains"
+      },
+      {
+        "claim": "None of the 69 dead blog URLs has a live article with the same slug - every apparent slug match is itself a catch-all redirect (hopCount>0), so no exact-match redirect target exists in the current content set",
+        "source": "crawl/urls.json (status==200 AND hopCount==0 filter) vs the 69 dead paths",
+        "value": "0 of 69 exact matches"
+      },
+      {
+        "claim": "Verified live: legacy blog paths 301 to the /blog hub, which Google treats as a soft 404 for link-equity purposes",
+        "source": "curl 8 Aug: /blog/tech-news/the-future-of-drone-technology -> 308 -> https://www.cloudemployee.io/blog (200)",
+        "value": "hub catch-all confirmed in production"
+      }
+    ],
+    "affected_urls": {
+      "count": 69,
+      "sample": [
+        "/blog/programming-tips/10-best-websites-to-practice-coding-online (30 refdomains, top DR 76)",
+        "/blog/it-outsourcing/why-philippines-for-business (20 refdomains, top DR 76)",
+        "/blog/tech-news/importance-of-technology-advancement-in-business-sector (14 refdomains)",
+        "/blog/it-outsourcing/the-5-challenges-you-will-face-when-hiring-software-developers (11 refdomains, top DR 94)",
+        "/blog/productivity/10-tips-for-effective-communication-with-a-remote-team (10 refdomains, DR 82)"
+      ]
+    },
+    "effort": { "band": "days", "estimate_hours": 16, "who": "claude + jake decision per URL", "note": "mapping is mechanical; per-URL target choice needs a human eye for topical relevance" },
+    "impact": {
+      "metric": "rankings",
+      "estimate": "154 referring domains' worth of equity currently evaporating into /blog. The top ~15 dead URLs carry 30/20/14/11/10 refdomains each with top source DR 76-94. Re-pointing each to the closest topically-relevant live article (e.g. why-philippines-for-business -> /hiring-tips/hiring-developers-in-the-philippines-...; 5-challenges-hiring -> /blog/it-outsourcing/the-5-challenges... is dead, use /hiring-tips equivalents) recovers equity a DR 36 site cannot afford to waste.",
+      "confidence": "high"
+    },
+    "depends_on": [],
+    "quick_win": false,
+    "recommendation": "Rank the 69 dead blog URLs by referring domains (list computed, in authority.md). For each of the top ~25, pick the closest topically-relevant LIVE article and add a specific 301; where none exists (lifestyle content: eating-healthy-at-work, sci-fi-movies), leave the hub redirect and accept the loss explicitly. Do NOT blanket-redirect all 69 - an irrelevant 301 is a soft 404 and wastes the link anyway."
+  },
+  {
+    "id": "AUTH-02",
+    "title": "46% of all live backlinks reach the site only through cloudemployee.co.uk 301 redirect chains - the legacy domain is load-bearing for half the link profile",
+    "lens": "authority",
+    "severity": "high",
+    "evidence": [
+      {
+        "claim": "5,864 of 12,795 live backlinks have cloudemployee.co.uk in their redirect chain; a further 702 route via other redirects; only 6,229 point directly at cloudemployee.io",
+        "source": "ahrefs/backlinks.export.json, 'redirect chain urls' field",
+        "value": "direct 6,229 / via .co.uk 5,864 / via other redirect 702"
+      },
+      {
+        "claim": "The top external anchor by referring domains is the legacy domain itself",
+        "source": "ahrefs/anchors.export.json",
+        "value": "'cloudemployee.co.uk' = 284 refdomains, the single largest anchor (vs 'cloudemployee.io' = 108)"
+      },
+      {
+        "claim": "Ahrefs corroborates at profile level: 5,586 of 8,913 backlinks are flagged as redirect-type",
+        "source": "ahrefs/batch-analysis.json (cloudemployee.io row)",
+        "value": "backlinks_redirect: 5586 of backlinks: 8913 (63%)"
+      }
+    ],
+    "affected_urls": { "count": 5864, "sample": ["cloudemployee.co.uk/* -> www.cloudemployee.io/*"] },
+    "effort": { "band": "hours", "estimate_hours": 2, "who": "jake" },
+    "impact": {
+      "metric": "rankings",
+      "estimate": "If the .co.uk registration or its redirect config ever lapses, ~46% of the live link profile disappears at once. Also: many .co.uk deep links chain .co.uk -> www path -> hub (double hop ending in a soft 404), compounding AUTH-01.",
+      "confidence": "high"
+    },
+    "depends_on": [],
+    "quick_win": true,
+    "recommendation": "Confirm cloudemployee.co.uk registration is on auto-renew with long expiry and that its redirect map is documented and monitored (a simple uptime check on 2-3 known .co.uk URLs). Treat the domain as permanent SEO infrastructure, never a candidate for cost-cutting. Where the biggest .co.uk-sourced links chain into hub catch-alls, fix at the www side via AUTH-01 targets."
+  },
+  {
+    "id": "AUTH-03",
+    "title": "The /alternatives hub links to only 15 of 30 compare pages; the other 15 - including the site's top Google page and top Copilot-cited pages - have zero or one internal inlink",
+    "lens": "authority",
+    "severity": "high",
+    "evidence": [
+      {
+        "claim": "/compare/toptal-vs-upwork has 0 internal inlinks and is the site's biggest impression earner outside home",
+        "source": "joined/pages.json (clean URL row, query-param variants excluded) + crawl/internal-links.json (0 linkers)",
+        "value": "44,019 impressions / 90d at avg position 7.0, internal_links_in = 0"
+      },
+      {
+        "claim": "Verified live 8 Aug: /alternatives page 1 renders links to exactly 15 /compare/ detail pages; the rest sit only behind ?page=2 pagination",
+        "source": "curl https://www.cloudemployee.io/alternatives, href grep",
+        "value": "15 compare hrefs + /alternatives?page=2"
+      },
+      {
+        "claim": "The most-AI-cited pages are among the unlinked: /compare/dedicated-teams-vs-toptal (2,351 Copilot citations, 27% of all) has 1 inlink; /compare/cloud-employee-vs-proxify (674 citations) and /compare/cloud-employee-vs-upwork (278) have 0",
+        "source": "bing/cloudemployee.io_AIPageStatsReport_8_7_2026.csv + crawl/internal-links.json",
+        "value": "1, 0, 0 inlinks respectively"
+      },
+      {
+        "claim": "Distribution across the 684 real pages with inlink data: 94 have zero inlinks, 198 have exactly one",
+        "source": "joined/pages.json internal_links_in (note: some zero rows are query-param URL variants; the counts above were spot-checked on clean URLs)",
+        "value": "0 inlinks: 94 rows; 1 inlink: 198 rows; 43 of the single-inlink pages earn impressions or hold backlinks"
+      }
+    ],
+    "affected_urls": {
+      "count": 15,
+      "sample": [
+        "/compare/toptal-vs-upwork",
+        "/compare/cloud-employee-vs-proxify",
+        "/compare/cloud-employee-vs-upwork",
+        "/compare/cloud-employee-vs-fiverr (1,580 impr, pos 8.3, 0 inlinks)",
+        "/compare/cloud-employee-vs-contra (1,650 impr, pos 8.6, 0 inlinks)"
+      ]
+    },
+    "effort": { "band": "hours", "estimate_hours": 6, "who": "claude" },
+    "impact": {
+      "metric": "clicks",
+      "estimate": "/compare/toptal-vs-upwork alone: 44,019 impressions at position 7 with ~0.03% CTR; compare pages at pos 7-11 with zero internal equity are the cheapest ranking improvement available. Moving the pos 8-11 cluster (vs-fiverr, vs-contra, vs-upwork, ~3,800 combined impressions) into the top 5 is plausibly tens of extra clicks/month on buying-intent queries, and these same pages drive 45% of AI citations.",
+      "confidence": "medium"
+    },
+    "depends_on": [],
+    "quick_win": true,
+    "recommendation": "Make every compare page reachable from page 1: raise the /alternatives first-page card count to 30, or add a compact 'All comparisons' text-link block on the hub, in the footer of each compare page (related-comparisons module), and cross-link compare pages from the topically matching service pages. Same pattern for the 43 single-inlink pages with impressions (list in authority.md - mostly /services/* and /technology/* detail pages at 1,200-3,700 impressions each)."
+  },
+  {
+    "id": "AUTH-04",
+    "title": "DR 36 vs 70-90 for every competitor, but backlink quantity is not the binding constraint the raw numbers suggest - keyword footprint is",
+    "lens": "authority",
+    "severity": "medium",
+    "evidence": [
+      {
+        "claim": "Head-to-head: Cloud Employee DR 36 / 692 refdomains / 48 US keywords / 415 organic traffic vs Toptal DR 90 / 47,172 rd / 17,670 kw / 194,785 traffic; Turing DR 74 / 8,357 rd / 2,511 kw; arc.dev DR 72 / 5,003 rd / 4,895 kw; Andela DR 71 / 5,406 rd / 49 kw / 2,339 traffic; Revelo DR 70 / 4,158 rd / 395 kw",
+        "source": "ahrefs/batch-analysis.json",
+        "value": "6-target batch, 2026-08-06"
+      },
+      {
+        "claim": "Andela holds 5,406 refdomains (7.8x ours) yet ranks for only 49 US keywords (we rank for 48) - authority without content footprint buys little; arc.dev converts similar authority into 4,895 keywords via content",
+        "source": "ahrefs/batch-analysis.json",
+        "value": "Andela 49 kw vs arc.dev 4,895 kw at comparable DR"
+      }
+    ],
+    "affected_urls": { "count": 0, "sample": [] },
+    "effort": { "band": "weeks", "estimate_hours": 0, "who": "jake" },
+    "impact": {
+      "metric": "rankings",
+      "estimate": "Strategic framing for the roadmap: link outreach (AUTH-05) matters, but the Andela-vs-arc.dev contrast in the same dataset shows content footprint is the multiplier on whatever authority exists. Ranking 48 keywords at DR 36 with 16 in the top 3 says the domain can rank when a page targets a keyword.",
+      "confidence": "high"
+    },
+    "depends_on": [],
+    "quick_win": false,
+    "recommendation": "Use this as the prioritisation frame at synthesis: content-gap-driven page creation (content lens territory) compounds faster than outreach at this DR. Outreach and content are not either/or, but if forced to sequence, content first."
+  },
+  {
+    "id": "AUTH-05",
+    "title": "Outreach target list: 131 domains at DR 40-92 with real traffic link to 5+ of 10 competitors and never to us; the top tier is listings and review platforms we can simply claim",
+    "lens": "authority",
+    "severity": "medium",
+    "evidence": [
+      {
+        "claim": "Link Intersect export: 30,000 domains linking to at least one of 10 competitors, all with 0 links to cloudemployee.io (that is the export's definition); 769 domains intersect 5+ competitors",
+        "source": "ahrefs/link-intersect.export.json (CAPPED at 30,000 rows per MANIFEST-ahrefs-exports.md - true total unknown)",
+        "value": "intersect>=5: 2,603 rows; filtered to DR 40-92 + traffic>=5k: 131"
+      },
+      {
+        "claim": "Top targets by intersect: cbinsights.com (10/10, DR 86), g2.com (9, DR 91), research.com (9, DR 83), techbehemoths.com (9, DR 76), builtin.com (8, DR 86), thenextweb.com (8, DR 89), designrush.com (7, DR 90), producthunt.com (7, DR 91), saashub.com (8, DR 79), index.dev (8, DR 72), softwareworld.co (7, DR 73)",
+        "source": "ahrefs/link-intersect.export.json",
+        "value": "full 131-domain list reproducible with the filter in authority.md"
+      }
+    ],
+    "affected_urls": { "count": 131, "sample": ["g2.com", "cbinsights.com", "builtin.com", "techbehemoths.com", "designrush.com"] },
+    "effort": { "band": "days", "estimate_hours": 24, "who": "jake", "note": "profile creation/claiming is hours; editorial pitches (TNW, TechCrunch, hackernoon) are an ongoing programme" },
+    "impact": {
+      "metric": "rankings",
+      "estimate": "The claimable tier alone (G2, CB Insights company profile, BuiltIn, TechBehemoths, DesignRush, SaaSHub, Product Hunt, softwareworld.co, index.dev) is ~10 DR 70-91 referring domains for form-filling effort - roughly a 1.5% addition to the 692-refdomain profile from its highest-DR end. Every competitor in the set has them.",
+      "confidence": "medium"
+    },
+    "depends_on": [],
+    "quick_win": false,
+    "recommendation": "Tier 1 (claim/list, no pitch needed): G2, CB Insights, BuiltIn, TechBehemoths, DesignRush, SaaSHub, Product Hunt, softwareworld.co, index.dev, getlatka.com, owler/craft (data profiles). Tier 2 (editorial pitch, use the LATAM/PH cost-data angle): research.com, gitnux.org, worldmetrics.org (stats-page link farms that cite data sources), hackernoon, thenextweb, techbullion. Discard scrapers in the raw list (webflow.io, netlify.app, hashnode.dev, glarity.app, c99.nl, me.sh, rocketreach, contactout). Full filtered list in authority.md."
+  },
+  {
+    "id": "AUTH-06",
+    "title": "Reclaim list: of the 28 dead backlinked URLs, only ~10 have a defensible redirect target; the DR 91 link needs a whitespace rule; the DR 75/73/61 links have no good target and need either the article restored or the loss accepted",
+    "lens": "authority",
+    "severity": "medium",
+    "evidence": [
+      {
+        "claim": "28 broken-backlink rows (24 distinct after dedupe), sorted by source DR: 91, 75, 73, 61, 59, 58, 55, 53, 53, 48...; 6 papasearch.net rows are a DR 18 scraper and worthless",
+        "source": "ahrefs/broken-backlinks.json (28 rows) and audit-output/seo-post-launch/ahrefs-broken-backlinks.json (27)",
+        "value": "per-URL proposals in authority.md"
+      },
+      {
+        "claim": "The DR 91 target /blog/tech-news/the-future-of-drone-technology%20 404s only because of the trailing space; the unspaced path already 308s (into the /blog catch-all)",
+        "source": "curl 8 Aug: %20 variant -> 404; clean variant -> 308 -> /blog",
+        "value": "confirmed live"
+      },
+      {
+        "claim": "No live article shares a slug with any of the dead URLs, so every redirect is a topical-nearest-match judgment, not a mechanical mapping",
+        "source": "crawl/urls.json live-page slug index vs dead paths",
+        "value": "0 exact matches"
+      }
+    ],
+    "affected_urls": { "count": 24, "sample": ["/blog/tech-news/the-future-of-drone-technology%20 (DR 91)", "/blog/productivity/how-to-write-an-nda-for-software-development (DR 75)", "/web-developer (DR 59)"] },
+    "effort": { "band": "hours", "estimate_hours": 4, "who": "claude + jake sign-off" },
+    "impact": {
+      "metric": "rankings",
+      "estimate": "Honest read: smaller than the headline DRs suggest. The DR 91 source is a myportfolio.com citations page (UR 0, traffic 0); the real wins are DR 75 testgorilla.com (56k traffic domain, dofollow, anchor 'some key features' on an NDA article) and DR 61 economicsonline.co.uk. Fixing AUTH-01 recovers far more total equity than these 24; do them together.",
+      "confidence": "high"
+    },
+    "depends_on": ["AUTH-01"],
+    "quick_win": false,
+    "recommendation": "Per-URL table in authority.md. Headlines: (1) add a trailing-whitespace/%20-tolerant normalisation rule so the DR 91 link at least reaches the catch-all; (2) DR 75 NDA article - no relevant live target exists; the honest options are write/restore an NDA-for-software-development post or accept the loss; do not 301 it to an unrelated page; (3) /web-developer (DR 59) -> /services/web-developers is a legitimate topical match; (4) /careers/* dead links -> talent site is not ours; leave 404; (5) all 6 papasearch.net and the koralkyanastazie.cz links: leave 404, zero value."
+  },
+  {
+    "id": "AUTH-07",
+    "title": "AI visibility is real but dangerously concentrated: one comparison page is 27% of all Copilot citations, the top 12 pages are 82%, and one currently-404 team page holds 286 citations",
+    "lens": "authority",
+    "severity": "high",
+    "evidence": [
+      {
+        "claim": "/compare/dedicated-teams-vs-toptal holds 2,351 of 8,640 total citations (27.2%); cumulative share of top 12 pages = 82%",
+        "source": "bing/cloudemployee.io_AIPageStatsReport_8_7_2026.csv (97 pages)",
+        "value": "by section: /compare 45.3%, /staff-augmentation 16.2%, /managing-engineers 8.7%"
+      },
+      {
+        "claim": "/team/shawnee-malesich carries 286 citations (3.3%, 9th most-cited page) and returns 404 in production",
+        "source": "bing AIPageStatsReport + curl 8 Aug -> 404; joined/pages.json status 404",
+        "value": "verified live 8 Aug"
+      },
+      {
+        "claim": "The cited-page profile: long-form comparison and best-of content, 1,000-4,800 words; the top cited pages are the same pages found under-linked in AUTH-03",
+        "source": "joined/pages.json word_count + internal_links_in for the top-cited set",
+        "value": "top page: 3,502 words, 1 inlink; #3: 1,136 words, 0 inlinks"
+      }
+    ],
+    "affected_urls": { "count": 97, "sample": ["/compare/dedicated-teams-vs-toptal", "/team/shawnee-malesich (404)", "/staff-augmentation/best-staff-augmentation-companies-in-latin-america-2026-a-ranked-comparison"] },
+    "effort": { "band": "hours", "estimate_hours": 2, "who": "claude (the 404) / jake (concentration strategy)" },
+    "impact": {
+      "metric": "clicks",
+      "estimate": "The 404 is a direct leak: Copilot is (or was) sending citation traffic to a dead page - 286 citations over the window. The concentration means one page's fortunes move ~27% of our whole AI presence; the /staff-augmentation ranked-list format (658+254+216 citations across 3 pages) is the proven, replicable pattern.",
+      "confidence": "high"
+    },
+    "depends_on": [],
+    "quick_win": true,
+    "recommendation": "Immediate: decide /team/shawnee-malesich - if the member left, 301 to /team; if not, restore the page (check the retired flag - same shape as Tech Debt #58's per-locale retirement problem). Strategic: replicate the winning format (ranked comparison lists with named competitors and pricing) into more geographies/verticals rather than optimising already-cited pages."
+  },
+  {
+    "id": "AUTH-08",
+    "title": "The Brand Radar zero vs Copilot 7.5k citations contradiction resolves cleanly, with one correction: we are not invisible on generic queries in Copilot - only outside Bing's ecosystem and on marketplace-framed questions",
+    "lens": "authority",
+    "severity": "medium",
+    "evidence": [
+      {
+        "claim": "Copilot citation mix by intent: Comparison 48.8% (2,786), Research 28.7% (1,635), Navigational 13.7% (781, all one 'cloud employee' query), Informational 4.8%, Commercial 1.0%; queries naming Toptal = 44.7% of citations",
+        "source": "bing/cloudemployee.io_AISearchQueriesReport_8_7_2026.csv (146 queries, 5,704 citations)",
+        "value": "the 'comparison + brand dominance' half of the reading HOLDS"
+      },
+      {
+        "claim": "But generic queries are not zero: 'best practices managing remote engineers' 214 citations at 32.6% share, 'staff augmentation services' 50, 'best offshore staff augmentation firms full-stack developers Latin America' 47, 'best providers time zone aligned agile squads' 75",
+        "source": "same file",
+        "value": "generic staff-augmentation and management queries DO cite us in Copilot"
+      },
+      {
+        "claim": "Brand Radar's zero (Toptal 7, Turing 6, arc 6, BairesDev 6, Cloud Employee 0 across 10 buyer-intent prompts, multi-engine) is a different measurement: ChatGPT/Gemini/Perplexity/AI Overviews prompts framed as developer-hiring marketplace questions",
+        "source": "MANIFEST-ahrefs-exports.md standing follow-up #2 (day-one baseline, 7 Aug 2026)",
+        "value": "AI SoV 0% vs 4.2K web mentions, 3.4K monthly brand searches"
+      }
+    ],
+    "affected_urls": { "count": 0, "sample": [] },
+    "effort": { "band": "hours", "estimate_hours": 3, "who": "claude" },
+    "impact": {
+      "metric": "clicks",
+      "estimate": "Refined position statement for the roadmap: strong inside Bing/Copilot on comparison + staff-augmentation topics; unmeasured-but-baselined-at-zero on the multi-engine buyer prompts that Brand Radar tracks. We cannot currently see ChatGPT/Perplexity/Gemini citations at page level at all (Ahrefs AI columns not grantable on this plan, per MANIFEST-ahrefs.md).",
+      "confidence": "high"
+    },
+    "depends_on": [],
+    "quick_win": true,
+    "recommendation": "Wire the free Brand Radar API endpoint (POST /v3/brand-radar/mentions-overview, verified 0 units, report 019fda36-3b2b-7d2b-a37f-15cbe7ce01e5) into a weekly script so the multi-engine series accumulates without manual export. Treat Brand Radar as the generic-buyer-prompt tracker and Bing as the Copilot-page tracker; they answer different questions."
+  },
+  {
+    "id": "AUTH-09",
+    "title": "Copilot collapse (26-27 Jul): no corroborating signal anywhere in GSC - Google impressions ROSE 36% the same week; Bing-side index event, cause unknown, watch weekly",
+    "lens": "authority",
+    "severity": "medium",
+    "evidence": [
+      {
+        "claim": "Copilot: 186 citations/10 pages on 26 Jul -> 58/4 on 27 Jul -> 13/2 on 28 Jul -> 0/0 on 2 Aug; recovery since cutover: 9, 13, 23",
+        "source": "bing/cloudemployee.io_AIPerformanceOverviewStats_8_7_2026.csv",
+        "value": "cited PAGES collapsed 10->2, i.e. pages fell out of the grounding set, not a per-page citation decay"
+      },
+      {
+        "claim": "GSC daily impressions over the same boundary: mean 4,120/day (12-26 Jul) vs 5,592/day (27 Jul-2 Aug), +36%; clicks and position flat",
+        "source": "gsc/full-date.json",
+        "value": "no negative Google-side signal at all"
+      }
+    ],
+    "affected_urls": { "count": 0, "sample": [] },
+    "effort": { "band": "hours", "estimate_hours": 1, "who": "jake" },
+    "impact": {
+      "metric": "clicks",
+      "estimate": "Confirms the migration is exonerated (started a week before cutover) AND the site is exonerated (Google went up while Copilot went down). Cause is on Bing's side - index refresh, grounding-set change, or the Webflow site's crawl state pre-cutover. The correct posture is watch, not fix.",
+      "confidence": "high"
+    },
+    "depends_on": [],
+    "quick_win": false,
+    "recommendation": "No action beyond monitoring. Track the AIPerformanceOverviewStats weekly; if cited pages have not recovered to ~10/day by end of August, the post-cutover Bing recrawl did not restore the grounding set and a Bing Webmaster investigation (IndexNow, sitemap ping) becomes worthwhile. Note 3 of the top-10 recovering citations now land on the new Next.js pages, so the recovery is happening against OUR site."
+  },
+  {
+    "id": "AUTH-10",
+    "title": "Internal anchor text is healthy overall (only ~3% generic), but Material icon ligature names are leaking into anchors and 2,046 blog-card links say 'read full story'",
+    "lens": "authority",
+    "severity": "low",
+    "evidence": [
+      {
+        "claim": "Of 38,605 internal anchors: 650 empty, 1,130 generic ('view all' 684, 'read article' 442, 'here' 4), 2,046 'read full story' blog-card CTAs; everything else is descriptive nav/footer/contextual text",
+        "source": "ahrefs/site-audit/cloudemployee_06-aug-2026_anchor-texts_2026-08-08_09-42-33.csv (UTF-16, tab-delimited)",
+        "value": "~9.9% generic-or-empty including 'read full story'; ~4.6% excluding it"
+      },
+      {
+        "claim": "Icon ligature text is concatenated into anchor strings sitewide: 'location_oneastern europetop-tier technical and ai talent', 'event_upcomingevents & webinars', 'calculatetools & quizzes', 'downloadfree downloads' - 686 occurrences each (every page's chrome)",
+        "source": "same file, top-30 anchor frequency",
+        "value": "Material Symbols ligature names crawled as anchor text"
+      }
+    ],
+    "affected_urls": { "count": 686, "sample": ["sitewide chrome (mega-menu + footer)"] },
+    "effort": { "band": "hours", "estimate_hours": 3, "who": "claude" },
+    "impact": {
+      "metric": "rankings",
+      "estimate": "Minor relevance noise: crawlers read 'location_oneastern europe...' as link text on every page. The blog-card fix ('read full story' -> the article title, or aria-label the card) is the standard pattern and touches 2,046 links in one component.",
+      "confidence": "medium"
+    },
+    "depends_on": [],
+    "quick_win": true,
+    "recommendation": "Two component-level fixes: (1) hide icon glyphs from the accessibility/text tree (aria-hidden on the icon span) so anchors read clean; (2) make the blog-card CTA carry the article title. Neither needs design. Cross-lens: this is also an a11y finding."
+  },
+  {
+    "id": "AUTH-11",
+    "title": "External anchor profile is 75% brand/URL - clean but zero money-keyword signal - and carries a visible link-spam footprint from an 'SEOExpress' vendor targeting cloudemployee domains",
+    "lens": "authority",
+    "severity": "low",
+    "evidence": [
+      {
+        "claim": "Brand-or-URL anchors = 1,009 of 1,346 refdomain-anchor pairs (75%): 'cloudemployee.co.uk' 284, 'cloudemployee' 164, 'cloudemployee.io' 108, 'Cloud Employee' 45",
+        "source": "ahrefs/anchors.export.json (525 anchors)",
+        "value": "healthy, penalty-safe, but no descriptive-anchor equity for target keywords"
+      },
+      {
+        "claim": "~80+ refdomains carry spam anchors of the form 'Strengthen cloudemployee.io through contextual backlinks, premium guest posts...' and 'A friend told me about SEOExpress.org when cloudemployee.com.au was...' - all nofollow, referencing cloudemployee.com.au and .io",
+        "source": "ahrefs/anchors.export.json rows 5-8",
+        "value": "41+41+34+18 refdomains, 0 dofollow"
+      }
+    ],
+    "affected_urls": { "count": 0, "sample": [] },
+    "effort": { "band": "hours", "estimate_hours": 2, "who": "jake" },
+    "impact": {
+      "metric": "rankings",
+      "estimate": "The spam is nofollow and currently inert - no action forced, but worth knowing it exists before anyone reads raw refdomain counts as 987 'real' domains (the true clean count is lower). The 75% brand share means the outreach in AUTH-05 should aim for descriptive anchors where editorially natural.",
+      "confidence": "medium"
+    },
+    "depends_on": [],
+    "quick_win": false,
+    "recommendation": "No disavow (nofollow spam does not need one and disavowing is riskier than ignoring). Flag: is cloudemployee.com.au a domain CE owns or a squatter? The spam cluster targets it alongside .io. Ask Seb; if it is not CE's, ignore entirely."
+  }
+]

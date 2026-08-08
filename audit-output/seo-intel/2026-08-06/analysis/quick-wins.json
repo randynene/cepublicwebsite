@@ -1,0 +1,155 @@
+[
+  {
+    "id": "QW-01",
+    "title": "Impression maths is broken sitewide: impressions 5x'd while clicks stayed flat; non-brand earned 10 clicks in the last 10 days",
+    "lens": "quick-wins",
+    "severity": "high",
+    "evidence": [
+      {"claim": "Monthly impressions grew 32k (Oct 2025) to 178k (Jun 2026) while monthly clicks stayed flat at 434-626", "source": "gsc/full-date.json (monthly aggregate)", "value": "2025-10: 32,195 imp / 538 clicks; 2026-06: 177,865 imp / 543 clicks"},
+      {"claim": "CTR at positions 5-10 is 0.04-0.13%, far below any classic SERP curve", "source": "gsc/full-query-x-page.json, 16m, our hosts only", "value": "pos 5: 29,223 imp / 38 clicks; pos 8: 41,378 / 17; pos 10: 28,512 / 14"},
+      {"claim": "Question-shaped queries almost never click", "source": "gsc/full-query-x-page.json", "value": "62,656 impressions, 8 clicks (0.013%)"},
+      {"claim": "Recent 10-day window (29 Jul-7 Aug): brand vs non-brand", "source": "gsc/pre-cutover-equivalent-query-x-page.json + post-cutover-query-x-page.json", "value": "brand: 1,047 imp / 66 clicks; non-brand: 31,253 imp / 10 clicks"},
+      {"claim": "High-impression queries are largely synthetic/AI-shaped, e.g. company-name + topic mashups", "source": "gsc/full-query-x-page.json", "value": "'causalens engineering challenges nearshoring' 483 imp pos 5.2 0 clicks; 'number of employees at cloudcomunicaciones.cl' 513 imp pos 7.9 0 clicks"}
+    ],
+    "affected_urls": {"count": 320, "sample": ["/nearshoring-offshoring/what-is-nearshoring-benefits-and-challenges-for-software-development-teams", "/compare/toptal-vs-upwork"]},
+    "effort": {"band": "hours", "estimate_hours": 0, "who": "claude"},
+    "impact": {"metric": "clicks", "estimate": "Not a fix itself, but it re-sizes every other fix: 'position 8 to 4 gains N clicks' arithmetic is invalid for most of this impression base. The honest ceiling for on-page quick wins is measured in tens of clicks/month, not hundreds. All estimates below use observed CTRs, not textbook curves.", "confidence": "high"},
+    "depends_on": [],
+    "quick_win": false,
+    "recommendation": "Adopt this frame for the whole roadmap: rank work by the small set of commercial queries that actually click, plus AI-citation presence, not by raw impressions. Also corrects the brief: there is NO 'toptal alternatives' query at position 4 pointing at /alternatives anywhere in the 16-month query x page data; the largest alternatives-family query is 'alternatives to nearshore software development outsourcing' (2,216 imp, pos 4.8, 0 clicks) pointing at /scaling-teams/why-consider-alternatives-to-software-development-outsourcing."
+  },
+  {
+    "id": "QW-02",
+    "title": "Sitemap contains 4 redirecting URLs, 1 broken redirect chain ends in a 404, 3 pages hreflang to redirects/404, and 4 crawlable 404s",
+    "lens": "quick-wins",
+    "severity": "medium",
+    "evidence": [
+      {"claim": "4 sitemap URLs 308-redirect instead of serving 200", "source": "ahrefs/site-audit/.../Error-3XX_redirect_in_sitemap.csv", "value": "/customer-story/virgin, /uk/customer-story/virgin, /tools/price-comparison-calculator (52 inlinks), /compare/cloud-employee-vs-arc-dev (which redirects to /compare, itself a 308)"},
+      {"claim": "1 broken redirect: /ph/services/filipino-developers?utm_source=chatgpt.com 308s to /ph/services/philippines-developers which 404s", "source": "ahrefs/site-audit/.../Error-Broken_redirect.csv", "value": "chain ends 404"},
+      {"claim": "3 pages emit hreflang pointing at a 308 or 404", "source": "ahrefs/site-audit/.../Error-Hreflang_to_redirect_or_broken_page.csv", "value": "/uk/tools/price-comparison-calculator (hreflang to 308), /uk/team/caitlin-murray (hreflang to 404 US twin), /uk/compare/cloud-employee-vs-arc-dev (hreflang to 308)"},
+      {"claim": "4 internally-linked 404s", "source": "ahrefs/site-audit/.../Error-404_page.csv", "value": "/ph/services/philippines-developers, /uk/managing-engineers/software-developer-performance-metrics-for-ctos (linked from /uk/compare/cloud-employee-vs-arc-dev), /uk/download/our-internal-hiring-sop, /team/caitlin-murray"},
+      {"claim": "crawl confirms 4 sitemap URLs not serving 200", "source": "crawl/sitemap-not-200.json", "value": "4 rows"}
+    ],
+    "affected_urls": {"count": 12, "sample": ["/tools/price-comparison-calculator", "/customer-story/virgin", "/uk/team/caitlin-murray"]},
+    "effort": {"band": "hours", "estimate_hours": 3, "who": "claude"},
+    "impact": {"metric": "crawl efficiency", "estimate": "Small direct traffic impact; removes 12 crawl/indexing defects a week after launch, when Google is actively re-evaluating the migrated site. The caitlin-murray hreflang/404 pair is Tech Debt #58 and needs Seb's editorial answer; the rest are mechanical.", "confidence": "high"},
+    "depends_on": [],
+    "quick_win": true,
+    "recommendation": "Drop the 4 redirecting URLs from sitemap generation (or list their targets); fix the /ph/services/filipino-developers redirect target; make /uk hreflang emit only when the US twin serves 200; fix the one internal link to the missing /uk/managing-engineers article. Caitlin Murray: ask Seb (known item, Tech Debt #58)."
+  },
+  {
+    "id": "QW-03",
+    "title": "The top striking-distance pages are internally link-starved: /compare/toptal-vs-upwork has 44k impressions at position 7 and one dofollow internal link",
+    "lens": "quick-wins",
+    "severity": "high",
+    "evidence": [
+      {"claim": "/compare/toptal-vs-upwork: 44,019 impressions 90d, avg pos 7.0, 12 clicks, 0-1 incoming internal links", "source": "joined/pages.json + ahrefs/site-audit/.../Notice-indexable-Page_has_only_one_dofollow_incoming_internal_link.csv", "value": "internal_links_in=0 in crawl; in Ahrefs one-inlink report"},
+      {"claim": "54 of the 211 one-inlink pages have impressions in the last 90d", "source": "Notice-indexable-Page_has_only_one_dofollow_incoming_internal_link.csv x joined/pages.json", "value": "top: toptal-vs-upwork 44,019; arc-dev-alternatives guide 5,286; front-end-developers 3,665; android-developers 3,067; laravel-developers 2,544"},
+      {"claim": "Other striking-distance earners are nearly as starved", "source": "joined/pages.json internal_links_in", "value": "/nearshoring-offshoring/nearshore-vs-offshore-costs-2026-...: 4 inlinks, 27,802 imp, pos 7.2; /nearshoring-offshoring/what-is-nearshoring-...: 5 inlinks, 47,822 imp, pos 6.5; /technology/swift-developers: 7 inlinks, 645 imp, pos 25.6; vs /services/philippines-developers with 330 inlinks"}
+    ],
+    "affected_urls": {"count": 54, "sample": ["/compare/toptal-vs-upwork", "/compare/arc-dev-alternatives-for-startups-2026-comparison-guide", "/services/front-end-developers", "/nearshoring-offshoring/nearshore-vs-offshore-costs-2026-software-development-rates"]},
+    "effort": {"band": "days", "estimate_hours": 8, "who": "claude"},
+    "impact": {"metric": "rankings", "estimate": "Mechanical, safe, reversible. Honest arithmetic: these pages' observed CTR at pos 6-8 is ~0.03-0.09%, so even a 3-position gain on toptal-vs-upwork is single-digit extra clicks/month from the current query mix - BUT the commercial sub-queries that do click ('toptal vs upwork' 54 imp/10d pos 10.5, 'nearshore vs offshore costs' family ~300 imp/10d pos 6-7, 24 clicks/90d on the costs post) are exactly the ones position gains help. Estimate 10-30 extra clicks/month across the set, low confidence.", "confidence": "low"},
+    "depends_on": [],
+    "quick_win": true,
+    "recommendation": "Add contextual internal links from the relevant hubs and top-linked pages (services/technology hubs, related blog posts, /alternatives) to the ~20 one-inlink pages that have real impressions and positions 4-20. Do NOT bulk-link all 211; most of the one-inlink pages earn nothing and are fine as-is."
+  },
+  {
+    "id": "QW-04",
+    "title": "257 pages contain internal links that point at redirects, including nearly every top impression-earning page",
+    "lens": "quick-wins",
+    "severity": "medium",
+    "evidence": [
+      {"claim": "257 indexable pages have links to redirects; 76 of them have impressions in the last 90d", "source": "ahrefs/site-audit/.../Warning-indexable-Page_has_links_to_redirect.csv x joined/pages.json", "value": "includes what-is-nearshoring (47,822 imp), toptal-vs-upwork (44,019), latam staff-aug ranking post (16,642), /reviews (4,874)"},
+      {"claim": "Joined table links_to_redirects column filled on 178 rows", "source": "joined/MANIFEST-joined.md", "value": "178 filled"}
+    ],
+    "affected_urls": {"count": 257, "sample": ["/nearshoring-offshoring/what-is-nearshoring-benefits-and-challenges-for-software-development-teams", "/compare/toptal-vs-upwork", "/reviews"]},
+    "effort": {"band": "hours", "estimate_hours": 6, "who": "claude"},
+    "impact": {"metric": "crawl efficiency", "estimate": "No measurable click gain on its own; consolidates link equity through one hop instead of two during the exact window Google is re-mapping the migrated site. Cheap, mechanical, zero risk. Likely one shared cause (old Webflow-era hrefs in Sanity content) fixable with a scripted content patch.", "confidence": "medium"},
+    "depends_on": [],
+    "quick_win": true,
+    "recommendation": "Aggregate the -links.csv companion file by redirect target, then patch the hrefs in Sanity content (and any hard-coded chrome links) to the final URLs in one scripted pass. Fix the 76 impression-bearing pages first."
+  },
+  {
+    "id": "QW-05",
+    "title": "Philippines cannibalisation cluster: three live indexable pages split the 'hire developers philippines' query family",
+    "lens": "quick-wins",
+    "severity": "high",
+    "evidence": [
+      {"claim": "/services/philippines-developers, /services/filipino-developers and /hire/philippines-offshoring are all 200 and indexable", "source": "joined/pages.json", "value": "status 200 / indexable true on all three"},
+      {"claim": "GSC shows the query family split across them", "source": "gsc/full-query-x-page.json (16m aggregate)", "value": "'hire developers in the philippines': 1,156 imp pos 12.9 on philippines-developers + 290 imp pos 15.3 on filipino-developers; 'hire developers philippines': 274 imp on filipino-developers + 244 on philippines-developers + 213 on /hire/philippines-offshoring; 'hire software developer philippines': 316 on /hire/philippines-offshoring + 182 on filipino-developers + 152 on philippines-developers; 'filipino developers': 159 + 82 split"},
+      {"claim": "/services/philippines-developers is the canonical strongest page", "source": "joined/pages.json", "value": "330 internal links in, 17,064 imp 90d; filipino-developers and /hire/philippines-offshoring have 0-2 inlinks"},
+      {"claim": "Same pattern on two more pairs", "source": "gsc/full-query-x-page.json + joined/pages.json", "value": "'hire no code developers': /services/no-code-developers (1,206 imp pos 11.7) vs live duplicate /hire/no-code-developers (204 imp pos 18.8); 'hire full stack developers': /services/full-stack-developers (799 imp) vs live /hire/full-stack-developers (56 imp)"}
+    ],
+    "affected_urls": {"count": 7, "sample": ["/services/philippines-developers", "/services/filipino-developers", "/hire/philippines-offshoring", "/hire/no-code-developers", "/hire/full-stack-developers"]},
+    "effort": {"band": "hours", "estimate_hours": 4, "who": "jake"},
+    "impact": {"metric": "rankings", "estimate": "Consolidating ~1,000 imp/16m of split signals onto the strong page is the classic fix for a family sitting at pos 9-17. The philippines family is one of the few clusters with genuinely commercial queries. Click upside is modest under the QW-01 frame (est. 5-15 clicks/month) but this also removes duplicate-content risk post-migration. Requires a Jake decision on which URLs 301, so NOT a no-decision quick win.", "confidence": "medium"},
+    "depends_on": ["QW-01"],
+    "quick_win": false,
+    "recommendation": "Decide canonical per family (recommended: /services/philippines-developers, /services/no-code-developers, /services/full-stack-developers), 301 the duplicates, re-point the internal links. Check first whether /hire/* and /services/filipino-developers exist on the live Webflow parity list deliberately; if they were live on Webflow too this is inherited, not migration-caused, and equally worth fixing."
+  },
+  {
+    "id": "QW-06",
+    "title": "Metadata defects on impression-bearing pages: 20 titles too long, 33 descriptions too long, 9 missing descriptions",
+    "lens": "quick-wins",
+    "severity": "medium",
+    "evidence": [
+      {"claim": "46 indexable pages have too-long titles; 20 have 90d impressions", "source": "ahrefs/site-audit/.../Warning-indexable-Title_too_long.csv x joined/pages.json", "value": "top: latam staff-aug ranking post 16,642 imp pos 6.5 (title_length 76); cloud-employee-vs-andela 2,409 imp pos 5.7; /our-work 1,103 imp pos 3.7"},
+      {"claim": "71 indexable pages have too-long descriptions; 33 have impressions", "source": "Warning-indexable-Meta_description_too_long.csv x joined/pages.json", "value": "top: what-is-nearshoring 47,822 imp (desc 177 chars); nearshore-vs-offshore-costs 27,802 imp (desc 197); /reviews 4,874 imp pos 12.9"},
+      {"claim": "18 indexable pages missing descriptions; 9 have impressions", "source": "Warning-indexable-Meta_description_tag_missing_or_empty.csv x joined/pages.json", "value": "/legals/general-terms 539 imp; /reviews/salmon-software 183; 7 more /reviews/* detail pages"}
+    ],
+    "affected_urls": {"count": 55, "sample": ["/staff-augmentation/best-staff-augmentation-companies-in-latin-america-2026-a-ranked-comparison", "/nearshoring-offshoring/nearshore-vs-offshore-costs-2026-software-development-rates", "/reviews/salmon-software", "/our-work"]},
+    "effort": {"band": "hours", "estimate_hours": 6, "who": "claude"},
+    "impact": {"metric": "clicks", "estimate": "Honest sizing under QW-01: these pages collectively earn ~60 clicks/90d today. A best-case CTR improvement from clean titles/descriptions on the pages with clicking queries (costs post: 24 clicks/90d; /reviews: 17) is maybe +20-40% on that subset, i.e. 5-15 clicks/month. Cheap enough to do anyway. The 9 missing descriptions (review detail template + legal template) look like a template-level gap worth one fix, not nine.", "confidence": "medium"},
+    "depends_on": ["QW-01"],
+    "quick_win": true,
+    "recommendation": "Fix only the ~30 defect pages with impressions>0: trim titles to <=60 chars, descriptions to <=155, add descriptions to the review-detail and legal templates (template-level defaults from Sanity fields, one change each). Skip the zero-impression rest."
+  },
+  {
+    "id": "QW-07",
+    "title": "Google rewrites the title on all 26 pages Ahrefs flagged for page/SERP title mismatch, including the homepage and every top earner",
+    "lens": "quick-wins",
+    "severity": "medium",
+    "evidence": [
+      {"claim": "26 of 26 flagged pages have 90d impressions - this defect sits exactly on the pages that matter", "source": "ahrefs/site-audit/.../Notice-indexable-Page_and_SERP_titles_do_not_match.csv x joined/pages.json", "value": "/ (11,187 imp, 701 clicks), /about-us (27,823 imp, 69 clicks), what-is-nearshoring (47,822), nearshore-vs-offshore-costs (27,802), philippines-developers (17,064), latam ranking post (16,642), typescript-developers (10,487)"}
+    ],
+    "affected_urls": {"count": 26, "sample": ["/", "/about-us", "/technology/typescript-developers", "/services/latam-developers"]},
+    "effort": {"band": "hours", "estimate_hours": 4, "who": "claude"},
+    "impact": {"metric": "clicks", "estimate": "Google rewriting a title usually means the authored title mismatches the dominant query intent. Aligning the 26 authored titles with what Google shows (or a better version of it) is the cheapest CTR lever available on the exact pages with clicks. Overlaps QW-06 on several URLs; do together. Estimate under QW-01 frame: 5-20 clicks/month, low confidence.", "confidence": "low"},
+    "depends_on": ["QW-06"],
+    "quick_win": true,
+    "recommendation": "Pull the SERP title Ahrefs recorded for each of the 26, diff against the authored title, and rewrite the authored one to carry the winning query phrasing (keep live H1s per Tech Debt #43b - this is metaTitle only, a Sanity field edit, no code)."
+  },
+  {
+    "id": "QW-08",
+    "title": "Ahrefs flags 11 pages with dropped organic traffic; the drops are small, mostly brand-navigational, and one is the pre-existing offshoring post slide",
+    "lens": "quick-wins",
+    "severity": "low",
+    "evidence": [
+      {"claim": "11 flagged pages, led by /uk (traffic 10), /about-us (7), /how-it-works (2)", "source": "ahrefs/site-audit/.../Notice-Organic_traffic_dropped.csv", "value": "largest absolute 'Organic traffic' value in the flagged set is 65 (/nearshoring-offshoring/what-is-it-outsourcing-definition-models-when-to-use-it)"},
+      {"claim": "Exactly 1 page dropped out of the top 10", "source": "ahrefs/site-audit/.../Notice-Pages_dropped_from_Top_10.csv", "value": "/nearshoring-offshoring/what-is-offshoring-cost-effective-tech-teams-explained, 'what is offshoring' US now pos 10"},
+      {"claim": "Post-cutover GSC window is 5 days, 3 final - cannot attribute causation", "source": "MANIFEST-gsc.md", "value": "smoke test only"}
+    ],
+    "affected_urls": {"count": 11, "sample": ["/uk", "/about-us", "/nearshoring-offshoring/what-is-it-outsourcing-definition-models-when-to-use-it", "/nearshoring-offshoring/what-is-offshoring-cost-effective-tech-teams-explained"]},
+    "effort": {"band": "hours", "estimate_hours": 1, "who": "claude"},
+    "impact": {"metric": "rankings", "estimate": "No action recommended now beyond a watchlist. The numbers are single-digit estimated visits and the window cannot separate migration effect from noise. Re-check ~31 Aug per the caveat. The it-outsourcing post (65 est. visits, 'it outsourcing models' US pos 2) is the only one with real traffic and it has NOT lost its top-3 position.", "confidence": "high"},
+    "depends_on": [],
+    "quick_win": true,
+    "recommendation": "Create a 12-URL watchlist (these 11 + the offshoring post) and re-run the GSC comparison on 31 Aug when a real post-cutover window exists. Do not ship ranking 'fixes' for drops the data cannot yet confirm."
+  },
+  {
+    "id": "QW-09",
+    "title": "27 external links point at dead third-party pages",
+    "lens": "quick-wins",
+    "severity": "low",
+    "evidence": [
+      {"claim": "27 external 4XX targets linked from our content", "source": "ahrefs/site-audit/.../Notice-External_4XX.csv", "value": "28 lines incl. header = 27 rows"}
+    ],
+    "affected_urls": {"count": 27, "sample": []},
+    "effort": {"band": "hours", "estimate_hours": 2, "who": "claude"},
+    "impact": {"metric": "crawl efficiency", "estimate": "Quality/trust polish only; no measurable click impact. Batch with QW-04's scripted content pass since both edit hrefs in Sanity content.", "confidence": "high"},
+    "depends_on": ["QW-04"],
+    "quick_win": true,
+    "recommendation": "In the same content-patch pass as QW-04, replace or remove the 27 dead external hrefs (swap to archive.org or a live equivalent where the citation matters)."
+  }
+]

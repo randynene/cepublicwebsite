@@ -1,0 +1,173 @@
+[
+  {
+    "id": "PERF-01",
+    "title": "GeoTargetly body-hide is still live in production: three inline scripts each inject body{opacity:0} and gate first paint behind a remote JS callback, on every page",
+    "lens": "performance",
+    "severity": "critical",
+    "evidence": [
+      {"claim": "Production HTML on 8 Aug contains 3 inline scripts, each inserting <style>body{opacity:0.0 !important;}</style> synchronously into head, un-hidden only when g10498469755.co/gr answers and the georedirect*loaded callback runs via setTimeout", "source": "curl https://www.cloudemployee.io/ (8 Aug); code at site/src/components/third-party-scripts.tsx (GEOTARGETLY_RULES, geoTargetlySnippet)", "value": "6 occurrences of body{opacity:0.0 !important;} (3 rules x inline + RSC payload); rule IDs -OJz6mUkL51tX4CyQPmd, -OK8LE2WwpalZvadeMTu, -OK8QFN5yqnrUvZ_ZFAC"},
+      {"claim": "If a redirect fires, the un-hide waits a further 5,000ms; verbatim in production HTML", "source": "production HTML 8 Aug; docs/seo/GEO_ROUTING.md", "value": "window.georedirect...loaded=function(redirect){var to=0;if(redirect){to=5000};setTimeout(function(){s();},to)}"},
+      {"claim": "Ahrefs Lighthouse LCP is Poor on 100% of 688 pages while server TTFB is under 200ms on 526 of 688 and load time under 500ms on 677 of 688; the page arrives and refuses to draw", "source": "Ahrefs dashboard aggregate read 8 Aug (no per-URL export on disk); server columns per-URL in ahrefs/site-audit/cloudemployee_06-aug-2026_internal-html-200-u_2026-08-08_09-40-13.csv", "value": "LCP 100% Poor; TBT ~40% Poor; CLS 100% Good; loadtime median 178ms"},
+      {"claim": "Controlled Lighthouse runs (4 Aug): blocking GeoTargetly alone or HubSpot alone changes render delay by ~nothing; blocking both drops it from 5,007ms to 1,496ms, because the un-hide setTimeout is starved by HubSpot main-thread work", "source": "docs/seo/SEO_PROGRAMME.md section 2.1 correction table", "value": "baseline perf 51 / render delay 5,007ms; both blocked perf 66 / 1,496ms"}
+    ],
+    "affected_urls": {"count": 688, "sample": ["/", "/pricing", "/blog", "/services/software-engineers"]},
+    "effort": {"band": "days", "estimate_hours": 16, "who": "claude"},
+    "impact": {"metric": "rankings", "estimate": "Removes the mechanism that makes LCP Poor on 100% of 688 lab-measured pages. Measured floor: render delay 5,007ms to 1,496ms when both gates removed (SEO_PROGRAMME 2.1). Not a Google ranking input today (0 CrUX pages), but the first CrUX 28-day window is accumulating from launch traffic now, and this decides what it says.", "confidence": "high"},
+    "depends_on": [],
+    "quick_win": false,
+    "recommendation": "Move geo routing server-side and delete the body-hide. PERF-02 shows the country is already known server-side for free. Interim smaller step if the dashboard rules must stay: replace the JS-callback un-hide with a CSS animation timeout that cannot be starved by the main thread. Coordinate with CE-48 (GEO_ROUTING.md) which already specifies the target rule set."
+  },
+  {
+    "id": "PERF-02",
+    "title": "The blocking geo round trip is redundant: the visitor country is already rendered into the HTML server-side from x-vercel-ip-country",
+    "lens": "performance",
+    "severity": "high",
+    "evidence": [
+      {"claim": "Production HTML carries window.VISITOR_COUNTRY set at HTML-generation time from Vercel's x-vercel-ip-country header, before any client JS runs", "source": "curl https://www.cloudemployee.io/ 8 Aug; site/src/components/third-party-scripts.tsx VisitorCountryScript (lines ~59-62)", "value": "<script>window.VISITOR_COUNTRY=\"ID\"</script> present in served HTML"},
+      {"claim": "The three GeoTargetly snippets each make a blocking client round trip to g10498469755.co to determine the same fact", "source": "production HTML 8 Aug", "value": "6 references to g10498469755.co in homepage HTML"},
+      {"claim": "GEO_ROUTING.md already argues the dashboard rules should move to the edge using this header", "source": "docs/seo/GEO_ROUTING.md section 3", "value": "'We already have the data for free'"}
+    ],
+    "affected_urls": {"count": 688, "sample": ["/"]},
+    "effort": {"band": "days", "estimate_hours": 12, "who": "claude"},
+    "impact": {"metric": "rankings", "estimate": "Enables PERF-01 to be a deletion rather than a mitigation: server-side redirect means zero flash, zero JS dependency, and removes a third-party host (g10498469755.co, 6 references) from in front of first paint on all 688 pages. Requires the CE-48 country list decision from Jake/Seb, so not a quick win by definition.", "confidence": "high"},
+    "depends_on": [],
+    "quick_win": false,
+    "recommendation": "Implement CE-48 in Next middleware or the layout using x-vercel-ip-country (the allow-list is already specified in GEO_ROUTING.md section 2), then remove all three GeoTargetly snippets and the body-hide with them. Heed Tech Debt #63: verify the PH team can still reach what they need before enabling any country redirect."
+  },
+  {
+    "id": "PERF-03",
+    "title": "Every HTML response is served no-store with x-vercel-cache MISS: no CDN caching anywhere, and field TTFB is 1.37s desktop",
+    "lens": "performance",
+    "severity": "high",
+    "evidence": [
+      {"claim": "Live headers on /, /pricing, /our-work, /blog, /about-us all return cache-control: private, no-cache, no-store, max-age=0 and x-vercel-cache: MISS", "source": "curl -I on 5 production routes, 8 Aug", "value": "no-store + MISS on 5 of 5 routes tested"},
+      {"claim": "Vercel Speed Insights field TTFB is 1.37s desktop; live curl measured 0.95-1.82s on /; Ahrefs' crawler measured median 178ms from its infrastructure", "source": "Vercel Speed Insights 6-7 Aug; curl 8 Aug; ahrefs/site-audit/...internal-html-200-u...csv Loading time column", "value": "field 1.37s vs lab-crawler 178ms median"},
+      {"claim": "Root layout calls headers() (VisitorCountryScript reads x-vercel-ip-country), which opts every route out of static rendering; sanityFetch/defineLive is the other dynamic dependency", "source": "site/src/components/third-party-scripts.tsx:60; site/src/lib/sanity/live.ts", "value": "await headers() in a component mounted in the root layout"}
+    ],
+    "affected_urls": {"count": 688, "sample": ["/", "/pricing", "/blog"]},
+    "effort": {"band": "days", "estimate_hours": 24, "who": "claude"},
+    "impact": {"metric": "rankings", "estimate": "TTFB is the floor under every other metric: LCP cannot beat TTFB. Field desktop TTFB 1.37s already consumes 55% of the 2.5s Good LCP budget before a byte of content renders. Caching or ISR would take repeat TTFB toward the sub-200ms the Ahrefs crawler sees. Estimate: this plus PERF-01 is what moves LCP from Poor to Good; PERF-01 alone leaves LCP at ~4.2s (SEO_PROGRAMME 2.1 both-blocked run).", "confidence": "medium"},
+    "depends_on": ["PERF-01"],
+    "quick_win": false,
+    "recommendation": "After the geo work: isolate the headers() read (PPR, or move country injection to middleware/client) and give Sanity-backed routes ISR or cache tags so HTML can be CDN-cached. This is architectural and needs its own brief; do not attempt as a drive-by."
+  },
+  {
+    "id": "PERF-04",
+    "title": "The per-route field spread (100 vs 46 desktop) is template payloads, not the server: sitewide cost and per-template cost are separable",
+    "lens": "performance",
+    "severity": "high",
+    "evidence": [
+      {"claim": "Ahrefs server-side metrics are uniform across templates: every template family has median fetch 131-394ms and median compressed size 18-47KB; no template is server-slow", "source": "ahrefs/site-audit/...internal-html-200-u...csv, 688 rows grouped by path template (analysis 8 Aug)", "value": "technology-detail n=192 med 164ms; blog-detail n=142 med 180ms; home med 302ms"},
+      {"claim": "Vercel field desktop scores diverge widely by route on the same chrome: /pricing 100, /about-us 100, /services/software-engineers 100 vs /our-work 46, /blog detail 56, /contact 56, /services/fractional-ctos 55, / 81", "source": "Vercel Speed Insights per-route, 6-7 Aug", "value": "spread of 54 points on identical sitewide chrome"},
+      {"claim": "The poor routes carry identifiable heavy client payloads: homepage has a Vimeo background autoplay hero (player.vimeo.com/video/1131836141?background=1&autoplay=1), contact and book-a-call embed HubSpot forms/Calendly, blog details carry recovered video/table embeds", "source": "production HTML 8 Aug; site/src/components/third-party-scripts.tsx", "value": "vimeo player referenced 3x in homepage HTML"}
+    ],
+    "affected_urls": {"count": 7, "sample": ["/our-work", "/blog/<slug>", "/contact", "/services/fractional-ctos", "/book-a-call", "/"]},
+    "effort": {"band": "days", "estimate_hours": 20, "who": "claude"},
+    "impact": {"metric": "clicks", "estimate": "Per-template work is what separates a 100 route from a 46 route once sitewide gates are gone. Blog detail alone carries 222,042 of 488,153 GSC impressions in 90d (45.5%, joined/pages.json), so the worst-scoring template carries the largest search surface. See PERF-06 for the blog quantification.", "confidence": "medium"},
+    "depends_on": ["PERF-01"],
+    "quick_win": false,
+    "recommendation": "Fix sitewide first (PERF-01/02), re-measure, then do a facade pass per poor route: poster-image facade for the Vimeo hero, lazy-mount HubSpot forms and Calendly on interaction or viewport, audit /our-work (worst at 46) specifically. Do not start template work before the sitewide gates are removed or the measurements will be noise."
+  },
+  {
+    "id": "PERF-05",
+    "title": "Lab and field do not contradict each other: the body-hide converts any main-thread slowness into blank screen, so throttled mobile lab collapses while fast desktop field often paints fine",
+    "lens": "performance",
+    "severity": "medium",
+    "evidence": [
+      {"claim": "Ahrefs simulated-mobile Lighthouse: 0 of 588 Good, LCP 100% Poor. Vercel real-user desktop: several routes at 99-100", "source": "Ahrefs dashboard aggregate 8 Aug; Vercel Speed Insights 6-7 Aug", "value": "0% Good (lab mobile) vs 100 scores (field desktop)"},
+      {"claim": "The mechanism reconciles them: un-hide is a setTimeout gated on a ~165-227ms remote answer plus a free main thread. On fast desktop that resolves quickly; under mobile CPU throttle HubSpot's 3.6s main-thread work starves it for seconds", "source": "docs/seo/SEO_PROGRAMME.md sections 2.1-2.2; production HTML 8 Aug", "value": "GeoTargetly endpoint answers 165-227ms; HubSpot 3,610ms main-thread blocking"},
+      {"claim": "Vercel mobile field data is incoherent and must not be used as counter-evidence", "source": "Vercel Speed Insights 6-7 Aug", "value": "98 data points; FCP 5.36s > LCP 2.02s, impossible in one load"}
+    ],
+    "affected_urls": {"count": 688, "sample": ["/"]},
+    "effort": {"band": "hours", "estimate_hours": 0, "who": "claude"},
+    "impact": {"metric": "rankings", "estimate": "Interpretive finding, no work item. Consequence: mobile users, who we currently cannot measure, are the population most likely to experience multi-second blank screens. Google's CrUX, when it arrives, is mobile-weighted.", "confidence": "high"},
+    "depends_on": [],
+    "quick_win": false,
+    "recommendation": "Treat lab mobile as the risk model for the unmeasured mobile population. Re-check Vercel mobile once sample size grows (later in Aug) and expect it to sit between lab mobile and field desktop."
+  },
+  {
+    "id": "PERF-06",
+    "title": "Blog detail is the highest-stakes template: 45.5% of all GSC impressions (222k in 90d) on the template scoring 56 in field desktop",
+    "lens": "performance",
+    "severity": "high",
+    "evidence": [
+      {"claim": "Blog-detail pages carry 222,042 of 488,153 impressions in the 90d window across 65 pages with any impressions; clicks 126 of 1,235", "source": "joined/pages.json, impressions_90d/clicks_90d aggregated by template (talent excluded by construction)", "value": "45.5% of impressions, 10.2% of clicks"},
+      {"claim": "Blog detail scores 56 in Vercel field desktop, among the worst routes, and worst on both devices per the brief", "source": "Vercel Speed Insights per-route 6-7 Aug", "value": "56 desktop"},
+      {"claim": "Blog-detail server delivery is not the problem: 142 blog-detail rows have median fetch 180ms, median compressed size 34.7KB", "source": "ahrefs/site-audit/...internal-html-200-u...csv", "value": "180ms median"},
+      {"claim": "Clicks are overwhelmingly brand-homepage: home takes 750 of 1,235 clicks (60.7%); blog impressions convert at ~0.06% CTR, consistent with mid-page-2 average positions", "source": "joined/pages.json", "value": "blog 126 clicks on 222k impressions"}
+    ],
+    "affected_urls": {"count": 65, "sample": ["/staff-augmentation/<slug>", "/nearshoring-offshoring/<slug>"]},
+    "effort": {"band": "days", "estimate_hours": 12, "who": "claude"},
+    "impact": {"metric": "clicks", "estimate": "Grounded ceiling, stated as an estimate: 222k impressions/90d is ~74k/month. Performance alone will not move mid-page-2 rankings to page 1, but blog detail is where any ranking-signal improvement is levered 45x harder than the average page. If average CTR merely doubled from 0.06% to 0.12% via better positions, that is ~44 extra clicks/month; a page-1 move on even a tenth of the impression base would be hundreds.", "confidence": "medium"},
+    "depends_on": ["PERF-01", "PERF-04"],
+    "quick_win": false,
+    "recommendation": "After sitewide fixes, make blog detail the first template pass: lazy-mount recovered video/table embeds below the fold, verify the hero image request size, and re-measure this one template in the field before touching others."
+  },
+  {
+    "id": "PERF-07",
+    "title": "33 Sanity images total 59.7MB because transforms request w=3840 PNGs and multi-MB HEIFs with no format negotiation",
+    "lens": "performance",
+    "severity": "medium",
+    "evidence": [
+      {"claim": "33 image instances flagged too large, summing 59.73MB, every one a cdn.sanity.io URL", "source": "ahrefs/site-audit/cloudemployee_06-aug-2026_all-issues_2026-08-08_09-39-28/Error-Image_file_size_too_large.csv", "value": "33 rows, 59.73MB total, largest 3,995,986 bytes"},
+      {"claim": "Pattern: PNGs requested at ?w=3840 without auto=format (4.0MB for a 1411x1001 source upscaled), and .heif sources that stay multi-MB even at ?w=384, implying the transform or format conversion is not applying", "source": "same CSV, URL column", "value": "e.g. ...-1411x1001.png?w=3840 = 3.99MB; ...-1684x1618.heif?w=384 = 2.54MB"},
+      {"claim": "One 3.19MB image is inlinked from 10 pages, so a single asset fix propagates", "source": "same CSV, No. of IMG inlinks column", "value": "8165da27...-1774x1334.png?w=3840, 10 inlinks"}
+    ],
+    "affected_urls": {"count": 33, "sample": ["cdn.sanity.io/images/lzbhll1u/production/28405ce1...-1411x1001.png?w=3840"]},
+    "effort": {"band": "hours", "estimate_hours": 4, "who": "claude"},
+    "impact": {"metric": "rankings", "estimate": "Not the LCP cause (Ahrefs shows LCP Poor even on pages with no large image, and HTML transfer is 18-47KB), but 59.7MB of avoidable image weight across 33 instances, one hitting 10 pages. Mostly a mobile bandwidth and per-template LCP contributor on the specific pages that render them.", "confidence": "high"},
+    "depends_on": [],
+    "quick_win": true,
+    "recommendation": "Audit site/src/components/ui/image to ensure every Sanity URL carries auto=format plus a width matched to the rendered slot (not a blanket w=3840), and that HEIF sources are converted. Diagnosis-only note per repo debugging rules: confirm in a diagnosis pass, fix in an execution session."
+  },
+  {
+    "id": "PERF-08",
+    "title": "Ahrefs 'all pages under 100KB' measures compressed transfer, not parse cost: the homepage is actually 525KB of HTML to parse",
+    "lens": "performance",
+    "severity": "low",
+    "evidence": [
+      {"claim": "curl without compression returns 525,489 bytes for /; with --compressed, 64,002 bytes. Ahrefs Size (bytes) for the same corpus is min 18,408 / median 33,257 / max 49,660, all under 100KB, matching the compressed number", "source": "curl 8 Aug; ahrefs/site-audit/...internal-html-200-u...csv Size column", "value": "525KB raw vs 64KB gzip vs 33KB Ahrefs median (brotli)"},
+      {"claim": "/our-work raw HTML is 321,952 bytes", "source": "curl 8 Aug", "value": "322KB"}
+    ],
+    "affected_urls": {"count": 688, "sample": ["/", "/our-work"]},
+    "effort": {"band": "hours", "estimate_hours": 0, "who": "claude"},
+    "impact": {"metric": "crawl efficiency", "estimate": "Mostly a measurement correction so nobody rules out page weight from the Ahrefs column. 525KB of HTML (largely the RSC flight payload duplicating page content) is a real parse cost on throttled mobile, but secondary to PERF-01/03. No number links it to a score directly; flagged as unquantified.", "confidence": "high"},
+    "depends_on": [],
+    "quick_win": false,
+    "recommendation": "Record the correction. If a payload pass happens later, the RSC payload duplication is the place to look, not images or compression, which are already fine."
+  },
+  {
+    "id": "PERF-09",
+    "title": "The 281-to-242 Poor-page drop after the Marker.io removal is plausible but unverifiable from the data on disk",
+    "lens": "performance",
+    "severity": "low",
+    "evidence": [
+      {"claim": "Poor Lighthouse count fell 281 to 242 between the 6 Aug and 8 Aug Ahrefs crawls; the only production change in the window was 2fe4fcb, which removed Marker.io (148KB, 135ms blocking) from every page", "source": "Ahrefs dashboard reads 6 and 8 Aug; git log 2fe4fcb", "value": "-39 Poor pages in 2 days"},
+      {"claim": "No per-URL Lighthouse export exists on disk to identify WHICH 39 pages moved, so the attribution cannot be tested; the 66-CSV all-issues export contains no performance report", "source": "ahrefs/site-audit/cloudemployee_06-aug-2026_all-issues_2026-08-08_09-39-28/ (file listing)", "value": "0 Lighthouse CSVs among 66"},
+      {"claim": "Marker.io is confirmed absent from production HTML", "source": "curl 8 Aug, grep -ci marker = 0; site/src/components/third-party-scripts.tsx:138 showMarker = !(await isCanonicalSite())", "value": "0 matches"}
+    ],
+    "affected_urls": {"count": 39, "sample": []},
+    "effort": {"band": "hours", "estimate_hours": 1, "who": "jake"},
+    "impact": {"metric": "rankings", "estimate": "If confirmed, this is the first measured before-and-after of a real fix: removing 135ms of blocking moved 39 pages out of Poor, direct evidence that pages sit just under the threshold and that PERF-01 (a much larger removal) will move far more. Currently an attribution hypothesis, not a verified result; Lighthouse run-to-run variance could account for some or all of it.", "confidence": "low"},
+    "depends_on": [],
+    "quick_win": true,
+    "recommendation": "Export the per-URL Lighthouse table from the Ahrefs Site Audit UI for both crawl dates (the data exists in the dashboard, it was just not in our export) so the 39 movers can be identified and the attribution tested."
+  },
+  {
+    "id": "PERF-10",
+    "title": "Best Practices stuck at 54-56 sitewide from third-party cookies and deprecated APIs in the marketing stack; constant across pages so chrome-level, and lowest priority",
+    "lens": "performance",
+    "severity": "low",
+    "evidence": [
+      {"claim": "Best Practices 54-56 on every page measured, causes: deprecated APIs, third-party cookies, console errors; consistent across pages so a chrome problem, not a template problem", "source": "docs/seo/SEO_PROGRAMME.md section 2.4 Lighthouse baseline table", "value": "54-56 on all 5 pages measured"},
+      {"claim": "13 third-party cookies set sitewide from marketing pixels, pre-existing Tech Debt", "source": "CLAUDE.md Tech Debt #30 (also #29, #31, #32)", "value": "13 cookies"},
+      {"claim": "The pixel stack is confirmed still loading in production: hotjar, linkedin, facebook, hubspot, gtm, clara all present", "source": "production HTML host grep 8 Aug; site/src/components/third-party-scripts.tsx", "value": "static.hotjar.com, snap.licdn.com, connect.facebook.net, js.hs-scripts.com, googletagmanager.com"}
+    ],
+    "affected_urls": {"count": 688, "sample": ["/"]},
+    "effort": {"band": "days", "estimate_hours": 16, "who": "claude"},
+    "impact": {"metric": "rankings", "estimate": "Best Practices is not a ranking signal and third-party cookies are a compliance/consent question more than a performance one. No traffic number attaches to it. Do last, or fold into a consent-management decision which needs Jake.", "confidence": "high"},
+    "depends_on": [],
+    "quick_win": false,
+    "recommendation": "Defer behind everything above. When touched, do it as the Tech Debt #29-#32 batch: script necessity review, consent management, cookie audit."
+  }
+]

@@ -1,0 +1,252 @@
+[
+  {
+    "id": "UK-01",
+    "title": "The UK half is an investment case, not a recovery case: 52% of /uk/ pages have never earned a single impression in 16 months",
+    "lens": "uk-localisation",
+    "severity": "high",
+    "evidence": [
+      {
+        "claim": "All-country traffic to /uk/ paths over the full 16-month window is 15,741 impressions and 253 clicks across 156 distinct pages",
+        "source": "gsc/full-page-x-country.json (window 2025-04-07..2026-08-07, 13,055 rows, talent.* excluded)",
+        "value": "15,741 impressions / 253 clicks / 156 pages"
+      },
+      {
+        "claim": "326 /uk/ pages return 200 (crawl), so 170 of 326 (52%) have never earned one impression in 16 months",
+        "source": "crawl/MANIFEST-crawl.md (UK duplication section) + gsc/full-page-x-country.json",
+        "value": "156 with any impression vs 326 live"
+      },
+      {
+        "claim": "GB is the second-largest market by impressions but only 12.7% of GB impressions land on /uk/ pages",
+        "source": "gsc/full-page-x-country.json filtered country=gbr",
+        "value": "GB total 67,857 impressions; /uk/ paths 8,627 (12.7%); US paths 59,230 (87.3%)"
+      },
+      {
+        "claim": "Ahrefs sees almost no GB organic footprint: 10 ranked GB keywords for the whole domain, of which /uk/ pages hold 3",
+        "source": "ahrefs-exports/cloudemployee.io-organic-keywords-subdomains-gb-_2026-08-07_11-01-13.csv (10 rows)",
+        "value": "top GB keywords: 'it outsourcing' vol 800 pos 1 (US path); 'typescript developer' vol 40 pos 10 (/uk path); 'cloud employee' vol 30 pos 1 (/uk)"
+      },
+      {
+        "claim": "GB /uk/ pages rank materially worse than the US pages GB searchers actually see",
+        "source": "gsc/full-page-x-country.json, impression-weighted mean position",
+        "value": "/uk/ paths wpos 31.6 vs US paths wpos 22.6 for GB searchers"
+      }
+    ],
+    "affected_urls": { "count": 326, "sample": ["/uk", "/uk/technology/nodejs-developers", "/uk/how-it-works"] },
+    "effort": { "band": "hours", "estimate_hours": 0, "who": "claude" },
+    "impact": { "metric": "clicks", "estimate": "Framing finding: there is nothing to 'recover'; localisation is a bet on winning GB demand currently going to US pages (59,230 GB impressions on US paths, 149 clicks)", "confidence": "high" },
+    "depends_on": [],
+    "quick_win": false,
+    "recommendation": "Treat D1 as investment, sized against the 67,857 GB impressions/16mo actually observed (about 4,200/month). Do not promise a recovery; the /uk/ pages never had rankings to lose."
+  },
+  {
+    "id": "UK-02",
+    "title": "The apparent /uk/ CTR advantage is an artefact: 242 of 245 GB /uk/ clicks come from the /uk homepage on brand queries; the other 123 /uk/ pages earned 3 clicks total",
+    "lens": "uk-localisation",
+    "severity": "medium",
+    "evidence": [
+      {
+        "claim": "GB /uk/ paths show 8,627 impressions / 245 clicks (2.84% CTR) vs GB US-paths 0.25% CTR - an 11x gap that does not survive decomposition",
+        "source": "gsc/full-page-x-country.json filtered country=gbr",
+        "value": "/uk homepage alone: 1,894 impressions, 242 clicks, position 13.9"
+      },
+      {
+        "claim": "Excluding the /uk homepage, GB /uk/ pages earned 3 clicks on 6,733 impressions in 16 months",
+        "source": "gsc/full-page-x-country.json",
+        "value": "CTR 0.04%; the 3 clicks: /uk/how-it-works (2), /uk/live-job-role (1)"
+      },
+      {
+        "claim": "Ahrefs confirms the /uk homepage traffic is brand: its only ranked GB keyword is 'cloud employee' (vol 30, pos 1)",
+        "source": "ahrefs/top-pages-gb.export.json (9 rows)",
+        "value": "/uk top keyword 'cloud employee' pos 1"
+      }
+    ],
+    "affected_urls": { "count": 124, "sample": ["/uk", "/uk/technology/nodejs-developers"] },
+    "effort": { "band": "hours", "estimate_hours": 0, "who": "claude" },
+    "impact": { "metric": "clicks", "estimate": "Prevents a false conclusion at synthesis: /uk/ pages do NOT outperform - non-brand /uk/ CTR is 0.04% on 6,733 impressions", "confidence": "high" },
+    "depends_on": [],
+    "quick_win": false,
+    "recommendation": "Any lens or synthesis reading that says 'UK pages convert better' must be discarded. The clone pages convert essentially nothing; that is the strongest data argument FOR real differentiation and better titles."
+  },
+  {
+    "id": "UK-03",
+    "title": "DFH-2 answered: one shared Sanity document serves both locales; zero locale='uk' documents exist in production, so Seb cannot edit UK copy independently today",
+    "lens": "uk-localisation",
+    "severity": "critical",
+    "evidence": [
+      {
+        "claim": "The production dataset holds zero documents with locale='uk'; 290 documents carry locale='default'",
+        "source": "Live GROQ against Sanity project lzbhll1u dataset production: {uk: count(*[locale==\"uk\"]), default: count(*[locale==\"default\"]), all: count(*[])}",
+        "value": "{all: 1020, default: 290, uk: 0}"
+      },
+      {
+        "claim": "A localeField() ('Default (US)' | 'UK') exists in the schema and is applied to 13 document types, but is a dormant migration artefact - no query filters detail content on it",
+        "source": "studio/schemas/_shared.ts lines 7-28; grep localeField() across studio/schemas (13 hits)",
+        "value": "field exists, unused for routing content"
+      },
+      {
+        "claim": "UK routes fetch the identical document by slug; the only locale-aware GROQ predicate is VISIBLE_IN_LOCALE, which gates the single ukOnly document (Caitlin Murray), not content variants",
+        "source": "site/src/lib/sanity/queries/_filters.ts line 40; site/src/app/uk/technology/[slug]/page.tsx (fetchTechnology(slug) with no locale param)",
+        "value": "(!(ukOnly == true) || $locale == \"uk\")"
+      }
+    ],
+    "affected_urls": { "count": 326, "sample": ["/uk/technology/nodejs-developers", "/uk/services/philippines-developers"] },
+    "effort": { "band": "days", "estimate_hours": 24, "who": "claude" },
+    "impact": { "metric": "rankings", "estimate": "Blocking: no UK copy of any kind (body OR metadata) can be authored until this is decided and wired. Everything else in this lens depends on it", "confidence": "high" },
+    "depends_on": [],
+    "quick_win": false,
+    "recommendation": "Decide the architecture before any content work. Recommendation: locale-override fields on the shared document (ukMetaTitle/ukMetaDescription plus an optional ukBody/uk section overrides), NOT separate documents. Separate docs would fork 326 documents, duplicate every reference, break the single-slug hreflang pairing (UK-07), and contradict the existing single-doc route architecture. Override fields keep slugs paired, let Seb edit UK copy in the same Studio form, and degrade gracefully (missing override = current behaviour). Estimated wiring: 2-3 days of schema + query + template work by Claude."
+  },
+  {
+    "id": "UK-04",
+    "title": "Site-wide metadata duplication IS the UK problem: 305 of 306 duplicate-title groups and 321 of 322 duplicate-description groups are pure UK/US pairs",
+    "lens": "uk-localisation",
+    "severity": "high",
+    "evidence": [
+      {
+        "claim": "305 of 306 duplicate-title groups reduce to exactly {path, /uk+path} once query-string variants are normalised",
+        "source": "crawl/duplicate-titles.json (306 groups), pair-normalisation script this session",
+        "value": "305 pure UK/US pairs, 1 other"
+      },
+      {
+        "claim": "321 of 322 duplicate-description groups are likewise pure UK/US pairs",
+        "source": "crawl/duplicate-descriptions.json (322 groups)",
+        "value": "321 pure UK/US pairs, 1 other"
+      },
+      {
+        "claim": "Every one of the 307 word-identical UK pairs also has identical title AND identical description",
+        "source": "crawl/uk-us-pairs.json (326 rows: 309 titleIdentical, 324 descriptionIdentical)",
+        "value": "307/307 identical pairs share title+description"
+      }
+    ],
+    "affected_urls": { "count": 326, "sample": ["/uk/about-us", "/uk/pricing", "/uk/technology/typescript-developers"] },
+    "effort": { "band": "days", "estimate_hours": 20, "who": "claude" },
+    "impact": { "metric": "clicks", "estimate": "A UK-metadata pass across all 326 clears ~99% of site-wide metadata duplication in one move and gives the 6,733 zero-click GB impressions (UK-02) a British snippet to click. At even 1% CTR that is ~4 clicks/month; the larger prize is GB queries currently resolving to US pages (59,230 impressions). Estimate, low confidence", "confidence": "low" },
+    "depends_on": ["UK-03"],
+    "quick_win": false,
+    "recommendation": "Do the metadata pass across ALL 326 pages FIRST, before body-content work on the 10. It is cheap once UK-03's override fields exist (templated first draft: £-currency, UK phrasing, 'UK' geo-qualifier where the query data supports it; Seb reviews). Not a formal quick win only because it depends on the UK-03 schema decision."
+  },
+  {
+    "id": "UK-05",
+    "title": "The 19 already-differing UK pages are accidents, not localisation - the 'natural experiment' is void and shows no performance benefit",
+    "lens": "uk-localisation",
+    "severity": "low",
+    "evidence": [
+      {
+        "claim": "Verdict split is 307 identical / 18 differing / 1 no-US-counterpart (the known ukOnly Caitlin Murray page, Tech Debt #58)",
+        "source": "crawl/uk-us-pairs.json",
+        "value": "18 + 1, not 19 differing"
+      },
+      {
+        "claim": "10 of the 18 differ ONLY in title with body jaccard >= 0.86 and equal word counts (e.g. 3 technology pages and 6 team pages at jaccard 1.0 or ~0.9); none of these is a deliberate UK variant",
+        "source": "crawl/uk-us-pairs.json rows with titleIdentical=false, jaccard>=0.86",
+        "value": "/uk/technology/{azure-developers,qase,unity-developers} jaccard 1.0; team pages 0.86-0.98"
+      },
+      {
+        "claim": "The two big body divergences are known artefacts: /uk/compare/cloud-employee-vs-arc-dev (jaccard 0.269) is the US-side accidental redirect shadow (Tech Debt #55); /uk/tools/price-comparison-calculator (jaccard 0.451) is a client-rendered calculator the word-count method cannot see evenly",
+        "source": "crawl/uk-us-pairs.json + CLAUDE.md Tech Debt #55",
+        "value": "wc 2287/538 and 242/782 respectively"
+      },
+      {
+        "claim": "The differing pages perform no better in GB: /uk/technology/azure-developers 102 impressions, 0 clicks, position 60.9; qase and unity-developers earn no recorded GB impressions",
+        "source": "gsc/full-page-x-country.json",
+        "value": "0 clicks across the differing set"
+      }
+    ],
+    "affected_urls": { "count": 19, "sample": ["/uk/technology/azure-developers", "/uk/compare/cloud-employee-vs-arc-dev", "/uk/team/caitlin-murray"] },
+    "effort": { "band": "hours", "estimate_hours": 0, "who": "claude" },
+    "impact": { "metric": "rankings", "estimate": "No evidence either way on whether differentiation lifts rankings - the sample is accidental and earns ~nothing. The D1 bet remains unproven by internal data", "confidence": "high" },
+    "depends_on": [],
+    "quick_win": false,
+    "recommendation": "Do not cite these 18 as evidence for or against localisation. Treat Phase A itself as the experiment: localise 10, hold the rest as controls, read GB positions at +60 and +90 days."
+  },
+  {
+    "id": "UK-06",
+    "title": "The Phase A ten, ranked on 16 months of GB demand: toptal-vs-upwork, home, nodejs, philippines-developers, typescript, python, aws, how-it-works, about-us/contact, pricing",
+    "lens": "uk-localisation",
+    "severity": "high",
+    "evidence": [
+      {
+        "claim": "GB impressions per logical page (US+UK path combined, commercial templates only, 16 months): /compare/toptal-vs-upwork 4,694 (pos 9.4, 0 clicks); / 4,031 (329 clicks, brand); /technology/nodejs-developers 2,412; /services/philippines-developers 2,087; /technology/typescript-developers 1,983 (pos 11.5); /technology/python-developers 1,424; /technology/aws-developers 1,346; /about-us 1,036 (pos 6.1); /technology/openai-developers 689; /contact 582 (pos 6.0); /how-it-works 495 (pos 7.7)",
+        "source": "gsc/full-page-x-country.json, country=gbr, /uk prefix folded onto US path",
+        "value": "full ranking computed this session"
+      },
+      {
+        "claim": "/uk/technology/typescript-developers already ranks pos 6.9 on 396 GB impressions with 0 clicks, and holds the domain's only non-brand /uk/ Ahrefs GB keyword ('typescript developer', vol 40, pos 10)",
+        "source": "gsc/full-page-x-country.json + ahrefs-exports/...organic-keywords-subdomains-gb-....csv",
+        "value": "highest-probability first mover"
+      },
+      {
+        "claim": "/pricing shows negligible recorded GB impressions but is the D1 currency page par excellence (£ vs $); its inclusion is judgment, not data, and is labelled as such",
+        "source": "gsc/full-page-x-country.json (no /pricing row in GB top set)",
+        "value": "judgment call"
+      }
+    ],
+    "affected_urls": {
+      "count": 10,
+      "sample": [
+        "/uk/compare/toptal-vs-upwork", "/uk", "/uk/technology/nodejs-developers",
+        "/uk/services/philippines-developers", "/uk/technology/typescript-developers",
+        "/uk/technology/python-developers", "/uk/technology/aws-developers",
+        "/uk/how-it-works", "/uk/about-us", "/uk/pricing"
+      ]
+    },
+    "effort": { "band": "weeks", "estimate_hours": 50, "who": "seb" },
+    "impact": { "metric": "clicks", "estimate": "The ten cover 18,600 of the 67,857 GB impressions (27%). toptal-vs-upwork alone: 4,694 impressions at position 9.4 with 0 clicks; a UK-differentiated page holding position 5-6 at 2% CTR would be roughly 6-8 clicks/month from that page. Whole set: plausibly 20-40 GB clicks/month at +90 days. Estimate, low confidence - GB volumes are small", "confidence": "low" },
+    "depends_on": ["UK-03", "UK-04"],
+    "quick_win": false,
+    "recommendation": "Phase A order: (1) typescript-developers - already page 1 in GB, cheapest test; (2) toptal-vs-upwork - largest GB demand, position 9.4; (3) philippines-developers; (4) nodejs; (5) python; (6) aws; (7) how-it-works; (8) home; (9) about-us + contact (UK contact details, low writing cost); (10) pricing (currency). Roughly 3-4h of Seb copy per page plus review; lead data cannot inform this ranking (leads_* null throughout, per manifest) - it is ranked on traffic and stated as such."
+  },
+  {
+    "id": "UK-07",
+    "title": "hreflang is clean on all real pages today - the localisation programme has three specific ways to break it, all avoidable",
+    "lens": "uk-localisation",
+    "severity": "medium",
+    "evidence": [
+      {
+        "claim": "656 crawled pages carry hreflang; only 9 rows have reciprocity issues and every one is a query-string URL variant (?ref=, ?page=), not a real page",
+        "source": "crawl/hreflang.json (656 rows, 9 with issues, all containing '?')",
+        "value": "0 real-page hreflang faults"
+      },
+      {
+        "claim": "hreflang pairing is generated from the shared slug (generateHreflang(usPath)), so it survives only while UK and US URLs stay slug-paired",
+        "source": "site/src/app/uk/technology/[slug]/page.tsx (generateCanonical/generateHreflang on usPath)",
+        "value": "pairing is derived, not stored"
+      }
+    ],
+    "affected_urls": { "count": 656, "sample": ["/", "/uk"] },
+    "effort": { "band": "hours", "estimate_hours": 2, "who": "claude" },
+    "impact": { "metric": "rankings", "estimate": "Protective: losing reciprocal hreflang on 326 pairs would re-expose 307 word-identical pages as raw duplicates", "confidence": "high" },
+    "depends_on": [],
+    "quick_win": false,
+    "recommendation": "Three rules for the programme: (1) never fork UK pages onto different slugs (rules out the separate-documents answer to UK-03 unless slugs are pinned); (2) if any never-earning UK pages are pruned (UK-08), remove BOTH the page and the US side's en-GB hreflang pointer in the same change, or Google sees a dangling pointer; (3) keep canonicals self-referencing on UK pages - a 'canonical to US' shortcut would deindex the UK half wholesale and silently undo D1."
+  },
+  {
+    "id": "UK-08",
+    "title": "Phase B should be a triage, not a 316-page rewrite: 170 UK pages have earned zero impressions in 16 months and most should stay as hreflang'd clones indefinitely",
+    "lens": "uk-localisation",
+    "severity": "medium",
+    "evidence": [
+      {
+        "claim": "170 of 326 /uk/ pages: zero impressions, any country, 16 months",
+        "source": "gsc/full-page-x-country.json vs crawl/uk-us-pairs.json",
+        "value": "52% of the UK tree"
+      },
+      {
+        "claim": "Of the 156 that have earned impressions, 124 earned them from GB; the GB tail below the top ~30 pages is under 100 impressions each over 16 months",
+        "source": "gsc/full-page-x-country.json, GB /uk/ page ranking",
+        "value": "long tail is negligible"
+      },
+      {
+        "claim": "There is no duplicate-content penalty to escape: hreflang is correctly implemented (UK-07), so a clone that earns nothing costs nothing beyond crawl budget",
+        "source": "crawl/hreflang.json",
+        "value": "0 real-page faults"
+      }
+    ],
+    "affected_urls": { "count": 316, "sample": ["/uk/videos/how-to-build-a-remote-team-that-lasts", "/uk/team/erwin-panganiban"] },
+    "effort": { "band": "weeks", "estimate_hours": 150, "who": "seb" },
+    "impact": { "metric": "clicks", "estimate": "Avoids ~450+ hours of copywriting (316 pages x ~1.5h minimum) that the demand data cannot justify; concentrates Seb's hours on the ~40-50 pages with any recorded GB demand", "confidence": "medium" },
+    "depends_on": ["UK-03", "UK-06"],
+    "quick_win": false,
+    "recommendation": "Phase B = metadata-localise everything (UK-04), then body-localise only pages that clear a demand bar (>=100 GB impressions/16mo or a ranked GB keyword): roughly 30-50 pages, ~150h. The remaining ~270 stay as clones with UK metadata; revisit quarterly against fresh GSC. This is a deliberate narrowing of D1's 'every remaining UK page gets worked through' - flagged for Jake to ratify, since D1 is his locked decision."
+  }
+]

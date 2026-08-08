@@ -1,0 +1,174 @@
+[
+  {
+    "id": "CONT-01",
+    "title": "20+ existing /services and /technology hire pages sit at position 10-30 for exact-match commercial 'hire X developers' queries with only 600-900 words",
+    "lens": "content",
+    "severity": "critical",
+    "evidence": [
+      {"claim": "/technology/typescript-developers: 17,716 striking-distance non-brand impressions; 'hire typescript developers' 5,412 imp at pos 10.9; page is 628 words", "source": "gsc/full-query-x-page.json + joined/pages.json", "value": "5,412 imp pos 10.9; wc 628"},
+      {"claim": "/services/philippines-developers: 18,257 striking-distance impressions across 'hire developers in the philippines' family, pos 8-20; page is 896 words", "source": "gsc/full-query-x-page.json + joined/pages.json", "value": "18,257 imp; wc 896"},
+      {"claim": "/technology/aws-developers: 'hire aws developers' 4,711 imp pos 23.3; page 625 words", "source": "gsc/full-query-x-page.json + joined/pages.json", "value": "4,711 imp pos 23.3; wc 625"},
+      {"claim": "/services/latam-developers: 'hire latam developers' 4,264 imp pos 28.2 plus 'latam developers' 3,051 pos 20.4; page 884 words", "source": "gsc/full-query-x-page.json", "value": "11,244 striking-distance imp"},
+      {"claim": "/services/devops-engineers: 6,908 striking-distance imp ('devops staff augmentation' 1,866 pos 13.3); /technology/python-developers 13,837 imp pos 50.1 at 647 words; /technology/nodejs-developers, dotnet, openai, no-code all same shape", "source": "gsc/full-query-x-page.json + joined/pages.json", "value": "each 3,000-14,000 imp, 600-800 words"}
+    ],
+    "affected_urls": {"count": 20, "sample": ["/technology/typescript-developers", "/services/philippines-developers", "/technology/aws-developers", "/services/latam-developers", "/services/devops-engineers", "/technology/python-developers", "/technology/openai-developers", "/services/no-code-developers", "/technology/dotnet-developers", "/services/front-end-developers"]},
+    "effort": {"band": "days", "estimate_hours": 40, "who": "claude", "note": "2-3h per page via cited.io: expand to 1,500-2,000 words with rates, vetting, FAQ, comparison table; template-level change reused across all"},
+    "impact": {"metric": "clicks", "estimate": "Roughly 90,000 clean striking-distance impressions across the set. At a standard 4-6 percent CTR for pos 3-5 (industry estimate; own CTR data unusable per CONT-04), moving the top 10 pages from pos 10-25 to 3-8 is on the order of 2,000-4,000 clicks per month on high-CPC buyer keywords (CPC 11-49 USD on the matching gap keywords)", "confidence": "medium"},
+    "depends_on": [],
+    "quick_win": false,
+    "recommendation": "This is the single highest-leverage content programme and it is pure upgrade, no new pages. Priority order by clean striking-distance impressions: typescript, philippines, aws, latam, devops, python, openai, no-code, dotnet, front-end, nodejs, cloud-engineers, full-stack, back-end, android, kotlin, langchain. Per page: expand from ~650 to 1,500-2,000 words with a rates table, vetting process, engagement models, and FAQ; the exact keyword variants to cover are in gsc/full-query-x-page.json per page. Competitors winning these terms do it with exactly this template (toptal.com/developers/<tech> pages, per ahrefs content gap URLs)."
+  },
+  {
+    "id": "CONT-02",
+    "title": "Content gap: 642 commercial non-branded keywords (159,250 monthly searches) where 2+ of 10 competitors rank top-10 and we rank nowhere; most map to existing pages",
+    "lens": "content",
+    "severity": "high",
+    "evidence": [
+      {"claim": "All 25,557 gap keywords have an empty cloudemployee.io position column, so the export is a true gap set", "source": "ahrefs-exports/cloudemployee.io-content-gap-subdomains-us_2026-08-06_16-42-53.csv", "value": "0 of 25,557 rows have our position"},
+      {"claim": "Filtered to Commercial or Transactional intent, non-branded, volume >= 100, 2+ competitors in top 10: 642 keywords, 159,250 total monthly volume", "source": "ahrefs-exports/cloudemployee.io-content-gap-subdomains-us_2026-08-06_16-42-53.csv", "value": "642 kws / 159,250 vol"},
+      {"claim": "Largest clusters by volume: outsourcing/offshore/nearshore 24,100; mobile (ios/android/flutter/unity) 11,150; AI/ML 9,450 (median KD 42, the only hard cluster); web dev services 6,900; backend 5,500; full stack 5,300; php/wordpress 5,100; javascript 4,550; python 4,350 (median KD 5)", "source": "ahrefs-exports content gap CSV, clustered", "value": "per-cluster vol/KD/CPC table in content.md"},
+      {"claim": "Best single opportunities combine low KD and high CPC: hire backend developers 2,500 vol KD 10 CPC 29.40; hire dedicated java developers 1,700 vol KD 3 CPC 33.85; hire offshore developers 600 vol KD 5 CPC 48.65; hire python developer 600 vol KD 4 CPC 30.00", "source": "ahrefs-exports content gap CSV", "value": "KD 3-10, CPC 29-49 USD"}
+    ],
+    "affected_urls": {"count": 642, "sample": ["/services/back-end-developers", "/technology/java-developers", "/technology/python-developers", "/services/full-stack-developers", "/services/ai-engineers"]},
+    "effort": {"band": "weeks", "estimate_hours": 80, "who": "claude"},
+    "impact": {"metric": "rankings", "estimate": "159,250 monthly searches in scope. Even 1-2 percent capture is 1,600-3,200 visits per month on keywords with 11-100 USD CPC; the java cluster alone (hire dedicated java developers, 1,700 vol, KD 3) is winnable with a single page upgrade", "confidence": "medium"},
+    "depends_on": ["CONT-01"],
+    "quick_win": false,
+    "recommendation": "Fold into the CONT-01 upgrade queue: nearly every cluster already has a landing page (/services/back-end-developers, /technology/java-developers, /technology/python-developers, /services/full-stack-developers, /technology/azure-developers, /technology/unity-developers). The gap keywords are the target keyword list for each upgrade. Two genuine holes are listed in CONT-07. Deprioritise the AI/ML cluster head terms (KD 42-54) until authority grows; target long-tail AI variants instead."
+  },
+  {
+    "id": "CONT-03",
+    "title": "The staff-augmentation definitional post has 22,263 clean striking-distance impressions at position 13-19 and is the single best individual upgrade target",
+    "lens": "content",
+    "severity": "high",
+    "evidence": [
+      {"claim": "'what is staff augmentation' 3,354 imp pos 19.3; 'augmented staff' 2,051 pos 15.0; 'benefits of staff augmentation' 1,533 pos 13.5; 'staff augmentation meaning' 1,366 pos 27.4; page total striking-distance 22,263 imp", "source": "gsc/full-query-x-page.json", "value": "22,263 imp pos 8-30"},
+      {"claim": "Page is 1,783 words with 12 internal links in", "source": "joined/pages.json row /staff-augmentation/what-is-staff-augmentation-and-what-are-the-benefits", "value": "wc 1,783, internal_links_in 12"},
+      {"claim": "Related gap keywords we rank for nowhere: software staff augmentation 600 vol KD 12 CPC 32.64; staff augmentation companies 500 vol KD 1 CPC 7.38", "source": "ahrefs-exports content gap CSV", "value": "KD 1-12"}
+    ],
+    "affected_urls": {"count": 1, "sample": ["/staff-augmentation/what-is-staff-augmentation-and-what-are-the-benefits"]},
+    "effort": {"band": "hours", "estimate_hours": 6, "who": "claude"},
+    "impact": {"metric": "clicks", "estimate": "22,263 impressions at pos 13-19. Moving the head terms to pos 3-5 at a standard 5 percent CTR (industry estimate) is roughly 900-1,100 clicks per month; currently 5 clicks", "confidence": "medium"},
+    "depends_on": [],
+    "quick_win": false,
+    "recommendation": "Restructure as the definitive guide: definition answer box in the first 60 words, 'staff augmentation meaning' H2, benefits section, vs-outsourcing section (link the orphaned /staff-augmentation/staff-augmentation-vs-outsourcing post, see CONT-06), pricing section linking the pricing posts, and internal links from the 13 other staff-augmentation posts. Same treatment, smaller scale, for /nearshoring-offshoring/what-is-it-outsourcing-definition-models-when-to-use-it (9,468 imp, 'outsourcing models' pos 11.2) and /nearshoring-offshoring/nearshore-vs-offshore-costs-2026-software-development-rates (6,835 imp, cost queries pos 9-20)."
+  },
+  {
+    "id": "CONT-04",
+    "title": "GSC impressions are heavily polluted by machine-generated query families; several headline impression counts are junk and sitewide CTR is unusable",
+    "lens": "content",
+    "severity": "high",
+    "evidence": [
+      {"claim": "Query family '<company> engineering challenges nearshoring' accounts for most of the nearshoring-benefits post's impressions: siteimprove 8,092, causalens 8,088, rallyware 6,543, sydecar 5,873, all 0 clicks, pos 4-8", "source": "gsc/full-query-x-page.json", "value": ">30,000 imp of the page's 47,822 (joined) are this pattern"},
+      {"claim": "Query family 'number of employees at <random domain>' drives /about-us striking-distance impressions: cloudsports.at 3,237, cloudcomunicaciones.cl 2,903, plus dozens more, all 0 clicks", "source": "gsc/full-query-x-page.json", "value": "10,394 imp pos 8-30 on /about-us are this pattern"},
+      {"claim": "Site non-brand CTR at pos 4-6 is 0.05 percent (35 clicks / 74,528 imp), which is 100x below any plausible organic curve, proving the impression base is not human searches", "source": "gsc/full-query-x-page.json aggregated", "value": "pos 1-3: 0.14%; 4-6: 0.05%; 7-10: 0.05%"},
+      {"claim": "/compare/toptal-vs-upwork 44,019 imp but top real queries are 'toptal vouchers' (1,361) and 'toptal api public' (588), navigational-for-toptal, not buyer intent for us", "source": "joined/pages.json + gsc/full-query-x-page.json", "value": "12 clicks on 44,019 imp"}
+    ],
+    "affected_urls": {"count": 5, "sample": ["/nearshoring-offshoring/what-is-nearshoring-benefits-and-challenges-for-software-development-teams", "/about-us", "/compare/toptal-vs-upwork", "/services/data-scientists", "/services/mobile-apps"]},
+    "effort": {"band": "hours", "estimate_hours": 2, "who": "claude"},
+    "impact": {"metric": "crawl efficiency", "estimate": "Not a fix, a measurement rule: any prioritisation ranked on raw impressions_90d over-weights these pages by 3-10x. The likely source is AI agents issuing templated searches (pattern matches LLM tool-use queries). CTR-based impact estimates must use industry curves, not our own", "confidence": "high"},
+    "depends_on": [],
+    "quick_win": true,
+    "recommendation": "Synthesis session: filter query families matching '<X> engineering challenges nearshoring' and 'number of employees at <domain>' (and similar templated shapes) before ranking anything on impressions. Do not treat the nearshoring-benefits post or /about-us as top opportunities on raw impressions. Positive spin worth noting: AI agents are repeatedly landing on our pages as a source, which corroborates the AEO strategy."
+  },
+  {
+    "id": "CONT-05",
+    "title": "AI citations concentrate on 3,000-4,800 word ranked comparison and listicle pages; that format is the proven template for cited.io output",
+    "lens": "content",
+    "severity": "high",
+    "evidence": [
+      {"claim": "/compare/dedicated-teams-vs-toptal: 2,351 Copilot citations, 3,502 words. Next: /compare/cloud-employee-vs-proxify 674; /staff-augmentation/best-staff-augmentation-companies-in-latin-america-2026 658 (4,830 words); /compare/toptal-vs-cloud-employee 418 (3,060 words); /staff-augmentation/best-staff-augmentation-companies-2026 254 (4,042 words)", "source": "joined/pages.json copilot_citations column (from bing/cloudemployee.io_AIPageStatsReport_8_7_2026.csv)", "value": "top 10 cited pages: 8 are comparisons/listicles, median wc ~3,200"},
+      {"claim": "Only 95 pages have any Copilot citation; citation traffic does not track GSC clicks (top cited page has 1 click in 90d)", "source": "joined/pages.json", "value": "95 of 7,027 rows"},
+      {"claim": "The same long-form comparison pages also earn Google impressions: best-staff-augmentation-companies-in-latin-america 16,642 imp at pos 6.5", "source": "joined/pages.json", "value": "16,642 imp pos 6.5"}
+    ],
+    "affected_urls": {"count": 95, "sample": ["/compare/dedicated-teams-vs-toptal", "/staff-augmentation/best-staff-augmentation-companies-in-latin-america-2026-a-ranked-comparison", "/compare/cloud-employee-vs-proxify"]},
+    "effort": {"band": "days", "estimate_hours": 16, "who": "claude"},
+    "impact": {"metric": "rankings", "estimate": "Brand Radar baseline is AI share of voice 0 percent vs Toptal 7 mentions (MANIFEST-ahrefs-exports.md). The cited format is known; replicating it against the CONT-02 clusters ('best X companies', 'X vs Y') is the direct lever on that number. Caveat: Copilot citation counts predate the 27 Jul collapse and are directional only", "confidence": "medium"},
+    "depends_on": [],
+    "quick_win": false,
+    "recommendation": "cited.io production template: 3,000+ words, ranked list or head-to-head comparison, explicit pricing, tables, updated-year in title. Commission against the biggest gap clusters: 'best software outsourcing companies', 'best staff augmentation companies' variants by geography, and 'X vs Y' pairs among the 10 tracked competitors. Upgrade, do not duplicate, the existing best-staff-augmentation pages."
+  },
+  {
+    "id": "CONT-06",
+    "title": "7 blog posts have zero inbound internal links sitewide and 32 of 70 posts get no links from any other post; the newest (cited.io-style) posts are the most orphaned",
+    "lens": "content",
+    "severity": "medium",
+    "evidence": [
+      {"claim": "7 posts receive 0 inbound links from all 656 crawled pages: cloud-employee-pricing-bootstrapped-founders, cloud-employee-pricing-negotiation-flexibility, latam-staff-augmentation-trends-2026, staff-augmentation-fintech-security-compliance, staff-augmentation-myths-debunked, staff-augmentation-pricing-models-in-latam, staff-augmentation-vs-outsourcing", "source": "crawl/internal-links.json (inverted)", "value": "0 inbound each; all 2,700-3,500 words"},
+      {"claim": "These orphans already earn impressions and AI citations: latam-staff-augmentation-trends-2026 680 imp + 5 Copilot citations; staff-augmentation-fintech-security-compliance 61 citations; pricing-models-in-latam 526 imp", "source": "joined/pages.json", "value": "228-680 imp each despite 0 internal links"},
+      {"claim": "32 of 70 crawled blog posts have zero inbound links from other posts (hub listing only); median post-to-post outbound is 6, so linking out happens but is not reciprocated into clusters", "source": "crawl/internal-links.json", "value": "32/70"}
+    ],
+    "affected_urls": {"count": 32, "sample": ["/staff-augmentation/staff-augmentation-vs-outsourcing", "/staff-augmentation/latam-staff-augmentation-trends-2026", "/staff-augmentation/cloud-employee-pricing-bootstrapped-founders", "/nearshoring-offshoring/nearshore-vs-offshore-costs-2026-software-development-rates"]},
+    "effort": {"band": "hours", "estimate_hours": 6, "who": "claude"},
+    "impact": {"metric": "rankings", "estimate": "The 7 true orphans hold ~2,200 combined 90d impressions with zero link equity; the staff-augmentation cluster has 13+ posts that should all interlink through the CONT-03 pillar. Cheap multiplier on work already paid for", "confidence": "high"},
+    "depends_on": [],
+    "quick_win": true,
+    "recommendation": "Add contextual links from the CONT-03 pillar and sibling posts to all 7 orphans (each is a natural subtopic: vs-outsourcing, pricing, fintech, myths, latam). Then a related-posts pass across the 6 hubs so no post has zero post-to-post inbound. Note for synthesis: internal linking lens will see this too; the content-specific point is that the orphans are the newest, best AEO content."
+  },
+  {
+    "id": "CONT-07",
+    "title": "Only two genuine new-page holes: a JavaScript hire page and a definitive software-development-outsourcing page; everything else in the gap maps to existing URLs",
+    "lens": "content",
+    "severity": "medium",
+    "evidence": [
+      {"claim": "No page matches /technology/javascript-developers or any javascript path in the 656-page crawl, against a 4,550 vol javascript gap cluster (hire javascript developer 700 vol KD 11 CPC 16.96, 4 competitors top-10)", "source": "crawl/internal-links.json paths + ahrefs-exports content gap CSV", "value": "0 matching paths; 22 gap kws"},
+      {"claim": "The outsourcing cluster (24,100 vol: outsourcing software development 1,900 KD 1; outsource software development 1,300 KD 14) is served only by blog posts; GSC shows those posts capped at pos 11-22 for 'outsourcing models', 'what is it outsourcing'", "source": "ahrefs-exports content gap CSV + gsc/full-query-x-page.json", "value": "24,100 vol cluster, best position 11-22"},
+      {"claim": "Competitors win these with dedicated guide/service pages, e.g. turing.com/resources/everything-you-need-to-know-about-software-outsourcing, arc.dev/employer-blog/offshore-software-development", "source": "ahrefs-exports content gap CSV competitor URL columns", "value": "same 2-3 URLs win the whole cluster per competitor"}
+    ],
+    "affected_urls": {"count": 2, "sample": ["/technology/javascript-developers (missing)", "/services or guide page for software development outsourcing (missing)"]},
+    "effort": {"band": "days", "estimate_hours": 16, "who": "claude"},
+    "impact": {"metric": "rankings", "estimate": "javascript cluster 4,550 vol at median KD 5; outsourcing cluster 24,100 vol at median KD 8 with a KD 1 head term. These are the only cases where new content beats upgrading", "confidence": "medium"},
+    "depends_on": ["CONT-01"],
+    "quick_win": false,
+    "recommendation": "Commission exactly two new pages via cited.io: (1) /technology/javascript-developers on the standard hire-page template; (2) one definitive 'Software Development Outsourcing: models, costs, countries' guide that the existing nearshoring/offshoring posts link up to as the cluster pillar. Do not build new pages for any other cluster."
+  },
+  {
+    "id": "CONT-08",
+    "title": "Thin content is not a real problem: 118 of 165 thin pages have zero impressions (80 are UK clones) and the 47 with impressions are functional pages, not content pages",
+    "lens": "content",
+    "severity": "low",
+    "evidence": [
+      {"claim": "165 pages under 300 words; 47 have any 90d impressions, 118 have none; the no-impression set is 80 /uk pages, 19 /team, 10 /customer-story, 6 /book-a-call", "source": "crawl/thin-pages.json crossed with joined/pages.json", "value": "47 with imp / 118 without"},
+      {"claim": "Top thin pages by impressions are /contact (4,667 imp, pos 7.5), team bios, video pages, and hub indexes, which are thin by design", "source": "crawl/thin-pages.json + joined/pages.json", "value": "top 10 all functional templates"}
+    ],
+    "affected_urls": {"count": 165, "sample": ["/contact", "/team/anto-cabraja", "/videos/employee-experience", "/uk/book-a-call/aj"]},
+    "effort": {"band": "hours", "estimate_hours": 0, "who": "claude"},
+    "impact": {"metric": "crawl efficiency", "estimate": "Time saved: a bulk thin-content expansion programme would produce nothing. The UK thin/zero-impression overlap belongs to the UK-duplication story (cross-lens)", "confidence": "high"},
+    "depends_on": [],
+    "quick_win": false,
+    "recommendation": "Do not run a thin-content expansion programme. Only exceptions worth a light touch: /download/10-ai-prompts (391 imp, pos 15.7, 275 words) and the videos hub pages, where a paragraph of context per page is cheap. Removal decisions on UK pages belong to the international/indexation lens, not content."
+  },
+  {
+    "id": "CONT-09",
+    "title": "Philippines intent is split across four URLs that all rank mid-page for the same queries, capping the whole family below its potential",
+    "lens": "content",
+    "severity": "medium",
+    "evidence": [
+      {"claim": "'hire developer philippines' surfaces three different URLs in GSC: /services/filipino-developers (720 imp pos 15.5), /hire/philippines-offshoring (632 imp pos 7.9), /services/philippines-developers (632 imp pos 9.8)", "source": "gsc/full-query-x-page.json", "value": "3 URLs, same query"},
+      {"claim": "/services/philippines-developers holds 18,257 striking-distance imp and /hiring-tips/hiring-developers-in-the-philippines... another 4,795, plus /services/filipino-developers 4,422, all pos 8-27 and none top-5", "source": "gsc/full-query-x-page.json", "value": "~27,500 imp split across 4 URLs"}
+    ],
+    "affected_urls": {"count": 4, "sample": ["/services/philippines-developers", "/services/filipino-developers", "/hire/philippines-offshoring", "/hiring-tips/hiring-developers-in-the-philippines-cost-quality-culture-fit-for-outsourced-software-development"]},
+    "effort": {"band": "days", "estimate_hours": 12, "who": "claude", "note": "needs a Jake decision on consolidation, so not a quick win"},
+    "impact": {"metric": "rankings", "estimate": "~27,500 clean striking-distance impressions on the highest-converting geo family (CE's core Philippines offer). Consolidating to one canonical hire page plus one cost guide, with the others 301d or differentiated, is the standard fix for a family stuck at pos 8-20", "confidence": "medium"},
+    "depends_on": ["CONT-01"],
+    "quick_win": false,
+    "recommendation": "Pick /services/philippines-developers as canonical for 'hire' intent (it has 330 internal links in). Differentiate or 301 /services/filipino-developers and /hire/philippines-offshoring; keep the hiring-tips post targeting cost/rates queries only and cross-link. Requires Jake sign-off because it retires live URLs during the post-migration settling window; sequence after 31 Aug."
+  },
+  {
+    "id": "CONT-10",
+    "title": "Three definitional nearshore/offshore cost posts are one upgrade away from owning the commercial cost-comparison SERP",
+    "lens": "content",
+    "severity": "medium",
+    "evidence": [
+      {"claim": "/nearshoring-offshoring/nearshore-vs-offshore-costs-2026-software-development-rates: 6,835 striking-distance imp, 'offshore software development cost' pos 9.2, 'nearshore software development rates' pos 5.8, 684 words", "source": "gsc/full-query-x-page.json + joined/pages.json", "value": "684 words, queries pos 5-21"},
+      {"claim": "/nearshoring-offshoring/what-is-it-outsourcing-definition-models-when-to-use-it: 9,468 striking-distance imp ('outsourcing models' 1,017 pos 11.2), 852 words", "source": "gsc/full-query-x-page.json", "value": "9,468 imp"},
+      {"claim": "Matching gap keywords with no ranking at all: nearshore development 700 vol CPC 17.58; nearshore software development 600 vol, 4 competitors top-10; offshore software product development 1,100 vol", "source": "ahrefs-exports content gap CSV", "value": "cluster vol 24,100"}
+    ],
+    "affected_urls": {"count": 3, "sample": ["/nearshoring-offshoring/nearshore-vs-offshore-costs-2026-software-development-rates", "/nearshoring-offshoring/what-is-it-outsourcing-definition-models-when-to-use-it", "/nearshoring-offshoring/what-is-offshoring-cost-effective-tech-teams-explained"]},
+    "effort": {"band": "hours", "estimate_hours": 12, "who": "claude"},
+    "impact": {"metric": "clicks", "estimate": "~20,000 combined clean striking-distance impressions at pos 5-25. The costs post already earns 48 Copilot citations at 684 words; tripling its depth (per-country rate tables, TCO calculator link) attacks both Google and AI answers", "confidence": "medium"},
+    "depends_on": [],
+    "quick_win": false,
+    "recommendation": "Upgrade all three to 1,800+ words each with current per-country rate tables (link the live cost calculators), a models comparison matrix, and mutual links plus links up to a future outsourcing pillar (CONT-07). The 2026 in the costs slug is an asset; keep content dated and refreshed."
+  }
+]

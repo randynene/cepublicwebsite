@@ -1,0 +1,212 @@
+[
+  {
+    "id": "TECH-01",
+    "title": "Google is refusing to index the UK locale: 46 UK pages folded into their US twins as duplicates, only 15 UK pages indexed, and the whole UK mirror earned 56 clicks in 90 days",
+    "lens": "technical-health",
+    "severity": "critical",
+    "evidence": [
+      {"claim": "46 UK pages where Google discarded our self-canonical and selected the US twin (path /uk/X -> /X)", "source": "gsc/url-inspection.json (890 records; manifest's 109 figure is stale, file extended 8 Aug)", "value": "42 'Duplicate, Google chose different canonical than user' (41 UK) + 11 'Duplicate without user-selected canonical' (8 UK); 46 of the 53 resolve /uk/X to /X"},
+      {"claim": "Only 15 UK pages are 'Submitted and indexed' vs 232 US", "source": "gsc/url-inspection.json coverageState by locale", "value": "uk: 15 indexed, 41+8 duplicate-folded, 82 unknown, 17 crawled-not-indexed"},
+      {"claim": "307 of 326 UK pairs are word-identical to their US page", "source": "crawl/uk-us-pairs.json + MANIFEST-crawl.md", "value": "307 identical / 18 differing / 1 no US counterpart"},
+      {"claim": "UK earns almost nothing", "source": "joined/pages.json (locale=uk, status=200)", "value": "368 UK 200-pages: 4,522 impressions_90d and 56 clicks_90d (49 clicks are /uk homepage) vs US 483,430 impressions / 1,168 clicks"},
+      {"claim": "Ahrefs independently flags the same duplication", "source": "ahrefs/site-audit/cloudemployee_06-aug-2026_duplicate-content_2026-08-08_09-41-12.csv", "value": "389 duplicate URLs in 192 content-hash groups; 183 groups are pure UK/US pairs"}
+    ],
+    "affected_urls": {"count": 326, "sample": ["/uk/pricing", "/uk/how-it-works", "/uk/services", "/uk/contact", "/uk/technology/python-developers", "/uk/technology/nodejs-developers"]},
+    "effort": {"band": "days", "estimate_hours": 24, "who": "jake"},
+    "impact": {"metric": "crawl efficiency", "estimate": "Half the 653-URL sitemap is UK mirrors that Google actively rejects; crawl and index budget is spent on 326 pages producing 56 clicks/90d. hreflang alone has NOT prevented canonical fold-in because bodies are word-identical. Either differentiate UK content or canonicalise UK to US deliberately; the status quo lets Google decide inconsistently.", "confidence": "high"},
+    "depends_on": [],
+    "quick_win": false,
+    "recommendation": "Decision required (Jake/Seb): either (a) accept consolidation - set canonical on word-identical /uk/ pages to the US URL and remove them from the sitemap, keeping the 18 genuinely-different UK pages self-canonical; or (b) invest in real UK differentiation (currency, spelling, UK-specific proof) on the pages worth ranking in the UK. Do not leave 307 identical pairs self-canonicalising; Google is already overriding it on at least 46."
+  },
+  {
+    "id": "TECH-02",
+    "title": "VideoObject JSON-LD is missing uploadDate on all video pages - Google flags it as an ERROR on post-cutover crawls, making video rich results ineligible",
+    "lens": "technical-health",
+    "severity": "high",
+    "evidence": [
+      {"claim": "5 /videos/* pages crawled by Google AFTER cutover (5-7 Aug) carry rich-result ERROR 'Missing field uploadDate'", "source": "gsc/url-inspection.json richResultsResult, filtered lastCrawlTime >= 2026-08-03", "value": "/videos/employee-experience, /videos/how-the-cloud-employee-hiring-engine-works, /videos/how-we-keep-remote-devs-connected-and-engaged, /videos/boost-remote-dev-productivity-with-a-how-to-work-with-me-guide, /videos/peer-forum-building-connections-beyond-work"},
+      {"claim": "Live-verified 8 Aug: production VideoObject on /videos/employee-experience has name/description/thumbnailUrl/embedUrl but no uploadDate", "source": "curl https://www.cloudemployee.io/videos/employee-experience, JSON-LD block @type VideoObject", "value": "no uploadDate key present"},
+      {"claim": "44 pages emit VideoObject", "source": "crawl/json-ld.json", "value": "44 VideoObject pages (videos/* x2 locales)"},
+      {"claim": "Ahrefs sees schema validation errors at scale", "source": "ahrefs/site-audit-issues.json", "value": "'Structured data has schema.org validation error': 370; 'Google rich results validation error': 4"}
+    ],
+    "affected_urls": {"count": 44, "sample": ["/videos/employee-experience", "/videos/peer-forum-building-connections-beyond-work"]},
+    "effort": {"band": "hours", "estimate_hours": 3, "who": "claude"},
+    "impact": {"metric": "rankings", "estimate": "34 video rich results were detected in the inspection sample; ERROR-level items are ineligible for the video rich result treatment. Sanity holds publish dates for video docs, so this is a template field addition, not new content.", "confidence": "high"},
+    "depends_on": [],
+    "quick_win": true,
+    "recommendation": "Add uploadDate (ISO 8601 with timezone) to the VideoObject in the TEMPLATE-VIDEO JSON-LD, sourced from the Sanity doc's publish date. Also add duration/description where held. One /videos/ page shows 'Invalid datetime value' + 'missing time zone' warnings - use full ISO format with offset."
+  },
+  {
+    "id": "TECH-03",
+    "title": "434 internal links point at the apex host (cloudemployee.io without www), forcing a 308 hop on every follow - 60% of all links-to-redirects",
+    "lens": "technical-health",
+    "severity": "medium",
+    "evidence": [
+      {"claim": "729 link instances from 153 indexable pages target a redirecting URL", "source": "ahrefs/site-audit/...all-issues.../Warning-indexable-Page_has_links_to_redirect-links.csv", "value": "729 rows, 141 distinct targets"},
+      {"claim": "434 of 729 are https://cloudemployee.io/... (apex, missing www)", "source": "same CSV, Target URL host classification", "value": "434 apex / 166 www-internal-redirect / 119 external / 10 http"},
+      {"claim": "49 more links target the retired /tools/price-comparison-calculator (308 -> /pricing), embedded in blog/compare body copy", "source": "same CSV, target frequency count", "value": "top single target at 49 link instances"}
+    ],
+    "affected_urls": {"count": 153, "sample": ["/staff-augmentation/staff-augmentation-pricing-and-costs-what-youll-actually-pay", "/compare/cloud-employee-pricing-plans-cost-breakdown"]},
+    "effort": {"band": "hours", "estimate_hours": 6, "who": "claude"},
+    "impact": {"metric": "crawl efficiency", "estimate": "Every apex link costs a 308 hop and dilutes the link signal on ~153 content pages. Fixable with one Sanity content patch script (rewrite href host to www / relative) plus a sweep for /tools/price-comparison-calculator and /price-comparison-calculator hrefs. No ranking emergency: targets do resolve.", "confidence": "medium"},
+    "depends_on": [],
+    "quick_win": true,
+    "recommendation": "One-shot Sanity Portable Text patch: rewrite internal hrefs from https://cloudemployee.io/* (and http://*) to relative paths, and re-point in-content links at final destinations (/pricing instead of /tools/price-comparison-calculator, current /staff-augmentation/* slugs). Add a lint/verify script so migrated content for customer 2 can't reintroduce absolute-apex links."
+  },
+  {
+    "id": "TECH-04",
+    "title": "51 pages that were noindex on Webflow are now indexable - team member, book-a-call and for-developers pages entered the index surface without an explicit decision",
+    "lens": "technical-health",
+    "severity": "medium",
+    "evidence": [
+      {"claim": "51 URLs flipped noindex -> indexable between Ahrefs crawls", "source": "ahrefs/site-audit/...all-issues.../Notice-Noindex_page_became_indexable.csv", "value": "51 rows: 30 team/*, 10 book-a-call/*, for-developers x2, customer-story/travelx x2, technology/android-studio x2, staff-augmentation/best-staff-augmentation-companies-2026 x2"},
+      {"claim": "Live-verified 8 Aug: /book-a-call/seb, /book-a-call/anto, /team/seb-hall, /for-developers all serve meta robots 'index, follow'", "source": "curl production HTML", "value": "index, follow on all sampled"},
+      {"claim": "GSC still shows 9 of these as 'Excluded by noindex' - stale pre-cutover crawls, will flip as Google recrawls", "source": "gsc/url-inspection.json", "value": "/book-a-call/{seb,shawnee,anto,aj}, /team/sofia-wood, /team/heather-wood, /for-developers, /start-hiring/get-started, /staff-augmentation/best-staff-augmentation-companies-2026"}
+    ],
+    "affected_urls": {"count": 51, "sample": ["/book-a-call/seb", "/team/seb-hall", "/for-developers", "/uk/team/caitlin-murray"]},
+    "effort": {"band": "hours", "estimate_hours": 2, "who": "jake"},
+    "impact": {"metric": "crawl efficiency", "estimate": "Team pages indexable is per TEMPLATE-TEAM_MEMBER design (Person JSON-LD, sitemap). But 10 personal /book-a-call/* pages are thin, near-duplicate booking forms - indexing them was Webflow's explicit non-choice and is now silently reversed. Low traffic risk either way; needs a 10-minute decision, not engineering.", "confidence": "medium"},
+    "depends_on": [],
+    "quick_win": true,
+    "recommendation": "Confirm intent per group: keep team/* indexable (deliberate), decide on book-a-call/* personal pages (recommend noindex - thin, duplicate intent with /book-a-call) and /start-hiring funnel steps. Where noindex is chosen, also drop from sitemap."
+  },
+  {
+    "id": "TECH-05",
+    "title": "4 sitemap URLs are 308 redirects, not pages: virgin customer story (x2 locales), price-comparison-calculator, and the deliberately-shadowed arc-dev compare page",
+    "lens": "technical-health",
+    "severity": "medium",
+    "evidence": [
+      {"claim": "4 of 653 sitemap URLs do not serve a 200 at the listed URL", "source": "crawl/sitemap-not-200.json", "value": "/compare/cloud-employee-vs-arc-dev (2 hops -> /alternatives), /customer-story/virgin -> /customer-stories, /uk/customer-story/virgin -> /uk/customer-stories, /tools/price-comparison-calculator -> /pricing"},
+      {"claim": "Ahrefs sees the same, minus the compare page it crawled differently", "source": "ahrefs/site-audit/...all-issues.../Error-3XX_redirect_in_sitemap.csv", "value": "same 4 URLs"},
+      {"claim": "Google already treats /tools/price-comparison-calculator as 'Page with redirect'", "source": "gsc/url-inspection.json", "value": "coverageState 'Page with redirect'"},
+      {"claim": "Sitemap still lists 653 URLs as of 8 Aug", "source": "curl https://www.cloudemployee.io/sitemap.xml", "value": "653 <loc> entries"}
+    ],
+    "affected_urls": {"count": 4, "sample": ["/customer-story/virgin", "/tools/price-comparison-calculator"]},
+    "effort": {"band": "hours", "estimate_hours": 2, "who": "claude"},
+    "impact": {"metric": "crawl efficiency", "estimate": "Cosmetic-to-small: 4 of 653. Sitemap redirects erode sitemap trust signals and generate persistent GSC 'why is this here' noise. The virgin story redirects because the doc was retired; the calculator moved into /pricing; arc-dev is the deliberate live-parity shadow (Tech Debt #55).", "confidence": "high"},
+    "depends_on": [],
+    "quick_win": true,
+    "recommendation": "Remove the 4 from sitemap generation: exclude retired/redirected docs (virgin, price-comparison-calculator) and the arc-dev compare entry while its parity 301 stands. Also add /technology/android-studio (+ /uk twin) which is indexable but absent from the sitemap (Notice-Indexable_page_not_in_sitemap.csv)."
+  },
+  {
+    "id": "TECH-06",
+    "title": "28 redirect chains of 2-3 hops, all fixable by re-pointing the first hop at the final destination",
+    "lens": "technical-health",
+    "severity": "low",
+    "evidence": [
+      {"claim": "28 chains longer than one hop", "source": "crawl/redirect-chains.json", "value": "worst: /hire -> /start-hiring -> /start-hiring/contact-info -> /book-a-call (3 hops); 5x /compare/* -> /compare -> /alternatives (2 hops); /book-a-cto-consultation -> /book-anto -> /book-a-call/anto"},
+      {"claim": "Ahrefs concurs at lower count (different crawl scope)", "source": "ahrefs/site-audit-issues.json", "value": "'Redirect chain': 7"},
+      {"claim": "1 broken redirect, in the dead /ph namespace", "source": "ahrefs/site-audit/...all-issues.../Error-Broken_redirect.csv", "value": "/ph/services/filipino-developers?utm_source=chatgpt.com -> /ph/services/philippines-developers which 404s"}
+    ],
+    "affected_urls": {"count": 28, "sample": ["/hire", "/compare/cloud-employee-vs-toptal", "/book-a-cto-consultation"]},
+    "effort": {"band": "hours", "estimate_hours": 3, "who": "claude"},
+    "impact": {"metric": "crawl efficiency", "estimate": "Tidiness, not traffic: every chain resolves to a 200 within 3 hops and 308s pass full signal. Worth collapsing in the tracked redirect tables because chains compound as future URLs move.", "confidence": "high"},
+    "depends_on": [],
+    "quick_win": true,
+    "recommendation": "Collapse first-hop targets to final destinations in site/src/lib/redirects tables (/hire -> /book-a-call, /compare/* -> /alternatives, /book-a-cto-consultation -> /book-a-call/anto, etc). Fix or retire the one broken /ph redirect (target 404s; the /ph namespace is discontinued, a 410 or redirect to /services/software-engineers both defensible)."
+  },
+  {
+    "id": "TECH-07",
+    "title": "Technology detail pages (190 URLs) emit generic WebPage JSON-LD where the equivalent services pages emit Service - a template inconsistency, not an error",
+    "lens": "technical-health",
+    "severity": "low",
+    "evidence": [
+      {"claim": "0 invalid JSON-LD blocks across all 656 crawled 200-pages; every page carries Organization + WebSite + SiteNavigationElement", "source": "crawl/json-ld.json", "value": "655/655 pages with blocks, invalidBlocks empty everywhere"},
+      {"claim": "39 services/* pages emit Service type; 190 technology/* pages emit only WebPage", "source": "crawl/json-ld.json per-template signature aggregation", "value": "technology/*: BreadcrumbList,FAQPage,Organization,SiteNavigationElement,WebPage,WebSite (no Service)"},
+      {"claim": "Google's parse errors on 23 blog URLs are stale pre-cutover Webflow crawls; only the video uploadDate issue (TECH-02) survives on post-cutover crawls", "source": "gsc/url-inspection.json richResults x lastCrawlTime", "value": "23 error-bearing records crawled before 3 Aug vs 5 after (all video uploadDate)"},
+      {"claim": "Google's Breadcrumbs rich result shows 'Unnamed item' on most detected breadcrumbs", "source": "gsc/url-inspection.json richResultsResult items", "value": "249 unnamed vs 105 named breadcrumb items (mixed pre/post-cutover crawls; not re-verified against live BreadcrumbList markup)"}
+    ],
+    "affected_urls": {"count": 190, "sample": ["/technology/python-developers", "/technology/nodejs-developers"]},
+    "effort": {"band": "hours", "estimate_hours": 4, "who": "claude"},
+    "impact": {"metric": "rankings", "estimate": "No current traffic loss - the markup parses. Aligning technology/* to Service and verifying breadcrumb item names on a post-cutover URL closes the gap between the two catalogue templates. Tech Debt #49 (nav JSON-LD bypasses serializeJsonLd) is a code-hygiene item with no crawl-visible symptom in this data.", "confidence": "medium"},
+    "depends_on": [],
+    "quick_win": true,
+    "recommendation": "Add Service JSON-LD to the technology detail template (mirroring services/*). Spot-check one post-cutover Breadcrumbs rich result in GSC UI to confirm item names resolve; if 'Unnamed item' persists on new crawls, fix the BreadcrumbList name fields."
+  },
+  {
+    "id": "TECH-08",
+    "title": "A handful of US redirects have no UK mirror, so the /uk/ path 404s where the US path redirects - at least 5 live instances",
+    "lens": "technical-health",
+    "severity": "low",
+    "evidence": [
+      {"claim": "Live-verified 8 Aug: /managing-engineers/software-developer-performance-metrics-for-ctos 308s to hub; /uk/ same path 404s. /download/our-internal-hiring-sop 308s to /; /uk/ same path 404s", "source": "curl production", "value": "US 308 vs UK 404 on both pairs"},
+      {"claim": "3 more pairs in the crawl where the US path redirects and the UK path is a crawled 404", "source": "crawl/urls.json pairwise comparison", "value": "/uk/industry-guide/scaling-product-development-with-remote-software-developers, /uk/resources/7-benefits-of-outsourcing-web-development-for-startups, /uk/resources/freelancers-vs-cloud-employee"},
+      {"claim": "2 of these 404s carry internal or external links", "source": "ahrefs/site-audit/...all-issues.../Error-404_page.csv", "value": "/uk/managing-engineers/software-developer-performance-metrics-for-ctos and /uk/download/our-internal-hiring-sop?utm_source=chatgpt.com listed as 404 pages with inlinks"}
+    ],
+    "affected_urls": {"count": 5, "sample": ["/uk/managing-engineers/software-developer-performance-metrics-for-ctos", "/uk/download/our-internal-hiring-sop"]},
+    "effort": {"band": "hours", "estimate_hours": 2, "who": "claude"},
+    "impact": {"metric": "crawl efficiency", "estimate": "Small: ~5 URLs, near-zero traffic. But it is a systematic gap - redirects added for retired US content are not being locale-mirrored - and it will silently grow each time a US doc is retired.", "confidence": "high"},
+    "depends_on": [],
+    "quick_win": true,
+    "recommendation": "Mirror locale in the redirect layer: when a US path gets a redirect, generate the /uk/ twin automatically (redirect to the UK equivalent target where it exists, else the US target). Backfill the 5 known instances."
+  },
+  {
+    "id": "TECH-09",
+    "title": "Stale-crawl noise dominates the scary-looking GSC numbers: robots-blocked, noindex-excluded and 404 verdicts are mostly Google's memory of the Webflow site or the dead /ph locale",
+    "lens": "technical-health",
+    "severity": "low",
+    "evidence": [
+      {"claim": "358 of 491 inspected records with a lastCrawlTime were last crawled BEFORE cutover (3 Aug)", "source": "gsc/url-inspection.json", "value": "pre: 358, post: 133"},
+      {"claim": "All 7 'Blocked by robots.txt' are /live-job-role/* - but live robots.txt only disallows /download-thank-you/, and /live-job-role now 308s to talent.cloudemployee.io", "source": "gsc/url-inspection.json + curl https://www.cloudemployee.io/robots.txt + crawl/offsite-final-destinations.json", "value": "stale verdicts; robots.txt: 'Allow: /, Disallow: /download-thank-you/'"},
+      {"claim": "36 'Not found (404)' records are 28 /ph/* (locale deliberately discontinued to talent subdomain), 3 old /blog/*, 3 /live-job-role/*, 2 retired team members", "source": "gsc/url-inspection.json", "value": "36 records, 0 UK, no unexplained URL"},
+      {"claim": "408 of 890 inspected URLs are 'URL is unknown to Google' - inspection targets included historical/known-path URLs Google never had", "source": "gsc/url-inspection.json", "value": "408 unknown (326 us, 82 uk)"}
+    ],
+    "affected_urls": {"count": 401, "sample": ["/live-job-role/senior-android-developer", "/ph/about-us", "/blog/cryptocurrency-predictions-for-2018"]},
+    "effort": {"band": "hours", "estimate_hours": 0, "who": "jake"},
+    "impact": {"metric": "crawl efficiency", "estimate": "No action needed on the stale verdicts themselves - they self-heal as Google recrawls (133 post-cutover crawls in 5 days shows recrawl is underway). Value is negative-space: prevents the synthesis session or a future audit from mistaking these for live breakage. The 108 'Crawled - currently not indexed' (91 US) is the one number to re-measure at the 31 Aug read.", "confidence": "high"},
+    "depends_on": [],
+    "quick_win": false,
+    "recommendation": "No fix. Re-run URL inspection on the same 890-URL sample around 31 Aug and diff coverageState; that diff is the real migration indexing verdict. Decide /ph/*: 404 is acceptable, but a 410 would clear Google's memory faster."
+  },
+  {
+    "id": "TECH-10",
+    "title": "hreflang is close to clean: 3 real reciprocity failures out of 326 UK pairs, all already-known edge cases",
+    "lens": "technical-health",
+    "severity": "low",
+    "evidence": [
+      {"claim": "656 pages checked; 9 non-reciprocal, of which 6 are query-parameter crawl artifacts (?page=, ?ref=, ?utm) that emit hreflang pointing at the clean URL", "source": "crawl/hreflang.json", "value": "real failures: /uk/compare/cloud-employee-vs-arc-dev (US twin 308s per parity shadow), /uk/team/caitlin-murray (UK-only member, Tech Debt #58), /uk/tools/price-comparison-calculator (US twin 308s to /pricing)"},
+      {"claim": "Ahrefs sees the same 3", "source": "ahrefs/site-audit-issues.json", "value": "'Hreflang to redirect or broken page': 3"}
+    ],
+    "affected_urls": {"count": 3, "sample": ["/uk/team/caitlin-murray", "/uk/tools/price-comparison-calculator"]},
+    "effort": {"band": "hours", "estimate_hours": 1, "who": "claude"},
+    "impact": {"metric": "crawl efficiency", "estimate": "Cosmetic. 323 of 326 pairs are fully reciprocal. Fix rides along with TECH-01's UK decision and TECH-05's sitemap cleanup.", "confidence": "high"},
+    "depends_on": ["TECH-01"],
+    "quick_win": true,
+    "recommendation": "Suppress the en-US hreflang alternate on the 3 UK pages whose US twin no longer serves a 200 (or emit it only when the twin resolves). Caitlin Murray resolves itself when Seb answers Tech Debt #58."
+  },
+  {
+    "id": "TECH-11",
+    "title": "Duplicate content beyond the UK mirror is a non-issue: the extra ~80 Ahrefs URLs are query-parameter variants that already canonicalise correctly",
+    "lens": "technical-health",
+    "severity": "low",
+    "evidence": [
+      {"claim": "389 duplicate URLs resolve to 192 content-hash groups; 183 are pure UK/US pairs; the 9 remaining groups are utm_source=chatgpt.com, Webflow pagination (?61e47ae8_page=N, ?47af9676_page=N) and calculator params", "source": "ahrefs/site-audit/cloudemployee_06-aug-2026_duplicate-content_2026-08-08_09-41-12.csv, grouped by Content hash", "value": "9 non-UK-pair groups, all param variants of a canonical page"},
+      {"claim": "Param variants canonicalise to the clean URL and Ahrefs records that as the (correct) 'canonical changed' behaviour", "source": "ahrefs/site-audit/...all-issues.../Notice-Canonical_URL_changed.csv", "value": "2 rows, both ?page= variants canonicalising to clean URL, marked non-indexable"},
+      {"claim": "?page=N pagination is noindexed by design", "source": "ahrefs/site-audit/...all-issues.../Warning-Noindex_page.csv", "value": "48 noindex URLs dominated by /blog?page=N, /staff-augmentation?page=N etc."}
+    ],
+    "affected_urls": {"count": 9, "sample": ["/pricing?region=usa&junior=0&mid=1&senior=0&mode=monthly", "/how-it-works?utm_source=chatgpt.com"]},
+    "effort": {"band": "hours", "estimate_hours": 0, "who": "claude"},
+    "impact": {"metric": "crawl efficiency", "estimate": "None - defenses (canonical + noindex on pagination) are working. Recorded so the synthesis session does not double-count Ahrefs' 389 against the crawl's 307: they are the same UK problem seen twice plus param noise.", "confidence": "high"},
+    "depends_on": [],
+    "quick_win": false,
+    "recommendation": "No action. Optionally note that ChatGPT referrals append ?utm_source=chatgpt.com widely enough to appear in crawls - a small AEO signal for the traffic lens."
+  },
+  {
+    "id": "TECH-12",
+    "title": "Crawl-efficiency trivia bucket: >3-param URLs are Next.js image optimizer internals, IndexNow is unused, and the brief's '879 robots-blocked links' did not reproduce in any dataset",
+    "lens": "technical-health",
+    "severity": "low",
+    "evidence": [
+      {"claim": "19 URLs with >3 query params: 13 are /_next/image?url=...&w=&q=&dpl= optimizer URLs, 6 are calculator/pricing state params", "source": "ahrefs/site-audit/...all-issues.../Notice-More_than_three_parameters_in_URL.csv", "value": "19 rows"},
+      {"claim": "Pages flagged for IndexNow: 5,051 in the 6-Aug export CSV, 55 in the later issues snapshot - IndexNow is simply not wired, this counts eligible pages, nothing is broken", "source": "Notice-Pages_to_submit_to_IndexNow.csv (5051 rows) vs ahrefs/site-audit-issues.json (55)", "value": "informational"},
+      {"claim": "The '879 links to URLs blocked by robots.txt' figure in the lens brief could not be reproduced: live robots.txt disallows only /download-thank-you/, and the crawl's internal link graph contains 0 links to /download-thank-you/*", "source": "curl robots.txt + crawl/internal-links.json scan", "value": "0 matching links found; figure unverified in available data"},
+      {"claim": "Two snapshots of the Ahrefs audit disagree on several counts (e.g. links-to-broken-page 55-row CSV vs 570 in issues.json)", "source": "ahrefs/site-audit/ CSVs (6 Aug crawl, exported 8 Aug) vs ahrefs/site-audit-issues.json", "value": "different crawl snapshots; treat CSV folder as the citable one"}
+    ],
+    "affected_urls": {"count": 19, "sample": ["/_next/image?url=...", "/pricing?region=usa&junior=0..."]},
+    "effort": {"band": "hours", "estimate_hours": 0, "who": "jake"},
+    "impact": {"metric": "crawl efficiency", "estimate": "Cosmetic across the board. Recorded to close the brief's item 8 honestly rather than inflate it. If Bing matters (Copilot citations are a real channel here), wiring IndexNow pings on publish is a small nice-to-have, not a fix.", "confidence": "high"},
+    "depends_on": [],
+    "quick_win": false,
+    "recommendation": "No action required. Optional: exclude /_next/image from Ahrefs crawl scope to reduce audit noise; consider IndexNow on content publish if the Bing/Copilot channel is prioritised."
+  }
+]
