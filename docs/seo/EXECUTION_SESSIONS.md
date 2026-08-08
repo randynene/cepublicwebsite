@@ -25,7 +25,7 @@ Authored 8 Aug 2026 from the six-lens synthesis.
 |---|---|---|---|---|---|
 | S1 | Crawl + redirect hygiene | 1 | ~1 day | none | NOT STARTED |
 | S2 | Internal link equity | 1 | ~1 day | none | NOT STARTED |
-| S3 | Template fixes (schema, images, anchors) | 1 | ~1 day | none | NOT STARTED |
+| S3 | Template fixes (schema, images, anchors) | 1 | ~1 day | none | DONE (PR open, branch seo/s3-template-fixes) - W1-02 blocked on a content date backfill; W1-07/W1-08/W2-06 shipped |
 | S4 | Measurement wiring (Brand Radar weekly) | 1 | ~0.5 day | none | NOT STARTED |
 | S5 | Performance package part A: geo server-side + delete body-hide | 2 | ~2 days | DFH-1 + GeoTargetly rules export | NOT STARTED |
 | S6 | Performance package part B: HubSpot defer + HTML caching | 2 | ~2 days | S5 merged | NOT STARTED |
@@ -77,6 +77,40 @@ Roadmap: W1-02, W1-07, W1-08, W2-06.
 - aria-hidden on icon spans; article-title aria-labels on blog cards.
 - Sanity image URL params: auto=format + honest widths in the image component.
 - Verify: JSON-LD validates on sample pages; grep rendered HTML for ligature leaks.
+
+**STATUS: DONE (PR open on branch seo/s3-template-fixes).** tsc clean; changed
+files add zero new lint problems (pre-existing local/no-conditional-strings-in-jsx
+debt on untouched lines only). `npm run build` not run here (site/.env.local is
+gitignored and the env schema validates Sanity vars at module load) - local build
+verification still required before merge.
+- **W2-06 (Service JSON-LD): SHIPPED.** technology/json-ld.tsx now emits Service
+  (mirrors service/json-ld.tsx: Service @type, #service @id, name/url/provider/
+  description/image, serializeJsonLd). serviceType omitted (technology has no
+  category enum; data-backed fields only).
+- **W1-08 (icon ligature anchors): SHIPPED.** aria-hidden was already present on
+  the Material ligature spans since Jul (pre-crawl), which is why the crawl still
+  showed leaks: Ahrefs reads raw textContent regardless of aria-hidden. Fix is
+  explicit anchor aria-labels (the roadmap's own blog-card technique) on
+  article-card, the resources mega-menu pill, and the simple-dropdown (Locations)
+  row. Verified: no MaterialIcon passes ariaLabel (all aria-hidden), no raw
+  material-symbols spans outside the Icon component.
+- **W1-07 (image params): SHIPPED, with the roadmap file corrected.** The E1
+  Image loader ALREADY emits auto=format + fit=max + per-width widths and is
+  correct - it is NOT the source. The oversized images come from marketing
+  templates rendering Sanity photos from a raw GROQ asset->url original through a
+  raw <img>/next-image. Added withSanityImageParams (null-safe string transform)
+  and applied it across home, how-it-works, location, about-us, fractional-cto,
+  hire-engineers, for-engineers. Remaining same-pattern call sites for a
+  build-verified follow-up: pricing/testimonial-video poster, catalogue 96px tech
+  logos (negligible), and any Sanity-swapped catalogue hero later.
+- **W1-02 (VideoObject uploadDate): BLOCKED - content gap, not a template bug.**
+  No genuine per-video date exists: the Webflow videos collection carried no date
+  into the migration (migrate-videos.ts maps none), Sanity holds none, and the
+  Webflow export has no per-video date. _createdAt is the 2026 migration timestamp,
+  not the publish date - emitting it would be a false freshness claim, so uploadDate
+  is deliberately omitted (documented in video/json-ld.tsx). Closing W1-02 needs an
+  editorial date backfill (consistent with Tech Debt #54, metaTitle also dropped),
+  then project + emit it as full ISO 8601 with offset.
 
 ### S4 - Measurement wiring [INDEPENDENT]
 Roadmap: W1-09.
