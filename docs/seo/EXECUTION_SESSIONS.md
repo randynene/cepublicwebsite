@@ -30,7 +30,7 @@ Authored 8 Aug 2026 from the six-lens synthesis.
 | S5 | Performance package part A: geo server-side + delete body-hide | 2 | ~2 days | DFH-1 + GeoTargetly rules export | NOT STARTED |
 | S6 | Performance package part B: HubSpot defer + HTML caching | 2 | ~2 days | S5 merged | NOT STARTED |
 | S7 | Metadata batch (titles + descriptions) | 2 | ~1.5 days | none | NOT STARTED |
-| S8 | Backlink rescue part A: build the 301 decision list | 2 | ~0.5 day | none | NOT STARTED |
+| S8 | Backlink rescue part A: build the 301 decision list | 2 | ~0.5 day | none | PR OPEN - decision list at docs/seo/S8_BACKLINK_DECISION_LIST.md, awaiting Jake approval (gates S9) |
 | S9 | Backlink rescue part B: ship the 301s | 2 | ~0.5 day | Jake approves S8's list | NOT STARTED |
 | S10 | Content upgrade: staff-augmentation pillar | 2 | ~2 days | none (cited.io) | NOT STARTED |
 | S11 | Content upgrade: cost/definitional trio | 2 | ~2-3 days | none (cited.io) | NOT STARTED |
