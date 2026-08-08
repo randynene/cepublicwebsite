@@ -705,11 +705,6 @@ export const webflowRedirects: Redirect[] = [
     "permanent": true
   },
   {
-    "source": "/resources/(.*)",
-    "destination": "/blog/%1",
-    "permanent": true
-  },
-  {
     "source": "/uk/hire/technical-architects",
     "destination": "/uk/services",
     "permanent": true
@@ -837,11 +832,6 @@ export const webflowRedirects: Redirect[] = [
   {
     "source": "/resources/data-engineer-vs-data-scientist-vs-ai-engineer-key-differences-demand-drivers-and-how-to-hire-right",
     "destination": "/blog/data-engineer-vs-data-scientist-vs-ai-engineer-key-differences-demand-drivers-and-how-to-hire-right",
-    "permanent": true
-  },
-  {
-    "source": "/customer-stories/(.*)",
-    "destination": "/customer-story/%1",
     "permanent": true
   },
   {
@@ -1015,23 +1005,8 @@ export const webflowRedirects: Redirect[] = [
     "permanent": true
   },
   {
-    "source": "/uk/customer-stories/(.*)",
-    "destination": "/uk/customer-story/%1",
-    "permanent": true
-  },
-  {
     "source": "/ph/hire/cloud-engineers",
     "destination": "/ph/services/cloud-engineers",
-    "permanent": true
-  },
-  {
-    "source": "/ph/resources/(.*)",
-    "destination": "/ph/blog/%1",
-    "permanent": true
-  },
-  {
-    "source": "/ph/customer-stories/(.*)",
-    "destination": "/ph/customer-story/%1",
     "permanent": true
   },
   {
@@ -1062,11 +1037,6 @@ export const webflowRedirects: Redirect[] = [
   {
     "source": "/uk/resources/data-engineer-vs-data-scientist-vs-ai-engineer-key-differences-demand-drivers-and-how-to-hire-right",
     "destination": "/uk/blog/data-engineer-vs-data-scientist-vs-ai-engineer-key-differences-demand-drivers-and-how-to-hire-right",
-    "permanent": true
-  },
-  {
-    "source": "/uk/resources/(.*)",
-    "destination": "/uk/blog/%1",
     "permanent": true
   },
   {
@@ -1231,11 +1201,6 @@ export const webflowRedirects: Redirect[] = [
   },
   {
     "source": "/developers",
-    "destination": "/technology",
-    "permanent": true
-  },
-  {
-    "source": "/developers/(.*)",
     "destination": "/technology",
     "permanent": true
   },
@@ -1562,11 +1527,6 @@ export const webflowRedirects: Redirect[] = [
   {
     "source": "/videos/wellness",
     "destination": "/videos",
-    "permanent": true
-  },
-  {
-    "source": "/tools/price-comparison-calculator(.*)",
-    "destination": "/pricing",
     "permanent": true
   },
   {

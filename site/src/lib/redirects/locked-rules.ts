@@ -151,6 +151,11 @@ export const lockedRules: Redirect[] = [
   { source: '/ph/services/filipino-developers', destination: '/services/philippines-developers', permanent: true },
   { source: '/ph/services/philippines-developers', destination: '/services/philippines-developers', permanent: true },
 
+  // The other /ph chain the same crawl recorded. Collapsing the chains left it
+  // one hop long and still landing on a 404, which is a redirect that does the
+  // visitor no good at all. Same fix, same reasoning: the US page exists.
+  { source: '/ph/book-a-call/anto', destination: '/book-a-call/anto', permanent: true },
+
   // DELIBERATE DIVERGENCE FROM LIVE - Jake, 3 Aug 2026.
   //
   // /customer-story/virgin returns 200 on Webflow, but the page has no story on

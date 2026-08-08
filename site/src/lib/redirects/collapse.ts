@@ -212,8 +212,12 @@ export function expandPrefixSwapShortcuts(redirects: Redirect[]): Redirect[] {
   return [...shortcuts, ...redirects]
 }
 
+// `(` counts. Next.js reads a parenthesised group in a source as a real regex
+// capture, so `/resources/(.*)` is a catch-all, not the exact path it looks like.
+// Classifying it as exact put it at the front of the table where it swallowed
+// everything under /resources. Caught by curl, not by tsc.
 function isParameterised(source: string): boolean {
-  return source.includes(':')
+  return source.includes(':') || source.includes('(')
 }
 
 /**
