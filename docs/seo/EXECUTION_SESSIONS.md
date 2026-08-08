@@ -24,7 +24,7 @@ Authored 8 Aug 2026 from the six-lens synthesis.
 | # | Session | Wave | Effort | Gate | Status |
 |---|---|---|---|---|---|
 | S1 | Crawl + redirect hygiene | 1 | ~1 day | none | NOT STARTED |
-| S2 | Internal link equity | 1 | ~1 day | none | NOT STARTED |
+| S2 | Internal link equity | 1 | ~1 day | none | IN PROGRESS - items 1+2 shipped (all 27 compare cards on /alternatives page 1; related-comparisons module); items 3+4 authored not applied (script + plan report), needs a local run against production Sanity with the write token |
 | S3 | Template fixes (schema, images, anchors) | 1 | ~1 day | none | NOT STARTED |
 | S4 | Measurement wiring (Brand Radar weekly) | 1 | ~0.5 day | none | NOT STARTED |
 | S5 | Performance package part A: geo server-side + delete body-hide | 2 | ~2 days | DFH-1 + GeoTargetly rules export | NOT STARTED |
