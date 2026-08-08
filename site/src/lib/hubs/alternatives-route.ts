@@ -2,7 +2,7 @@ import 'server-only'
 
 import { notFound } from 'next/navigation'
 
-import { buildPagination, HUB_PAGE_SIZE, parsePageParam } from '@/lib/hubs/pagination'
+import { buildPagination, parsePageParam } from '@/lib/hubs/pagination'
 import { buildLocalePath, type Locale } from '@/lib/locale'
 import {
   fetchHubChildren,
@@ -62,11 +62,26 @@ export async function resolveAlternativesHubRoute(
 
   const gridTotal = await fetchHubChildrenCount(hubType, { excludeIds })
 
+  // Internal-link equity (SEO S2, roadmap W1-04): render EVERY compare card on
+  // page 1, not the first HUB_PAGE_SIZE. The compare pages are the site's
+  // best-positioned URLs (pos 5-7) and carry ~45% of its AI citations, yet 16 of
+  // the 27 were reachable only behind ?page=2 - so /compare/toptal-vs-upwork, the
+  // biggest non-brand impression earner, had zero in-content inbound links. One
+  // paginated hub link is not enough equity for pages that already rank.
+  //
+  // The catalogue is ~27 docs, so a single band is the honest layout, not a
+  // pagination workaround. Sizing the page to the full grid makes buildPagination
+  // resolve to one page: BlogPagination self-hides (totalPages <= 1), rel=next is
+  // not emitted, and ?page=2 now 404s (currentPage > totalPages) rather than
+  // splitting the catalogue. Math.max(_, 1) guards the empty-grid case (pageSize
+  // must be positive; ceil(0 / 0) is NaN).
+  const pageSize = Math.max(gridTotal, 1)
+
   const pagination = buildPagination({
     currentPage,
     totalItems: gridTotal,
     basePath: buildLocalePath(cfg.basePath, locale),
-    pageSize: HUB_PAGE_SIZE,
+    pageSize,
   })
 
   const items = await fetchHubChildren(hubType, {
