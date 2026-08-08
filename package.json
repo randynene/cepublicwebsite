@@ -34,6 +34,7 @@
     "seo:replay-all-urls": "tsx scripts/seo/replay-all-urls.ts",
     "seo:hubspot-leads-pull": "tsx scripts/seo/hubspot-leads-pull.ts",
     "seo:build-joined-table": "tsx scripts/seo/build-joined-table.ts",
+    "seo:rewrite-links": "tsx scripts/seo/rewrite-sanity-links.ts",
     "scaffold:start": "tsx scripts/scaffold/start-scaffold-phase.ts",
     "scaffold:complete": "tsx scripts/scaffold/complete-scaffold-phase.ts",
     "schema:start": "tsx scripts/schema/start-schema-phase.ts",
