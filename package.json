@@ -28,6 +28,8 @@
     "static:patch-home-lead-line": "tsx scripts/static/patch-home-ready-to-find-lead.ts",
     "hubspot:create-lead-properties": "tsx scripts/hubspot/create-lead-properties.ts",
     "hubspot:create-quick-hiring-form": "tsx scripts/hubspot/create-quick-hiring-form.ts",
+    "seo:hubspot-leads-pull": "tsx scripts/seo/hubspot-leads-pull.ts",
+    "seo:build-joined-table": "tsx scripts/seo/build-joined-table.ts",
     "scaffold:start": "tsx scripts/scaffold/start-scaffold-phase.ts",
     "scaffold:complete": "tsx scripts/scaffold/complete-scaffold-phase.ts",
     "schema:start": "tsx scripts/schema/start-schema-phase.ts",
