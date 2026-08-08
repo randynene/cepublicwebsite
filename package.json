@@ -30,6 +30,7 @@
     "hubspot:create-quick-hiring-form": "tsx scripts/hubspot/create-quick-hiring-form.ts",
     "seo:gsc-deep-pull": "tsx scripts/seo/gsc-deep-pull.ts",
     "seo:ahrefs-deep-pull": "tsx scripts/seo/ahrefs-deep-pull.ts",
+    "seo:brand-radar-pull": "tsx scripts/seo/brand-radar-pull.ts",
     "seo:ahrefs-import-exports": "tsx scripts/seo/ahrefs-import-exports.ts",
     "seo:replay-all-urls": "tsx scripts/seo/replay-all-urls.ts",
     "seo:hubspot-leads-pull": "tsx scripts/seo/hubspot-leads-pull.ts",
