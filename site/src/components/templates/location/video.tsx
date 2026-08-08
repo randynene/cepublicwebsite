@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 
 import { parseVideoUrl } from '@/components/ui/video-embed'
+import { withSanityImageParams } from '@/lib/sanity/image-params'
 
 // Location video media card.
 //
@@ -217,7 +218,7 @@ function EmbedLocationVideo({
         <VideoFrame>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={image}
+            src={withSanityImageParams(image, { width: 1280 })}
             alt=""
             className="absolute inset-0 h-full w-full object-cover object-top"
             loading="lazy"

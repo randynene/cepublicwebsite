@@ -8,6 +8,7 @@ import { ChatLink } from '@/components/shared/chat-link'
 import { VettingProfile } from '@/components/shared/vetting-profile'
 import { HeroTrustBar } from '@/components/social-proof/hero-trust-bar'
 import { cn } from '@/components/ui/_utils/cn'
+import { withSanityImageParams } from '@/lib/sanity/image-params'
 import { LeadFormSection } from '@/components/lead-form/section'
 import { roleIcon } from '@/components/shared/role-icons'
 import { CHAT_HREF } from '@/lib/chat'
@@ -257,7 +258,7 @@ export function HireEngineersTemplate({
                 <div key={c.nm} className="mc-cand">
                   <span className="mc-av">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    {c.image ? <img src={c.image} alt={c.nm} style={COVER} /> : c.av}
+                    {c.image ? <img src={withSanityImageParams(c.image, { width: 400 })} alt={c.nm} style={COVER} /> : c.av}
                   </span>
                   <div>
                     <div className="mc-nm">{c.nm}</div>
@@ -311,7 +312,7 @@ export function HireEngineersTemplate({
             <div className={offerImgClass}>
               {offerHasImage ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={content.offer.img.image} alt={content.offer.img.t} style={COVER} />
+                <img src={withSanityImageParams(content.offer.img.image, { width: 900 })} alt={content.offer.img.t} style={COVER} />
               ) : (
                 <>
                   <span className="tag">{content.offer.img.tag}</span>
@@ -416,7 +417,7 @@ export function HireEngineersTemplate({
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   {content.proof.whoImage ? (
-                    <img src={content.proof.whoImage} alt={content.proof.whoName} style={COVER} />
+                    <img src={withSanityImageParams(content.proof.whoImage, { width: 900 })} alt={content.proof.whoName} style={COVER} />
                   ) : null}
                 </span>
                 <div>
@@ -434,7 +435,7 @@ export function HireEngineersTemplate({
                     top of the finished photograph, which is what shipped. */}
                 {content.proof.sideImg.image ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={content.proof.sideImg.image} alt={content.proof.sideImg.t} style={COVER} />
+                  <img src={withSanityImageParams(content.proof.sideImg.image, { width: 700 })} alt={content.proof.sideImg.t} style={COVER} />
                 ) : (
                   <>
                     <span className="tag">{content.proof.sideImg.tag}</span>
@@ -457,7 +458,7 @@ export function HireEngineersTemplate({
               {/* Same as sideImg above: the brief comes off once the photo lands. */}
               {content.proof.visitImg.image ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={content.proof.visitImg.image} alt={content.proof.visitImg.t} style={COVER} />
+                <img src={withSanityImageParams(content.proof.visitImg.image, { width: 700 })} alt={content.proof.visitImg.t} style={COVER} />
               ) : (
                 <>
                   <span className="tag">{content.proof.visitImg.tag}</span>

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 
 import { cn } from '@/components/ui/_utils/cn'
+import { withSanityImageParams } from '@/lib/sanity/image-params'
 import type { HiwTestimonial } from './content'
 
 // Testimonials slider — reference "Reviews from real teams". A horizontal row
@@ -31,7 +32,7 @@ function PhotoCard({ item }: { item: HiwTestimonial }) {
     <div className="relative h-full w-full overflow-hidden">
       {item.image ? (
         <Image
-          src={item.image}
+          src={withSanityImageParams(item.image, { width: 1120 })}
           alt={item.imageAlt ?? item.name}
           fill
           sizes="(max-width: 1024px) 86vw, 560px"
@@ -84,7 +85,7 @@ function QuoteCard({ item }: { item: HiwTestimonial }) {
       <figcaption className="flex items-center gap-[14px]">
         {item.image ? (
           <span className="relative h-[48px] w-[48px] shrink-0 overflow-hidden rounded-full border border-[#22314D]">
-            <Image src={item.image} alt={item.imageAlt ?? item.name} fill sizes="48px" className="object-cover" />
+            <Image src={withSanityImageParams(item.image, { width: 120 })} alt={item.imageAlt ?? item.name} fill sizes="48px" className="object-cover" />
           </span>
         ) : null}
         <div>

@@ -13,6 +13,7 @@
 // byte-for-byte. This is asserted at build time by scripts/static/verify-fe2-parity.
 //
 // Author voice: no em/en dashes - hyphens only.
+import { withSanityImageParams } from '@/lib/sanity/image-params'
 import type { ForEngineersContent } from './content'
 
 // .fig-asset class -> content path (image URL). Order-independent.
@@ -54,10 +55,14 @@ export function hydrateFe2(template: string, content: ForEngineersContent): stri
   for (const [cls, path] of Object.entries(PHOTO_MAP)) {
     const url = getPath(content, path)
     if (typeof url === 'string' && url.trim() !== '') {
+      // Sanity photos arrive as an unparameterised asset->url original; add
+      // auto-format + an honest width cap so the injected background-image is
+      // not the multi-MB original (roadmap W1-07).
+      const sized = withSanityImageParams(url, { width: 1200 })
       out = out.replace(
         new RegExp(`class="${cls}" style="([^"]*)"`),
         (_m, style: string) =>
-          `class="${cls}" style="${style};background-image:url(&quot;${escAttr(url)}&quot;);background-position:center;background-size:cover;background-repeat:no-repeat"`,
+          `class="${cls}" style="${style};background-image:url(&quot;${escAttr(sized)}&quot;);background-position:center;background-size:cover;background-repeat:no-repeat"`,
       )
     }
   }

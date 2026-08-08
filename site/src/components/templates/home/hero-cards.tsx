@@ -4,6 +4,7 @@ import { useRef, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 
 import { cn } from '@/components/ui/_utils/cn'
+import { withSanityImageParams } from '@/lib/sanity/image-params'
 import type { HomeProfile } from './content'
 
 // Hero photo cards with hover-parallax drift. Separated into a client
@@ -145,7 +146,7 @@ function HoverCard({
     >
       {profile.image ? (
         <Image
-          src={profile.image}
+          src={withSanityImageParams(profile.image, { width: 600 })}
           alt={profile.name}
           fill
           sizes="300px"

@@ -3,6 +3,7 @@
 import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react'
 
 import { cn } from '@/components/ui/_utils/cn'
+import { withSanityImageParams } from '@/lib/sanity/image-params'
 import { TypewriterText } from '@/components/motion/typewriter-text'
 import { ChatLink } from '@/components/shared/chat-link'
 import { HeroTrustBar } from '@/components/social-proof/hero-trust-bar'
@@ -388,7 +389,7 @@ export function FractionalCtoTemplate({
               {content.matched.feature.image ? (
                 <div className="m-photo">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={content.matched.feature.image} alt={content.matched.feature.h3} />
+                  <img src={withSanityImageParams(content.matched.feature.image, { width: 900 })} alt={content.matched.feature.h3} />
                 </div>
               ) : null}
               <div className="foot">{content.matched.feature.foot}</div>
