@@ -23,7 +23,7 @@ Authored 8 Aug 2026 from the six-lens synthesis.
 
 | # | Session | Wave | Effort | Gate | Status |
 |---|---|---|---|---|---|
-| S1 | Crawl + redirect hygiene | 1 | ~1 day | none | **DONE 8 Aug 2026 (PR #TBD)** |
+| S1 | Crawl + redirect hygiene | 1 | ~1 day | none | **DONE 8 Aug 2026 (PR #93)** |
 | S2 | Internal link equity | 1 | ~1 day | none | NOT STARTED |
 | S3 | Template fixes (schema, images, anchors) | 1 | ~1 day | none | NOT STARTED |
 | S4 | Measurement wiring (Brand Radar weekly) | 1 | ~0.5 day | none | NOT STARTED |
@@ -51,7 +51,7 @@ GeoTargetly rules; the Seb question batch.
 
 ### S1 - Crawl + redirect hygiene [DONE 8 Aug 2026]
 Roadmap: W1-01, W1-03, W2-05 (if D-BAC decided), TECH-06, Tech Debt #65.
-Branch `seo/s1-crawl-redirect-hygiene`, 2 commits.
+Branch `seo/s1-crawl-redirect-hygiene`, PR #93.
 
 Shipped:
 - /team/shawnee-malesich + /uk twin 301. Destination is **/about-us, not /team**:
