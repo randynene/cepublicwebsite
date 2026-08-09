@@ -24,7 +24,7 @@ Authored 8 Aug 2026 from the six-lens synthesis.
 | # | Session | Wave | Effort | Gate | Status |
 |---|---|---|---|---|---|
 | S1 | Crawl + redirect hygiene | 1 | ~1 day | none | **DONE 8 Aug 2026 (PR #93)** |
-| S2 | Internal link equity | 1 | ~1 day | none | NOT STARTED |
+| S2 | Internal link equity | 1 | ~1 day | none | IN PROGRESS - items 1+2 shipped (all 27 compare cards on /alternatives page 1; related-comparisons module); items 3+4 authored not applied (script + plan report), needs a local run against production Sanity with the write token |
 | S3 | Template fixes (schema, images, anchors) | 1 | ~1 day | none | DONE (PR open, branch seo/s3-template-fixes) - W1-02 blocked on a content date backfill; W1-07/W1-08/W2-06 shipped |
 | S4 | Measurement wiring (Brand Radar weekly) | 1 | ~0.5 day | none | SCRIPT SHIPPED (PR open); first live pull pending AHREFS_API_KEY (run locally before 14 Aug) |
 | S5 | Performance package part A: geo server-side + delete body-hide | 2 | ~2 days | DFH-1 + GeoTargetly rules export | NOT STARTED |

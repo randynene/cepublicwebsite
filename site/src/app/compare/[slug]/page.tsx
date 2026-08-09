@@ -10,6 +10,7 @@ import {
   fetchCompareBlog,
   fetchCompareBlogMeta,
   fetchCompareBlogParams,
+  fetchRelatedComparisons,
 } from '@/lib/sanity/queries/compare-blog'
 
 type RouteParams = { slug: string }
@@ -70,10 +71,16 @@ export default async function CompareDefaultPage({
   const post = await fetchCompareBlog(slug)
   if (!post) notFound()
 
+  const relatedComparisons = await fetchRelatedComparisons(post)
+
   return (
     <main id="main">
       <CompareJsonLd post={post} locale="en-US" />
-      <CompareTemplate post={post} locale="en-US" />
+      <CompareTemplate
+        post={post}
+        relatedComparisons={relatedComparisons}
+        locale="en-US"
+      />
     </main>
   )
 }

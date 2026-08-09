@@ -1,20 +1,29 @@
 import type { ReactNode } from 'react'
 
+import { BlogCard } from '@/components/cards/blog-card'
 import { Container } from '@/components/ui/container'
 import { FaqList } from '@/components/ui/faq-list'
 import { Heading } from '@/components/ui/heading'
 import { Image } from '@/components/ui/image'
+import { MegaMenuPillLabel } from '@/components/ui/mega-menu-pill-label'
 import { PortableText } from '@/components/ui/portable-text'
 import { Tag } from '@/components/ui/tag'
 import { Text } from '@/components/ui/text'
 import { cn } from '@/components/ui/_utils/cn'
 import { STICKY_ASIDE } from '@/components/layout/sticky-aside'
-import type { Locale } from '@/lib/locale'
+import { buildLocalePath, type Locale } from '@/lib/locale'
+import type { HubChildItem } from '@/lib/sanity/queries/hubs'
 import { UI_STRINGS } from '@/lib/ui-strings'
 import type { CompareBlog } from '@/types/sanity/documents/compare-blog'
 
 export interface CompareTemplateProps {
   post: CompareBlog
+  /**
+   * Sibling comparisons for the related-comparisons module (SEO S2). Selected
+   * from data upstream (shared competitor / tags, recency fallback) and already
+   * filtered against retired docs; the template only renders them.
+   */
+  relatedComparisons: HubChildItem[]
   locale: Locale
 }
 
@@ -100,7 +109,11 @@ function CompareFaqsIntro() {
   )
 }
 
-export default function CompareTemplate({ post, locale }: CompareTemplateProps) {
+export default function CompareTemplate({
+  post,
+  relatedComparisons,
+  locale,
+}: CompareTemplateProps) {
   const competitor = deriveCompetitor(post)
   const formattedDate = formatPostDate(post.date, locale)
   const author = post.author ?? null
@@ -211,6 +224,51 @@ export default function CompareTemplate({ post, locale }: CompareTemplateProps) 
                 <CompareFaqsIntro />
               </div>
               <FaqList items={faqItems} />
+            </section>
+          )}
+
+          {/* Related comparisons (SEO S2, roadmap W1-04). Lateral internal links
+              between the compare pages, which otherwise link only up to the hub.
+              Renders through the same BlogCard as the /alternatives grid; the
+              upstream query already excludes retired docs and this page itself. */}
+          {relatedComparisons.length > 0 && (
+            <section
+              aria-labelledby="related-comparisons-heading"
+              className={cn(
+                'border-t border-[#22314D]',
+                BAND_PX_CLASS,
+                'py-[56px] lg:py-[72px]',
+              )}
+            >
+              <div className="mb-[32px] flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                <Heading
+                  as="h2"
+                  id="related-comparisons-heading"
+                  className="text-[30px] font-semibold leading-[34px] tracking-[-1px] text-white lg:text-[46px] lg:leading-[52px] lg:tracking-[-1.4px]"
+                >
+                  {UI_STRINGS['compare.relatedHeadingPrefix']}{' '}
+                  <span className="font-serif italic font-normal text-brand-primary">
+                    {UI_STRINGS['compare.relatedHeadingAccent']}
+                  </span>
+                </Heading>
+                <MegaMenuPillLabel
+                  as="a"
+                  href={buildLocalePath('/alternatives', locale)}
+                  variant="pill-outline-dark"
+                  size="cta"
+                  leadingArrow
+                  leadingGlyph="→"
+                  label={UI_STRINGS['compare.viewAllComparisons']}
+                />
+              </div>
+
+              <ul className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {relatedComparisons.map((item) => (
+                  <li key={item._id} className="contents">
+                    <BlogCard item={item} locale={locale} />
+                  </li>
+                ))}
+              </ul>
             </section>
           )}
         </div>
