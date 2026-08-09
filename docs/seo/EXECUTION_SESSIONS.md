@@ -23,7 +23,7 @@ Authored 8 Aug 2026 from the six-lens synthesis.
 
 | # | Session | Wave | Effort | Gate | Status |
 |---|---|---|---|---|---|
-| S1 | Crawl + redirect hygiene | 1 | ~1 day | none | NOT STARTED |
+| S1 | Crawl + redirect hygiene | 1 | ~1 day | none | **DONE 8 Aug 2026 (PR #93)** |
 | S2 | Internal link equity | 1 | ~1 day | none | NOT STARTED |
 | S3 | Template fixes (schema, images, anchors) | 1 | ~1 day | none | NOT STARTED |
 | S4 | Measurement wiring (Brand Radar weekly) | 1 | ~0.5 day | none | NOT STARTED |
@@ -49,15 +49,51 @@ GeoTargetly rules; the Seb question batch.
 
 ## Session briefs (scope per session)
 
-### S1 - Crawl + redirect hygiene [INDEPENDENT]
+### S1 - Crawl + redirect hygiene [DONE 8 Aug 2026]
 Roadmap: W1-01, W1-03, W2-05 (if D-BAC decided), TECH-06, Tech Debt #65.
-- 301 /team/shawnee-malesich to /team (interim until Seb answers restore-vs-301).
-- Drop the 4 redirecting URLs from the sitemap; add /technology/android-studio + UK twin.
-- Fix the /ph/services/filipino-developers 308-to-404 chain.
-- Collapse the 28 redirect chains to single hops in the tracked redirect tables.
-- Whitespace-tolerant redirect matching (trailing %20).
-- If Jake has said yes: restore noindex on the 10 /book-a-call/* pages.
-- Verify: curl every touched path; npm run build; sitemap count checks.
+Branch `seo/s1-crawl-redirect-hygiene`, PR #93.
+
+Shipped:
+- /team/shawnee-malesich + /uk twin 301. Destination is **/about-us, not /team**:
+  /team is itself a 301 to /about-us, so pointing at /team would build the exact
+  chain this session removes. Still INTERIM pending Seb (D-EDIT); if the page is
+  restored, delete the two lines in `site/src/lib/redirects/locked-rules.ts`.
+- Sitemap 653 to 651. The 4 redirecting URLs are filtered by reading the same
+  assembled redirect table next.config.ts serves, not a hand-kept list, so the
+  fifth retired document is handled the day it is retired.
+  /technology/android-studio + UK twin added (the `listItemOnly` filter is gone).
+- /ph/services/filipino-developers now lands on /services/philippines-developers
+  in one hop, so the utm_source=chatgpt.com traffic reaches a page.
+- All 28 redirect chains collapse to single hops, verified against a production
+  build, each landing on the same final URL the crawl recorded.
+- Whitespace-tolerant paths: middleware trims %20/%09/%0a off both ends and 308s
+  to the clean path (Tech Debt #65).
+
+Beyond the brief, both same-defect one-liners:
+- /ph/book-a-cto-consultation was left one hop long still landing on a 404.
+  Fixed the same way.
+- **A real bug the curl pass caught.** 8 rows of Webflow regex syntax leak into
+  webflow-redirects.csv as raw `(.*)` / `%1` and were being emitted as live
+  rules. Next reads `(.*)` as a capture group and has nothing to do with `%1`, so
+  they 308 to the literal path `/blog/%1`. They were harmless only because they
+  sat below the properly translated rules and were never reached, until this
+  session's reordering moved them up. `extract-redirects.ts` now drops them.
+
+SKIPPED: the /book-a-call noindex item (W2-05). **D-BAC is still undecided** -
+it is listed in this file as an open question for Jake, so the gate is not met.
+
+Also skipped, reported rather than improvised: 40 more /ph rows in the Webflow
+export have the same shape as the filipino chain (a /ph destination that no
+longer exists). Not generalised to `/ph/:path*` - a blanket rule would also
+swallow /ph paths that correctly 404, which is the /live-job-role catch-all
+mistake. Worth a scoped session of its own.
+
+Verified: curl of every touched path against a production build (28 chains + the
+16 destinations + both android-studio pages); `npm run build` clean; tsc clean;
+lint identical to main (84 pre-existing problems, 0 new); sitemap count 651 with
+the 4 absent and android-studio present. `/web-developer%20` correctly trims to
+`/web-developer`, which is still a 404 on purpose: reclaiming it is S9, gated on
+Jake approving the S8 list.
 
 ### S2 - Internal link equity [INDEPENDENT]
 Roadmap: W1-04, W1-05, W1-06.

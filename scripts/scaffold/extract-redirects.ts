@@ -112,6 +112,20 @@ function isInfrastructurePath(source: string): boolean {
   return source.startsWith('/cdn-cgi/')
 }
 
+// Webflow's regex rules leak into the CSV export as raw `(.*)` / `%1` rows, on
+// top of being exported properly in ce-regex-redirects.json (which step 3 below
+// translates into Next.js `:slug+` syntax). Emitting them from here as well
+// produces eight duplicate rules with an untranslated destination: Next.js reads
+// `(.*)` in a source as a real capture group but has no idea what `%1` means, so
+// `/resources/anything` 308s to the literal path `/blog/%1`.
+//
+// They were harmless only by accident, sitting below the translated rules in the
+// table and never being reached. Ordering is not a safety mechanism. Drop them at
+// the source; the translated versions in regexRedirects are the ones that work.
+function hasWebflowRegexSyntax(source: string, target: string): boolean {
+  return source.includes('(') || /%\d/.test(target)
+}
+
 // Redirect targets in the Webflow export are sometimes absolute URLs on the
 // customer's own domain. Emitting those as-is bakes the current hostname into
 // the redirect table (breaking CLAUDE.md rule 9: no CE-specific values in lib
@@ -213,6 +227,7 @@ const webflowRedirects = csvRows
   .filter((row) => !isJobRolePath(row.source))
   .filter((row) => !LOCKED_RULE_SOURCES.has(row.source))
   .filter((row) => !hasQueryString(row.source))
+  .filter((row) => !hasWebflowRegexSyntax(row.source, row.target))
   .filter((row) => !isInfrastructurePath(row.source))
   .map((row) => ({
     source: row.source,
