@@ -3,6 +3,7 @@ import type { MetadataRoute } from 'next'
 import { env } from '@/lib/env'
 import { generateCanonical, generateHreflang, LOCALES } from '@/lib/locale'
 import { HUB_CONFIG, type HubType } from '@/lib/sanity/queries/hubs'
+import { redirectedPaths } from '@/lib/redirects'
 import { NOT_RETIRED } from '@/lib/sanity/queries/_filters'
 import { sanityClient } from '@/lib/sanity/client'
 
@@ -243,17 +244,51 @@ const SERVICE_SITEMAP_QUERY = /* groq */ `
 }
 `
 
-// listItemOnly technologies (1 of 101: android-studio) ARE routed and serve a 200
-// — Webflow serves them too. They are only kept out of the sitemap, which is
-// exactly what the live site does. Do not "fix" this by excluding them from
-// routing: see the note on TECHNOLOGY_PARAMS_QUERY in queries/technology.ts.
+// listItemOnly technologies (1 of 101: android-studio) ARE routed and serve a 200,
+// and Webflow serves them too. They used to be filtered out here, because live's
+// sitemap omits them.
+//
+// SEO session S1, 8 Aug 2026: the filter is gone. Faithfulness to Webflow's
+// sitemap was the right default during the cutover; it is not a reason to keep a
+// live, indexable, 200-serving page out of the file that tells Google our pages
+// exist. /technology/android-studio and its UK twin are now listed like every
+// other technology page. See docs/seo/EXECUTION_SESSIONS.md S1.
+//
+// Do not "fix" this by excluding them from ROUTING: see the note on
+// TECHNOLOGY_PARAMS_QUERY in queries/technology.ts.
 const TECHNOLOGY_SITEMAP_QUERY = /* groq */ `
-*[_type == "technology" && defined(slug.current) && listItemOnly != true && ${NOT_RETIRED}]{
+*[_type == "technology" && defined(slug.current) && ${NOT_RETIRED}]{
   _type,
   "slug": slug.current,
   _updatedAt
 }
 `
+
+// Drops any entry whose path the redirect table intercepts.
+//
+// SEO session S1, 8 Aug 2026. The August crawl found four: /customer-story/virgin
+// in both locales, /tools/price-comparison-calculator, and
+// /compare/cloud-employee-vs-arc-dev. Each is a Sanity document that still
+// exists, so the dynamic builders emit it, while a locked rule 301s the URL away.
+// A sitemap that lists a redirect asks Google to crawl a URL we have already told
+// it is not the answer, and repeated often enough it is the sitemap that stops
+// being trusted.
+//
+// This reads the SAME assembled table next.config.ts serves (src/lib/redirects),
+// rather than a hand-kept list of the four. A hand-kept list is a copy of a
+// derived fact and goes stale the first time someone adds a redirect: the four
+// URLs here are all documents that were retired one at a time, and there will be
+// a fifth.
+//
+// Literal sources only. Parameterised rules are not matched, because doing so
+// means re-implementing the router; no sitemap entry has ever hit one.
+function dropRedirectedEntries(entries: MetadataRoute.Sitemap): MetadataRoute.Sitemap {
+  const base = env.NEXT_PUBLIC_SITE_URL
+  return entries.filter((entry) => {
+    const path = entry.url.startsWith(base) ? entry.url.slice(base.length) : entry.url
+    return !redirectedPaths.has(path || '/')
+  })
+}
 
 // MYGRATR-STATIC-1 — hub URL builders.
 //
@@ -401,5 +436,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...technologyDocs,
   ])
 
-  return [...staticRoutes, ...hubRoutes, ...dynamicRoutes]
+  return dropRedirectedEntries([...staticRoutes, ...hubRoutes, ...dynamicRoutes])
 }
