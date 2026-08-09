@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef } from 'react'
 import Image from 'next/image'
 
 import { cn } from '@/components/ui/_utils/cn'
+import { withSanityImageParams } from '@/lib/sanity/image-params'
 import type { HiwPerson } from './content'
 
 // Hero engineer cards for How It Works — two cards flanking the centered
@@ -65,7 +66,7 @@ export function HeroCard({
       }}
     >
       <Image
-        src={person.image}
+        src={withSanityImageParams(person.image, { width: 700 })}
         alt={person.imageAlt}
         fill
         sizes="(max-width: 1024px) 60vw, 300px"

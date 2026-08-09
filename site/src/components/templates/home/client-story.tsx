@@ -24,6 +24,7 @@ import Link from 'next/link'
 
 import { cn } from '@/components/ui/_utils/cn'
 import { ClientLogoImage } from '@/components/social-proof/client-logo-strip'
+import { withSanityImageParams } from '@/lib/sanity/image-params'
 import { HOME_CONTENT, type HomeContent } from './content'
 
 const BAND = 'mx-auto w-full max-w-[1440px] px-[22px] sm:px-[32px] lg:px-[64px]'
@@ -172,7 +173,7 @@ export function ClientStorySection({ content = HOME_CONTENT }: { content?: HomeC
         >
           <div className="flex items-center gap-[20px]">
             <Image
-              src={clientStory.avatar}
+              src={withSanityImageParams(clientStory.avatar, { width: 200 })}
               alt={clientStory.name}
               width={84}
               height={84}

@@ -67,6 +67,25 @@ function buildVideoObjectJsonLd(video: Video, locale: Locale) {
     json.embedUrl = video.mainVideoEmbedLink
   }
 
+  // uploadDate (roadmap W1-02) is deliberately NOT emitted.
+  //
+  // Google flags "Missing field 'uploadDate'" on these VideoObjects, but there
+  // is no genuine per-video date to emit. The Webflow videos collection did not
+  // carry a publish date into the migration (see scripts/content/migrate-videos.ts:
+  // no createdOn / lastPublished field is mapped), so Sanity holds none, and the
+  // Webflow export under data/webflow/ has no per-video date either. The Sanity
+  // system field _createdAt is the CONTENT-1B migration timestamp (2026), NOT the
+  // publish date - emitting it would falsely declare every video as published in
+  // 2026 when many are older. A wrong uploadDate is a false freshness claim to
+  // Google and is worse than an absent one, so the property is omitted per
+  // schema.org's rule that an absent optional field is valid.
+  //
+  // Closing W1-02 needs a content-side date backfill (an editorial uploadDate
+  // field on the video document, populated per video), not a template change.
+  // This is consistent with Tech Debt #54 (video metaTitle was likewise dropped
+  // at migration). Once a real date field exists in Sanity, project it in
+  // VIDEO_QUERY and emit it here as a full ISO 8601 datetime with UTC offset.
+
   return json
 }
 

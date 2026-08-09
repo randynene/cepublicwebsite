@@ -23,10 +23,10 @@ Authored 8 Aug 2026 from the six-lens synthesis.
 
 | # | Session | Wave | Effort | Gate | Status |
 |---|---|---|---|---|---|
-| S1 | Crawl + redirect hygiene | 1 | ~1 day | none | NOT STARTED |
+| S1 | Crawl + redirect hygiene | 1 | ~1 day | none | **DONE 8 Aug 2026 (PR #93)** |
 | S2 | Internal link equity | 1 | ~1 day | none | IN PROGRESS - items 1+2 shipped (all 27 compare cards on /alternatives page 1; related-comparisons module); items 3+4 authored not applied (script + plan report), needs a local run against production Sanity with the write token |
-| S3 | Template fixes (schema, images, anchors) | 1 | ~1 day | none | NOT STARTED |
-| S4 | Measurement wiring (Brand Radar weekly) | 1 | ~0.5 day | none | NOT STARTED |
+| S3 | Template fixes (schema, images, anchors) | 1 | ~1 day | none | DONE (PR open, branch seo/s3-template-fixes) - W1-02 blocked on a content date backfill; W1-07/W1-08/W2-06 shipped |
+| S4 | Measurement wiring (Brand Radar weekly) | 1 | ~0.5 day | none | SCRIPT SHIPPED (PR open); first live pull pending AHREFS_API_KEY (run locally before 14 Aug) |
 | S5 | Performance package part A: geo server-side + delete body-hide | 2 | ~2 days | DFH-1 + GeoTargetly rules export | NOT STARTED |
 | S6 | Performance package part B: HubSpot defer + HTML caching | 2 | ~2 days | S5 merged | NOT STARTED |
 | S7 | Metadata batch (titles + descriptions) | 2 | ~1.5 days | none | NOT STARTED |
@@ -49,15 +49,51 @@ GeoTargetly rules; the Seb question batch.
 
 ## Session briefs (scope per session)
 
-### S1 - Crawl + redirect hygiene [INDEPENDENT]
+### S1 - Crawl + redirect hygiene [DONE 8 Aug 2026]
 Roadmap: W1-01, W1-03, W2-05 (if D-BAC decided), TECH-06, Tech Debt #65.
-- 301 /team/shawnee-malesich to /team (interim until Seb answers restore-vs-301).
-- Drop the 4 redirecting URLs from the sitemap; add /technology/android-studio + UK twin.
-- Fix the /ph/services/filipino-developers 308-to-404 chain.
-- Collapse the 28 redirect chains to single hops in the tracked redirect tables.
-- Whitespace-tolerant redirect matching (trailing %20).
-- If Jake has said yes: restore noindex on the 10 /book-a-call/* pages.
-- Verify: curl every touched path; npm run build; sitemap count checks.
+Branch `seo/s1-crawl-redirect-hygiene`, PR #93.
+
+Shipped:
+- /team/shawnee-malesich + /uk twin 301. Destination is **/about-us, not /team**:
+  /team is itself a 301 to /about-us, so pointing at /team would build the exact
+  chain this session removes. Still INTERIM pending Seb (D-EDIT); if the page is
+  restored, delete the two lines in `site/src/lib/redirects/locked-rules.ts`.
+- Sitemap 653 to 651. The 4 redirecting URLs are filtered by reading the same
+  assembled redirect table next.config.ts serves, not a hand-kept list, so the
+  fifth retired document is handled the day it is retired.
+  /technology/android-studio + UK twin added (the `listItemOnly` filter is gone).
+- /ph/services/filipino-developers now lands on /services/philippines-developers
+  in one hop, so the utm_source=chatgpt.com traffic reaches a page.
+- All 28 redirect chains collapse to single hops, verified against a production
+  build, each landing on the same final URL the crawl recorded.
+- Whitespace-tolerant paths: middleware trims %20/%09/%0a off both ends and 308s
+  to the clean path (Tech Debt #65).
+
+Beyond the brief, both same-defect one-liners:
+- /ph/book-a-cto-consultation was left one hop long still landing on a 404.
+  Fixed the same way.
+- **A real bug the curl pass caught.** 8 rows of Webflow regex syntax leak into
+  webflow-redirects.csv as raw `(.*)` / `%1` and were being emitted as live
+  rules. Next reads `(.*)` as a capture group and has nothing to do with `%1`, so
+  they 308 to the literal path `/blog/%1`. They were harmless only because they
+  sat below the properly translated rules and were never reached, until this
+  session's reordering moved them up. `extract-redirects.ts` now drops them.
+
+SKIPPED: the /book-a-call noindex item (W2-05). **D-BAC is still undecided** -
+it is listed in this file as an open question for Jake, so the gate is not met.
+
+Also skipped, reported rather than improvised: 40 more /ph rows in the Webflow
+export have the same shape as the filipino chain (a /ph destination that no
+longer exists). Not generalised to `/ph/:path*` - a blanket rule would also
+swallow /ph paths that correctly 404, which is the /live-job-role catch-all
+mistake. Worth a scoped session of its own.
+
+Verified: curl of every touched path against a production build (28 chains + the
+16 destinations + both android-studio pages); `npm run build` clean; tsc clean;
+lint identical to main (84 pre-existing problems, 0 new); sitemap count 651 with
+the 4 absent and android-studio present. `/web-developer%20` correctly trims to
+`/web-developer`, which is still a 404 on purpose: reclaiming it is S9, gated on
+Jake approving the S8 list.
 
 ### S2 - Internal link equity [INDEPENDENT]
 Roadmap: W1-04, W1-05, W1-06.
@@ -78,12 +114,57 @@ Roadmap: W1-02, W1-07, W1-08, W2-06.
 - Sanity image URL params: auto=format + honest widths in the image component.
 - Verify: JSON-LD validates on sample pages; grep rendered HTML for ligature leaks.
 
+**STATUS: DONE (PR open on branch seo/s3-template-fixes).** tsc clean; changed
+files add zero new lint problems (pre-existing local/no-conditional-strings-in-jsx
+debt on untouched lines only). `npm run build` not run here (site/.env.local is
+gitignored and the env schema validates Sanity vars at module load) - local build
+verification still required before merge.
+- **W2-06 (Service JSON-LD): SHIPPED.** technology/json-ld.tsx now emits Service
+  (mirrors service/json-ld.tsx: Service @type, #service @id, name/url/provider/
+  description/image, serializeJsonLd). serviceType omitted (technology has no
+  category enum; data-backed fields only).
+- **W1-08 (icon ligature anchors): SHIPPED.** aria-hidden was already present on
+  the Material ligature spans since Jul (pre-crawl), which is why the crawl still
+  showed leaks: Ahrefs reads raw textContent regardless of aria-hidden. Fix is
+  explicit anchor aria-labels (the roadmap's own blog-card technique) on
+  article-card, the resources mega-menu pill, and the simple-dropdown (Locations)
+  row. Verified: no MaterialIcon passes ariaLabel (all aria-hidden), no raw
+  material-symbols spans outside the Icon component.
+- **W1-07 (image params): SHIPPED, with the roadmap file corrected.** The E1
+  Image loader ALREADY emits auto=format + fit=max + per-width widths and is
+  correct - it is NOT the source. The oversized images come from marketing
+  templates rendering Sanity photos from a raw GROQ asset->url original through a
+  raw <img>/next-image. Added withSanityImageParams (null-safe string transform)
+  and applied it across home, how-it-works, location, about-us, fractional-cto,
+  hire-engineers, for-engineers. Remaining same-pattern call sites for a
+  build-verified follow-up: pricing/testimonial-video poster, catalogue 96px tech
+  logos (negligible), and any Sanity-swapped catalogue hero later.
+- **W1-02 (VideoObject uploadDate): BLOCKED - content gap, not a template bug.**
+  No genuine per-video date exists: the Webflow videos collection carried no date
+  into the migration (migrate-videos.ts maps none), Sanity holds none, and the
+  Webflow export has no per-video date. _createdAt is the 2026 migration timestamp,
+  not the publish date - emitting it would be a false freshness claim, so uploadDate
+  is deliberately omitted (documented in video/json-ld.tsx). Closing W1-02 needs an
+  editorial date backfill (consistent with Tech Debt #54, metaTitle also dropped),
+  then project + emit it as full ISO 8601 with offset.
+
 ### S4 - Measurement wiring [INDEPENDENT]
 Roadmap: W1-09.
 - Script the free Brand Radar weekly pull (POST /v3/brand-radar/mentions-overview,
   0 units, pattern in scripts/seo/ahrefs-deep-pull.ts).
 - Output to audit-output/seo-intel/<date>/brand-radar/.
 - Optional same session: regenerate the stale MANIFEST-gsc.md (1,070 records).
+
+Execution note (8 Aug): shipped as `scripts/seo/brand-radar-pull.ts` +
+`npm run seo:brand-radar-pull`. Two corrections to the brief surfaced against the
+live API and are handled in code, not improvised around: (1) the endpoint is GET,
+not POST (POST is the history variant); (2) 0 units is conditional on
+`prompts=custom`, which requires a saved report id, so `AHREFS_BRAND_RADAR_REPORT_ID`
+was added to env and drives brand + competitors + the 10 prompts. First live pull
+is NOT run (AHREFS_API_KEY is gitignored and absent here); run it locally before the
+14 Aug pickup. Item 2 (MANIFEST-gsc.md) SKIPPED: its generator
+`scripts/seo/gsc-deep-pull.ts` is credential-gated (GSC service account) and its
+output lives under gitignored `audit-output/`, so it cannot run here.
 
 ### S5 - Performance part A: geo goes server-side [GATE: DFH-1 + rules export]
 Roadmap: W2-01 first half.

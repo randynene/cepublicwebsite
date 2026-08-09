@@ -35,15 +35,21 @@ function SimpleDropdownItemRow({
   locale: Locale
 }) {
   const { href, isExternal } = toInternalHref(url, locale)
+  // aria-label pins the accessible name (roadmap W1-08). The leading icon is a
+  // Material Symbols ligature whose text ("location_on", "explore", ...) crawlers
+  // concatenate into the anchor text despite the aria-hidden icon; an explicit
+  // label keeps the anchor text clean while preserving the subtitle for AT users.
+  const accessibleName = subtitle ? `${label}, ${subtitle}` : label
   return (
     <Link
       href={href}
       onClick={onNavigate}
+      aria-label={accessibleName}
       className="group flex items-center gap-3 rounded-[9px] px-2 py-[5px] -mx-2 transition duration-reveal ease-reveal motion-reduce:transition-none hover:bg-[#16223A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ring"
       {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
     >
       {icon ? (
-        <span className="grid size-7 shrink-0 place-items-center rounded-[7px] border border-[#22314D] bg-[#16223A] text-text-secondary transition-colors duration-reveal ease-reveal group-hover:border-brand-primary/40 group-hover:text-brand-primary motion-reduce:transition-none">
+        <span aria-hidden="true" className="grid size-7 shrink-0 place-items-center rounded-[7px] border border-[#22314D] bg-[#16223A] text-text-secondary transition-colors duration-reveal ease-reveal group-hover:border-brand-primary/40 group-hover:text-brand-primary motion-reduce:transition-none">
           {/* h-auto/w-auto is the fix, not decoration. The `sm` preset boxes the
            * glyph in a fixed 32px square, but the Google Material Symbols
            * stylesheet is un-layered so its own 24px font-size beats any

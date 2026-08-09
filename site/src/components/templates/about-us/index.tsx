@@ -6,6 +6,7 @@ import { CardMarquee } from '@/components/social-proof/card-marquee'
 import { LogoMarquee } from '@/components/social-proof/logo-marquee'
 import { ReviewCard } from '@/components/social-proof/review-card'
 import { cn } from '@/components/ui/_utils/cn'
+import { withSanityImageParams } from '@/lib/sanity/image-params'
 import { buildLocalePath, type Locale } from '@/lib/locale'
 import {
   fetchAboutUsTeam,
@@ -59,7 +60,7 @@ function TeamCard({ member, locale }: { member: AboutUsTeamCard; locale: Locale 
       <div className="relative aspect-[4/5] overflow-hidden rounded-[16px] bg-[#1B2A45]">
         {member.image ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={member.image} alt={member.name ?? ''} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+          <img src={withSanityImageParams(member.image, { width: 600 })} alt={member.name ?? ''} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
         ) : (
           <span
             aria-hidden
@@ -90,7 +91,7 @@ function ValueCard({ value }: { value: AboutUsValueCard }) {
     <div className={cn(CARD, 'flex flex-col gap-4 p-7')}>
       {value.image ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={value.image} alt="" className="h-12 w-12 object-contain" loading="lazy" />
+        <img src={withSanityImageParams(value.image, { width: 120 })} alt="" className="h-12 w-12 object-contain" loading="lazy" />
       ) : (
         <span aria-hidden className="h-3 w-3 rounded-full bg-brand-primary" />
       )}
@@ -164,7 +165,7 @@ export async function AboutUsTemplate({
           <div className="relative min-h-[280px] overflow-hidden rounded-[20px] border border-[#22314D] bg-[#1B2A45]">
             {C.founderImage ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={C.founderImage} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+              <img src={withSanityImageParams(C.founderImage, { width: 1080 })} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
             ) : (
               <span
                 aria-hidden
