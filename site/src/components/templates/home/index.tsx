@@ -2,6 +2,8 @@ import type { ReactNode } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 
+import { withSanityImageParams } from '@/lib/sanity/image-params'
+
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { CtaButton } from '@/components/ui/cta-button'
 import { MegaMenuPillLabel } from '@/components/ui/mega-menu-pill-label'
@@ -247,7 +249,7 @@ function Hero({ content, locale }: SectionProps & { locale: Locale }) {
           style={{ boxShadow: 'inset 0 0 0 10px #22314D' }}
         >
           <Image
-            src={mainProfile.image}
+            src={withSanityImageParams(mainProfile.image, { width: 1080 })}
             alt={mainProfile.name}
             fill
             sizes="90vw"
@@ -326,7 +328,7 @@ function WhyDifferent({ content }: SectionProps) {
             </p>
             <div className="mt-[24px] overflow-hidden rounded-[14px] border border-[#22314D]">
               <Image
-                src={whyDifferent.leadImage.src}
+                src={withSanityImageParams(whyDifferent.leadImage.src, { width: 1160 })}
                 alt={whyDifferent.lead.title}
                 width={whyDifferent.leadImage.width}
                 height={whyDifferent.leadImage.height}
@@ -718,7 +720,7 @@ function RealEngineers({ content }: SectionProps) {
             style={{ boxShadow: 'inset 0 0 0 8px #22314D' }}
           >
             <Image
-              src={profile.image}
+              src={withSanityImageParams(profile.image, { width: 700 })}
               alt={profile.name}
               fill
               sizes="340px"

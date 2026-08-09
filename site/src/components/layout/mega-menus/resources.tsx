@@ -82,6 +82,11 @@ function ResourcesLeftPill({
     <Link
       href={href}
       onClick={onNavigate}
+      // aria-label pins the accessible name to the label (roadmap W1-08). The
+      // leading icon is a Material Symbols ligature whose text ("event_upcoming",
+      // "calculate", ...) crawlers concatenate into the anchor text despite the
+      // aria-hidden below; an explicit label keeps the anchor text clean.
+      aria-label={label}
       className="flex w-full min-w-0 items-center gap-[10px] rounded-pill border border-border-subtle bg-[#16223A] py-[5px] pl-[6px] pr-5 transition duration-reveal ease-reveal hover:bg-[#16223A]/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ring motion-reduce:transition-none"
       {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
     >

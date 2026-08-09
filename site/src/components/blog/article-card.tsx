@@ -124,9 +124,15 @@ export function ArticleCard({
 
   // The single anchor. It is stretched over the whole card via ::after, so the card
   // is one click target while the DOM keeps one link and a readable accessible name.
+  //
+  // aria-label pins the accessible name to the article title (roadmap W1-08).
+  // Crawlers computing anchor text follow the accessible-name algorithm, so an
+  // explicit label keeps the card's link text clean and deterministic regardless
+  // of any decorative glyphs that sit near it.
   const Anchor = (
     <Link
       href={href}
+      aria-label={title}
       className="after:absolute after:inset-0 after:content-[''] focus:outline-none"
     >
       {title}

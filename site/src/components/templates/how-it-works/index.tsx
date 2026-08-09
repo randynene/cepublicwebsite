@@ -1,5 +1,6 @@
 import Image from 'next/image'
 
+import { withSanityImageParams } from '@/lib/sanity/image-params'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { MegaMenuPillLabel } from '@/components/ui/mega-menu-pill-label'
 import { Marquee } from '@/components/ui/marquee'
@@ -215,7 +216,7 @@ function StagePhoto({ src, alt, aspect }: { src: string; alt: string; aspect: st
       )}
     >
       <Image
-        src={src}
+        src={withSanityImageParams(src, { width: 1200 })}
         alt={alt}
         fill
         sizes="(max-width: 1024px) 90vw, 600px"

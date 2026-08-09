@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
 
 import { parseVideoUrl } from '@/components/ui/video-embed'
+import { withSanityImageParams } from '@/lib/sanity/image-params'
 
 import type { HomeContent } from './content'
 
@@ -98,7 +99,7 @@ export function ProcessVideo({
       {/* Base layer: poster still (shown for reduced-motion users + as the
        * frame behind the video while it loads). */}
       <Image
-        src={video.poster.src}
+        src={withSanityImageParams(video.poster.src, { width: 1600 })}
         alt={video.name}
         fill
         sizes="(max-width: 1280px) 100vw, 1216px"

@@ -1,4 +1,5 @@
 import { cn } from '@/components/ui/_utils/cn'
+import { withSanityImageParams } from '@/lib/sanity/image-params'
 import { HeroTrustBar } from '@/components/social-proof/hero-trust-bar'
 import { CLIENT_LOGOS, type ClientLogo } from '@/components/social-proof/client-logo-strip'
 import { buildLocalePath, type Locale } from '@/lib/locale-path'
@@ -313,7 +314,7 @@ function Hero({ content, locale }: { content: LocationContent; locale: Locale })
                 style={{ boxShadow: 'inset 0 0 0 10px #22314D' }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element -- mobile stack fallback matches prior location hero */}
-                <img src={heroMain.image} alt={heroMain.name} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+                <img src={withSanityImageParams(heroMain.image, { width: 1080 })} alt={heroMain.name} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
                 <span
                   aria-hidden="true"
                   className="absolute inset-0"
@@ -443,7 +444,7 @@ function OnGround({ content }: { content: LocationContent }) {
   return (
     <section className={cn(BAND, 'grid grid-cols-1 items-center gap-[56px] py-[72px] lg:grid-cols-[560px_1fr]')}>
       <div className="h-[460px] overflow-hidden rounded-[20px] border border-[#22314D]">
-        <img src={onGround.image} alt="" className="h-full w-full object-cover" loading="lazy" />
+        <img src={withSanityImageParams(onGround.image, { width: 1120 })} alt="" className="h-full w-full object-cover" loading="lazy" />
       </div>
       <div>
         <Eyebrow>{onGround.eyebrow}</Eyebrow>
@@ -632,7 +633,7 @@ function RegionsStrip({ content }: { content: LocationContent }) {
 function SecondaryHub({ hub }: { hub: HubCard }) {
   return (
     <div className="relative h-[200px] overflow-hidden rounded-[20px] border border-[#22314D]">
-      <img src={hub.image} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+      <img src={withSanityImageParams(hub.image, { width: 900 })} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
       <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#060F1E]/95 via-[#060F1E]/30 to-transparent" />
       <div className="absolute inset-x-0 bottom-0 p-5">
         <p className="text-[18px] font-semibold text-white">{hub.city}</p>
@@ -651,7 +652,7 @@ function PrimaryHub({ content }: { content: LocationContent }) {
         <Heading lead={primaryHub.titleLead} accent={primaryHub.titleAccent} />
       </div>
       <div className="relative mt-10 h-[480px] overflow-hidden rounded-[24px] border border-[#22314D]">
-        <img src={primaryHub.image} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+        <img src={withSanityImageParams(primaryHub.image, { width: 1200 })} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
         <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#060F1E]/96 via-[#060F1E]/40 to-transparent" />
         <span className="absolute left-8 top-8 rounded-pill bg-[#060F1E]/70 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[1.2px] text-brand-primary">
           {primaryHub.bannerEyebrow}
@@ -689,7 +690,7 @@ function ProfileCard({ p }: { p: EngineerProfile }) {
       <div className="relative h-[330px]">
         {/* object-top keeps faces framed; cover prevents stretch/squash on mobile */}
         <img
-          src={p.image}
+          src={withSanityImageParams(p.image, { width: 800 })}
           alt=""
           className="absolute inset-0 h-full w-full object-cover object-top"
           loading="lazy"
