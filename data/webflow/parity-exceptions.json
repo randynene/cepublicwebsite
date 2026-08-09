@@ -191,6 +191,30 @@
       "decidedBy": "Jake",
       "decidedAt": "2026-08-03",
       "reason": "Live serves this 200, but there is no story on it. The body reads 'Customer story in progress... We haven't yet had a chance to write up this particular story' and points visitors at the hub. It is a thin page with an optimised title and nothing behind it. 301 to /customer-stories rather than carrying an empty page across, and rather than 404ing a live indexed URL."
+    },
+    {
+      "paths": [
+        "/team/shawnee-malesich",
+        "/uk/team/shawnee-malesich"
+      ],
+      "expect": "permanent",
+      "decidedBy": "Jake",
+      "decidedAt": "2026-08-09",
+      "reason": "Shipped by SEO session S1 (PR #93, roadmap W1-01). Live 404s these because the team member was removed from the Webflow collection, but the page is the 9th most AI-cited page on the site (286 Copilot citations) and the personal-name query earned 112 clicks on 2,877 impressions in 16 months. A 404 throws that away. 308 to /about-us rather than /team, because /team is itself a redirect to /about-us and pointing there would rebuild the exact chain S1 removed. INTERIM: Seb still has to decide restore-versus-redirect. If the page is restored this exception comes out."
+    },
+    {
+      "paths": [
+        "/ph/services/filipino-developers",
+        "/ph/services/philippines-developers",
+        "/ph/hire/philippines-offshoring",
+        "/ph/book-a-call/anto",
+        "/ph/book-a-cto-consultation",
+        "/ph/book-anto"
+      ],
+      "expect": "permanent",
+      "decidedBy": "Jake",
+      "decidedAt": "2026-08-09",
+      "reason": "Shipped by SEO session S1 (PR #93, roadmap W1-03 and TECH-06). The PH locale is discontinued: Geotargetly routes Philippines traffic to talent.cloudemployee.io, so no /ph path has a page behind it. Live either 404s them or 301s them to another /ph path that itself 404s, which is a redirect into a dead end. These now collapse to the default-locale equivalent in a single hop. Four of the six turn a live 404 into a working page, which matters because /ph/services/filipino-developers was receiving utm_source=chatgpt.com traffic straight into the 404. Flagged only because the reference file captures the old Webflow behaviour, so an intended improvement reads as a divergence. NOTE: roughly 40 further /ph rows share this shape and were deliberately NOT generalised into a blanket /ph/:path* rule, because that would also swallow /ph paths that correctly 404. Scoped session outstanding."
     }
   ]
 }
