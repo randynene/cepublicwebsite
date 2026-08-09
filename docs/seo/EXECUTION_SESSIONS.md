@@ -26,7 +26,7 @@ Authored 8 Aug 2026 from the six-lens synthesis.
 | S1 | Crawl + redirect hygiene | 1 | ~1 day | none | **DONE 8 Aug 2026 (PR #93)** |
 | S2 | Internal link equity | 1 | ~1 day | none | NOT STARTED |
 | S3 | Template fixes (schema, images, anchors) | 1 | ~1 day | none | NOT STARTED |
-| S4 | Measurement wiring (Brand Radar weekly) | 1 | ~0.5 day | none | NOT STARTED |
+| S4 | Measurement wiring (Brand Radar weekly) | 1 | ~0.5 day | none | SCRIPT SHIPPED (PR open); first live pull pending AHREFS_API_KEY (run locally before 14 Aug) |
 | S5 | Performance package part A: geo server-side + delete body-hide | 2 | ~2 days | DFH-1 + GeoTargetly rules export | NOT STARTED |
 | S6 | Performance package part B: HubSpot defer + HTML caching | 2 | ~2 days | S5 merged | NOT STARTED |
 | S7 | Metadata batch (titles + descriptions) | 2 | ~1.5 days | none | NOT STARTED |
@@ -120,6 +120,17 @@ Roadmap: W1-09.
   0 units, pattern in scripts/seo/ahrefs-deep-pull.ts).
 - Output to audit-output/seo-intel/<date>/brand-radar/.
 - Optional same session: regenerate the stale MANIFEST-gsc.md (1,070 records).
+
+Execution note (8 Aug): shipped as `scripts/seo/brand-radar-pull.ts` +
+`npm run seo:brand-radar-pull`. Two corrections to the brief surfaced against the
+live API and are handled in code, not improvised around: (1) the endpoint is GET,
+not POST (POST is the history variant); (2) 0 units is conditional on
+`prompts=custom`, which requires a saved report id, so `AHREFS_BRAND_RADAR_REPORT_ID`
+was added to env and drives brand + competitors + the 10 prompts. First live pull
+is NOT run (AHREFS_API_KEY is gitignored and absent here); run it locally before the
+14 Aug pickup. Item 2 (MANIFEST-gsc.md) SKIPPED: its generator
+`scripts/seo/gsc-deep-pull.ts` is credential-gated (GSC service account) and its
+output lives under gitignored `audit-output/`, so it cannot run here.
 
 ### S5 - Performance part A: geo goes server-side [GATE: DFH-1 + rules export]
 Roadmap: W2-01 first half.
