@@ -25,7 +25,6 @@ import { SanityLive } from '@/lib/sanity/live'
 import { getLocaleFromPath } from '@/lib/locale'
 import { SiteJsonLd } from '@/lib/seo/site-json-ld'
 import {
-  GeoTargetlyScript,
   GlobalScripts,
   GtmHeadScript,
   GtmNoScript,
@@ -104,7 +103,7 @@ export default async function RootLayout({
   // the visitor five ways to leave it before they have said anything.
   //
   // App Router cannot subtract a parent's chrome from a nested layout, so the
-  // opt-out is decided here, off the pathname the middleware already surfaces.
+  // opt-out is decided here, off the pathname the proxy already surfaces.
   const isAskPage = isAskPath(pathname)
   // For-developers sends talent to the live job board; book-a-call is already
   // the booking surface. The Clara "Ask about our services" pill fights both,
@@ -120,7 +119,6 @@ export default async function RootLayout({
       <head>
         {/* Must precede every other script: the Hotjar gate reads it. */}
         <VisitorCountryScript />
-        <GeoTargetlyScript />
         <GtmHeadScript />
         {/* STATIC-3 — Material Symbols web font for discriminated icon
          * shape (`source: 'material-font'`) used by the Resources

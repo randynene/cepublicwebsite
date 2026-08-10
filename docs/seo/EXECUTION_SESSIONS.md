@@ -27,7 +27,7 @@ Authored 8 Aug 2026 from the six-lens synthesis.
 | S2 | Internal link equity | 1 | ~1 day | none | IN PROGRESS - items 1+2 shipped (all 27 compare cards on /alternatives page 1; related-comparisons module); items 3+4 authored not applied (script + plan report), needs a local run against production Sanity with the write token |
 | S3 | Template fixes (schema, images, anchors) | 1 | ~1 day | none | DONE (PR open, branch seo/s3-template-fixes) - W1-02 blocked on a content date backfill; W1-07/W1-08/W2-06 shipped |
 | S4 | Measurement wiring (Brand Radar weekly) | 1 | ~0.5 day | none | SCRIPT SHIPPED (PR open); first live pull pending AHREFS_API_KEY (run locally before 14 Aug) |
-| S5 | Performance package part A: geo server-side + delete body-hide | 2 | ~2 days | DFH-1 + GeoTargetly rules export | NOT STARTED |
+| S5 | Performance package part A: geo server-side + delete body-hide | 2 | ~2 days | DFH-1 + GeoTargetly rules export | **DONE 10 Aug 2026 (PR open, branch seo/s5-geo-server-side)** |
 | S6 | Performance package part B: HubSpot defer + HTML caching | 2 | ~2 days | S5 merged | NOT STARTED |
 | S7 | Metadata batch (titles + descriptions) | 2 | ~1.5 days | none | NOT STARTED |
 | S8 | Backlink rescue part A: build the 301 decision list | 2 | ~0.5 day | none | NOT STARTED |
@@ -166,14 +166,67 @@ is NOT run (AHREFS_API_KEY is gitignored and absent here); run it locally before
 `scripts/seo/gsc-deep-pull.ts` is credential-gated (GSC service account) and its
 output lives under gitignored `audit-output/`, so it cannot run here.
 
-### S5 - Performance part A: geo goes server-side [GATE: DFH-1 + rules export]
-Roadmap: W2-01 first half.
-- Replicate the 3 exported GeoTargetly rules in server-side routing off
-  x-vercel-ip-country (proxy/middleware or layout-level redirect).
-- Delete the three GeoTargetly snippets and every body{opacity:0} injection.
-- Verify: PH visitor routing still lands on talent.cloudemployee.io (test with
-  header spoofing); no opacity:0 in production HTML; Lighthouse before/after.
-- DO NOT start template-level perf work here; sitewide only.
+### S5 - Performance part A: geo goes server-side [DONE 10 Aug 2026]
+Roadmap: W2-01 first half. Branch `seo/s5-geo-server-side`, two commits.
+
+The brief above was written before Jake captured the dashboard. It said "replicate
+the 3 exported rules" and "PH visitor routing still lands on talent.cloudemployee.io".
+Both were superseded on 10 Aug: only ONE of the four dashboard setups was ever on,
+and Jake reconfirmed CE-48, which is a different rule. GEO_ROUTING.md section 4.7 is
+the spec that was actually built. Recorded here so the change of destination is not
+mistaken for drift.
+
+Shipped:
+- CE-48 server-side in `site/src/proxy.ts`. If `x-vercel-ip-country` is not in
+  the 11-code allow-list (GB, US, AU, NZ, SG, SE, NO, DK, NL, DE, FR) the visitor
+  gets a 307 to `/for-developers`. Decided before any HTML is sent, no vendor,
+  no flash, no hidden body.
+- Every advanced setting from the dashboard capture carried over: destination and
+  its UK twin excluded from their own rule, engineer-funnel and legal paths
+  excluded, Googlebot and Bingbot bypassed by user agent, `?r=0` escape hatch,
+  first-visit-only via a session cookie set on the redirect response, and unknown
+  or missing country fails OPEN.
+- `GEO_REDIRECT_ENABLED = false` at the top of that file disables the whole rule
+  in one line. Tech Debt #63 is why it exists.
+- The GeoTargetly integration is deleted, and with it the `body{opacity:0}` hide
+  and the hardcoded 5,000 ms wait that were the measured render delay. Nothing in
+  the served HTML matches `georedirect`, `g10498469755` or `body{opacity`.
+  VisitorCountryScript is untouched and still gates Hotjar.
+
+**This is a DELIBERATE behaviour change**, not a migration. It redirects most of
+the world, including countries the old rule never touched, and it stops sending
+LATAM and PH traffic to talent.cloudemployee.io - those visitors now reach
+`/for-developers` and click through themselves. Tell the PH delivery team before
+this merges.
+
+Next.js 16 renamed `middleware` to `proxy`, so `site/src/middleware.ts` became
+`site/src/proxy.ts` and the export was renamed. S1's whitespace trim is unchanged
+and deliberately still runs FIRST.
+
+Beyond the brief, one real hole the curl pass caught. `/psychometric-test` is a
+legacy URL that 308s to `/tools/culture-match`, and `next.config` redirects run
+BEFORE the proxy, so excluding only the old name let the visitor be bounced off
+the assessment on the very next hop. `culture-match` added to the exclusions.
+While checking, `/self-assessment` and `/initial-assessment` turn out to be 404s
+in their own right; they are kept in the list because the vendor rule listed them,
+but they protect nothing today.
+
+Verified against a local production build with a spoofed country header (the
+header is spoofable locally because Vercel is not in front of it): all 12 cases
+in the session brief pass, plus Bingbot, `XX`, a cookie-carrying request on a
+second path, and S1's trim. `npm run build` exit 0, `npx tsc --noEmit` clean,
+lint at the 84-problem baseline with zero new problems, and
+`npm run launch:verify-parity -- --target http://localhost:3000` reports
+6937/6937.
+
+NOT done here, and deliberately: no HubSpot deferral, no caching work, no
+template work (S6 and S19), and the OFF "UK" segment is not resurrected. Also not
+done: the Lighthouse before/after this brief asks for. There is no production
+"before" on record (Tech Debt #66), so the honest measurement is a PageSpeed run
+against production once this merges, not a local number invented now.
+
+**Jake, once this is verified in production the GeoTargetly subscription is
+cancellable.** The account now performs no function at all.
 
 ### S6 - Performance part B: main thread + caching [GATE: S5 merged]
 Roadmap: W2-01 second half.
