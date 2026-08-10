@@ -79,10 +79,55 @@ const GEO_EXCLUDED_PATH_SUBSTRINGS: readonly string[] = [
   '/uk/legals',
 ]
 
-// Crawlers are never redirected. Googlebot and Bingbot crawl from a spread of
-// IPs, plenty of them outside the allow-list, and a crawler bounced off the
-// marketing site would index the engineer page in its place.
-const BOT_USER_AGENT_PATTERNS: readonly string[] = ['googlebot', 'bingbot']
+// Crawlers are never redirected. A crawler bounced off the marketing site does
+// not just fail to read one page: it indexes, or cites, the engineer page in
+// place of whatever it came for.
+//
+// This list is deliberately GENEROUS, and wider than the vendor rule's. The
+// asymmetry is the whole argument. A crawler wrongly redirected costs indexed
+// pages and AI citations across the site, quietly, for as long as nobody
+// notices. A human wrongly served the marketing site costs one page view, and
+// they can click through to /for-developers themselves. When in doubt, do not
+// redirect. Adding a user agent here is close to free.
+//
+// The vendor rule listed only Googlebot and Bingbot, which was defensible when
+// it redirected 12 LATAM and PH countries. CE-48 redirects everything outside an
+// 11-code allow-list, so any crawler fetching from a non-allow-list IP is now in
+// scope, and most of these fetch from wherever their infrastructure happens to
+// be. The AI crawlers matter most: 8,640 Copilot citations are the strongest
+// single asset in the 6 Aug audit (AUTH-08 and CONT-04 in
+// audit-output/seo-intel/2026-08-06/analysis/authority.md), and AI citation is
+// the headline metric of this SEO programme.
+//
+// Matched as lowercase substrings, so 'claudebot' also catches 'Claude-User'
+// only if that string appears; add new agents verbatim rather than guessing at
+// prefixes.
+const BOT_USER_AGENT_PATTERNS: readonly string[] = [
+  // Search
+  'googlebot',
+  'bingbot',
+  'applebot',
+  'duckduckbot',
+  'yandexbot',
+  // AI crawlers and answer engines
+  'gptbot',
+  'oai-searchbot',
+  'chatgpt-user',
+  'claudebot',
+  'claude-user',
+  'anthropic-ai',
+  'perplexitybot',
+  'perplexity-user',
+  'google-extended',
+  'bytespider',
+  'ccbot',
+  'meta-externalagent',
+  // SEO tooling we measure ourselves with. If AhrefsBot is redirected, our own
+  // crawl data quietly describes a site nobody is served.
+  'ahrefsbot',
+  'semrushbot',
+  'screaming frog',
+]
 
 // Escape hatch. Appending ?r=0 to any URL disables the redirect for that one
 // request, e.g. https://www.cloudemployee.io/pricing?r=0. Carried over from the
@@ -194,8 +239,26 @@ export function proxy(request: NextRequest) {
   return NextResponse.next({ request: { headers: requestHeaders } })
 }
 
+// The proxy runs on page routes only. Everything excluded here is something a
+// redirect would break rather than route:
+//
+// - `api/` is the big one. /api/lead is the POST target of the quick-hiring
+//   form, and a 307 PRESERVES THE METHOD, so a lead from a non-allow-list
+//   country would have been POSTed at /for-developers and lost silently. The
+//   draft-mode routes are Sanity Presentation visual editing, and CE's delivery
+//   team is in the Philippines, which CE-48 redirects, so they would have lost
+//   visual editing with no error to explain it.
+// - robots.txt and sitemap.xml are real routes (src/app/robots.ts and
+//   sitemap.ts), not static files, so they were matching. The user-agent bypass
+//   is not a safety net here: it only covers crawlers we named, and a crawler
+//   that cannot read robots.txt is exactly the outcome robots.txt exists to
+//   prevent.
+//
+// One negative lookahead rather than a second matcher entry, so there is a
+// single place to read what this file does and does not see. `api(?:/|$)` so a
+// future page route beginning with the letters "api" is not silently excluded.
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    '/((?!api(?:/|$)|_next/static|_next/image|favicon\\.ico|robots\\.txt|sitemap\\.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 }
