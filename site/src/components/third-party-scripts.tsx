@@ -18,45 +18,6 @@ const CLARA_WORKSPACE_ID = '09aa62df-5af6-4cec-b565-c335e907327d'
 const FACEBOOK_PIXEL_ID = '160820827844254'
 const HUBSPOT_PORTAL_ID = '22809822'
 const MARKER_PROJECT_ID = '6a607cb9bba82be8b774fc61'
-// GeoTargetly georedirect. Each rule is an independent snippet from the
-// GeoTargetly dashboard with its own rule id and its own timestamp-derived
-// callback name; the timestamps are part of the contract, because the loader
-// calls `georedirect<TIMESTAMP>loaded` by name. Do not "tidy" the ids, the
-// timestamps or the query-string shape: they have to match what is configured
-// in the GeoTargetly account or the rule silently stops firing.
-//
-// ONE rule, not the three that shipped at cutover. Jake captured the whole
-// dashboard on 10 Aug 2026 (docs/seo/GEO_ROUTING.md section 4): of the four
-// Geo Redirect setups, only "Marketing Website Locations Redirect" is ON, and
-// it is the one carrying id -OJz6mUkL51tX4CyQPmd. The setups behind
-// -OK8LE2WwpalZvadeMTu and -OK8QFN5yqnrUvZ_ZFAC are switched OFF, so those two
-// snippets injected a body{opacity:0} hide and made a round trip to
-// g10498469755.co on every page load in order to do nothing at all. Removed.
-//
-// If either of those dashboard setups is ever switched back ON it will silently
-// have no effect until its snippet is restored here.
-//
-// This whole integration is scheduled for deletion in session S5, which
-// replaces it with server-side routing off x-vercel-ip-country per CE-48. Read
-// docs/seo/GEO_ROUTING.md section 4.7 before touching it: the remaining
-// snippet's 5-second body-hide (`to=5000` below) is the measured cause of the
-// site's render delay, and the hide is injected before any country is known, so
-// every visitor pays it and the Googlebot bypass does not spare crawlers.
-const GEOTARGETLY_RULES = [
-  { timestamp: '1740520761398', id: '-OJz6mUkL51tX4CyQPmd' },
-] as const
-
-function geoTargetlySnippet(timestamp: string, id: string): string {
-  return `(function(g,e,o,t,a,r,ge,tl,y,s){
-g.getElementsByTagName(o)[0].insertAdjacentHTML('afterbegin','<style id="georedirect${timestamp}style">body{opacity:0.0 !important;}</style>');
-s=function(){g.getElementById('georedirect${timestamp}style').innerHTML='body{opacity:1.0 !important;}';};
-t=g.getElementsByTagName(o)[0];y=g.createElement(e);y.async=true;
-y.src='https://g10498469755.co/gr?id=${id}&refurl='+g.referrer+'&winurl='+encodeURIComponent(window.location);
-t.parentNode.insertBefore(y,t);y.onerror=function(){s()};
-window.georedirect${timestamp}loaded=function(redirect){var to=0;if(redirect){to=5000};
-setTimeout(function(){s();},to)};
-})(document,'script','head');`
-}
 
 // `window.VISITOR_COUNTRY` — the visitor's two-letter country code, exposed to
 // client scripts. Read by the Hotjar gate below, exactly as on the live site.
@@ -76,32 +37,18 @@ export async function VisitorCountryScript() {
   return <script dangerouslySetInnerHTML={{ __html: `window.VISITOR_COUNTRY="${safe}"` }} />
 }
 
-// GeoTargetly — geo-based traffic routing. Must execute before first paint,
-// because the first thing each snippet does is hide the body so the visitor never
-// sees the wrong page flash up before being redirected.
+// GeoTargetly is GONE. Session S5 (Aug 2026) replaced it with a server-side
+// decision in site/src/proxy.ts, off the same x-vercel-ip-country header
+// VisitorCountryScript reads above. See docs/seo/GEO_ROUTING.md section 4.7.
 //
-// Deliberately RAW <script> tags rather than next/script. The snippets have to run
-// in document order, synchronously, ahead of everything else in <head>, and they
-// register global callbacks that GeoTargetly's loader invokes by name. next/script
-// owns injection order and would take that guarantee away for no benefit; live
-// serves plain inline tags and so do we.
+// What left with it: a <style>body{opacity:0.0 !important;}</style> injected
+// into <head> before anything was known about the visitor, and a hardcoded
+// 5,000 ms wait before visibility was restored whenever a redirect fired. Every
+// visitor from every country paid that, and the vendor's own Googlebot bypass
+// did not spare crawlers because the hide was already in the document by the
+// time the bypass was evaluated. Do not reintroduce a body-hide here.
 //
-// What this replaced: a single <Script src> pointing at ONE of the three rules,
-// with `refurl` hardcoded to "https://www.google.com" and no `winurl`. That was
-// broken three ways over - two rules missing, a fabricated referrer, and no
-// callback for the loader to call, so the redirect could never actually fire.
-export function GeoTargetlyScript() {
-  return (
-    <>
-      {GEOTARGETLY_RULES.map((rule) => (
-        <script
-          key={rule.timestamp}
-          dangerouslySetInnerHTML={{ __html: geoTargetlySnippet(rule.timestamp, rule.id) }}
-        />
-      ))}
-    </>
-  )
-}
+// VisitorCountryScript stays. It is a separate thing and still gates Hotjar.
 
 // Google Tag Manager — head + body snippet pair.
 // GA4 is fired through GTM, not loaded directly here.
