@@ -7,6 +7,7 @@
 // spreads changes where redirects land.
 import type { Redirect } from 'next/dist/lib/load-custom-routes'
 
+import { backlinkReclaims } from './backlink-reclaims'
 import {
   collapseRedirectChains,
   expandPrefixSwapShortcuts,
@@ -19,7 +20,11 @@ import { lockedRules } from './locked-rules'
 import { regexRedirects } from './regex-redirects'
 import { webflowRedirects } from './webflow-redirects'
 
+// backlinkReclaims goes FIRST, and that position is the whole point of it: one
+// of its rules overrides a generated Webflow rule that sends the same source to
+// /blog, and Next.js fires the first match. See ./backlink-reclaims.ts.
 const assembled: Redirect[] = [
+  ...backlinkReclaims,
   ...crawlRedirects,
   ...regexRedirects,
   ...webflowRedirects,
