@@ -18,19 +18,32 @@ const CLARA_WORKSPACE_ID = '09aa62df-5af6-4cec-b565-c335e907327d'
 const FACEBOOK_PIXEL_ID = '160820827844254'
 const HUBSPOT_PORTAL_ID = '22809822'
 const MARKER_PROJECT_ID = '6a607cb9bba82be8b774fc61'
-// GeoTargetly runs THREE separate georedirect rules on the live site, not one.
-// Each rule is an independent snippet from the GeoTargetly dashboard with its own
-// rule id and its own timestamp-derived callback name; the timestamps are part of
-// the contract, because the loader calls `georedirect<TIMESTAMP>loaded` by name.
+// GeoTargetly georedirect. Each rule is an independent snippet from the
+// GeoTargetly dashboard with its own rule id and its own timestamp-derived
+// callback name; the timestamps are part of the contract, because the loader
+// calls `georedirect<TIMESTAMP>loaded` by name. Do not "tidy" the ids, the
+// timestamps or the query-string shape: they have to match what is configured
+// in the GeoTargetly account or the rule silently stops firing.
 //
-// Verified against the live HTML of www.cloudemployee.io on 3 Aug 2026. Do not
-// "tidy" these: the ids, the timestamps and the query-string shape all have to
-// match what is configured in the GeoTargetly account or the rule silently
-// stops firing.
+// ONE rule, not the three that shipped at cutover. Jake captured the whole
+// dashboard on 10 Aug 2026 (docs/seo/GEO_ROUTING.md section 4): of the four
+// Geo Redirect setups, only "Marketing Website Locations Redirect" is ON, and
+// it is the one carrying id -OJz6mUkL51tX4CyQPmd. The setups behind
+// -OK8LE2WwpalZvadeMTu and -OK8QFN5yqnrUvZ_ZFAC are switched OFF, so those two
+// snippets injected a body{opacity:0} hide and made a round trip to
+// g10498469755.co on every page load in order to do nothing at all. Removed.
+//
+// If either of those dashboard setups is ever switched back ON it will silently
+// have no effect until its snippet is restored here.
+//
+// This whole integration is scheduled for deletion in session S5, which
+// replaces it with server-side routing off x-vercel-ip-country per CE-48. Read
+// docs/seo/GEO_ROUTING.md section 4.7 before touching it: the remaining
+// snippet's 5-second body-hide (`to=5000` below) is the measured cause of the
+// site's render delay, and the hide is injected before any country is known, so
+// every visitor pays it and the Googlebot bypass does not spare crawlers.
 const GEOTARGETLY_RULES = [
   { timestamp: '1740520761398', id: '-OJz6mUkL51tX4CyQPmd' },
-  { timestamp: '1740692320540', id: '-OK8LE2WwpalZvadeMTu' },
-  { timestamp: '1740693636858', id: '-OK8QFN5yqnrUvZ_ZFAC' },
 ] as const
 
 function geoTargetlySnippet(timestamp: string, id: string): string {
