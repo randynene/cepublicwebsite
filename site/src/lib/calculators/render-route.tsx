@@ -125,7 +125,7 @@ export async function renderCalculatorPage(
             </Text>
           ) : null}
 
-          <Heading as="h1">{page.title}</Heading>
+          <Heading as="h1" size="hero">{page.title}</Heading>
 
           {page.heroDescription && page.heroDescription.length > 0 ? (
             <div className="max-w-prose text-text-default/80">

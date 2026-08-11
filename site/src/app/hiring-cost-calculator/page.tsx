@@ -39,7 +39,7 @@ export default function HiringCostCalculatorPage() {
   return (
     <main id="main">
       <Container as="div" className="pb-16 pt-8 lg:pb-24 lg:pt-12">
-        <Heading as="h1" className="mb-8">
+        <Heading as="h1" size="hero" className="mb-8">
           {UI_STRINGS['hiringCost.pageTitle']}
         </Heading>
         <HiringCostCalculator />

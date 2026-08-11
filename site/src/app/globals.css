@@ -442,23 +442,16 @@ body {
   }
 
   /* Progressive compression as the window gets short — which is what zooming in
-     produces. Each step trims the two things that consume the vertical budget:
-     the headline and the hero padding. */
-  /* As the window gets short — which is what zooming IN produces — the headline,
-     the hero visual and the gap all step down together, so the group keeps
-     fitting one screen and stays centred rather than starting to overflow.
+     produces. The hero visual and gap step down together so the group keeps
+     fitting one screen. The headline deliberately keeps the shared marketing
+     type scale: shrinking it only on these pages caused the sitewide mismatch.
 
      `zoom`, not `transform: scale`, on the hero visual: a transform shrinks the
      pixels but leaves the original box in the layout, so the page would keep
      the height it was trying to save. */
   @media (max-height: 900px) {
     .hero-screen {
-      --hero-h1-size: 50px;
       --hero-gap: 48px;
-    }
-    .hero-screen h1 {
-      font-size: var(--hero-h1-size);
-      line-height: 1.05;
     }
     .hero-screen .hero-visual {
       zoom: 0.86;
@@ -476,7 +469,6 @@ body {
   }
   @media (max-height: 780px) {
     .hero-screen {
-      --hero-h1-size: 42px;
       --hero-gap: 34px;
     }
     .hero-screen .hero-visual {
@@ -485,7 +477,6 @@ body {
   }
   @media (max-height: 720px) {
     .hero-screen {
-      --hero-h1-size: 40px;
       --hero-gap: 28px;
     }
     .hero-screen .hero-visual {
@@ -494,7 +485,6 @@ body {
   }
   @media (max-height: 660px) {
     .hero-screen {
-      --hero-h1-size: 36px;
       --hero-gap: 22px;
     }
     .hero-screen .hero-visual {
@@ -524,8 +514,8 @@ body {
   }
 }
 
-/* Home hero — the same idea, plus the profile card (fixed 457px tall) has to
-   scale with it or it is the thing that overflows first. */
+/* Home hero — compress spacing on short windows without changing the shared
+   marketing headline scale. */
 @media (min-width: 1024px) {
   .home-hero {
     display: flex;
@@ -540,27 +530,12 @@ body {
       padding-top: 64px;
       padding-bottom: 48px;
     }
-    .home-hero h1 {
-      font-size: 50px;
-      line-height: 54px;
-    }
   }
 
   @media (max-height: 760px) {
     .home-hero {
       padding-top: 40px;
       padding-bottom: 32px;
-    }
-    .home-hero h1 {
-      font-size: 42px;
-      line-height: 46px;
-    }
-  }
-
-  @media (max-height: 620px) {
-    .home-hero h1 {
-      font-size: 36px;
-      line-height: 40px;
     }
   }
 }
