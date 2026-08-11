@@ -369,7 +369,7 @@ body {
        `.hero-screen`-prefixed we could write here, so pushing VALUES down as
        custom properties sidesteps the specificity fight entirely. Each page's
        own rule keeps a fallback, so a page that has not opted in is unchanged. */
-    --hero-h1-size: clamp(40px, 5.2vw, 60px);
+    --hero-h1-size: var(--text-marketing-hero);
     --hero-gap: 72px;
     --hero-pad-top: 0px;
     --hero-pad-bottom: 0px;

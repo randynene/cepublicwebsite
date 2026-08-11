@@ -253,7 +253,7 @@ function Hero({ content, locale }: { content: LocationContent; locale: Locale })
           <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-brand-primary shadow-[0_0_8px_#D4FF3C]" />
           {hero.eyebrow}
         </span>
-        <h1 className="mt-6 text-[38px] font-extrabold leading-[1.06] tracking-[-1.4px] text-white lg:text-[46px] lg:leading-[52px] lg:tracking-[-1.6px]">
+        <h1 className="mt-6 text-marketing-hero text-white">
           {hero.titleLead}
           <br />
           {hero.titleConnector} <TypewriterText segments={[{ text: hero.titleAccent, className: ACCENT }]} />

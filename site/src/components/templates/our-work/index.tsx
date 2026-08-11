@@ -224,7 +224,7 @@ export async function OurWorkTemplate({
       {/* 1. HERO */}
       <section className={cn(BAND, 'pt-[56px] text-center lg:pt-[80px]')}>
         <p className={EYEBROW}>{C.hero.eyebrow}</p>
-        <h1 className="mx-auto mt-5 max-w-[820px] text-[38px] font-semibold leading-[1.05] tracking-[-1.6px] text-white lg:text-[58px] lg:leading-[62px] lg:tracking-[-2.2px]">
+        <h1 className="mx-auto mt-5 max-w-[820px] text-marketing-hero text-white">
           {C.hero.titleLead} <TypewriterText segments={[{ text: C.hero.titleAccent, className: ACCENT }]} />{' '}
           {C.hero.titleRest}
         </h1>

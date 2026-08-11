@@ -189,7 +189,7 @@ export default function ResourceHubTemplate({
                 </span>
               ) : null}
 
-              <h1 className="text-[40px] font-semibold leading-[1.08] tracking-[-0.02em] text-text-default md:text-[52px] lg:text-[62px]">
+              <h1 className="text-marketing-hero text-text-default">
                 {title}
               </h1>
 

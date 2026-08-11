@@ -60,8 +60,7 @@ const CASE_STUDIES_HREF = '/customer-stories'
 const CASE_STUDIES_ARROW = '\u2192'
 
 // White display headings = Inter semibold. Only lime accent words = font-serif italic.
-const H1 =
-  'text-[42px] font-semibold leading-[1.05] tracking-[-2px] text-white lg:text-[58px] lg:leading-[62px] lg:tracking-[-2.5px]'
+const H1 = 'text-marketing-hero text-white'
 const H2 =
   'text-[34px] font-semibold leading-[1.05] tracking-[-1.3px] text-white lg:text-[56px] lg:tracking-[-1.7px]'
 const ACCENT = 'font-serif font-normal italic text-brand-primary'

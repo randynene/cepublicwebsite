@@ -160,7 +160,7 @@ export function ContactTemplate({
       <section className={cn(BAND, 'grid gap-12 pt-[56px] pb-[72px] lg:grid-cols-[1fr_1fr] lg:gap-16 lg:pt-[80px]')}>
         <div>
           <p className={EYEBROW}>{C.hero.eyebrow}</p>
-          <h1 className="mt-5 max-w-[560px] text-[38px] font-semibold leading-[1.05] tracking-[-1.6px] text-white lg:text-[58px] lg:leading-[62px] lg:tracking-[-2.2px]">
+          <h1 className="mt-5 max-w-[560px] text-marketing-hero text-white">
             {C.hero.titleLead} <TypewriterText segments={[{ text: C.hero.titleAccent, className: ACCENT }]} />
           </h1>
           <div className="mt-6 flex max-w-[560px] flex-col gap-4">

@@ -72,6 +72,8 @@ const headingVariants = cva(
       size: {
         // 5× CE — section CTA heading. Two-breakpoint cascade.
         display: 'text-display-mobile md:text-display-tablet lg:text-display leading-snug',
+        // Visible marketing-page H1. One fluid 40px → 60px treatment sitewide.
+        hero: 'text-marketing-hero',
         // 24× CE — page title / dominant section heading. Cascade post DEV-13:
         // mobile/tablet/desktop all 48px (single visual; lg: kept for future flex).
         h1: 'text-h1 lg:text-h1-desktop leading-snug',

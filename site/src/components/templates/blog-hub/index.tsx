@@ -202,7 +202,7 @@ export default function BlogHubTemplate({
 
               {/* EXACTLY ONE h1 PER PAGE (spec §7). Every other heading on this page
                   is an h2 or h3. */}
-              <h1 className="text-[40px] font-semibold leading-[1.08] tracking-[-0.02em] text-text-default md:text-[52px] lg:text-[62px]">
+              <h1 className="text-marketing-hero text-text-default">
                 {title}
               </h1>
 

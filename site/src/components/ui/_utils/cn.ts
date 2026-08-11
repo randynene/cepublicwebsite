@@ -20,6 +20,7 @@ const customTwMerge = extendTailwindMerge({
           text: [
             'h1',
             'h1-desktop',
+            'marketing-hero',
             'h2',
             'h2-desktop',
             'h4',

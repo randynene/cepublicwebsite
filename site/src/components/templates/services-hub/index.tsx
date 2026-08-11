@@ -87,7 +87,7 @@ export function ServicesHubTemplate({ content, pathPrefix = '' }: { content: Ser
         <span className="inline-flex items-center gap-2 rounded-pill border border-brand-primary/30 bg-brand-primary/10 px-4 py-2 text-[11px] font-bold uppercase tracking-[1px] text-brand-primary">
           {h.hero.eyebrow}
         </span>
-        <h1 className="mx-auto mt-6 max-w-[900px] text-[42px] font-semibold leading-[1.03] tracking-[-2px] text-white lg:text-[64px] lg:leading-[68px] lg:tracking-[-2.4px]">
+        <h1 className="mx-auto mt-6 max-w-[900px] text-marketing-hero text-white">
           {h.hero.titleLead} <TypewriterText segments={[{ text: h.hero.titleAccent, className: ACCENT }]} />
         </h1>
         <p className={cn('mx-auto mt-5 max-w-[560px] text-[18px] leading-[28px]', BODY)}>{h.hero.lead}</p>

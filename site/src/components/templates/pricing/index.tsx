@@ -99,7 +99,7 @@ function Hero({ content }: { content: PricingContent }) {
     <section className="grid grid-cols-1 items-center gap-12 pt-16 lg:grid-cols-[1.1fr_0.9fr] lg:pt-24">
       <div>
         <Eyebrow>{hero.eyebrow}</Eyebrow>
-        <h1 className="mt-5 text-[42px] font-semibold leading-[1.03] tracking-[-1.8px] text-white lg:text-[64px] lg:leading-[66px] lg:tracking-[-2.4px]">
+        <h1 className="mt-5 text-marketing-hero text-white">
           {hero.titleLead} <TypewriterText segments={[{ text: hero.titleAccent, className: ACCENT }]} />
         </h1>
         <p className="mt-6 max-w-[540px] text-[18px] leading-[28px] text-text-default/70">{hero.paragraph}</p>

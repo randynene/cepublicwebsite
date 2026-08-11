@@ -166,6 +166,15 @@
   --text-h1--font-weight: 600;
   --text-h1-desktop: var(--text-h1);    /* alias kept; components use lg:text-h1-desktop */
 
+  /* Marketing hero — one responsive treatment for visible landing-page H1s.
+   * This is intentionally separate from the editorial H1 token above: marketing
+   * heroes scale fluidly from 40px to 60px, while article/detail headings keep
+   * their template-specific hierarchy. */
+  --text-marketing-hero: clamp(2.5rem, 5.2vw, 3.75rem);
+  --text-marketing-hero--line-height: 1.05;
+  --text-marketing-hero--letter-spacing: -0.035em;
+  --text-marketing-hero--font-weight: 600;
+
   --text-h2: 3.625rem;                  /* 58px — marquee / section headings */
   --text-h2--line-height: 3.8125rem;    /* 61px */
   --text-h2--letter-spacing: -1.7px;

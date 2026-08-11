@@ -174,7 +174,7 @@ export default function StaticPageTemplate({
               Studio title field. The book-a-call thank-you page uses it to keep
               "You're booked." on its own line; every other page has no newline
               in its title, so this changes nothing for them. */}
-          <Heading as="h1" className="whitespace-pre-line">
+          <Heading as="h1" size="hero" className="whitespace-pre-line">
             {page.title}
           </Heading>
 

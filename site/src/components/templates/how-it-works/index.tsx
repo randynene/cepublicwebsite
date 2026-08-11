@@ -36,9 +36,9 @@ const BAND = 'mx-auto w-full max-w-[1440px] px-[22px] sm:px-[32px] lg:px-[64px]'
 const EYEBROW =
   'text-[12px] font-semibold uppercase leading-[18.6px] tracking-[1.68px] text-brand-primary'
 const MUTED = 'text-[#7F8CA0]'
-// Heading sizes match THIS export's LIVE token scale (H1 67 / H2 58 / H3 46).
-const H1 =
-  'text-[38px] font-semibold leading-[1.05] tracking-[-1.5px] text-white lg:text-[67px] lg:leading-[70.56px] lg:tracking-[-2.52px]'
+// The hero uses the shared marketing-page scale; section headings retain this
+// template's signed-off hierarchy.
+const H1 = 'text-marketing-hero text-white'
 const H2 =
   'text-[34px] font-semibold leading-[1.05] tracking-[-1.3px] text-white lg:text-[58px] lg:leading-[61px] lg:tracking-[-1.7px]'
 const ACCENT = 'font-serif font-normal italic text-brand-primary'

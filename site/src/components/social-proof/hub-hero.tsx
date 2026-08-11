@@ -38,7 +38,7 @@ export function HubHero({
           {eyebrow}
         </p>
       ) : null}
-      <h1 className="text-[40px] font-semibold leading-[1.05] tracking-[-0.02em] text-text-default md:text-[54px] lg:text-[64px]">
+      <h1 className="text-marketing-hero text-text-default">
         <AccentTitle title={title} />
       </h1>
       {children}

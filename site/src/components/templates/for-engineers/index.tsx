@@ -401,6 +401,11 @@ export function ForEngineersTemplate({
       const vw = document.documentElement.clientWidth
       const s = vw >= 1920 ? 1 : vw / 1920
       canvas.style.zoom = s === 1 ? '' : String(s)
+      // The fixed 1920px Figma canvas is zoomed as a whole. Compensate the hero
+      // H1 before that zoom so its rendered size still matches every other
+      // marketing page (40px minimum, fluid to 60px).
+      const renderedHeroSize = Math.min(60, Math.max(40, vw * 0.052))
+      canvas.style.setProperty('--fe2-marketing-hero-size', `${renderedHeroSize / s}px`)
       // clear any legacy transform-based scaling that may linger
       canvas.style.transform = ''
       canvas.style.transformOrigin = ''

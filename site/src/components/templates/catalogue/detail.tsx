@@ -200,7 +200,7 @@ export function CatalogueDetail({ content, hireHref = '/book-a-call', leadForm }
       <section className={cn(BAND_1280, 'grid grid-cols-1 items-center gap-12 pt-[64px] lg:grid-cols-[1fr_0.9fr] lg:pt-[88px]')}>
         <div>
           <Eyebrow>{eyebrow}</Eyebrow>
-          <h1 className="mt-5 text-[38px] font-semibold leading-[42px] tracking-[-1.5px] text-white lg:text-[64px] lg:leading-[68px] lg:tracking-[-2.4px]">{name}</h1>
+          <h1 className="mt-5 text-marketing-hero text-white">{name}</h1>
           {heroSubhead ? <p className={cn('mt-5 max-w-[480px] text-[15px] leading-[24px] lg:text-[19px] lg:leading-[28.5px]', BODY)}>{heroSubhead}</p> : null}
           <CheckList items={heroBullets} className="mt-6 max-w-[480px]" />
           <a href={hireHref} className="sf sf-p mt-8 inline-flex w-fit items-center gap-2.5 rounded-pill py-[10px] pl-[10px] pr-6 text-[15px] font-bold">
