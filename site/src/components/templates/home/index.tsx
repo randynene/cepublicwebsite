@@ -789,7 +789,10 @@ function ReadyToFind({ content, locale }: SectionProps & { locale: Locale }) {
 
         {/* `bare`: this section already supplies the eyebrow, headline and lead,
             and the talk row below closes it. The form contributes only its box. */}
-        <LeadFormSection bare sourcePage={buildLocalePath('/', locale)} />
+        {/* CE-54: no step rail here. The section's own eyebrow and lead already
+            say what this is, and the numbered list read as a promise of results
+            at the end that the form does not make. */}
+        <LeadFormSection bare hideStepRail sourcePage={buildLocalePath('/', locale)} />
 
         {/* These were non-clickable <span>s: the page invited you to "Ask our AI
             anything" and then did nothing when you did. First CTA opens the chat

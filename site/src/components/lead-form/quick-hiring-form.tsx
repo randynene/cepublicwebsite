@@ -73,6 +73,12 @@ export interface QuickHiringFormProps {
   prefillSkill?: string
   calendlyUrl?: string
   className?: string
+  /**
+   * CE-54. Hides the numbered step rail, keeping every question and all of the
+   * behaviour. Opt-in per host rather than removed outright: the rail still
+   * earns its place on the pages that introduce the form cold.
+   */
+  hideStepRail?: boolean
 }
 
 interface Details {
@@ -169,6 +175,7 @@ export function QuickHiringForm({
   prefillSkill,
   calendlyUrl = DEFAULT_CALENDLY_URL,
   className,
+  hideStepRail = false,
 }: QuickHiringFormProps) {
   const isCto = variant === 'cto'
   // Prefill is an engineer-page concept; ignored on the CTO funnel.
@@ -323,45 +330,49 @@ export function QuickHiringForm({
           "Team size". That looked tidier and it lied: on the commitment screen the
           rail still said Team size, so the visitor could not tell where they were.
           Not clickable, because jumping to Book a call before answering anything
-          leaves nothing to match on. */}
-      <ol className="-mx-[4px] mb-[24px] flex items-center overflow-x-auto px-[4px] pb-[4px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {steps.map((id, index) => {
-          const state = index === stepIndex ? 'current' : index < stepIndex ? 'done' : 'todo'
-          return (
-            <li key={id} className="flex shrink-0 items-center">
-              <span
-                className={cn(
-                  'flex size-[21px] items-center justify-center rounded-full text-[10px] font-semibold tabular-nums',
-                  state === 'current' && 'bg-accent-primary text-text-dark',
-                  state === 'done' && 'bg-accent-primary/25 text-accent-primary',
-                  state === 'todo' && 'bg-surface-tertiary text-text-tertiary',
-                )}
-                aria-hidden="true"
-              >
-                {String(index + 1).padStart(2, '0')}
-              </span>
-              <span
-                className={cn(
-                  'ml-[8px] whitespace-nowrap text-[12px] font-medium',
-                  state === 'todo' ? 'text-text-tertiary' : 'text-text-primary',
-                )}
-                aria-current={state === 'current' ? ARIA_CURRENT_STEP : undefined}
-              >
-                {isCto && id === 'role' ? CTO_STEP_LABEL_ROLE : STEP_LABELS[id]}
-              </span>
-              {index < steps.length - 1 && (
+          leaves nothing to match on.
+          Hidden where the host asks for it (CE-54); the sr-only progressbar below
+          still reports position, so nothing is lost to assistive tech. */}
+      {!hideStepRail && (
+        <ol className="-mx-[4px] mb-[24px] flex items-center overflow-x-auto px-[4px] pb-[4px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {steps.map((id, index) => {
+            const state = index === stepIndex ? 'current' : index < stepIndex ? 'done' : 'todo'
+            return (
+              <li key={id} className="flex shrink-0 items-center">
                 <span
-                  aria-hidden="true"
                   className={cn(
-                    'mx-[12px] h-px w-[16px] lg:w-[28px]',
-                    index < stepIndex ? 'bg-accent-primary/40' : 'bg-border-default',
+                    'flex size-[21px] items-center justify-center rounded-full text-[10px] font-semibold tabular-nums',
+                    state === 'current' && 'bg-accent-primary text-text-dark',
+                    state === 'done' && 'bg-accent-primary/25 text-accent-primary',
+                    state === 'todo' && 'bg-surface-tertiary text-text-tertiary',
                   )}
-                />
-              )}
-            </li>
-          )
-        })}
-      </ol>
+                  aria-hidden="true"
+                >
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <span
+                  className={cn(
+                    'ml-[8px] whitespace-nowrap text-[12px] font-medium',
+                    state === 'todo' ? 'text-text-tertiary' : 'text-text-primary',
+                  )}
+                  aria-current={state === 'current' ? ARIA_CURRENT_STEP : undefined}
+                >
+                  {isCto && id === 'role' ? CTO_STEP_LABEL_ROLE : STEP_LABELS[id]}
+                </span>
+                {index < steps.length - 1 && (
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      'mx-[12px] h-px w-[16px] lg:w-[28px]',
+                      index < stepIndex ? 'bg-accent-primary/40' : 'bg-border-default',
+                    )}
+                  />
+                )}
+              </li>
+            )
+          })}
+        </ol>
+      )}
 
       <Heading
         as="h2"
