@@ -255,7 +255,9 @@ export function QuickHiringForm({
     const next: Partial<Record<keyof Details, string>> = {}
     if (!details.firstName.trim()) next.firstName = C.error.required
     if (!EMAIL_RE.test(details.email)) next.email = C.error.email
-    if (!details.consent) next.consent = C.error.consent
+    // CE-55. The CTO funnel asks for a name and an email and nothing else, so it
+    // has no consent box to validate. The hiring funnel is unchanged.
+    if (!isCto && !details.consent) next.consent = C.error.consent
     setErrors(next)
     return Object.keys(next).length === 0
   }
@@ -569,42 +571,54 @@ export function QuickHiringForm({
                   required
                 />
               </div>
-              <Field
-                id="qh-phone"
-                label={C.details.phone}
-                hint={C.details.optional}
-                type="tel"
-                value={details.phone}
-                onChange={(v) => updateDetail('phone', v)}
-              />
-              <Field
-                id="qh-company"
-                label={C.details.company}
-                hint={C.details.optional}
-                value={details.company}
-                onChange={(v) => updateDetail('company', v)}
-              />
+              {/* CE-55. Phone, company and the consent box below are dropped on
+                  the CTO funnel: every optional field on the last screen is one
+                  more thing to read before the only two that matter. The hiring
+                  funnel keeps all three. */}
+              {!isCto && (
+                <>
+                  <Field
+                    id="qh-phone"
+                    label={C.details.phone}
+                    hint={C.details.optional}
+                    type="tel"
+                    value={details.phone}
+                    onChange={(v) => updateDetail('phone', v)}
+                  />
+                  <Field
+                    id="qh-company"
+                    label={C.details.company}
+                    hint={C.details.optional}
+                    value={details.company}
+                    onChange={(v) => updateDetail('company', v)}
+                  />
+                </>
+              )}
             </div>
 
-            <label className="mt-[22px] flex items-start gap-[10px] text-text-secondary">
-              <Checkbox
-                checked={details.consent}
-                onCheckedChange={(checked) => updateDetail('consent', checked === true)}
-                aria-invalid={Boolean(errors.consent)}
-                className="mt-[2px] size-[17px] shrink-0 rounded-[5px]"
-              />
-              <span className="text-sm">
-                {C.details.consent}
-                {' '}
-                <Link href={C.details.consentLinkHref} className="underline">
-                  {C.details.consentLinkLabel}
-                </Link>
-              </span>
-            </label>
-            {errors.consent && (
-              <Text size="small" className={cn('mt-2', ERROR_TEXT_CLASS)}>
-                {errors.consent}
-              </Text>
+            {!isCto && (
+              <>
+                <label className="mt-[22px] flex items-start gap-[10px] text-text-secondary">
+                  <Checkbox
+                    checked={details.consent}
+                    onCheckedChange={(checked) => updateDetail('consent', checked === true)}
+                    aria-invalid={Boolean(errors.consent)}
+                    className="mt-[2px] size-[17px] shrink-0 rounded-[5px]"
+                  />
+                  <span className="text-sm">
+                    {C.details.consent}
+                    {' '}
+                    <Link href={C.details.consentLinkHref} className="underline">
+                      {C.details.consentLinkLabel}
+                    </Link>
+                  </span>
+                </label>
+                {errors.consent && (
+                  <Text size="small" className={cn('mt-2', ERROR_TEXT_CLASS)}>
+                    {errors.consent}
+                  </Text>
+                )}
+              </>
             )}
           </StepShell>
         )}
@@ -655,11 +669,16 @@ export function QuickHiringForm({
             <CtaButton
               as="button"
               variant="solid"
+              // CE-55. The CTO funnel reads "Next" on the details step rather
+              // than "Book a call": the same click, described as one more step
+              // rather than as a commitment to a meeting.
               label={
                 step === 'details'
                   ? submitting
                     ? C.actions.submitting
-                    : C.actions.submit
+                    : isCto
+                      ? C.actions.continue
+                      : C.actions.submit
                   : C.actions.continue
               }
               disabled={!canContinue() || submitting}
