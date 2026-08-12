@@ -212,6 +212,22 @@ async function buildDoc(c: LocationContent) {
     ),
   }
 
+  // CE-57: "What you get". Only the regions that carry the block in the
+  // registry (Eastern Europe) seed it; the rest keep the advantage row.
+  const offer = c.offer
+    ? {
+        eyebrow: c.offer.eyebrow,
+        titleLead: c.offer.titleLead,
+        titleAccent: c.offer.titleAccent,
+        intro: c.offer.intro,
+        cards: keyed(
+          c.offer.cards.map((card) => ({ title: card.title, body: card.body })),
+          'offer',
+        ),
+        image: await img(c.offer.image, c.offer.imageAlt),
+      }
+    : null
+
   const video = {
     eyebrow: c.video.eyebrow,
     titleLead: c.video.titleLead,
@@ -381,6 +397,7 @@ async function buildDoc(c: LocationContent) {
     logos,
     hero,
     advantage,
+    ...(offer ? { offer } : {}),
     video,
     ...(onGround ? { onGround } : {}),
     ...(regionsStrip ? { regionsStrip } : {}),

@@ -40,6 +40,11 @@ const LOCATION_PAGE_QUERY = /* groq */ `
     eyebrow, titleLead, titleAccent, intro,
     cards[]{ eyebrow, title, body }
   },
+  offer{
+    eyebrow, titleLead, titleAccent, intro,
+    cards[]{ title, body },
+    "image": image.asset->url, "imageAlt": image.alt
+  },
   video{ eyebrow, titleLead, titleAccent, intro, presenter, pullQuote, videoUrl, "image": image.asset->url },
   onGround{ eyebrow, titleLead, titleAccent, body, bullets, "image": image.asset->url },
   eor{
@@ -154,6 +159,18 @@ export const LocationPageSchema = z.object({
       titleAccent: nzs,
       intro: nzs,
       cards: z.array(zAdvantageCard).nullable().optional(),
+    })
+    .nullable()
+    .optional(),
+  offer: z
+    .object({
+      eyebrow: nzs,
+      titleLead: nzs,
+      titleAccent: nzs,
+      intro: nzs,
+      cards: z.array(z.object({ title: nzs, body: nzs })).nullable().optional(),
+      image: nzs,
+      imageAlt: nzs,
     })
     .nullable()
     .optional(),
@@ -434,6 +451,20 @@ export function toLocationContent(data: LocationPageData, fallback: LocationCont
     // PH regions strip stays available from the registry when Sanity docs
     // predate that field.
     regionsStrip: merged.regionsStrip ?? fallback.regionsStrip,
+    // CE-57 "What you get". A doc that predates the field (or leaves the block
+    // untouched) has no cards, so the registry copy is what renders - never a
+    // half-empty section. Cards come as a whole set, not merged index-wise, so
+    // removing one in Studio removes it on the page.
+    offer: (() => {
+      // Card count is read off the RAW doc: `merged` fills short arrays from the
+      // fallback index-by-index, which would resurrect a card Seb deleted.
+      if (!data.offer?.cards?.length) return fallback.offer
+      const cards = data.offer.cards.map((c, i) => ({
+        title: c.title ?? fallback.offer?.cards[i]?.title ?? '',
+        body: c.body ?? fallback.offer?.cards[i]?.body ?? '',
+      }))
+      return merged.offer ? { ...merged.offer, cards } : undefined
+    })(),
     // The start quiz is retired (LeadFormSection replaces it); 'quiz' and 'none'
     // both skip the Start block, so a legacy Sanity `variant: 'quiz'` needs no
     // dataset write. CTA destinations are code-owned as of 3 Aug: /start-hiring

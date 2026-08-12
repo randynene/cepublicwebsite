@@ -207,6 +207,35 @@ const videoSection = defineField({
   ],
 })
 
+// CE-57: "What you get" - the Hire Engineers offer section. When this block is
+// filled in it renders INSTEAD of the time-zone advantage row above, in the
+// same slot. Leave it empty to keep the advantage row.
+const offerCardMember = defineArrayMember({
+  type: 'object',
+  name: 'offerCard',
+  title: 'What-you-get card',
+  fields: [
+    defineField({ name: 'title', title: 'Title', type: 'string' }),
+    defineField({ name: 'body', title: 'Body', type: 'text', rows: 3 }),
+  ],
+  preview: { select: { title: 'title', subtitle: 'body' } },
+})
+
+const offerSection = defineField({
+  name: 'offer',
+  title: 'What you get (replaces the advantage row when filled)',
+  type: 'object',
+  options: { collapsible: true, collapsed: true },
+  fields: [
+    defineField({ name: 'eyebrow', title: 'Eyebrow', type: 'string' }),
+    defineField({ name: 'titleLead', title: 'Title (lead)', type: 'string' }),
+    defineField({ name: 'titleAccent', title: 'Title (accent)', type: 'string' }),
+    defineField({ name: 'intro', title: 'Intro', type: 'text', rows: 2 }),
+    defineField({ name: 'cards', title: 'Cards', type: 'array', of: [offerCardMember] }),
+    imageField('image', 'Photo', { altRequired: true }),
+  ],
+})
+
 const onGroundSection = defineField({
   name: 'onGround',
   title: 'On the ground (LATAM / EE only)',
@@ -441,6 +470,7 @@ export default defineType({
     ...[
       heroSection,
       advantageSection,
+      offerSection,
       videoSection,
       onGroundSection,
       regionsStripSection,

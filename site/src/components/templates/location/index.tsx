@@ -410,6 +410,53 @@ function Advantage({ content }: { content: LocationContent }) {
   )
 }
 
+// ── What you get (CE-57) ────────────────────────────────────────────────────
+// Port of the Hire Engineers "offer" section: four icon cards in a 2x2 grid
+// beside a photo, in place of the four-across advantage row. Geometry mirrors
+// hire-engineers.css (1fr / 0.85fr split, 14px card gap, 24px card padding),
+// expressed in explicit px because this page runs the doubled spacing scale.
+const OFFER_ICONS: React.ReactNode[] = [
+  TIMEZONE_ICON_MAP.users,
+  TIMEZONE_ICON_MAP.dollar,
+  TIMEZONE_ICON_MAP.bolt,
+  TIMEZONE_ICON_MAP.globe,
+]
+
+function Offer({ content }: { content: LocationContent }) {
+  const { offer } = content
+  if (!offer) return null
+  return (
+    <section id="advantage" className={cn(BAND, 'scroll-mt-[96px] py-[80px]')}>
+      <Eyebrow>{offer.eyebrow}</Eyebrow>
+      <div className="mt-3 max-w-[720px]">
+        <Heading lead={offer.titleLead} accent={offer.titleAccent} />
+      </div>
+      <p className={cn('mt-4 max-w-[700px] text-[16px]', BODY)}>{offer.intro}</p>
+      <div className="mt-[44px] grid grid-cols-1 items-center gap-[48px] lg:grid-cols-[1fr_0.85fr]">
+        <ul className="grid grid-cols-1 items-stretch gap-[14px] sm:grid-cols-2">
+          {offer.cards.map((c, i) => (
+            <li key={c.title} className={cn(CARD, CARD_HOVER, 'flex flex-col gap-[8px] p-[24px] text-left')}>
+              <span className={cn(ICON_TILE, 'mb-[10px]')}>
+                {OFFER_ICONS[i] ?? OFFER_ICONS[0]}
+              </span>
+              <h3 className="text-[16px] font-bold leading-[22px] text-white">{c.title}</h3>
+              <p className={cn('text-[14px] leading-[21px]', BODY)}>{c.body}</p>
+            </li>
+          ))}
+        </ul>
+        <div className="h-[320px] overflow-hidden rounded-[20px] border border-[#22314D] lg:h-full lg:min-h-[380px]">
+          <img
+            src={withSanityImageParams(offer.image, { width: 900 })}
+            alt={offer.imageAlt ?? offer.intro}
+            className="h-full w-full object-cover"
+            loading="lazy"
+          />
+        </div>
+      </div>
+    </section>
+  )
+}
+
 // ── Video feature ───────────────────────────────────────────────────────────
 function VideoFeature({ content }: { content: LocationContent }) {
   const { video } = content
@@ -970,7 +1017,9 @@ export function LocationTemplate({
         <Hero content={content} locale={locale} />
         <LogoStrip content={content} locale={locale} />
       </div>
-      <Advantage content={content} />
+      {/* CE-57: "What you get" replaces the time-zone row where a region
+          supplies an `offer` block (Eastern Europe); the others keep it. */}
+      {content.offer ? <Offer content={content} /> : <Advantage content={content} />}
       <VideoFeature content={content} />
       {isPh ? (
         <>

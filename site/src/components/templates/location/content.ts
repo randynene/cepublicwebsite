@@ -95,6 +95,14 @@ export interface AdvantageCard {
   icon?: 'clock' | 'dollar' | 'bolt' | 'globe' | 'chat' | 'users'
 }
 
+// CE-57: the "What you get" section ported from the Hire Engineers page
+// (/services/software-engineers). Four icon cards in a 2x2 grid beside a photo,
+// replacing the four-across time-zone advantage row on the regions that opt in.
+export interface OfferCard {
+  title: string
+  body: string
+}
+
 export interface HubCard {
   city: string
   note: string
@@ -158,6 +166,21 @@ export interface LocationContent {
     titleAccent: string
     intro: string
     cards: AdvantageCard[]
+  }
+  /**
+   * CE-57: "What you get" - the Hire Engineers offer section. When present it
+   * renders INSTEAD of `advantage`, in the same slot. Eastern Europe uses it;
+   * LATAM and Philippines keep the time-zone row.
+   */
+  offer?: {
+    eyebrow: string
+    titleLead: string
+    titleAccent: string
+    intro: string
+    cards: OfferCard[]
+    image: string
+    /** Alt text for the photo. Falls back to the intro when unset. */
+    imageAlt?: string
   }
   video: {
     eyebrow: string
@@ -620,6 +643,24 @@ export const EASTERN_EUROPE_CONTENT: LocationContent = {
         body: 'Every engineer screened by our senior technical team. Strong professional English across the region.',
       },
     ],
+  },
+  // CE-57: renders in place of `advantage` above, matching the Hire Engineers
+  // "What you get" section. Copy and layout are the same as
+  // /services/software-engineers; every string is editable in Studio.
+  offer: {
+    eyebrow: 'What you get',
+    titleLead: 'A real engineer on your team -',
+    titleAccent: 'we handle everything else.',
+    intro:
+      'Not a contractor. A full-time, dedicated engineer embedded in your team. You direct the work. We run the employment.',
+    cards: [
+      { title: 'Dedicated & embedded', body: 'Works only for you - standups, Slack, sprints. In-house in every way but payroll.' },
+      { title: 'One flat monthly fee', body: 'Salary, benefits, HR, retention - one predictable cost. No hidden extras.' },
+      { title: 'Replace anytime', body: 'Not the right fit? Replaced at no cost. 30 days notice. No lock-in.' },
+      { title: 'We keep them', body: 'HR, wellbeing, and L&D on our side means 97% stay 2+ years.' },
+    ],
+    image: '/hire-engineers/website_image_ce.png',
+    imageAlt: 'Two Cloud Employee engineers talking at their desk.',
   },
   video: {
     eyebrow: 'Why Eastern Europe',
