@@ -305,7 +305,9 @@ export interface LocationContent {
     titleAccent: string
     cards: StartCard[]
     /**
-     * 'cards' = three start tiles.
+     * 'cards' = three start tiles, and they are the only conversion path
+     *   (LeadFormSection is skipped so the page does not stack two forms).
+     * undefined = three start tiles above LeadFormSection (legacy shape).
      * 'none' / 'quiz' = skip Start; LeadFormSection is the conversion path.
      * 'quiz' is retained only so older Sanity docs still parse and skip cleanly.
      */
@@ -762,6 +764,10 @@ export const EASTERN_EUROPE_CONTENT: LocationContent = {
     disclaimer: '*Ranges based on actual placements. Final price confirmed after discovery call.',
   },
   start: {
+    // CE-56: the three start tiles are the only contact block on this page. The
+    // multi-step "What role are you hiring for?" lead form sat directly under
+    // them, so the page asked to get in touch twice.
+    variant: 'cards',
     eyebrow: 'Ready to hire from Eastern Europe?',
     titleLead: 'Three ways to',
     titleAccent: 'start',

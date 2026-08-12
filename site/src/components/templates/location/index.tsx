@@ -1043,8 +1043,12 @@ export function LocationTemplate({
       {/* Above the FAQ, same position as the services and technology detail
           pages. No role prefill: a location page answers WHERE, not which role,
           so preselecting one would be a guess. `content.slug` is the page's own
-          slug, so the lead records which region it came from. */}
-      <LeadFormSection sourcePage={buildLocalePath(`/services/${content.slug}`, locale)} />
+          slug, so the lead records which region it came from.
+          CE-56: skipped where the Start tiles are the declared conversion path
+          (`variant: 'cards'`), so a page never shows two contact blocks. */}
+      {content.start.variant === 'cards' ? null : (
+        <LeadFormSection sourcePage={buildLocalePath(`/services/${content.slug}`, locale)} />
+      )}
       <Faq content={content} locale={locale} />
     </main>
   )
