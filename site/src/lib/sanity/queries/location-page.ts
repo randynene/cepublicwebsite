@@ -451,6 +451,19 @@ export function toLocationContent(data: LocationPageData, fallback: LocationCont
     // PH regions strip stays available from the registry when Sanity docs
     // predate that field.
     regionsStrip: merged.regionsStrip ?? fallback.regionsStrip,
+    // CE-51. The primary-hub headline and banner copy is code-owned: the seeded
+    // Sanity docs still name the old hub city (EE said Warsaw / "Eastern
+    // Europe"), and a merge that let the doc win kept the stale copy on the
+    // page. Photos and the secondary hub cards stay editable in Studio.
+    primaryHub: {
+      ...(merged.primaryHub ?? fallback.primaryHub),
+      eyebrow: fallback.primaryHub.eyebrow,
+      titleLead: fallback.primaryHub.titleLead,
+      titleAccent: fallback.primaryHub.titleAccent,
+      bannerEyebrow: fallback.primaryHub.bannerEyebrow,
+      bannerTitle: fallback.primaryHub.bannerTitle,
+      bannerBody: fallback.primaryHub.bannerBody,
+    },
     // CE-57 "What you get". A doc that predates the field (or leaves the block
     // untouched) has no cards, so the registry copy is what renders - never a
     // half-empty section. Cards come as a whole set, not merged index-wise, so
