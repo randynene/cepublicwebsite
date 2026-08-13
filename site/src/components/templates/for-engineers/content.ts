@@ -324,7 +324,7 @@ export const FOR_ENGINEERS_CONTENT: ForEngineersContent = {
       '\nAn engineer looks at your actual work, once, and the right companies come to you.',
     stats: [
       { num: '70%', body: 'of engineering roles are never publicly posted. We put you in front of them.' },
-      // Newline is intentional — fe2-styles renders stat bodies with pre-line so
+      // Newline is intentional - fe2-styles renders stat bodies with pre-line so
       // this wraps as: "…people a" / "company sees - not one of 500."
       {
         num: '2',
