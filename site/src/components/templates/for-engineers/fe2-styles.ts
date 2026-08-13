@@ -102,6 +102,17 @@ export const FE2_UI_CSS = `
 /* Slightly larger hero sub so the two-line treatment reads clearly */
 .fe2 .fe2-hero-sub{font-size:22px!important;line-height:32px!important}
 
+/* ---- CE-53: hero card photo ----
+ * The baked Figma asset read as a stock photo (Jake). Swapped for a real CE
+ * engineer. Overridden here rather than in the generated fe2-css.ts so the
+ * frozen export stays byte-identical (npm run static:verify-fe2-parity), and
+ * a Sanity-uploaded hero.card.image still wins - hydrateFe2 writes that one
+ * inline, and an inline background beats this rule.
+ * The alternative shot Jake is choosing between is
+ * hero-card-engineer-glasses.jpg; swap the filename to switch.
+ * background-position keeps the face centred in the 494x268 card crop. */
+.fe2 .fig-asset-a3fc3e3eca4dbe49{background:url("/assets/img/for-engineers/hero-card-engineer-headphones.jpg") center top / cover no-repeat}
+
 /* ---- Why this exists: even stat columns + full body copy ----
  * Frozen export pins each body to width:280px inside overflow:hidden columns,
  * which truncates "publicly" / mid-sentence wraps. Unlock width and allow the
