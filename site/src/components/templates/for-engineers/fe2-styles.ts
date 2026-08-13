@@ -165,16 +165,33 @@ export const FE2_UI_CSS = `
   width:100%!important;
 }
 .fe2 [data-fe2-problem-stats] > *{
-  display:flex!important;
-  flex-direction:row!important;
+  /**
+   * Two fixed columns, not a flex row.
+   *
+   * As a flex row the copy started immediately after the number, so it began
+   * in a different place in every card: "70%" is narrow and "$ you set it" is
+   * wide, and the text lined up with neither. Reserving the same width for the
+   * number in all four means the copy starts on one vertical line down the
+   * whole block, which is what the design does and what makes it read as a set
+   * rather than four unrelated boxes.
+   */
+  display:grid!important;
+  grid-template-columns:210px minmax(0,1fr)!important;
   align-items:center!important;
-  gap:28px!important;
+  column-gap:24px!important;
   background:#121b2c!important;
   border:1px solid #1f2b41!important;
   border-radius:16px!important;
   padding:30px 34px!important;
   min-height:120px!important;
 }
+/* The number owns its column and sits at the left edge of it, so the four
+ * numbers line up with each other as well as the copy does. */
+.fe2 [data-fe2-problem-stats] > * > *:first-child{
+  justify-self:start!important;
+  white-space:nowrap!important;
+}
+.fe2 [data-fe2-stat-body]{align-self:center!important}
 @media (max-width:900px){
   .fe2 [data-fe2-problem-stats]{grid-template-columns:minmax(0,1fr)!important}
 }
