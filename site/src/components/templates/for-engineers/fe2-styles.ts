@@ -179,6 +179,21 @@ export const FE2_UI_CSS = `
   .fe2 [data-fe2-problem-stats]{grid-template-columns:minmax(0,1fr)!important}
 }
 
+/* ---- CE-45: hold the hero heading to its written line breaks ----
+ * The copy carries its own newlines, so the shape of that heading is a
+ * decision. The browser was wrapping it again on top of them whenever the
+ * column got tight, which orphaned "the" onto its own line at 100% zoom and
+ * shuffled the breaks at every other zoom level.
+ *
+ * `pre` honours the newlines and refuses to add any, so the heading reads the
+ * same at any zoom. Below 900px it goes back to wrapping normally, because a
+ * heading that cannot wrap on a phone runs off the side of the screen, which
+ * is a worse problem than an untidy break. */
+.fe2 [data-fe2-hero-title]{white-space:pre!important}
+@media (max-width:900px){
+  .fe2 [data-fe2-hero-title]{white-space:pre-line!important}
+}
+
 /* ---- Hide community photo strip (placeholder captions) ---- */
 .fe2 [data-fe2-community-hidden]{display:none!important}
 

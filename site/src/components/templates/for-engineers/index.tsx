@@ -240,6 +240,24 @@ export function ForEngineersTemplate({
       }
     }
 
+    /**
+     * Hero heading: keep the line breaks the copy asks for, and only those.
+     *
+     * titleLead already carries its own newlines, so the shape of the heading
+     * is a decision, not an accident. The browser was then wrapping it again
+     * on top of that whenever the column got tight, which orphaned "the" onto
+     * a line of its own at 100% zoom and moved the breaks around at every
+     * other zoom level. Marked here so CSS can hold it to the written breaks.
+     */
+    const heroLead = content.hero.titleLead.split('\n')[0]?.trim()
+    if (heroLead) {
+      const heroSpan = [...root.querySelectorAll('span')].find((el) =>
+        el.textContent?.trim().startsWith(heroLead),
+      )
+      const heading = heroSpan?.closest('h1') ?? heroSpan?.parentElement
+      if (heading) heading.setAttribute('data-fe2-hero-title', '1')
+    }
+
     // Hide "A community, in person" + the three photo cards (placeholder subs).
     if (content.benefits.hideCommunityBlock) {
       const community = [...root.querySelectorAll('span')].find(
