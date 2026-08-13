@@ -385,6 +385,12 @@ function mapWhereWeWork(section: HomePageData['whereWeWork']): WhereWeWorkConten
 // incomplete sections fall back to HOME_CONTENT so a partially-seeded doc
 // never blanks the page. Hero slideshow + Where we work are the WP-01/02
 // fields that must survive empty production data until re-seed.
+// CE-54: strip the leading "Four quick questions." sentence wherever the lead
+// line still carries it. Falls back to the untouched string if it is absent.
+function dropQuickQuestionsLead(paragraph: string): string {
+  return paragraph.replace(/^\s*Four quick questions\.\s*/i, '')
+}
+
 export function toHomeContent(data: HomePageData): HomeContent {
   const heroProfiles = mapHeroProfiles(data.hero?.profiles) ?? HOME_CONTENT.hero.profiles
   const whereWeWork = mapWhereWeWork(data.whereWeWork) ?? HOME_CONTENT.whereWeWork
@@ -398,6 +404,19 @@ export function toHomeContent(data: HomePageData): HomeContent {
       profiles: heroProfiles,
     },
     whereWeWork,
+    readyToFind: {
+      ...HOME_CONTENT.readyToFind,
+      ...(data.readyToFind ?? {}),
+      // CE-54: the form below this lead no longer shows a step count, and it
+      // never had four steps. The published Sanity document still opens this
+      // line with "Four quick questions.", and the document wins over the
+      // static fallback, so the sentence is dropped here rather than being
+      // left to a Studio edit. Harmless once the document is patched by
+      // scripts/static/patch-home-ready-to-find-lead.ts.
+      paragraph: dropQuickQuestionsLead(
+        data.readyToFind?.paragraph ?? HOME_CONTENT.readyToFind.paragraph,
+      ),
+    },
   }
 
   return merged as HomeContent
