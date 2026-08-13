@@ -691,8 +691,8 @@ export const EASTERN_EUROPE_CONTENT: LocationContent = {
   included: regionalIncluded('Eastern Europe'),
   primaryHub: {
     eyebrow: 'Where we are on the ground',
-    titleLead: 'Warsaw is our',
-    titleAccent: 'biggest hub.',
+    titleLead: 'Zagreb, Croatia is our',
+    titleAccent: 'heart in Europe.',
     bannerEyebrow: 'Our biggest hub · Warsaw',
     bannerTitle: '40+ engineers and growing. Heavy in platform.',
     bannerBody:
