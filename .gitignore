@@ -37,3 +37,4 @@ __verify*.js
 # Agent tooling - local editor state and nested git checkouts, never repo content
 .claude/
 artifacts/
+.vercel
