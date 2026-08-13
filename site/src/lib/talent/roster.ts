@@ -134,19 +134,9 @@ export const TALENT_ROSTER: TalentProfile[] = [
   },
 
   // ── Latin America ─────────────────────────────────────────────────────
-  {
-    slug: 'mateo-r',
-    name: 'Mateo R.',
-    role: 'Senior Full-Stack Engineer',
-    years: 8,
-    city: 'Buenos Aires',
-    flag: '🇦🇷',
-    tags: ['React', 'Node.js', 'AWS'],
-    region: 'latam',
-    bio: 'Previously at an Argentine fintech. Placed with a US SaaS for 2 years. Works US Eastern hours.',
-  },
-  // LATAM hero card stack uses the first three in this list. Rafael replaces
-  // Marcelo on the LATAM page (Jake, 3 Aug) — same skills as the card mock.
+  // Rafael replaces Marcelo on the LATAM page (Jake, 3 Aug) - same skills as
+  // the card mock. The LATAM hero stack is pinned in HERO_TRIO_SLUGS rather
+  // than taken from this order, so the marquee can be re-ordered freely.
   {
     slug: 'rafael-s',
     name: 'Rafael S.',
@@ -250,6 +240,20 @@ export const TALENT_ROSTER: TalentProfile[] = [
     heroTrait: 'Ships weekly',
     bio: 'Previously at a Colombian payments company. Placed with a US data team for 18 months.',
   },
+  // Last of the LATAM group on purpose (Jake, 13 Aug): marqueeOrder() round-
+  // robins the regions in roster order, so his position here is what pushes him
+  // late in the home "Real engineers" marquee instead of third card in.
+  {
+    slug: 'mateo-r',
+    name: 'Mateo R.',
+    role: 'Senior Full-Stack Engineer',
+    years: 8,
+    city: 'Buenos Aires',
+    flag: '🇦🇷',
+    tags: ['React', 'Node.js', 'AWS'],
+    region: 'latam',
+    bio: 'Previously at an Argentine fintech. Placed with a US SaaS for 2 years. Works US Eastern hours.',
+  },
 ]
 
 /** Everyone in one region, in roster order. */
@@ -270,9 +274,14 @@ export function talentBySlug(slug: string): TalentProfile {
  *
  * Philippines (Jake, 3 Aug): Russel + Stephen + Kyla (keep one woman, Kyla as
  * the front card). Default for other regions = first three in roster order.
+ *
+ * LATAM is pinned to the trio it has always shown; it used to fall out of
+ * roster order, which stopped being safe once Mateo moved down the list for
+ * the home marquee (13 Aug).
  */
 const HERO_TRIO_SLUGS: Partial<Record<TalentRegion, readonly [string, string, string]>> = {
   philippines: ['russel-d', 'stephen-l', 'kyla-t'],
+  latam: ['mateo-r', 'rafael-s', 'gabriel-k'],
 }
 
 /**
