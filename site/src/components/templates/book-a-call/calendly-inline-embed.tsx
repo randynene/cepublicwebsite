@@ -70,6 +70,12 @@ type CalendlyInlineApi = {
 /**
  * Apply CE theme params (always — contrast-critical).
  *
+ * `hide_gdpr_banner=1` is applied alongside them (CE-42). Calendly drops its own
+ * cookie notice over the widget on load, which on /book-a-call lands directly on
+ * top of the booking panel. CE runs no cookie banner of its own, so there is
+ * nothing to preserve here. The contact page already passes this param inline on
+ * its URL; setting it centrally means every Calendly surface behaves the same.
+ *
  * `hideEventDetails` switches off Calendly's own left-hand details panel so we
  * can render it ourselves in real white (CE-40). See event-details-panel.tsx for
  * why that is the only way to satisfy "make the text brighter white" without
@@ -81,6 +87,7 @@ export function withCalendlyCeTheme(url: string, opts?: { hideEventDetails?: boo
     for (const [key, value] of Object.entries(CE_CALENDLY_THEME)) {
       parsed.searchParams.set(key, value)
     }
+    parsed.searchParams.set('hide_gdpr_banner', '1')
     if (opts?.hideEventDetails) parsed.searchParams.set('hide_event_type_details', '1')
     return parsed.toString()
   } catch {
