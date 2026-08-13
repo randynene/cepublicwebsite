@@ -119,6 +119,24 @@ export const FE2_UI_CSS = `
 .fe2 .fig-asset-a3fc3e3eca4dbe49{background:url("/assets/img/for-engineers/hero-card-engineer-glasses.jpg") center 56% / cover no-repeat}
 */
 
+/* ---- CE-49: step 02 video-call stills ----
+ * The two baked Figma faces in the "one real conversation" card were stock
+ * (Jake). Swapped for real CE people: the candidate tile (left, "You") and the
+ * senior engineer tile (right). Same treatment as CE-53 above - overridden here
+ * rather than in the generated fe2-css.ts so the frozen export stays
+ * byte-identical (npm run static:verify-fe2-parity), and a Sanity-uploaded
+ * how.steps.two.camYouImage / camEngImage still wins, because hydrateFe2 writes
+ * those inline and an inline background beats this rule.
+ * The engineer shot came off a mirrored Zoom capture, so the hoodie logo read
+ * backwards; the file itself is flipped, not the element, so a Sanity upload
+ * into the same slot is not silently mirrored too.
+ * Both are resampled to 600px wide (~0.03-0.05MB) against the 1.5-1.7MB PNGs
+ * they replace, so the section gets lighter. Vertical position is per-shot: it
+ * puts the face on the centre of the 274x149 tile instead of letting cover crop
+ * it off. */
+.fe2 .fig-asset-b44c608574a94621{background:url("/assets/img/for-engineers/step2-cam-you-engineer.jpg") center 45% / cover no-repeat}
+.fe2 .fig-asset-c785f78cb666a48d{background:url("/assets/img/for-engineers/step2-cam-senior-engineer.jpg") center 55% / cover no-repeat}
+
 /* ---- Why this exists: even stat columns + full body copy ----
  * Frozen export pins each body to width:280px inside overflow:hidden columns,
  * which truncates "publicly" / mid-sentence wraps. Unlock width and allow the
