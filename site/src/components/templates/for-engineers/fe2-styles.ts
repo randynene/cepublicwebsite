@@ -145,6 +145,40 @@ export const FE2_UI_CSS = `
 .fe2 [data-fe2-problem-stats] > *{flex:1 1 0!important;min-width:0;overflow:visible!important}
 .fe2 [data-fe2-stat-body]{width:auto!important;max-width:100%!important;white-space:pre-line!important;overflow:visible!important;flex-shrink:1!important}
 
+/* ---- CE-45: the four stats become four cards, two up ----
+ * The frozen export lays these out as one flat row of four columns. The design
+ * puts each in its own panel, two per row, which is what makes them read as
+ * four separate claims rather than a run of small print.
+ *
+ * Done as a grid over the existing row: the markup keeps its column per stat,
+ * so the number and body inside each one are untouched, and only the container
+ * and the panel styling change. Below 900px it drops to one per row, since two
+ * panels of this copy at phone width would be unreadable.
+ *
+ * Colours are the same ink as the rest of the dark surface: a panel one step
+ * lighter than the page, with a hairline border, so it reads as a card without
+ * drawing attention to itself. */
+.fe2 [data-fe2-problem-stats]{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:24px!important;
+  width:100%!important;
+}
+.fe2 [data-fe2-problem-stats] > *{
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:center!important;
+  gap:28px!important;
+  background:#121b2c!important;
+  border:1px solid #1f2b41!important;
+  border-radius:16px!important;
+  padding:30px 34px!important;
+  min-height:120px!important;
+}
+@media (max-width:900px){
+  .fe2 [data-fe2-problem-stats]{grid-template-columns:minmax(0,1fr)!important}
+}
+
 /* ---- Hide community photo strip (placeholder captions) ---- */
 .fe2 [data-fe2-community-hidden]{display:none!important}
 
