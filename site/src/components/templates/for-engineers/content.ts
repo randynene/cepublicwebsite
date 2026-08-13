@@ -322,16 +322,28 @@ export const FOR_ENGINEERS_CONTENT: ForEngineersContent = {
     leadStrong: 'We do it the other way round',
     leadPost:
       '\nAn engineer looks at your actual work, once, and the right companies come to you.',
+    /**
+     * The line breaks are Jake's, and they are deliberate (CE-45).
+     *
+     * Each box breaks where the sentence breaks, so the second line starts a
+     * new thought rather than wrapping wherever the column happens to run out.
+     * fe2-styles renders these bodies with pre-line, which is what makes the
+     * newlines land.
+     */
     stats: [
-      { num: '70%', body: 'of engineering roles are never publicly posted. We put you in front of them.' },
-      // Newline is intentional - fe2-styles renders stat bodies with pre-line so
-      // this wraps as: "…people a" / "company sees - not one of 500."
+      {
+        num: '70%',
+        body: 'of engineering roles are never publicly posted.\nWe put you in front of them.',
+      },
       {
         num: '2',
-        body: 'profiles per role. One of two people a\ncompany sees - not one of 500.',
+        body: 'profiles per role. One of two people a company sees\n- not one of 500.',
       },
       { num: '97%', body: 'stay 2+ years. Real full-time seats - not gig work.' },
-      { num: '$ you set it', body: 'You name it. We only introduce companies that will pay it.' },
+      {
+        num: '$ you set it',
+        body: 'You name it. We only introduce companies that\nwill actually pay it.',
+      },
     ],
   },
   how: {
