@@ -858,7 +858,7 @@ function Faq({ content }: SectionProps) {
                 </span>
               </AccordionTrigger>
               <AccordionContent className="px-0 pb-[20px] pt-0">
-                <p className={cn('pl-[34px] text-[15px] leading-[24px]', MUTED)}>
+                <p className="pl-[34px] text-[17px] leading-[28px] text-white">
                   {item.answer}
                 </p>
               </AccordionContent>
