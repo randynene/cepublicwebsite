@@ -464,6 +464,16 @@ export function toLocationContent(data: LocationPageData, fallback: LocationCont
       bannerTitle: fallback.primaryHub.bannerTitle,
       bannerBody: fallback.primaryHub.bannerBody,
     },
+    // CE-51 again, one section further down. The FAQ answers name the hub city
+    // too, so the same stale docs put "Poland (Warsaw, Krakow) is our largest
+    // hub" directly underneath a section that now says Zagreb is. The question
+    // text carries the city as often as the answer does, so the items are taken
+    // as a whole set from the registry rather than field by field. Everything
+    // around them (eyebrow, title, the chatbot help block) stays editable.
+    faq: {
+      ...(merged.faq ?? fallback.faq),
+      items: fallback.faq.items,
+    },
     // CE-57 "What you get". A doc that predates the field (or leaves the block
     // untouched) has no cards, so the registry copy is what renders - never a
     // half-empty section. Cards come as a whole set, not merged index-wise, so

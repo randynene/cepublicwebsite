@@ -831,7 +831,7 @@ export const EASTERN_EUROPE_CONTENT: LocationContent = {
         number: '05',
         question: "What's the difference between hiring in Poland vs. Romania vs. Ukraine?",
         answer:
-          'Poland (Warsaw, Kraków) is our largest hub and strongest in platform and backend. Romania brings deep data and fintech experience, Ukraine leads on systems and product engineering. We match to the fit, not the flag.',
+          'Croatia (Zagreb) is our largest hub and strongest in platform and backend. Poland brings depth across backend and cloud, Romania deep data and fintech experience, Ukraine leads on systems and product engineering. We match to the fit, not the flag.',
       },
       {
         number: '06',
