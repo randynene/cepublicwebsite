@@ -108,10 +108,16 @@ export const FE2_UI_CSS = `
  * frozen export stays byte-identical (npm run static:verify-fe2-parity), and
  * a Sanity-uploaded hero.card.image still wins - hydrateFe2 writes that one
  * inline, and an inline background beats this rule.
- * The alternative shot Jake is choosing between is
- * hero-card-engineer-glasses.jpg; swap the filename to switch.
- * background-position keeps the face centred in the 494x268 card crop. */
-.fe2 .fig-asset-a3fc3e3eca4dbe49{background:url("/assets/img/for-engineers/hero-card-engineer-headphones.jpg") center top / cover no-repeat}
+ * Two shots are in play and Jake picks one; to show the other, swap this single
+ * declaration for the commented alternative below. The vertical position is
+ * per-shot because the two source crops differ: it puts the face on the centre
+ * of the 494x268 card rather than letting cover crop it off.
+ * Both files are ~0.16-0.25MB against the 1.5MB PNG they replace, so the hero
+ * gets lighter, not heavier. */
+.fe2 .fig-asset-a3fc3e3eca4dbe49{background:url("/assets/img/for-engineers/hero-card-engineer-headphones.jpg") center 40% / cover no-repeat}
+/* Alternative (woman, glasses):
+.fe2 .fig-asset-a3fc3e3eca4dbe49{background:url("/assets/img/for-engineers/hero-card-engineer-glasses.jpg") center 56% / cover no-repeat}
+*/
 
 /* ---- Why this exists: even stat columns + full body copy ----
  * Frozen export pins each body to width:280px inside overflow:hidden columns,
