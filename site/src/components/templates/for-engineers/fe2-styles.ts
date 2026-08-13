@@ -185,10 +185,10 @@ export const FE2_UI_CSS = `
  * column got tight, which orphaned "the" onto its own line at 100% zoom and
  * shuffled the breaks at every other zoom level.
  *
- * `pre` honours the newlines and refuses to add any, so the heading reads the
- * same at any zoom. Below 900px it goes back to wrapping normally, because a
- * heading that cannot wrap on a phone runs off the side of the screen, which
- * is a worse problem than an untidy break. */
+ * white-space:pre honours the newlines and refuses to add any, so the heading
+ * reads the same at any zoom. Below 900px it goes back to wrapping normally,
+ * because a heading that cannot wrap on a phone runs off the side of the
+ * screen, which is a worse problem than an untidy break. */
 .fe2 [data-fe2-hero-title]{white-space:pre!important}
 @media (max-width:900px){
   .fe2 [data-fe2-hero-title]{white-space:pre-line!important}

@@ -86,7 +86,7 @@ function prefersReduced(): boolean {
 function promoteHeroTitleToH1(html: string): string {
   return html.replace(
     /<span( style="[^"]*font-size: 52px;[^"]*")>([\s\S]*?)<\/span>(?=<span style="position: relative; width: 500px)/,
-    '<h1$1>$2</h1>',
+    '<h1$1 data-fe2-hero-title="1">$2</h1>',
   )
 }
 
@@ -243,19 +243,21 @@ export function ForEngineersTemplate({
     /**
      * Hero heading: keep the line breaks the copy asks for, and only those.
      *
-     * titleLead already carries its own newlines, so the shape of the heading
-     * is a decision, not an accident. The browser was then wrapping it again
-     * on top of that whenever the column got tight, which orphaned "the" onto
-     * a line of its own at 100% zoom and moved the breaks around at every
-     * other zoom level. Marked here so CSS can hold it to the written breaks.
+     * titleLead already carries its own newlines. The browser was wrapping on
+     * top of those (the export's inline white-space:pre-wrap allows it), which
+     * orphaned "the" onto its own line. promoteHeroTitleToH1 stamps
+     * data-fe2-hero-title on the <h1> at HTML time. The fallback here covers
+     * a Sanity override that still produced an h1 if the promote regex missed.
+     *
+     * Do not search spans for the lead: after promotion, titleLead is a bare
+     * text node of the <h1>, with only the lime accent in a child <span>.
      */
-    const heroLead = content.hero.titleLead.split('\n')[0]?.trim()
-    if (heroLead) {
-      const heroSpan = [...root.querySelectorAll('span')].find((el) =>
-        el.textContent?.trim().startsWith(heroLead),
-      )
-      const heading = heroSpan?.closest('h1') ?? heroSpan?.parentElement
-      if (heading) heading.setAttribute('data-fe2-hero-title', '1')
+    const heading = root.querySelector('h1')
+    if (heading && !heading.hasAttribute('data-fe2-hero-title')) {
+      const heroLead = content.hero.titleLead.split('\n')[0]?.trim()
+      if (heroLead && heading.textContent?.trim().startsWith(heroLead)) {
+        heading.setAttribute('data-fe2-hero-title', '1')
+      }
     }
 
     // Hide "A community, in person" + the three photo cards (placeholder subs).
@@ -467,6 +469,7 @@ export function ForEngineersTemplate({
     content.hero.ctaPrimaryHref,
     content.hero.ctaGhostHref,
     content.hero.subRotate,
+    content.hero.titleLead,
     content.how.eyebrow,
     content.final.ctaHref,
     content.tests.videoUrl,
