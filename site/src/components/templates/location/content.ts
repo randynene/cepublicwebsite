@@ -693,10 +693,10 @@ export const EASTERN_EUROPE_CONTENT: LocationContent = {
     eyebrow: 'Where we are on the ground',
     titleLead: 'Zagreb, Croatia is our',
     titleAccent: 'heart in Europe.',
-    bannerEyebrow: 'Our biggest hub · Warsaw',
+    bannerEyebrow: 'Our biggest hub · Zagreb',
     bannerTitle: '40+ engineers and growing. Heavy in platform.',
     bannerBody:
-      'Warsaw is a leading tech centre of Eastern Europe. Our largest concentration of engineers is here - platform, backend, and data specialists who ship production code.',
+      'Zagreb is a leading tech centre of Europe. Our largest concentration of engineers is here - platform, backend, and data specialists who ship production code.',
     image: `${EE}/hub-a.jpg`,
     secondaryEyebrow: 'Also on the ground in',
     secondary: [
