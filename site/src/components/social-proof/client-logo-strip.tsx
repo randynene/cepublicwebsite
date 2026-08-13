@@ -173,24 +173,36 @@ export function ClientLogoStrip({
   return (
     <div className={cn('relative min-w-0 flex-1', className)}>
       <Marquee speed="slow" pauseOnHover>
-        {[...resolved, ...resolved].map((logo, i) => (
-          <div
-            key={`${logo.name}-${i}`}
-            className={cn(
-              CELL,
-              'flex shrink-0 items-center justify-center border-l border-[#22314D]',
-            )}
-          >
-            <ClientLogoImage
-              logo={logo}
-              style={{
-                maxHeight: `${logo.displayH ?? 26}px`,
-                maxWidth: `${MAX_LOGO_W}px`,
-                opacity: logo.displayOpacity ?? 1,
-              }}
-            />
-          </div>
-        ))}
+        {[...resolved, ...resolved].map((logo, i) => {
+          const h = logo.displayH ?? 26
+          return (
+            <div
+              key={`${logo.name}-${i}`}
+              className={cn(
+                CELL,
+                'flex shrink-0 items-center justify-center border-l border-[#22314D]',
+              )}
+            >
+              <ClientLogoImage
+                logo={logo}
+                style={{
+                  // CE-50: max-height alone cannot scale a mark UP, and the
+                  // image is `h-auto`, so an asset shorter than its tuned
+                  // height stayed at its natural size. Travelex is the only one
+                  // that hits this - its wordmark is natively 22px tall against
+                  // a tuned 28 - so it kept rendering as the smallest logo in
+                  // the row. Pin the height when the asset is shorter than its
+                  // tuned size; every taller mark is untouched, because
+                  // max-height already lands those on exactly this number.
+                  ...(logo.height < h ? { height: `${h}px` } : {}),
+                  maxHeight: `${h}px`,
+                  maxWidth: `${MAX_LOGO_W}px`,
+                  opacity: logo.displayOpacity ?? 1,
+                }}
+              />
+            </div>
+          )
+        })}
       </Marquee>
       <span
         aria-hidden
