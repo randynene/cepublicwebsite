@@ -188,16 +188,39 @@ function shouldRedirectCountry(rawCountry: string | null): boolean {
   return !ALLOWED_COUNTRIES.has(country)
 }
 
-function shouldGeoRedirect(request: NextRequest): boolean {
+// Everything the first-landing rule needs EXCEPT the path test. Split out so the
+// excluded paths can still mark the visitor as routed (see markGeoRouted below).
+function isUnroutedGeoVisitor(request: NextRequest): boolean {
   if (!GEO_REDIRECT_ENABLED) return false
   if (request.nextUrl.searchParams.get(GEO_ESCAPE_HATCH_PARAM) === GEO_ESCAPE_HATCH_VALUE) {
     return false
   }
   if (request.cookies.has(GEO_COOKIE_NAME)) return false
   if (isBotUserAgent(request.headers.get('user-agent') ?? '')) return false
-  if (isExcludedPath(request.nextUrl.pathname)) return false
   return shouldRedirectCountry(request.headers.get('x-vercel-ip-country'))
 }
+
+function shouldGeoRedirect(request: NextRequest): boolean {
+  if (isExcludedPath(request.nextUrl.pathname)) return false
+  return isUnroutedGeoVisitor(request)
+}
+
+// First landing only, counted from the LANDING, not from the redirect. A visitor
+// from an unlisted country whose first page IS /for-developers (an inbound link,
+// a search result, a shared URL) never receives the redirect, so without this
+// they never receive the cookie either, and their first click into the marketing
+// site bounces them straight back. Marking them here means the engineer page
+// counts as the landing it plainly is, and they browse normally afterwards.
+function marksGeoRouted(request: NextRequest): boolean {
+  return isExcludedPath(request.nextUrl.pathname) && isUnroutedGeoVisitor(request)
+}
+
+const GEO_COOKIE_OPTIONS = {
+  path: '/',
+  httpOnly: true,
+  sameSite: 'lax',
+  secure: true,
+} as const
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -223,12 +246,7 @@ export function proxy(request: NextRequest) {
     // URL lives, and it must never be cached as permanent by a browser that
     // later travels.
     const response = NextResponse.redirect(url, 307)
-    response.cookies.set(GEO_COOKIE_NAME, '1', {
-      path: '/',
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: true,
-    })
+    response.cookies.set(GEO_COOKIE_NAME, '1', GEO_COOKIE_OPTIONS)
     return response
   }
 
@@ -236,7 +254,11 @@ export function proxy(request: NextRequest) {
   // signal as hreflang (en-US default, en-GB under /uk).
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-pathname', pathname)
-  return NextResponse.next({ request: { headers: requestHeaders } })
+  const response = NextResponse.next({ request: { headers: requestHeaders } })
+  if (marksGeoRouted(request)) {
+    response.cookies.set(GEO_COOKIE_NAME, '1', GEO_COOKIE_OPTIONS)
+  }
+  return response
 }
 
 // The proxy runs on page routes only. Everything excluded here is something a
