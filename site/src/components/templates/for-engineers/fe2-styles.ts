@@ -242,13 +242,56 @@ export const FE2_UI_CSS = `
 .fe2 .fe2-hero-vh h1{font-size:var(--fe2-marketing-hero-size,var(--text-marketing-hero))!important;font-weight:var(--text-marketing-hero--font-weight)!important;line-height:var(--text-marketing-hero--line-height)!important;letter-spacing:var(--text-marketing-hero--letter-spacing)!important}
 .fe2 .fe2-hero-vh{position:relative;display:flex;flex-direction:column;justify-content:center;gap:56px}\n  /* Hero centres in the space above the strip, strip sits at the bottom - same\n     treatment as .hero-screen in globals.css. Doubled class for (0,2,0), which\n     the .fe2 star reset above (margin:0;padding:0) would otherwise beat. */\n  .fe2-hero-vh.fe2-hero-vh{justify-content:flex-start;padding-bottom:var(--hero-strip-bottom,44px)}\n  .fe2-hero-vh.fe2-hero-vh > div:first-child{flex:0 0 auto;margin-block:auto}\n  .fe2-hero-vh.fe2-hero-vh > .hero-trust-bar{flex:0 0 auto;margin-top:0}
 .fe2 .fe2-hero-vh > div:first-child{width:100%}\n  /* Client logo strip closing the hero. The fe2 canvas is a fixed 1920px\n     Figma frame that gets scaled, so the bar is banded to the same 1440/64\n     content width the other marketing pages use. */\n  .fe2-trust{width:100%;max-width:1440px;margin:0 auto;padding:0 64px}
-.fe2 
-.fe2 
-.fe2 
-.fe2 
-.fe2 
+/* ---- phones and small tablets: no canvas, ordinary document flow ----
+ * Above this width the page is a fixed 1920px Figma frame scaled to the window
+ * with CSS zoom, which is a deliberate pixel-match against the export. That trade
+ * has no correct answer on a phone. At 393px the scale factor is 0.2, so body
+ * copy renders at 3px, and iOS Safari then autosizes some of it back up inside
+ * boxes that stayed small, which is what made the page collide with itself. The
+ * H1 was worse: it was compensated back up THROUGH the zoom (40px / 0.2 = 195px)
+ * so that it would still render at the site's type scale, and a 195px headline
+ * does not fit the 640px column the export gives it - it clipped mid-word.
+ *
+ * So below 900px the canvas is abandoned rather than tuned: full width, no zoom,
+ * and the export's fixed geometry is unpinned so the sections stack. index.tsx
+ * clears the zoom and the H1 compensation at the same breakpoint
+ * (FE2_MOBILE_MAX). Everything here is !important because it is overriding the
+ * export's inline styles, and it deliberately does not depend on that effect
+ * having run: if the JS never fires, CSS alone still keeps the page on screen.
+ *
+ * Nothing above 900px is touched. */
+@media (max-width:900px){
+  .fe2 .fe2-canvas{width:100%!important;zoom:1!important;--fe2-marketing-hero-size:var(--text-marketing-hero)!important}
+
+  /* Section gutters. 320px of side padding is four fifths of a phone screen, and
+   * every section in the export carries it. Matched on the value rather than the
+   * property because the effect in index.tsx writes to a couple of these
+   * elements' inline styles, and the browser re-serialises the whole declaration
+   * when it does - "padding:112px 320px" comes back as "padding: 112px 320px" -
+   * so a property-anchored selector silently stops matching. */
+  .fe2 .fe2-figma [style*="px 320px"]{padding:64px 20px!important}
+
+  /* Unpin the desktop geometry: nothing is wider than the screen, every row
+   * stacks rather than overflowing, and text that was told never to wrap is
+   * allowed to. Scoped to .fe2-figma - the lifted export - because the React
+   * components sharing the canvas already handle their own layout, and the logo
+   * marquee in particular is a single non-wrapping track by design. */
+  .fe2 .fe2-figma div,.fe2 .fe2-figma span{max-width:100%!important}
+  .fe2 .fe2-figma div{flex-wrap:wrap!important}
+  .fe2 .fe2-figma [style*="nowrap"]{white-space:normal!important}
+
+  /* The four stat cards go one per row above; at phone width the number and the
+   * copy stack too, or the copy is left in a 60px column. */
+  .fe2 [data-fe2-problem-stats] > *{grid-template-columns:minmax(0,1fr)!important;row-gap:8px!important;padding:24px!important}
+
+  /* The Idea headline dims itself and lights up under the cursor. A phone has no
+   * cursor, so it would sit at 45% opacity for the whole visit. */
+  .fe2 [data-fe2-glow-item]{opacity:1!important;transform:none!important}
+
+  /* Hero takes the height its own content needs instead of a screenful. */
+  .fe2 .fe2-hero-vh.fe2-hero-vh{min-height:0!important;gap:40px;padding-bottom:0}
+  .fe2 .fe2-trust{padding:0 20px}
 }
-@media(max-width:720px){.fe2 }
 
 /* ---- responsive form ---- */
 @media(max-width:920px){.fe2 .jf-grid{grid-template-columns:1fr;gap:32px}.fe2 .jf-preview{position:static;order:-1}.fe2 .jf-card{padding:30px}}

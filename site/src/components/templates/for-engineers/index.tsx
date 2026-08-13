@@ -30,6 +30,14 @@ import { FE2_UI_CSS } from './fe2-styles'
 
 const VIDEO_POSTER_CLASS = 'fig-asset-8f1066200d444094-72cc5769'
 
+// At or below this width the page stops being a scaled 1920px frame and becomes
+// an ordinary stacked document. The reflow itself is CSS (see the "phones and
+// small tablets" block in fe2-styles.ts) and the two MUST move together: a
+// mismatch would leave the H1 compensated for a zoom that is no longer applied,
+// which is what rendered it at 195px on a phone. 900px is the boundary the rest
+// of this template already treats as mobile.
+const FE2_MOBILE_MAX = 900
+
 /**
  * `ambient` = the silent looping wallpaper treatment the testimonial tile uses:
  * plays itself, no sound, no player chrome. Browsers only allow unprompted
@@ -419,6 +427,24 @@ export function ForEngineersTemplate({
     // depends only on viewport width, so it never flaps as images/fonts load.
     const fit = () => {
       const vw = document.documentElement.clientWidth
+      const hero = heroRef.current
+
+      // Phones and small tablets: no canvas, so nothing to scale and nothing to
+      // compensate. Clearing the custom property hands the H1 back to the
+      // sitewide marketing-hero token, and clearing min-height lets the hero
+      // take the height its own stacked content needs.
+      if (vw <= FE2_MOBILE_MAX) {
+        canvas.style.zoom = ''
+        canvas.style.removeProperty('--fe2-marketing-hero-size')
+        canvas.style.transform = ''
+        canvas.style.transformOrigin = ''
+        canvas.style.marginLeft = ''
+        canvas.style.marginRight = ''
+        stage.style.height = ''
+        if (hero) hero.style.minHeight = ''
+        return
+      }
+
       const s = vw >= 1920 ? 1 : vw / 1920
       canvas.style.zoom = s === 1 ? '' : String(s)
       // The fixed 1920px Figma canvas is zoomed as a whole. Compensate the hero
@@ -438,7 +464,6 @@ export function ForEngineersTemplate({
       // renders: divide by s to land on the real viewport height. Measuring the
       // hero's own document offset covers the announcement bar + header without
       // hard-coding either height.
-      const hero = heroRef.current
       if (hero) {
         hero.style.minHeight = ''
         const offset = hero.getBoundingClientRect().top + window.scrollY
@@ -487,14 +512,18 @@ export function ForEngineersTemplate({
            * rest of them; the client logo strip closes the hero instead, same as
            * every other marketing page. No AI CTA on this one — the assistant is
            * a buyer-side tool and this page speaks to candidates. */}
+          {/* fe2-figma marks the lifted export. The mobile reflow in
+           * fe2-styles.ts unpins fixed Figma geometry wholesale, which is only
+           * safe over this markup: the React components in the canvas (the
+           * logo marquee below) lay themselves out and must be left alone. */}
           <div className="fe2-hero-vh" ref={heroRef}>
-            <div dangerouslySetInnerHTML={{ __html: heroHtml }} />
+            <div className="fe2-figma" dangerouslySetInnerHTML={{ __html: heroHtml }} />
             <HeroTrustBar showAi={false} className="fe2-trust" />
           </div>
           {/* Everything from "Applying is broken" down */}
-          <div id="fe2-after-hero" dangerouslySetInnerHTML={{ __html: restHtml }} />
+          <div id="fe2-after-hero" className="fe2-figma" dangerouslySetInnerHTML={{ __html: restHtml }} />
           {/* Stop applying. Get matched. mini-CTA (tokenised export, hydrated) */}
-          <div dangerouslySetInnerHTML={{ __html: postHtml }} />
+          <div className="fe2-figma" dangerouslySetInnerHTML={{ __html: postHtml }} />
         </div>
       </div>
     </main>
