@@ -388,8 +388,9 @@ export function QuickHiringForm({
         {sub}
       </Text>
 
-      <div className="sr-only" role="progressbar" aria-valuenow={stepNumber} aria-valuemin={1} aria-valuemax={stepCount} />
-
+      {/* One progressbar, not two. With the rail hidden (CE-54) this is the only
+          step indicator a screen reader gets, and the duplicate announced the
+          position twice. */}
       <div
         className="sr-only"
         role="progressbar"
