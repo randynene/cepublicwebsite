@@ -13,6 +13,8 @@ import type {
   StorySection,
 } from '@/types/sanity/documents/customer-story'
 
+import { CustomerStoryHeroVideo } from './hero-video'
+
 export interface CustomerStoryTemplateProps {
   story: CustomerStory
   locale: Locale
@@ -289,13 +291,21 @@ export default function CustomerStoryTemplate({
               people image. No fabricated placeholder when both are absent. */}
           {(vimeoId || heroImage) && (
             <div className={cn(BAND_PX_CLASS, 'pt-[40px]')}>
-              <div className="relative aspect-[1152/600] w-full overflow-hidden rounded-[24px] border border-[#22314D] bg-[#070D18]">
+              {/* CE-62: a video frame is 16:9 so the picture fills it (the old
+                  1152/600 frame pillarboxed every 16:9 clip, which is where the
+                  white bars came from). The image frame keeps its designed
+                  1152/600 shape - stills are cropped to it, so it has nothing
+                  to letterbox. */}
+              <div
+                className={cn(
+                  'relative w-full overflow-hidden rounded-[24px] border border-[#22314D] bg-[#070D18]',
+                  vimeoId ? 'aspect-video' : 'aspect-[1152/600]',
+                )}
+              >
                 {vimeoId ? (
-                  <iframe
-                    src={`https://player.vimeo.com/video/${vimeoId}?background=1&autoplay=1&loop=1&muted=1`}
+                  <CustomerStoryHeroVideo
+                    vimeoId={vimeoId}
                     title={story.customerStoryTitle}
-                    allow="autoplay; fullscreen; picture-in-picture"
-                    className="absolute inset-0 h-full w-full border-0"
                   />
                 ) : (
                   heroImage && (
