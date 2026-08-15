@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
 
 import { ChatLink } from '@/components/shared/chat-link'
+import { HeroTrustBar } from '@/components/social-proof/hero-trust-bar'
 import { CatalogueFaqPanel } from '@/components/templates/catalogue/faq-panel'
 import { cn } from '@/components/ui/_utils/cn'
 import { CHAT_HREF } from '@/lib/chat'
@@ -526,7 +527,12 @@ export function HireEngineersMarketTemplate({
 
   return (
     <main id="main" className={cn('hem', `hem--${content.market}`)} ref={rootRef}>
-      {/* ── HERO ── */}
+      {/* HERO + client logos claim the FIRST SCREEN together (globals.css
+          `.hero-screen`), so landing on the page shows the promise and the proof
+          and nothing else - the problem section starts off-frame and is what you
+          get when you scroll. Same treatment as Hire Engineers and the location
+          pages, so all the marketing pages open the same way. */}
+      <div className="hero-screen">
       <section className="hero">
         <div className="wrap hero-grid">
           <div>
@@ -595,6 +601,16 @@ export function HireEngineersMarketTemplate({
           </div>
         </div>
       </section>
+
+      {/* The standard band that closes every marketing hero. It styles itself
+          through globals.css two-class selectors, so unlike the FAQ panel it
+          needs no `.shared-ui` exemption from this page's reset. */}
+      <section className="hem-trusted">
+        <div className="wrap">
+          <HeroTrustBar locale={locale} />
+        </div>
+      </section>
+      </div>
 
       {/* ── PROBLEM ── */}
       <section className="problem">
@@ -877,6 +893,10 @@ export function HireEngineersMarketTemplate({
           `renderAnswer` is what lets the last answer carry a link to the other
           market without splitting the copy into fields: the FAQPage JSON-LD and
           the visible answer have to be the same string. */}
+      {/* `shared-ui` exempts this subtree from the page's wildcard margin and
+          padding reset - without it the shared panel renders unstyled. See the
+          note in hire-engineers-market.css. */}
+      <div className="shared-ui">
       <CatalogueFaqPanel
         id="faq"
         items={content.faq.items}
@@ -890,6 +910,7 @@ export function HireEngineersMarketTemplate({
         }}
         renderAnswer={(item) => <FaqAnswer item={item} locale={locale} />}
       />
+      </div>
 
       {/* ── FINAL CTA ──
           REMOVED (Jake, 15 Aug), the same call and the same reason as

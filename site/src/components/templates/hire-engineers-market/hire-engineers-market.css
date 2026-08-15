@@ -79,7 +79,9 @@
    component dropped inside this page would render with no spacing at all. Kept
    for the same reason hire-engineers keeps it, and with the same escape hatch. */
 .hem .qh-form,
-.hem .qh-form * {
+.hem .qh-form *,
+.hem .shared-ui,
+.hem .shared-ui * {
   margin: revert-layer;
   padding: revert-layer;
   font-size: revert-layer;
@@ -87,6 +89,23 @@
   line-height: revert-layer;
   letter-spacing: revert-layer;
 }
+
+/* `.shared-ui` wraps any SITEWIDE component dropped into this page - currently
+   the FAQ panel.
+ *
+ * Without it the wildcard reset above silently destroys them. A Tailwind
+ * utility like `py-[26px]` is a single class, exactly the same specificity as
+ * `.hem *`, and loses on source order - so every margin and padding inside a
+ * shared component is zeroed. That is what made the FAQ render as ten
+ * text rows with no padding, dividers collapsed into ticks against the right
+ * edge, and an "Open chat" pill with its label hanging outside the button.
+ *
+ * The same trap is documented on HeroTrustBar, which solved it the other way
+ * (two-class selectors in globals.css). Either fix works; what does NOT work is
+ * assuming a shared component styles itself correctly inside this page.
+ *
+ * `revert-layer` hands these four properties back to the Tailwind layer for this
+ * subtree only, so the component renders exactly as it does on every other page. */
 
 .hem section {
   position: relative;
@@ -269,7 +288,19 @@
 /* ── HERO ────────────────────────────────────────────────────────────────── */
 
 .hem .hero {
-  padding: 84px 0 92px;
+  /* Vars come from `.hero-screen` in globals.css, which zeroes them so the hero
+     and the logo strip centre as one group and step down on short windows. The
+     fallbacks apply anywhere this page is not inside a `.hero-screen`. */
+  padding: var(--hero-pad-top, 84px) 0 var(--hero-pad-bottom, 92px);
+}
+.hem .hem-trusted {
+  padding: var(--hero-trust-pad-top, 8px) 0 var(--hero-trust-pad-bottom, 56px);
+  background: var(--bg);
+}
+/* The problem section is what a scroll reveals, so it gets clearance from the
+   sticky header when jumped to. */
+.hem .problem {
+  scroll-margin-top: 96px;
 }
 .hem .hero-grid {
   display: grid;

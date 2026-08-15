@@ -63,7 +63,7 @@ export const UHE: HireEngineersMarketContent = {
           stack: ['Go', 'Postgres', 'AWS', 'Kafka'],
           salary: '$175,000',
           salaryNote: 'base sought',
-          photo: { brief: 'REAL PHOTO', image: '/assets/img/for-engineers/hero-card-engineer-glasses.jpg' },
+          photo: { brief: 'REAL PHOTO', image: '/assets/img/for-engineers/450d3ab2-8222-44a3-bd54-ace836c6afdd.png' },
         },
         {
           role: 'Senior Full-Stack Engineer',
@@ -71,7 +71,7 @@ export const UHE: HireEngineersMarketContent = {
           stack: ['TypeScript', 'React', 'Node', 'GraphQL'],
           salary: '$160,000',
           salaryNote: 'base sought',
-          photo: { brief: 'REAL PHOTO', image: '/assets/img/for-engineers/hero-card-engineer-headphones.jpg' },
+          photo: { brief: 'REAL PHOTO', image: '/assets/img/for-engineers/c4b557dd-5251-41f3-b1df-3e9af56879c0.png' },
         },
       ],
       foot: 'Each profile ships with a written report on why they fit.',
@@ -135,7 +135,7 @@ export const UHE: HireEngineersMarketContent = {
         { text: "Will tell me when I'm wrong - and propose something better", met: true },
       ],
       note: 'The first two, any recruiter can match. The rest is why a person takes the brief.',
-      photo: { brief: 'REAL PHOTO CTO + client', label: 'CTO INTAKE\nCALL', image: '/design/services/candid-1.png', alt: 'A Cloud Employee CTO scoping a role with a client over a laptop' },
+      photo: { brief: 'REAL PHOTO CTO + client', label: 'CTO INTAKE\nCALL', image: '/design/talent/anto-s.jpg', alt: 'Anto, a Cloud Employee CTO, who scopes the brief on the intake call' },
     },
     code: {
       title: 'pair-session · your stack',
@@ -167,7 +167,7 @@ export const UHE: HireEngineersMarketContent = {
         { label: 'Culture fit', value: 'Good', pct: 73, tone: 'amber' },
       ],
       note: 'Worth knowing: short tenure in last role. Moving due to wanting to work on something more challenging.',
-      photo: { brief: 'REAL PHOTO', image: '/assets/img/for-engineers/hero-card-engineer-glasses.jpg' },
+      photo: { brief: 'REAL PHOTO', image: '/assets/img/for-engineers/450d3ab2-8222-44a3-bd54-ace836c6afdd.png' },
     },
     funnel: {
       label: 'The funnel, in numbers',
