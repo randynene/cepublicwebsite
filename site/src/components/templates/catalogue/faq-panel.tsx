@@ -20,20 +20,52 @@ const COPY = {
   cardCta: 'Open chat',
 } as const
 
-export function CatalogueFaqPanel({ items, chatHref = CHAT_HREF }: { items: HubFaq[]; chatHref?: string }) {
+/** `Record<..., string>`, not `Partial<typeof COPY>`: COPY is `as const`, so the
+ *  latter would type each override as the literal it already holds. */
+export type CatalogueFaqPanelCopy = Partial<Record<keyof typeof COPY, string>>
+
+export interface CatalogueFaqPanelProps {
+  items: HubFaq[]
+  chatHref?: string
+  /**
+   * Per-page overrides for the headline and the chat card. Everything omitted
+   * falls back to the shared COPY above, so a caller changes only the line it
+   * actually needs to change.
+   */
+  copy?: CatalogueFaqPanelCopy
+  /**
+   * Renders one answer. The default is a plain paragraph, which is what every
+   * catalogue page wants. The hire-engineers market pages pass their own so a
+   * named substring of the answer becomes a link to the other market, without
+   * splitting the answer into fields - the FAQPage JSON-LD has to receive the
+   * exact same string the visitor reads.
+   */
+  renderAnswer?: (item: HubFaq) => React.ReactNode
+  /** Section id, for pages that link to their own FAQ. */
+  id?: string
+}
+
+export function CatalogueFaqPanel({
+  items,
+  chatHref = CHAT_HREF,
+  copy,
+  renderAnswer,
+  id,
+}: CatalogueFaqPanelProps) {
+  const c = { ...COPY, ...copy }
   return (
-    <section className={cn(BAND_1280, 'py-[72px]')}>
+    <section id={id} className={cn(BAND_1280, 'py-[72px]')}>
       <div className="grid gap-10 lg:grid-cols-[0.9fr_1.6fr]">
         <div className={STICKY_ASIDE}>
-          <Eyebrow>{COPY.eyebrow}</Eyebrow>
+          <Eyebrow>{c.eyebrow}</Eyebrow>
           <h2 className="mt-4 text-[32px] font-semibold leading-[1.1] tracking-[-1px] text-white lg:text-[46px] lg:leading-[54px]">
-            {COPY.titleLead} <span className={ACCENT}>{COPY.titleAccent}</span>
+            {c.titleLead} <span className={ACCENT}>{c.titleAccent}</span>
           </h2>
           <FaqChatCard
             className="mt-7"
-            label={COPY.cardLabel}
-            body={COPY.cardBody}
-            cta={COPY.cardCta}
+            label={c.cardLabel}
+            body={c.cardBody}
+            cta={c.cardCta}
             href={chatHref}
           />
         </div>
@@ -50,7 +82,9 @@ export function CatalogueFaqPanel({ items, chatHref = CHAT_HREF }: { items: HubF
                   </span>
                 </AccordionTrigger>
                 <AccordionContent className="px-0 pb-5 pt-0">
-                  <p className={cn('pl-[34px] text-[15px] leading-[24px]', BODY)}>{f.a}</p>
+                  <p className={cn('pl-[34px] text-[15px] leading-[24px]', BODY)}>
+                    {renderAnswer ? renderAnswer(f) : f.a}
+                  </p>
                 </AccordionContent>
               </AccordionItem>
             )

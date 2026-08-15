@@ -73,7 +73,7 @@ export const UKHE: HireEngineersMarketContent = {
           stack: ['Go', 'Postgres', 'AWS', 'Kafka'],
           salary: '£80,000',
           salaryNote: 'base sought',
-          photo: { brief: 'REAL PHOTO' },
+          photo: { brief: 'REAL PHOTO', image: '/assets/img/for-engineers/hero-card-engineer-glasses.jpg' },
         },
         {
           role: 'Senior Full-Stack Engineer',
@@ -84,7 +84,7 @@ export const UKHE: HireEngineersMarketContent = {
           stack: ['TypeScript', 'React', 'Node', 'GraphQL'],
           salary: '£75,000',
           salaryNote: 'base sought',
-          photo: { brief: 'REAL PHOTO' },
+          photo: { brief: 'REAL PHOTO', image: '/assets/img/for-engineers/hero-card-engineer-headphones.jpg' },
         },
       ],
       foot: 'Each profile ships with a written report on why they fit.',
@@ -155,7 +155,7 @@ export const UKHE: HireEngineersMarketContent = {
         { text: "Will tell me when I'm wrong - and propose something better", met: true },
       ],
       note: 'The first two, any recruiter can match. The rest is why a person takes the brief.',
-      photo: { brief: 'REAL PHOTO CTO + client', label: 'CTO INTAKE\nCALL' },
+      photo: { brief: 'REAL PHOTO CTO + client', label: 'CTO INTAKE\nCALL', image: '/design/services/candid-1.png', alt: 'A Cloud Employee CTO scoping a role with a client over a laptop' },
     },
     code: {
       title: 'pair-session · your stack',
@@ -172,8 +172,8 @@ export const UKHE: HireEngineersMarketContent = {
         { text: '// write replica down at 250k..."', indent: 0, comment: true },
       ],
       rail: [
-        { brief: 'REAL PHOTO senior engineer', label: 'CE engineer' },
-        { brief: 'REAL PHOTO candidate', label: 'Candidate' },
+        { brief: 'REAL PHOTO senior engineer', label: 'CE engineer', image: '/assets/img/for-engineers/step2-cam-senior-engineer.jpg', alt: 'A senior Cloud Employee engineer on a live pair-programming call' },
+        { brief: 'REAL PHOTO candidate', label: 'Candidate', image: '/assets/img/for-engineers/step2-cam-you-engineer.jpg', alt: 'A candidate engineer on the same live pair-programming call' },
       ],
     },
     report: {
@@ -191,7 +191,7 @@ export const UKHE: HireEngineersMarketContent = {
         { label: 'Culture fit', value: 'Good', pct: 73, tone: 'amber' },
       ],
       note: 'Worth knowing: short tenure in last role. Moving due to wanting to work on something more challenging.',
-      photo: { brief: 'REAL PHOTO' },
+      photo: { brief: 'REAL PHOTO', image: '/assets/img/for-engineers/hero-card-engineer-glasses.jpg' },
     },
     funnel: {
       label: 'The funnel, in numbers',
@@ -246,13 +246,16 @@ export const UKHE: HireEngineersMarketContent = {
     stepCounter: 'Step 1 of 4',
     stepCount: 4,
     dropTitle: 'Drop your job description here',
-    // No em dash: house style is hyphens (CLAUDE.md).
-    dropHint: 'PDF or DOCX - we read it and ask what it missed',
+    // Deliberately states the constraint and promises nothing about reading:
+    // the file is not uploaded anywhere yet. Restore the stronger line from
+    // the Figma once there is somewhere for the bytes to go.
+    dropHint: 'PDF or DOCX, up to 10MB',
     pillGuided: 'No spec? Build it with us',
     pillSay: 'Say it instead',
     pillType: 'Type it out',
     fileChosenLabel: 'Attached',
     fileRemoveLabel: 'Remove',
+    fileNote: 'We will email you to collect this file before a senior engineer reads it.',
     fileTypeError: 'That file type is not supported. Please use a PDF or a DOCX.',
     fileSizeError: 'That file is over 10MB. Please send a smaller one.',
     jobLabel: 'Tell us about the role',
@@ -275,8 +278,8 @@ export const UKHE: HireEngineersMarketContent = {
 
   faq: {
     eyebrow: 'Questions',
-    h2: 'The questions\nfounders and CTOs',
-    h2Em: 'actually ask.',
+    titleLead: 'The questions founders and CTOs',
+    titleAccent: 'actually ask.',
     card: {
       h3: 'Not answered here?',
       p: "Ask our AI chatbot, trained on every sales call we've had.",

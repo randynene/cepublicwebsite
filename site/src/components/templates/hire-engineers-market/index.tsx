@@ -1,8 +1,10 @@
 'use client'
 
+import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
 
 import { ChatLink } from '@/components/shared/chat-link'
+import { CatalogueFaqPanel } from '@/components/templates/catalogue/faq-panel'
 import { cn } from '@/components/ui/_utils/cn'
 import { CHAT_HREF } from '@/lib/chat'
 import { buildLocalePath, type Locale } from '@/lib/locale-path'
@@ -88,15 +90,30 @@ const DIFF_ICONS = [
  * top of a finished photograph. Do not fill these with generated illustrations,
  * stock imagery or SVG people - they are a shoot list.
  */
-function ImgSlot({ slot, className }: { slot: MarketImageSlot; className?: string }) {
+function SlotImage({ slot, sizes }: { slot: MarketImageSlot; sizes: string }) {
+  // next/image, not a bare <img>: the SEO checklist (G7) forbids the latter, and
+  // these are six real photographs on a page whose Lighthouse score matters.
+  // `fill` suits the slot exactly - every tile is a fixed shape the photo
+  // cover-crops into, and `.imgslot` is already position:relative.
+  //
+  // `alt` is '' wherever content.ts omits it. That is the CORRECT value for a
+  // decorative image, not a missing one: those avatars sit on illustrative
+  // profiles whose role and location are already read out beside them.
+  return <Image src={slot.image as string} alt={slot.alt ?? ''} fill sizes={sizes} className="slot-img" />
+}
+
+function ImgSlot({
+  slot,
+  className,
+  sizes = '(max-width: 900px) 60px, 112px',
+}: {
+  slot: MarketImageSlot
+  className?: string
+  sizes?: string
+}) {
   return (
     <div className={cn('imgslot', className)}>
-      {slot.image ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={slot.image} alt="" />
-      ) : (
-        <span className="brief">{slot.brief}</span>
-      )}
+      {slot.image ? <SlotImage slot={slot} sizes={sizes} /> : <span className="brief">{slot.brief}</span>}
     </div>
   )
 }
@@ -275,6 +292,10 @@ function IntakeForm({
       ) : null}
 
       {fileError ? <p className="intake-fileerror">{fileError}</p> : null}
+      {/* Only once something is attached, and it states what actually happens:
+          the file is not uploaded anywhere yet, so promising we have already
+          read it would be a lie told at the exact moment of highest trust. */}
+      {file ? <p className="intake-filenote">{copy.fileNote}</p> : null}
 
       <div className="intake-modes">
         <button
@@ -422,20 +443,22 @@ function readHubSpotCookie(): string | undefined {
 
 // ── FAQ ─────────────────────────────────────────────────────────────────────
 
-// A local accordion rather than CatalogueFaqNumbered: this design draws a bare
-// lime plus that rotates 45 degrees into a close glyph, where the shared one
-// draws a circular +/x. The STATE pattern is copied from it verbatim (single
-// open index, -1 for all closed) so the two cannot drift, and this one adds the
-// aria-controls the design's row needs.
+
 /**
- * Renders an answer, turning `linkText` into a real anchor in place.
+ * Renders one FAQ answer for the shared panel, turning `linkText` into a real
+ * anchor in place.
  *
- * The answer string is the SAME string that goes into the FAQPage JSON-LD, so
- * it cannot be split into "before / link / after" fields in the content: the
+ * The answer string is the SAME string that goes into the FAQPage JSON-LD, so it
+ * cannot be split into "before / link / after" fields in the content: the
  * structured answer and the visible answer have to match. Instead the content
- * names a substring, and the split happens here at render time. Unknown or
- * absent `linkText` falls through to plain text rather than throwing, so a copy
+ * names a substring and the split happens here, at render time. An absent or
+ * stale `linkText` falls through to plain text rather than throwing, so a copy
  * edit that loses the substring degrades to a paragraph instead of a blank page.
+ *
+ * Returns a fragment, not a <p>: the shared panel supplies the paragraph.
+ *
+ * `linkHref` runs through buildLocalePath so the cross-market link keeps the
+ * reader in their own locale instead of throwing them across the site.
  */
 function FaqAnswer({
   item,
@@ -446,65 +469,15 @@ function FaqAnswer({
 }) {
   const { a, linkText, linkHref } = item
   const at = linkText ? a.indexOf(linkText) : -1
-  if (!linkText || !linkHref || at === -1) return <p>{a}</p>
+  if (!linkText || !linkHref || at === -1) return <>{a}</>
   return (
-    <p>
+    <>
       {a.slice(0, at)}
       <a className="faq-xlink" href={buildLocalePath(linkHref, locale)}>
         {linkText}
       </a>
       {a.slice(at + linkText.length)}
-    </p>
-  )
-}
-
-function FaqList({
-  items,
-  locale,
-}: {
-  items: HireEngineersMarketContent['faq']['items']
-  locale: Locale
-}) {
-  const [open, setOpen] = useState<number>(0)
-  return (
-    <div className="faq-list">
-      {items.map((item, i) => {
-        const isOpen = open === i
-        const num = String(i + 1).padStart(2, '0')
-        const panelId = `hem-faq-panel-${i}`
-        const buttonId = `hem-faq-button-${i}`
-        return (
-          <div key={item.q} className="faq-item">
-            <button
-              type="button"
-              id={buttonId}
-              className="faq-q"
-              aria-expanded={isOpen}
-              aria-controls={panelId}
-              onClick={() => setOpen(isOpen ? -1 : i)}
-            >
-              <span className="n" aria-hidden="true">
-                {num}
-              </span>
-              <span className="q">{item.q}</span>
-              <svg className="glyph" viewBox="0 0 18 18" aria-hidden="true">
-                <path d="M9 3.75v10.5M3.75 9h10.5" />
-              </svg>
-            </button>
-            <div
-              className={cn('faq-a', isOpen && 'open')}
-              id={panelId}
-              role="region"
-              aria-labelledby={buttonId}
-            >
-              <div>
-                <FaqAnswer item={item} locale={locale} />
-              </div>
-            </div>
-          </div>
-        )
-      })}
-    </div>
+    </>
   )
 }
 
@@ -764,8 +737,7 @@ export function HireEngineersMarketTemplate({
                     {content.process.code.rail.map((slot) => (
                       <div key={slot.brief} className="imgslot">
                         {slot.image ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={slot.image} alt="" />
+                          <SlotImage slot={slot} sizes="(max-width: 900px) 50vw, 168px" />
                         ) : (
                           <span className="brief">{slot.brief}</span>
                         )}
@@ -893,59 +865,43 @@ export function HireEngineersMarketTemplate({
         </div>
       </section>
 
-      {/* ── FAQ ── */}
-      <section className="faq" id="faq">
-        <div className="wrap faq-grid">
-          <div>
-            <span className="eyebrow">{content.faq.eyebrow}</span>
-            <h2 className="st st--faq">
-              {content.faq.h2.split('\n').map((line, index) => (
-                <span key={line}>
-                  {index > 0 ? <br /> : null}
-                  {line}
-                </span>
-              ))}{' '}
-              <em>{content.faq.h2Em}</em>
-            </h2>
-            <div className="faq-card">
-              <h3>{content.faq.card.h3}</h3>
-              <p>{content.faq.card.p}</p>
-              <ChatLink href={CHAT_HREF} locale={locale}>
-                {content.faq.card.cta}
-              </ChatLink>
-            </div>
-          </div>
-          <FaqList items={content.faq.items} locale={locale} />
-        </div>
-      </section>
+      {/* ── FAQ ──
+          The SITEWIDE FAQ section (components/templates/catalogue/faq-panel),
+          not a bespoke one. Home, How It Works, Pricing, Location and the
+          Service/Technology detail pages all render this component; the six
+          hand-rolled copies that preceded it all looked slightly different,
+          which is exactly why it exists. This page supplies its own headline and
+          its own answer renderer and takes the shared structure, spacing,
+          numbering, dividers and rotating-plus accordion as they are.
+
+          `renderAnswer` is what lets the last answer carry a link to the other
+          market without splitting the copy into fields: the FAQPage JSON-LD and
+          the visible answer have to be the same string. */}
+      <CatalogueFaqPanel
+        id="faq"
+        items={content.faq.items}
+        copy={{
+          eyebrow: content.faq.eyebrow,
+          titleLead: content.faq.titleLead,
+          titleAccent: content.faq.titleAccent,
+          cardLabel: content.faq.card.h3,
+          cardBody: content.faq.card.p,
+          cardCta: content.faq.card.cta,
+        }}
+        renderAnswer={(item) => <FaqAnswer item={item} locale={locale} />}
+      />
 
       {/* ── FINAL CTA ──
-          NOTE FOR REVIEW: the sitewide footer opens with FooterTopCta ("Ready to
-          hire your next engineer?"), so this band and that one ask the same
-          question about 200px apart. hire-engineers deleted its own band for
-          exactly this reason (Jake, 3 Aug). This one is kept for now because the
-          design draws it and it carries the pricing footnote, which the footer
-          band does not. Jake's call before merge: drop this section, or suppress
-          FooterTopCta on this route. Do not ship both without a decision. */}
-      <section className="finalcta">
-        <div className="wrap">
-          <h2 className="st st--big">
-            {content.finalCta.h2Lead}
-            <em>{content.finalCta.h2Em}</em>
-          </h2>
-          <p className="lead">{content.finalCta.lead}</p>
-          <div className="ctas">
-            <a href="#intake" className="btn-primary">
-              {content.finalCta.ctaPrimary}
-              <ArrowDisc />
-            </a>
-            <a href={buildLocalePath('/book-a-call', locale)} className="btn-ghost">
-              {content.finalCta.ctaGhost}
-            </a>
-          </div>
-          <p className="foot">{content.finalCta.foot}</p>
-        </div>
-      </section>
+          REMOVED (Jake, 15 Aug), the same call and the same reason as
+          hire-engineers on 3 Aug: the sitewide footer opens with FooterTopCta
+          ("Ready to hire your next engineer?"), so a band here asked the reader
+          the same question twice, in two different colours, about 200px apart.
+          The footer band stays; this one added nothing.
+
+          `content.finalCta` is deliberately LEFT IN the content files rather
+          than deleted - it is inert where it sits, and restoring the band is one
+          JSX block away if the footer CTA is ever suppressed on these routes
+          instead. */}
     </main>
   )
 }

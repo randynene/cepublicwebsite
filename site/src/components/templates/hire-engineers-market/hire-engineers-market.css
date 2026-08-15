@@ -251,13 +251,19 @@
   white-space: pre-line;
   padding: 4px;
 }
-.hem .imgslot img {
+.hem .imgslot img,
+.hem .slot-img {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   border-radius: inherit;
+}
+/* A filled slot must not also show its hatched placeholder fill behind a photo
+   with transparency, and the intake-call tile keeps its own dark ground. */
+.hem .imgslot:has(.slot-img) {
+  background: var(--card-2);
 }
 
 /* ── HERO ────────────────────────────────────────────────────────────────── */
@@ -1407,6 +1413,12 @@
   color: var(--paper-ink);
 }
 
+.hem .intake-filenote {
+  font-size: 13px;
+  line-height: 20.8px;
+  color: var(--dim);
+  margin-top: 12px;
+}
 .hem .intake-fileerror {
   font-size: 13px;
   line-height: 20.8px;

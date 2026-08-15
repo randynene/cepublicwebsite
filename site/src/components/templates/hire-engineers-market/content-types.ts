@@ -20,8 +20,17 @@ export interface MarketImageSlot {
   brief: string
   /** Optional overlay label drawn on the tile (stage 02 rail, stage 01 card). */
   label?: string
-  /** Optional real photo. */
+  /** Optional real photo, served from /public. */
   image?: string
+  /**
+   * Alt text for that photo. Omitted deliberately on the shortlist avatars and
+   * the report-card avatar: those sit on ILLUSTRATIVE profiles whose role,
+   * location and experience are already read out as adjacent text, so the image
+   * is decorative and an alt would only repeat it - or worse, assert an identity
+   * for a person who is not a real candidate. The process photos (intake call,
+   * pair session) describe a scene and do carry one.
+   */
+  alt?: string
 }
 
 export interface HireEngineersMarketContent {
@@ -144,6 +153,12 @@ export interface HireEngineersMarketContent {
     /** Shown in place of the drop zone once a file is chosen. */
     fileChosenLabel: string
     fileRemoveLabel: string
+    /**
+     * Shown only once a file is attached. The bytes are NOT uploaded yet (see
+     * the TODO in index.tsx), so this says what actually happens next instead of
+     * implying we already have the document.
+     */
+    fileNote: string
     /** Rejected file: wrong extension, or over the size cap. */
     fileTypeError: string
     fileSizeError: string
@@ -165,8 +180,9 @@ export interface HireEngineersMarketContent {
   }
   faq: {
     eyebrow: string
-    h2: string
-    h2Em: string
+    /** Headline, split for the shared FAQ panel: plain lead + serif accent. */
+    titleLead: string
+    titleAccent: string
     card: { h3: string; p: string; cta: string }
     /**
      * `{ q, a }` because buildFaqPageJsonLd consumes this array directly, so
