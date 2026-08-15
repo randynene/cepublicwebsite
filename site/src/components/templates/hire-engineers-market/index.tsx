@@ -119,6 +119,26 @@ function ImgSlot({
   )
 }
 
+/**
+ * A monogram tile in place of a headshot.
+ *
+ * The shortlist profiles and the report card are ILLUSTRATIVE - invented role,
+ * city and salary, which is what the amber badge on the card says. A real face
+ * on one of those asserts that a real, identifiable person is job-hunting at
+ * that rate, which is not something a marketing page gets to say about someone.
+ * An initial reads as "a person" and claims nothing about who.
+ *
+ * `aria-hidden`: the role, location and experience sit right beside it, so
+ * announcing a bare letter would add noise, not information.
+ */
+function Monogram({ initial, className }: { initial: string; className?: string }) {
+  return (
+    <span className={cn('monogram', className)} aria-hidden="true">
+      {initial}
+    </span>
+  )
+}
+
 // ── Intake form ─────────────────────────────────────────────────────────────
 
 /** Which input the visitor picked. `upload` is the design's default. */
@@ -588,7 +608,7 @@ export function HireEngineersMarketTemplate({
             </div>
             {content.hero.card.profiles.map((p, i) => (
               <div key={p.role} className="profile rvl" style={{ transitionDelay: `${160 + i * 120}ms` }}>
-                <ImgSlot slot={p.photo} className="avatar" />
+                <Monogram initial={p.initial} className="avatar" />
                 <div>
                   <div className="role">{p.role}</div>
                   <div className="meta">{p.meta}</div>
@@ -788,7 +808,7 @@ export function HireEngineersMarketTemplate({
               </div>
               <div className="report rvl" style={{ transitionDelay: '140ms' }}>
                 <div className="report-head">
-                  <ImgSlot slot={content.process.report.photo} />
+                  <Monogram initial={content.process.report.initial} className="report-mono" />
                   <div>
                     <div className="role">{content.process.report.role}</div>
                     <div className="meta">{content.process.report.meta}</div>

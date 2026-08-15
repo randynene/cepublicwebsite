@@ -58,7 +58,13 @@ export interface HireEngineersMarketContent {
         stack: string[]
         salary: string
         salaryNote: string
-        photo: MarketImageSlot
+        /**
+         * Monogram shown in place of a headshot. These profiles are
+         * ILLUSTRATIVE - invented role, city and salary - so a real face on one
+         * would assert that a real person is job-hunting at that rate. An
+         * initial carries the same "this is a person" signal and claims nothing.
+         */
+        initial: string
       }[]
       foot: string
       /** Amber badge. These are illustrative, not real placements. */
@@ -108,11 +114,12 @@ export interface HireEngineersMarketContent {
       role: string
       meta: string
       open: string
+      /** Same candidate as hero profile 1, so the same monogram. */
+      initial: string
       tabs: string[]
       /** `pct` drives the bar width; `tone` picks teal or amber. */
       scores: { label: string; value: string; pct: number; tone: 'teal' | 'amber' }[]
       note: string
-      photo: MarketImageSlot
     }
     funnel: {
       label: string

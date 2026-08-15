@@ -63,7 +63,7 @@ export const UHE: HireEngineersMarketContent = {
           stack: ['Go', 'Postgres', 'AWS', 'Kafka'],
           salary: '$175,000',
           salaryNote: 'base sought',
-          photo: { brief: 'REAL PHOTO', image: '/assets/img/for-engineers/450d3ab2-8222-44a3-bd54-ace836c6afdd.png' },
+          initial: 'A',
         },
         {
           role: 'Senior Full-Stack Engineer',
@@ -71,7 +71,7 @@ export const UHE: HireEngineersMarketContent = {
           stack: ['TypeScript', 'React', 'Node', 'GraphQL'],
           salary: '$160,000',
           salaryNote: 'base sought',
-          photo: { brief: 'REAL PHOTO', image: '/assets/img/for-engineers/c4b557dd-5251-41f3-b1df-3e9af56879c0.png' },
+          initial: 'M',
         },
       ],
       foot: 'Each profile ships with a written report on why they fit.',
@@ -160,6 +160,7 @@ export const UHE: HireEngineersMarketContent = {
       role: 'Senior AI Engineer',
       meta: 'Austin, TX · 9 yrs · Python, RAG, AWS',
       open: 'Open report',
+      initial: 'A',
       tabs: ['Overview', 'CV', 'Tech interview', 'Coding test'],
       scores: [
         { label: 'Coding test', value: '88%', pct: 88, tone: 'teal' },
@@ -167,7 +168,6 @@ export const UHE: HireEngineersMarketContent = {
         { label: 'Culture fit', value: 'Good', pct: 73, tone: 'amber' },
       ],
       note: 'Worth knowing: short tenure in last role. Moving due to wanting to work on something more challenging.',
-      photo: { brief: 'REAL PHOTO', image: '/assets/img/for-engineers/450d3ab2-8222-44a3-bd54-ace836c6afdd.png' },
     },
     funnel: {
       label: 'The funnel, in numbers',
