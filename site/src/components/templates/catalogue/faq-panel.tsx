@@ -4,6 +4,7 @@ import { FaqChatCard } from '@/components/shared/faq-chat-card'
 import { STICKY_ASIDE } from '@/components/layout/sticky-aside'
 import { CHAT_HREF } from '@/lib/chat'
 import type { HubFaq } from '@/data/services'
+import type { Locale } from '@/lib/locale-path'
 import { ACCENT, BAND_1280, BODY, Eyebrow } from './shared'
 
 // Home-style two-column FAQ (technology detail). Reuses the shared Storybook
@@ -43,6 +44,16 @@ export interface CatalogueFaqPanelProps {
   renderAnswer?: (item: HubFaq) => React.ReactNode
   /** Section id, for pages that link to their own FAQ. */
   id?: string
+  /**
+   * Locale for the chat card's FALLBACK href.
+   *
+   * `#chat` opens the widget, but when the widget is unavailable ChatPill
+   * renders a real destination instead - and without a locale that destination
+   * defaults to en-US. On /uk pages that sent a UK reader to the US booking
+   * page. Optional so existing callers are unchanged; pass it wherever the
+   * locale is known.
+   */
+  locale?: Locale
 }
 
 export function CatalogueFaqPanel({
@@ -51,6 +62,7 @@ export function CatalogueFaqPanel({
   copy,
   renderAnswer,
   id,
+  locale,
 }: CatalogueFaqPanelProps) {
   const c = { ...COPY, ...copy }
   return (
@@ -67,6 +79,7 @@ export function CatalogueFaqPanel({
             body={c.cardBody}
             cta={c.cardCta}
             href={chatHref}
+            locale={locale}
           />
         </div>
 

@@ -930,6 +930,7 @@ export function HireEngineersMarketTemplate({
       <div className="shared-ui">
       <CatalogueFaqPanel
         id="faq"
+        locale={locale}
         items={content.faq.items}
         copy={{
           eyebrow: content.faq.eyebrow,
