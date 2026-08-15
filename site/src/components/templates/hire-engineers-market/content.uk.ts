@@ -21,9 +21,10 @@
 // UKHE stays as the fallback when the doc is absent or fails validation.
 //
 // COPY IS FINAL. It carries the commercial facts the page depends on - six-month
-// replacement guarantee, GBP 3,000 credited against the fee, two profiles in
-// seven days, the written off-limits clause, live pair programming instead of
-// take-homes. Do not rewrite or shorten it.
+// replacement guarantee, two profiles in seven days, the written off-limits
+// clause, live pair programming instead of take-homes. Do not rewrite or
+// shorten it. The search fee is deliberately not stated here; pricing is a
+// conversation, not a page.
 
 import type { HireEngineersMarketContent } from './content-types'
 
@@ -313,10 +314,6 @@ export const UKHE: HireEngineersMarketContent = {
       {
         q: 'Will you approach them again later?',
         a: 'No. Anyone we place with you is off-limits to us, in writing, for as long as they work for you. That is a clause in the agreement, not a promise on a web page. Our business runs on repeat searches, not on recycling engineers we already placed.',
-      },
-      {
-        q: 'What does it cost?',
-        a: '£3,000 to start a search, credited in full against the placement fee. Nothing further is due unless you hire. The fee covers the hire rather than the shortlist, so if neither finalist is right we go again at no extra cost, and the six-month replacement guarantee sits behind it.',
       },
       {
         q: 'How long does it take?',
