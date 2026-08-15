@@ -21,29 +21,62 @@ Authored 8 Aug 2026 from the six-lens synthesis.
 
 ## The dashboard
 
+**Status last reconciled against `origin/main` on 12 Aug 2026.** Every row below
+was checked against merged commits, not against what a previous session believed.
+If you change a status, cite the commit or PR.
+
 | # | Session | Wave | Effort | Gate | Status |
 |---|---|---|---|---|---|
-| S1 | Crawl + redirect hygiene | 1 | ~1 day | none | **DONE 8 Aug 2026 (PR #93)** |
-| S2 | Internal link equity | 1 | ~1 day | none | IN PROGRESS - items 1+2 shipped (all 27 compare cards on /alternatives page 1; related-comparisons module); items 3+4 authored not applied (script + plan report), needs a local run against production Sanity with the write token |
-| S3 | Template fixes (schema, images, anchors) | 1 | ~1 day | none | DONE (PR open, branch seo/s3-template-fixes) - W1-02 blocked on a content date backfill; W1-07/W1-08/W2-06 shipped |
-| S4 | Measurement wiring (Brand Radar weekly) | 1 | ~0.5 day | none | SCRIPT SHIPPED (PR open); first live pull pending AHREFS_API_KEY (run locally before 14 Aug) |
-| S5 | Performance package part A: geo server-side + delete body-hide | 2 | ~2 days | DFH-1 + GeoTargetly rules export | **DONE 10 Aug 2026 (PR open, branch seo/s5-geo-server-side)** |
-| S6 | Performance package part B: HubSpot defer + HTML caching | 2 | ~2 days | S5 merged | NOT STARTED |
+| S1 | Crawl + redirect hygiene | 1 | ~1 day | none | **DONE 8 Aug (PR #93)** |
+| S2 | Internal link equity | 1 | ~1 day | none | **PART DONE.** Items 1+2 shipped and merged (PR #95): all 27 compare cards on /alternatives page 1, related-comparisons module. Items 3+4 authored and merged as code (`a1a47c0` scripted Sanity link rewrite + content lint) but **NOT YET RUN** against production Sanity. Needs a local run with the write token. |
+| S3 | Template fixes (schema, images, anchors) | 1 | ~1 day | none | **DONE (PR #96 merged).** W1-07, W1-08, W2-06 shipped. W1-02 (VideoObject uploadDate) remains blocked on a content date backfill, documented at `c606729`. |
+| S4 | Measurement wiring (Brand Radar weekly) | 1 | ~0.5 day | none | **SCRIPT DONE (PR #94 merged, `746d15c`). FIRST PULL STILL NOT RUN** - no brand-radar output exists in audit-output. Ahrefs collects weekly; pick it up around 14 Aug. |
+| S5 | Performance package part A: geo server-side + delete body-hide | 2 | ~2 days | DFH-1 + GeoTargetly rules export | **DONE (PR #106).** GeoTargetly integration and its body-hide deleted (`313bd8b`); CE-48 geo routing reimplemented server-side in `site/src/proxy.ts` (`45b4e91`); rule kept off API and metadata routes, bot bypass widened (`119976b`). The only surviving `opacity:0` in the codebase is a comment explaining the removal. **This was the single biggest item on the roadmap. NOT YET RE-MEASURED - see NEXT below.** |
+| S6 | Performance package part B: HubSpot defer + HTML caching | 2 | ~2 days | S5 merged | **NOT STARTED. GATE NOW CLEAR.** Carries PERF-03: every HTML response is served `no-store` with `x-vercel-cache MISS`, so nothing caches at the edge. |
 | S7 | Metadata batch (titles + descriptions) | 2 | ~1.5 days | none | NOT STARTED |
-| S8 | Backlink rescue part A: build the 301 decision list | 2 | ~0.5 day | none | PR OPEN - decision list at docs/seo/S8_BACKLINK_DECISION_LIST.md, awaiting Jake approval (gates S9) |
-| S9 | Backlink rescue part B: ship the 301s | 2 | ~0.5 day | Jake approves S8's list | NOT STARTED |
+| S8 | Backlink rescue part A: build the 301 decision list | 2 | ~0.5 day | none | **DONE (`16c9ca2`).** List at `docs/seo/S8_BACKLINK_DECISION_LIST.md`, top 25 dead URLs. |
+| S9 | Backlink rescue part B: ship the 301s | 2 | ~0.5 day | Jake approves S8's list | **DONE (`18c52ce`).** 4 approved reclaims shipped. The remaining S8 candidates are still awaiting a decision. |
 | S10 | Content upgrade: staff-augmentation pillar | 2 | ~2 days | none (cited.io) | NOT STARTED |
 | S11 | Content upgrade: cost/definitional trio | 2 | ~2-3 days | none (cited.io) | NOT STARTED |
-| S12 | UK Phase 0: locale-override schema wiring | 3 | ~2-3 days | DFH-2 | NOT STARTED |
+| S12 | UK Phase 0: locale-override schema wiring | 3 | ~2-3 days | DFH-2 (ANSWERED, see UK-03) | NOT STARTED |
 | S13 | UK Phase A1: metadata-localise all 326 | 3 | ~2 days + Seb review | S12 merged | NOT STARTED |
-| S14+ | Hire-fleet upgrades (15 pages, batches of 3-5) | 3 | ~40h total | S3 merged (Service JSON-LD) | NOT STARTED |
+| S14+ | Hire-fleet upgrades (15 pages, batches of 3-5) | 3 | ~40h total | S3 merged (Service JSON-LD) | **NOT STARTED. GATE NOW CLEAR** (S3 merged). |
 | S18 | Two new pages (javascript + outsourcing pillar) | 3 | ~2 days each | none (cited.io) | NOT STARTED |
-| S19 | Per-template performance pass | 3 | ~1-2 weeks | S5+S6 merged AND re-measured | NOT STARTED |
+| S19 | Per-template performance pass | 3 | ~1-2 weeks | S5+S6 merged AND re-measured | NOT STARTED. S5 merged; still needs S6 and a re-measure. |
 | S20 | 31 Aug review session (watch list) | - | ~0.5 day | date | SCHEDULED 31 AUG |
 
+## NEXT, and why
+
+1. **Re-measure performance.** S5 deleted the body-hide, which the analysis
+   identified as the cause of LCP being Poor on 100% of pages while the server
+   answered in under 200ms. Nothing else on this list is worth as much as
+   knowing whether that worked. Sources: Vercel Speed Insights (now has a week
+   of real-user data), and the Ahrefs Site Audit, which re-crawls weekly on
+   Saturdays. Baseline to beat: 242 Poor / 410 Needs improvement / 0 Good
+   Lighthouse on 8 Aug, and LCP Poor on 100% of pages.
+2. **S2 items 3+4** - run the merged link-rewrite script against production
+   Sanity. The code is shipped but the data is unchanged, so the benefit is not
+   yet realised.
+3. **S4 first pull** before 14 Aug, or the weekly Brand Radar collection is
+   wasted.
+4. **S6**, now unblocked.
+
+## Work done outside this plan
+
+Recorded here so the plan does not look like the whole story:
+
+- **HubSpot CRM scopes granted and lead value joined per page** (`f5af080`,
+  `docs/seo/LEAD_VALUE_BY_PAGE.md`). This closes the gap that forced the
+  analysis to rank on traffic rather than revenue. Any re-ranking of the
+  roadmap can now use real lead value.
+- **GA4 Data API puller added and CRO findings recorded** as Tech Debt #67-#70
+  (10 Aug). #67 is the headline: conversion tracking has been broken since June
+  2025 and is a GTM config fix, not code.
+
 Jake-only tasks (no session needed): co.uk auto-renew check; delete 9 dead GSC
-sitemap submissions; claim 13 Tier-1 profiles; grant HubSpot CRM scopes; export
-GeoTargetly rules; the Seb question batch.
+sitemap submissions; claim 13 Tier-1 profiles; the Seb question batch.
+**Done since:** HubSpot CRM scopes granted; GeoTargetly rules exported (and the
+integration subsequently deleted outright in S5).
 
 ---
 

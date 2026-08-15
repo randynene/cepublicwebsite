@@ -31,8 +31,12 @@ docs/images/
 # keep it out of git for the same reason audit-output is ignored.
 data/theirstack/
 
-# Scratch verification scripts
+# Scratch verification scripts. One-shot Playwright probes written to answer a
+# single question (a Marker ticket, a page audit) and never re-run. The durable
+# gates live in scripts/ and are wired to npm run.
 __verify*.js
+.audit.tmp.js
+agents/*/qa-*.mts
 
 # Agent tooling - local editor state and nested git checkouts, never repo content
 .claude/
