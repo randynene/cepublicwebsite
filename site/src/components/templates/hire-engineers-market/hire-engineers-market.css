@@ -111,18 +111,27 @@
   position: relative;
 }
 
-/* Content band: the same one the catalogue templates and the shared lead form
-   use, so this page lines up with the rest of the site rather than sitting in
-   its own slightly different column. */
+/* Content band: 1440 / 64, which is the band EVERYTHING ELSE on the site uses.
+ *
+ *   header + footer chrome   max-w-[1440px] + lg:px-[64px]  (chrome-band.tsx)
+ *   location pages           max-w-[1440px] px-6 lg:px-[64px]
+ *   Hire Engineers           max-width: 1440px; padding: 0 64px
+ *   the shared FAQ panel     max-w-[1440px] px-6 lg:px-16
+ *
+ * This page was built to 1280 (the original brief said so), which put its
+ * content about 80px inboard of the logo and the "Talk to a human" CTA directly
+ * above it - and inboard of its own FAQ section, which is a shared component and
+ * therefore already 1440. Jake caught it against the Eastern Europe page.
+ *
+ * Careful with the shared constant: `BAND_1280` in catalogue/shared.tsx is
+ * misleadingly named and is actually 1440. Read the value, not the name.
+ *
+ * If the chrome band ever moves, this moves with it - alignment with the header
+ * is the whole point of the number. */
 .hem .wrap {
-  max-width: 1280px;
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 0 22px;
-}
-@media (min-width: 640px) {
-  .hem .wrap {
-    padding: 0 32px;
-  }
+  padding: 0 24px;
 }
 @media (min-width: 1024px) {
   .hem .wrap {
@@ -307,6 +316,14 @@
   grid-template-columns: minmax(0, 0.98fr) minmax(0, 1fr);
   gap: 64px;
   align-items: center;
+}
+/* 1024-1279: the band is narrower but both columns stay. The gap closes first
+   and the card is allowed to shrink, so the two-column hero survives down to
+   the point where the whole page stacks. */
+@media (max-width: 1279px) {
+  .hem .hero-grid {
+    gap: 36px;
+  }
 }
 .hem .hero h1 {
   font-size: clamp(38px, 4.6vw, 60px);
@@ -1806,8 +1823,21 @@
 }
 
 /* Every two-column block stacks, artifact under copy. */
+/* The HERO stacks at 1023, not 1099, and that 76px difference is load-bearing.
+   `.hero-screen` (globals.css) applies from 1024up and sizes the hero + logo
+   strip to exactly one screen. Stacking the hero inside it put the shortlist
+   card BELOW the copy in a group that then grew to 1231px on a 900px-tall
+   window, so the card - the single most persuasive thing on the page - sat off
+   the first screen at every width from 1024 to 1099. Keep these two numbers
+   agreeing: if globals.css ever moves `.hero-screen`, this moves with it. */
+@media (max-width: 1023px) {
+  .hem .hero-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 40px;
+  }
+}
+
 @media (max-width: 1099px) {
-  .hem .hero-grid,
   .hem .prob-grid,
   .hem .stage,
   .hem .faq-grid {

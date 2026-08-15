@@ -516,7 +516,18 @@ export function HireEngineersMarketTemplate({
             io.unobserve(e.target)
           }
         }),
-      { threshold: 0.12 },
+      // threshold 0, not 0.12, with a small bottom inset instead.
+      //
+      // A ratio threshold is a trap for anything tall: an element only just in
+      // view is BELOW the threshold, so it never receives `.in` and stays at
+      // opacity 0 until the visitor scrolls - and if it is already as far down
+      // the first screen as it will ever be, that is never. The 392px hero
+      // shortlist card hit exactly this on a short window.
+      //
+      // Any intersection now reveals, and the -48px inset keeps the effect
+      // ("it arrives as you reach it") without letting the maths strand
+      // anything invisible.
+      { threshold: 0, rootMargin: '0px 0px -48px 0px' },
     )
     root.querySelectorAll('.rvl, .grow, .gridrvl').forEach((n) => io.observe(n))
     return () => io.disconnect()
