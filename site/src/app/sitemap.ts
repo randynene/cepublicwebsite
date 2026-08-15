@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next'
 
 import { env } from '@/lib/env'
-import { generateCanonical, generateHreflang, LOCALES, type Locale } from '@/lib/locale'
+import { generateCanonical, generateHreflang, LOCALES } from '@/lib/locale'
 import { HUB_CONFIG, type HubType } from '@/lib/sanity/queries/hubs'
 import { redirectedPaths } from '@/lib/redirects'
 import { NOT_RETIRED } from '@/lib/sanity/queries/_filters'
@@ -372,28 +372,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: '/book-a-call', changeFrequency: 'monthly', priority: 0.7 },
     { path: '/legals/privacy-policy', changeFrequency: 'yearly', priority: 0.3 },
     { path: '/legals/general-terms', changeFrequency: 'yearly', priority: 0.3 },
-  ]
-
-  // Single-locale static pages. Each is emitted for ONE locale only, with an
-  // hreflang set that names just that one URL, because these routes have no
-  // sibling in the other locale and generateHreflang would otherwise advertise
-  // an alternate that 404s.
-  //
-  // The two hire-engineers market pages are BOTH here rather than being treated
-  // as a US/UK pair. They are separate pages targeting separate markets, not
-  // translations of each other, so they are deliberately not cross-declared as
-  // alternates: doing so invites Google to collapse one into the other. See the
-  // header comments on both routes.
-  const SINGLE_LOCALE_PAGES: Array<{
-    path: string
-    locale: Locale
-    changeFrequency: 'monthly'
-    priority: number
-  }> = [
-    // Permanent US hiring. Lives only at /services/us-hire-engineers.
-    { path: '/services/us-hire-engineers', locale: 'en-US', changeFrequency: 'monthly', priority: 0.8 },
-    // Permanent UK hiring. Lives only at /uk/services/uk-hire-engineers.
-    { path: '/services/uk-hire-engineers', locale: 'en-GB', changeFrequency: 'monthly', priority: 0.8 },
+    // The two hire-engineers MARKET pages. Both exist in both locales, so both
+    // are ordinary two-locale entries here.
+    //
+    // Locale and market are different axes (see the note on
+    // services/hire-us-engineers/page.tsx): the locale prefix says who is
+    // reading, the slug says where the engineers are. So hreflang pairs each
+    // page with the SAME MARKET in the other locale, which is what
+    // generateHreflang emits, and the two markets are never declared as
+    // alternates of each other - they answer different searches and pairing
+    // them invites Google to collapse one.
+    { path: '/services/hire-us-engineers', changeFrequency: 'monthly', priority: 0.8 },
+    { path: '/services/hire-uk-engineers', changeFrequency: 'monthly', priority: 0.8 },
   ]
 
   // NOT in the sitemap, matching live, and each for its own reason:
@@ -426,24 +416,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   )
 
-  const singleLocaleRoutes: MetadataRoute.Sitemap = SINGLE_LOCALE_PAGES.map(
-    ({ path, locale, changeFrequency, priority }) => {
-      const url = generateCanonical(path, locale)
-      return {
-        url,
-        lastModified: new Date(),
-        changeFrequency,
-        priority,
-        // A one-entry cluster naming only itself. x-default is claimed by the
-        // en-US page only: it is the fallback for a searcher in neither market,
-        // and two pages both claiming it would be a contradiction.
-        alternates: {
-          languages:
-            locale === 'en-US' ? { 'en-US': url, 'x-default': url } : { 'en-GB': url },
-        },
-      }
-    },
-  )
 
   // Hub routes — 32 entries (16 hubs x 2 locales).
   const hubRoutes = buildHubSitemapEntries(base)
@@ -477,5 +449,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...technologyDocs,
   ])
 
-  return dropRedirectedEntries([...staticRoutes, ...singleLocaleRoutes, ...hubRoutes, ...dynamicRoutes])
+  return dropRedirectedEntries([...staticRoutes, ...hubRoutes, ...dynamicRoutes])
 }

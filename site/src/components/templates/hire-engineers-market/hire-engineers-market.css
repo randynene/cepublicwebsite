@@ -1244,6 +1244,224 @@
   color: #fff;
   margin-top: 4px;
 }
+/* ── Intake: four-step wizard chrome (step 1) ─────────────────────────────── */
+
+.hem .stepbar {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 10px;
+}
+.hem .stepbar .seg {
+  height: 3px;
+  border-radius: 999px;
+  background: var(--line);
+}
+.hem .stepbar .seg.on {
+  background: var(--lime);
+}
+.hem .stephead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+}
+.hem .stephead .stepcount {
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 18.4px;
+  letter-spacing: 0.575px;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+/* The one LIGHT surface in the intake card, exactly as the design draws it:
+   the drop target has to read as an empty slot waiting for something, and on a
+   #101B30 card only a pale fill does that. */
+.hem .dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 24px;
+  padding: 46px 24px;
+  min-height: 200px;
+  border-radius: 16px;
+  background: #eef0f7;
+  border: 2px dashed #c3cad9;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+.hem .dropzone:hover,
+.hem .dropzone:focus-within,
+.hem .dropzone.is-dragging {
+  background: #f6f8fc;
+  border-color: var(--lime);
+}
+.hem .dropzone.is-dragging {
+  transform: translateY(-1px);
+}
+/* Visually hidden, but still the real focusable control - so the dashed box
+   gets a focus ring via :focus-within and Enter/Space open the picker. */
+.hem .dropzone .sr-only-file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+.hem .dz-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(20, 28, 43, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hem .dz-icon svg,
+.hem .fz-icon svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: var(--paper-ink);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.hem .dz-title {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 24px;
+  letter-spacing: -0.3px;
+  color: var(--paper-ink);
+}
+.hem .dz-hint {
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--paper-dim);
+}
+
+/* Filled state: the same slot, now holding something. */
+.hem .dropzone--filled {
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 14px;
+  min-height: 0;
+  padding: 18px 20px;
+  border-style: solid;
+  border-color: var(--lime);
+  cursor: default;
+  text-align: left;
+}
+.hem .fz-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.hem .fz-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 14.5px;
+  line-height: 21px;
+  color: var(--paper-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hem .fz-name strong {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+  color: var(--paper-dim);
+}
+.hem .fz-remove {
+  flex-shrink: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--paper-dim);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  padding: 6px 4px;
+}
+.hem .fz-remove:hover {
+  color: var(--paper-ink);
+}
+
+.hem .intake-fileerror {
+  font-size: 13px;
+  line-height: 20.8px;
+  color: #ff6b6b;
+  margin-top: 12px;
+}
+
+/* Input-mode pills. Centred under the drop zone, as drawn. */
+.hem .intake-modes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 18px;
+}
+.hem .mode-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px var(--line-2);
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22px;
+  color: var(--text);
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+}
+.hem .mode-pill:hover,
+.hem .mode-pill:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: inset 0 0 0 1px var(--lime);
+  color: #fff;
+}
+.hem .mode-pill.on {
+  box-shadow: inset 0 0 0 1px var(--lime);
+  background: rgba(212, 255, 60, 0.12);
+  color: #fff;
+}
+.hem .mode-pill .mic {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: var(--lime);
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .hem .field {
   margin-top: 24px;
 }
@@ -1472,11 +1690,21 @@
 .hem .faq-a > div {
   overflow: hidden;
 }
+/* The 4px slide the design gives the answer on open. It sits on the INNER
+   paragraph, not on `.faq-a`: the wrapper animates grid-template-rows, and a
+   transform on the same element that is being measured for the row size makes
+   the open/close height jitter. Transform only, so it cannot move anything
+   around it. */
 .hem .faq-a p {
   font-size: 16px;
   line-height: 26.4px;
   color: var(--dim);
   padding: 3px 38px 28px;
+  transform: translateY(-4px);
+  transition: transform 0.32s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.hem .faq-a.open p {
+  transform: none;
 }
 /* The other-market cross-link inside the last answer. Underlined rather than
    colour-only, so it reads as a link against the dimmed answer text without
@@ -1740,6 +1968,12 @@ html.motion-ready .hem .codebar .live i {
     opacity: 1 !important;
     transform: none !important;
     clip-path: none !important;
+  }
+  /* Without this the answer keeps its resting -4px offset: the transition is
+     off, but the transform itself is not, so the text would sit slightly high
+     for exactly the users who asked for no motion. */
+  .hem .faq-a p {
+    transform: none !important;
   }
   html.motion-ready .hem .grow .bar,
   html.motion-ready .hem .grow.in .bar {

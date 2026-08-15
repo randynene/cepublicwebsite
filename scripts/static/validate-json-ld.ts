@@ -85,6 +85,34 @@ const TARGETS = [
     forbidden: ['BlogPosting', 'CollectionPage', 'Person', 'Review', 'VideoObject', 'Article'],
     multipleOk: ['SiteNavigationElement'],
   },
+  // The two hire-engineers MARKET pages, in both locales. Service (what the
+  // page sells) + BreadcrumbList + FAQPage. Listed for all four routes because
+  // the locale/market matrix is exactly where a wrong @id or a wrong areaServed
+  // would go unnoticed.
+  {
+    path: '/services/hire-us-engineers',
+    expected: ['Service', 'BreadcrumbList', 'FAQPage', 'SiteNavigationElement'],
+    forbidden: ['BlogPosting', 'CollectionPage', 'Person', 'Review', 'VideoObject'],
+    multipleOk: ['SiteNavigationElement'],
+  },
+  {
+    path: '/services/hire-uk-engineers',
+    expected: ['Service', 'BreadcrumbList', 'FAQPage', 'SiteNavigationElement'],
+    forbidden: ['BlogPosting', 'CollectionPage', 'Person', 'Review', 'VideoObject'],
+    multipleOk: ['SiteNavigationElement'],
+  },
+  {
+    path: '/uk/services/hire-us-engineers',
+    expected: ['Service', 'BreadcrumbList', 'FAQPage', 'SiteNavigationElement'],
+    forbidden: ['BlogPosting', 'CollectionPage', 'Person', 'Review', 'VideoObject'],
+    multipleOk: ['SiteNavigationElement'],
+  },
+  {
+    path: '/uk/services/hire-uk-engineers',
+    expected: ['Service', 'BreadcrumbList', 'FAQPage', 'SiteNavigationElement'],
+    forbidden: ['BlogPosting', 'CollectionPage', 'Person', 'Review', 'VideoObject'],
+    multipleOk: ['SiteNavigationElement'],
+  },
   {
     path: '/this-does-not-exist',
     expected: ['SiteNavigationElement'],

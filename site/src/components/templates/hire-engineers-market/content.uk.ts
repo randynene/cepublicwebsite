@@ -29,8 +29,16 @@ import type { HireEngineersMarketContent } from './content-types'
 
 export const UK_HIRE_ENGINEERS_META = {
   title: 'Hire UK Software Engineers | Vetted by Senior Engineers',
+  // 157 chars. Google truncates around 160, and the replacement guarantee
+  // is the last clause, so it is the one that would have been cut.
   description:
-    'Permanent UK engineering hires, interviewed live by a senior engineer. Two matched profiles in seven days, no fee unless you hire, six-month replacement guarantee.',
+    'Permanent UK engineering hires, interviewed live by a senior engineer. Two matched profiles in 7 days. No fee unless you hire, 6-month replacement guarantee.',
+  /** schema.org Service.serviceType. */
+  serviceType: 'Permanent software engineer recruitment',
+  /** Third breadcrumb crumb, and the Service name in structured data. */
+  breadcrumbLabel: 'Hire UK Engineers',
+  /** schema.org areaServed. Data-backed, not inferred from the slug. */
+  areaServed: 'United Kingdom',
 } as const
 
 export const UKHE: HireEngineersMarketContent = {
@@ -230,21 +238,35 @@ export const UKHE: HireEngineersMarketContent = {
     eyebrow: 'Start a search',
     h2Lead: "Tell us who you're ",
     h2Em: 'looking for',
-    lead: 'One short form. A senior engineer reads every brief that comes in.',
+    lead: 'Four short steps. A senior engineer reads every one, and it does not go into a CRM.',
     label: 'THE ROLE',
     heading: "Start with what you've got",
-    jobLabel: 'Job description or a few lines about the role',
+    // Four-step brief builder. Only STEP 1 is built; see the TODO in index.tsx.
+    stepLabel: 'THE ROLE',
+    stepCounter: 'Step 1 of 4',
+    stepCount: 4,
+    dropTitle: 'Drop your job description here',
+    // No em dash: house style is hyphens (CLAUDE.md).
+    dropHint: 'PDF or DOCX - we read it and ask what it missed',
+    pillGuided: 'No spec? Build it with us',
+    pillSay: 'Say it instead',
+    pillType: 'Type it out',
+    fileChosenLabel: 'Attached',
+    fileRemoveLabel: 'Remove',
+    fileTypeError: 'That file type is not supported. Please use a PDF or a DOCX.',
+    fileSizeError: 'That file is over 10MB. Please send a smaller one.',
+    jobLabel: 'Tell us about the role',
     jobPlaceholder:
       'Paste your job spec here, or just tell us the stack, the seniority and what this person will own in their first ninety days. No spec yet is fine, a senior engineer will build one with you.',
     helper:
-      "Prefer to send a file? Attach a PDF or DOCX after you hit send and we'll read it before we reply.",
+      'One file, or a few lines. Whatever you have is enough to start.',
     nameLabel: 'Your name',
     namePlaceholder: 'Grace Hopper',
     emailLabel: 'Work email',
     emailPlaceholder: 'grace@company.com',
     consentNote: 'So we can save your brief and send you the market read for this role.',
-    footNote: 'A senior engineer replies within one working day.',
-    submit: 'Send brief',
+    footNote: 'Saved as you go - finish anytime.',
+    submit: 'Continue',
     submitting: 'Sending...',
     errorRequired: 'Please fill this in',
     errorEmail: 'Please use a valid work email',
@@ -305,7 +327,7 @@ export const UKHE: HireEngineersMarketContent = {
         // meant to leave /uk. `linkText` is a substring of `a` above, so the
         // JSON-LD answer stays byte-identical to the rendered one.
         linkText: 'priced and contracted for the US market',
-        linkHref: '/services/us-hire-engineers',
+        linkHref: '/services/hire-us-engineers',
       },
     ],
   },

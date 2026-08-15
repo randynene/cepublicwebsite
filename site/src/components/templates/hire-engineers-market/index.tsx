@@ -103,10 +103,24 @@ function ImgSlot({ slot, className }: { slot: MarketImageSlot; className?: strin
 
 // ── Intake form ─────────────────────────────────────────────────────────────
 
-// TODO(intake-wizard): open contact form only for launch. The four-step brief
-// builder (drop a spec -> three follow-ups -> market read) is specced in
-// docs/design/us-hire-engineers.html and docs/design/uk-hire-engineers.html,
-// and scheduled separately. Applies to both markets.
+/** Which input the visitor picked. `upload` is the design's default. */
+type IntakeMode = 'upload' | 'guided' | 'type'
+
+const ACCEPT = '.pdf,.docx'
+const MAX_FILE_BYTES = 10 * 1024 * 1024
+
+// TODO(intake-wizard): STEP 1 ONLY. This renders the first screen of the
+// four-step brief builder from the Figma (drop a spec -> three follow-ups ->
+// market read) and then hands off to the existing lead pipe. Steps 2-4 and the
+// AI chat handoff are scheduled separately. Applies to both markets.
+//
+// ⚠️ THE FILE ITSELF IS NOT TRANSMITTED YET. `/api/lead` is a JSON endpoint with
+// no storage behind it, so a dropped PDF is validated, named and reported to the
+// team in the lead body - but its BYTES go nowhere. Until an upload target
+// exists (Vercel Blob or a HubSpot file field), the copy must not promise that
+// we have already read the document, and someone has to email the buyer for it.
+// This is the single most important thing to close before this form carries real
+// volume: the whole design invites a file as the primary action.
 function IntakeForm({
   copy,
   sourcePage,
@@ -116,11 +130,32 @@ function IntakeForm({
   sourcePage: string
   locale: Locale
 }) {
+  const [mode, setMode] = useState<IntakeMode>('upload')
+  const [file, setFile] = useState<File | null>(null)
+  const [fileError, setFileError] = useState<string | null>(null)
+  const [dragging, setDragging] = useState(false)
   const [job, setJob] = useState('')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [errors, setErrors] = useState<{ name?: string; email?: string }>({})
   const [submitting, setSubmitting] = useState(false)
+
+  /** Validate here rather than trusting `accept`, which a drop bypasses. */
+  function takeFile(picked: File | undefined | null): void {
+    if (!picked) return
+    if (!/\.(pdf|docx)$/i.test(picked.name)) {
+      setFile(null)
+      setFileError(copy.fileTypeError)
+      return
+    }
+    if (picked.size > MAX_FILE_BYTES) {
+      setFile(null)
+      setFileError(copy.fileSizeError)
+      return
+    }
+    setFileError(null)
+    setFile(picked)
+  }
 
   // The shared QuickHiringForm could not carry this section: it is a six-step
   // wizard ending in a Calendly embed, and the design asks for one short form
@@ -150,9 +185,14 @@ function IntakeForm({
           firstName,
           lastName: rest.join(' ') || undefined,
           email: email.trim(),
-          // The job description rides in the endpoint's existing `message`
-          // field (max 4000). Nothing was added to the schema for this page.
-          message: job.trim() || undefined,
+          // The brief rides in the endpoint's existing `message` field (max
+          // 4000). Nothing was added to the lead schema for this page.
+          //
+          // A chosen file contributes its NAME here, flagged as not-yet-received,
+          // because the bytes are not uploaded anywhere (see the TODO above).
+          // Announcing it is what stops the lead looking empty and lets whoever
+          // picks it up ask for the document instead of silently losing it.
+          message: buildMessage(mode, job, file),
           hutk: readHubSpotCookie(),
         }),
       })
@@ -167,20 +207,114 @@ function IntakeForm({
 
   return (
     <form className="intake-card rvl" onSubmit={(e) => void onSubmit(e)} noValidate>
-      <span className="label">{copy.label}</span>
+      {/* Progress rail. Decorative for sighted users; the step position is
+          announced once, via the progressbar role, rather than by the segments. */}
+      <div
+        className="stepbar"
+        role="progressbar"
+        aria-valuenow={1}
+        aria-valuemin={1}
+        aria-valuemax={copy.stepCount}
+        aria-label={copy.stepCounter}
+      >
+        {Array.from({ length: copy.stepCount }, (_, i) => (
+          <span key={i} className={cn('seg', i === 0 && 'on')} />
+        ))}
+      </div>
+      <div className="stephead">
+        <span className="label">{copy.stepLabel}</span>
+        <span className="stepcount">{copy.stepCounter}</span>
+      </div>
       <h3>{copy.heading}</h3>
 
-      <div className="field">
-        <label htmlFor="hem-job">{copy.jobLabel}</label>
-        <textarea
-          id="hem-job"
-          name="job"
-          value={job}
-          onChange={(e) => setJob(e.target.value)}
-          placeholder={copy.jobPlaceholder}
-          maxLength={4000}
-        />
+      {mode === 'upload' ? (
+        file ? (
+          <div className="dropzone dropzone--filled">
+            <span className="fz-icon" aria-hidden="true">
+              <FileGlyph />
+            </span>
+            <span className="fz-name">
+              <strong>{copy.fileChosenLabel}</strong>
+              {file.name}
+            </span>
+            <button type="button" className="fz-remove" onClick={() => setFile(null)}>
+              {copy.fileRemoveLabel}
+            </button>
+          </div>
+        ) : (
+          // A real <label> wrapping a real <input type="file">, not a div with
+          // an onClick: that gives keyboard focus, the native picker and the
+          // accept filter for free, and it still works if the drag handlers
+          // never fire.
+          <label
+            className={cn('dropzone', dragging && 'is-dragging')}
+            onDragOver={(e) => {
+              e.preventDefault()
+              setDragging(true)
+            }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={(e) => {
+              e.preventDefault()
+              setDragging(false)
+              takeFile(e.dataTransfer.files?.[0])
+            }}
+          >
+            <input
+              type="file"
+              accept={ACCEPT}
+              className="sr-only-file"
+              onChange={(e) => takeFile(e.target.files?.[0])}
+            />
+            <span className="dz-icon" aria-hidden="true">
+              <UploadGlyph />
+            </span>
+            <span className="dz-title">{copy.dropTitle}</span>
+            <span className="dz-hint">{copy.dropHint}</span>
+          </label>
+        )
+      ) : null}
+
+      {fileError ? <p className="intake-fileerror">{fileError}</p> : null}
+
+      <div className="intake-modes">
+        <button
+          type="button"
+          className={cn('mode-pill', mode === 'guided' && 'on')}
+          onClick={() => setMode('guided')}
+        >
+          {copy.pillGuided}
+        </button>
+        {/* Routed to the AI chat rather than faking a recorder: "say it" is a
+            conversation, and the chat agent is the surface that already takes
+            one. A mic button that opens nothing would be the dead control this
+            replaces. */}
+        <ChatLink href={CHAT_HREF} locale={locale} className="mode-pill">
+          <MicGlyph />
+          {copy.pillSay}
+        </ChatLink>
+        <button
+          type="button"
+          className={cn('mode-pill', mode === 'type' && 'on')}
+          onClick={() => setMode('type')}
+        >
+          {copy.pillType}
+        </button>
       </div>
+
+      {mode === 'upload' ? null : (
+        <div className="field">
+          <label htmlFor="hem-job">{copy.jobLabel}</label>
+          <textarea
+            id="hem-job"
+            name="job"
+            value={job}
+            onChange={(e) => setJob(e.target.value)}
+            placeholder={copy.jobPlaceholder}
+            maxLength={4000}
+            autoFocus
+          />
+        </div>
+      )}
       <p className="intake-helper">{copy.helper}</p>
 
       <div className="field-row">
@@ -239,6 +373,47 @@ function IntakeForm({
   )
 }
 
+/**
+ * The lead body. Internal wording, never shown to the visitor, so it says
+ * plainly what was and was not received rather than reading like copy.
+ */
+function buildMessage(mode: IntakeMode, job: string, file: File | null): string | undefined {
+  const parts: string[] = []
+  if (file) {
+    parts.push(`[Job description attached on the form: "${file.name}". THE FILE WAS NOT UPLOADED - ask the sender to email it.]`)
+  }
+  if (mode === 'guided' && !job.trim()) {
+    parts.push('[No spec. Asked us to build the brief with them.]')
+  }
+  if (job.trim()) parts.push(job.trim())
+  return parts.length > 0 ? parts.join('\n\n') : undefined
+}
+
+function UploadGlyph() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 16V4M8 8l4-4 4 4" />
+      <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
+    </svg>
+  )
+}
+function FileGlyph() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5Z" />
+      <path d="M14 3v5h5" />
+    </svg>
+  )
+}
+function MicGlyph() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="mic">
+      <rect x="9" y="3" width="6" height="11" rx="3" />
+      <path d="M5 11a7 7 0 0014 0M12 18v3" />
+    </svg>
+  )
+}
+
 /** HubSpot's tracking cookie. Without it every lead looks like a new contact. */
 function readHubSpotCookie(): string | undefined {
   const match = document.cookie.match(/(?:^|;\s*)hubspotutk=([^;]+)/)
@@ -262,14 +437,20 @@ function readHubSpotCookie(): string | undefined {
  * absent `linkText` falls through to plain text rather than throwing, so a copy
  * edit that loses the substring degrades to a paragraph instead of a blank page.
  */
-function FaqAnswer({ item }: { item: HireEngineersMarketContent['faq']['items'][number] }) {
+function FaqAnswer({
+  item,
+  locale,
+}: {
+  item: HireEngineersMarketContent['faq']['items'][number]
+  locale: Locale
+}) {
   const { a, linkText, linkHref } = item
   const at = linkText ? a.indexOf(linkText) : -1
   if (!linkText || !linkHref || at === -1) return <p>{a}</p>
   return (
     <p>
       {a.slice(0, at)}
-      <a className="faq-xlink" href={linkHref}>
+      <a className="faq-xlink" href={buildLocalePath(linkHref, locale)}>
         {linkText}
       </a>
       {a.slice(at + linkText.length)}
@@ -277,7 +458,13 @@ function FaqAnswer({ item }: { item: HireEngineersMarketContent['faq']['items'][
   )
 }
 
-function FaqList({ items }: { items: HireEngineersMarketContent['faq']['items'] }) {
+function FaqList({
+  items,
+  locale,
+}: {
+  items: HireEngineersMarketContent['faq']['items']
+  locale: Locale
+}) {
   const [open, setOpen] = useState<number>(0)
   return (
     <div className="faq-list">
@@ -311,7 +498,7 @@ function FaqList({ items }: { items: HireEngineersMarketContent['faq']['items'] 
               aria-labelledby={buttonId}
             >
               <div>
-                <FaqAnswer item={item} />
+                <FaqAnswer item={item} locale={locale} />
               </div>
             </div>
           </div>
@@ -728,7 +915,7 @@ export function HireEngineersMarketTemplate({
               </ChatLink>
             </div>
           </div>
-          <FaqList items={content.faq.items} />
+          <FaqList items={content.faq.items} locale={locale} />
         </div>
       </section>
 

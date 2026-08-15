@@ -129,6 +129,24 @@ export interface HireEngineersMarketContent {
     lead: string
     label: string
     heading: string
+    /** Left of the progress rail, e.g. "THE ROLE". */
+    stepLabel: string
+    /** Right of the progress rail, e.g. "Step 1 of 4". */
+    stepCounter: string
+    /** Number of segments in the progress rail. */
+    stepCount: number
+    dropTitle: string
+    dropHint: string
+    /** The three input-mode pills under the drop zone. */
+    pillGuided: string
+    pillSay: string
+    pillType: string
+    /** Shown in place of the drop zone once a file is chosen. */
+    fileChosenLabel: string
+    fileRemoveLabel: string
+    /** Rejected file: wrong extension, or over the size cap. */
+    fileTypeError: string
+    fileSizeError: string
     jobLabel: string
     jobPlaceholder: string
     helper: string
