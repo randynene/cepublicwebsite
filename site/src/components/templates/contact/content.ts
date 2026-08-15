@@ -65,10 +65,10 @@ export const CONTACT_CONTENT: ContactContent = {
     titleLead: 'Contact us',
     titleAccent: 'today',
     paragraphs: [
-      "Got a question? Curious about working with us? Whether you're exploring options or ready to get started, we're here to help.",
-      "Just drop us a quick message and we'll get back to you within 24 hours. No pressure. No hard sell.",
-      "Once you send a message, a member of our team will review your requirements and get back to you within 24 hours, usually sooner. There's no sales script and no pressure. We'll ask a few questions to understand your tech stack, team size, and timeline, then walk you through whether staff augmentation is the right fit and what that looks like in practice.",
-      "If you're ready to move faster, use the Schedule a Video Call button to book directly into our calendar. Most clients go from first conversation to a shortlist of vetted developers within 5-7 business days.",
+      '→ A call with our CTO and a US or UK-based Account Manager',
+      '→ A brief built around your stack, team and timeline',
+      "→ A cost and location comparison for the roles you're hiring",
+      '→ Two vetted engineer profiles within 7 days - free to interview',
     ],
   },
   contactStrip: {
