@@ -1,3 +1,8 @@
+# Status: LOCKED — D1 output (Claude Design extraction, verified Jun 2026).
+# Authoritative visual language for the CE redesign. Source of truth for D2 token
+# build and D3 page design. Supersedes all old-design/teal-era visual references.
+
+
 # Cloud Employee — Visual Language Reference Spec
 
 > Extracted verbatim from `design system.pdf` (Design System Foundations) and `how it works.pdf`.
