@@ -54,11 +54,18 @@ export const CLIENT_LOGOS: ClientLogo[] = [
   // travelex-wordmark.png is that wordmark lifted onto transparency (generated
   // from the original, which is untouched), so it behaves like the other six.
   // CE-31 (Aug 2026): Seb asked for Travelex to be bigger - it sat at 22, the
-  // smallest in a row of 26-36. Raised to 28. It cannot go much further: the
-  // wordmark asset is natively 103x22, and the only source is the 260x75
-  // scraped card above, whose text is barely larger. Past ~28 it visibly softens
-  // on retina. A vector Travelex logo from Seb would lift this ceiling.
-  { name: 'Travelex', src: `${IMG}/travelex-wordmark.png`, width: 103, height: 22, displayH: 28 },
+  // smallest in a row of 26-36. Raised to 28, which the old asset could not
+  // carry: it was natively 103x22, so a 2x screen was interpolating 22px of
+  // type up to 56px and it read as blurry beside six marks that are natively
+  // 260px wide.
+  //
+  // Aug 2026: the wordmark is now traced to vector and rasterised at 4x, so the
+  // edges stay hard at any size (scripts/static/build-travelex-wordmark.mjs,
+  // which explains the method). travelex-wordmark.svg sits beside the PNG as
+  // the source of truth; the PNG exists because next/image will not render SVG,
+  // the same arrangement as vector.svg for the Todd mark. displayH is no longer
+  // capped by resolution, so this can grow if Seb wants it larger again.
+  { name: 'Travelex', src: `${IMG}/travelex-wordmark.png`, width: 456, height: 112, displayH: 28 },
   { name: 'Tidal', src: `${IMG}/tidal.png`, width: 260, height: 124, displayH: 36 },
   { name: 'Scorpion', src: `${IMG}/scorpion.png`, width: 260, height: 37, displayH: 20, displayOpacity: 0.85 },
   // CE-32 (Aug 2026): added on Seb's request. Source is the SVG he attached to
