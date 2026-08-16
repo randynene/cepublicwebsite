@@ -72,9 +72,14 @@ function TeamCard({ member, locale }: { member: AboutUsTeamCard; locale: Locale 
       <div className="mt-4">
         <h3 className="text-[17px] font-semibold text-white">{member.name}</h3>
         {member.position ? <p className={cn('mt-1 text-[13px] leading-[18px]', BODY)}>{member.position}</p> : null}
-        {member.timeAtCloudEmployee ? (
-          <p className="mt-2 text-[12px] font-medium text-brand-primary">{member.timeAtCloudEmployee}</p>
-        ) : null}
+        {/*
+         * CE-72: the years-at-Cloud-Employee figure is deliberately not shown here.
+         *
+         * It rendered as a bare unlabelled number under the role ("11", "9", "2.5"),
+         * which read as a rating or a headcount rather than a tenure. The /team detail
+         * page still shows it, where it carries the "Time at Cloud Employee" label and
+         * the number means something. The Sanity field is untouched.
+         */}
       </div>
     </>
   )
