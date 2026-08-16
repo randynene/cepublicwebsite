@@ -81,8 +81,19 @@ export interface QuickHiringFormProps {
   className?: string
   /**
    * CE-54. Hides the numbered step rail, keeping every question and all of the
-   * behaviour. Opt-in per host rather than removed outright: the rail still
-   * earns its place on the pages that introduce the form cold.
+   * behaviour.
+   *
+   * CE-66 / CE-61. This DEFAULTS TO TRUE, which is the inversion of how CE-54
+   * left it. Seb filed the same complaint from two different pages - "the form
+   * has to match the homepage", "same across all the other pages same form" -
+   * and the homepage was the one page passing `hideStepRail`. So the rail is now
+   * the exception rather than the rule, and matching the homepage is what a host
+   * gets for doing nothing.
+   *
+   * The default is inverted here rather than by adding the prop to all eight
+   * call sites, because the failure mode being fixed is drift: a ninth page
+   * added next month inherits the standard shape instead of silently diverging
+   * again. Pass `hideStepRail={false}` to opt a page back into the rail.
    */
   hideStepRail?: boolean
 }
@@ -179,7 +190,7 @@ export function QuickHiringForm({
   prefillRole,
   prefillSkill,
   className,
-  hideStepRail = false,
+  hideStepRail = true,
 }: QuickHiringFormProps) {
   const isCto = variant === 'cto'
   // Prefill is an engineer-page concept; ignored on the CTO funnel.

@@ -791,8 +791,11 @@ function ReadyToFind({ content, locale }: SectionProps & { locale: Locale }) {
             and the talk row below closes it. The form contributes only its box. */}
         {/* CE-54: no step rail here. The section's own eyebrow and lead already
             say what this is, and the numbered list read as a promise of results
-            at the end that the form does not make. */}
-        <LeadFormSection bare hideStepRail sourcePage={buildLocalePath('/', locale)} />
+            at the end that the form does not make.
+            CE-66 / CE-61: the explicit `hideStepRail` is gone because that is
+            now the DEFAULT. This page is the shape every other page was asked to
+            match, so it stopped being the one that had to ask for it. */}
+        <LeadFormSection bare sourcePage={buildLocalePath('/', locale)} />
 
         {/* These were non-clickable <span>s: the page invited you to "Ask our AI
             anything" and then did nothing when you did. First CTA opens the chat
