@@ -171,6 +171,17 @@ export const VETTING_PROFILE: VettingProfileContent = {
     // The size below is the RENDERED box, not the file (the file is 304px, i.e.
     // 4x). next/image builds its srcset from these numbers, so passing the
     // file's size here would make it serve a 304px image into a 76px hole.
+    /*
+     * CE-70: PHOTO STILL OUTSTANDING - needs a Croatian dev headshot from Jake.
+     *
+     * The ticket asked for a Croatian face here. The only Croatian photos we hold
+     * are Ivana M. and Petra K. in the talent roster, and both are real people
+     * already published under their own name, role and city (Petra now leads the
+     * home hero, CE-71). Reusing either face under this illustrative name is the
+     * exact "same photo, two identities" problem the roster was built to stop, so
+     * the photo is deliberately left as-is until a new asset lands. Drop the file
+     * in /public/vetting and change the three lines below - nothing else.
+     */
     photo: '/vetting/candidate-lucas.png',
     photoAlt: 'Lucas M., vetted Senior AI Engineer',
     photoWidth: 76,
@@ -179,9 +190,15 @@ export const VETTING_PROFILE: VettingProfileContent = {
     verifiedLabel: 'Vetting complete',
     name: 'Lucas M.',
     badge: 'Vetted',
-    roleLine: 'Senior AI Engineer · Python · LLM systems · 6 yrs · Manila (GMT+8)',
-    rate: '$42',
-    ratePer: '/hr',
+    roleLine: 'Senior AI Engineer · Python · LLM systems · 6 yrs · Zagreb, Croatia (GMT+1)',
+    /*
+     * CE-70 changes the UNIT as well as the currency: this was $42 /hr and Seb's
+     * figure is £4,900 per month. Not a like-for-like conversion, and the two do
+     * not reconcile ($42/hr is roughly £5,400/mo at 160 hrs), so the monthly
+     * figure is taken as the intended number rather than derived from the old one.
+     */
+    rate: '£4,900',
+    ratePer: '/mo',
     separator: '|',
     availability: 'Available in 2 weeks',
   },
@@ -208,7 +225,9 @@ export const VETTING_PROFILE: VettingProfileContent = {
       facts: [
         { label: 'Stack', value: 'Python · LangGraph' },
         { label: 'English', value: 'C1 fluent' },
-        { label: 'Overlap', value: '5 hrs UK' },
+        // CE-70: Croatia is GMT+1, so the UK overlap is a full working day, not
+        // the 5 hours a Manila-based engineer could offer.
+        { label: 'Overlap', value: '8 hrs UK' },
         { label: 'Notice', value: '2 weeks' },
       ],
       aiBadge: 'AI in practice',
@@ -227,7 +246,7 @@ export const VETTING_PROFILE: VettingProfileContent = {
         {
           period: '2020 - 2023',
           title: 'Backend Engineer, Python',
-          org: 'Travel booking SaaS · Manila',
+          org: 'Travel booking SaaS · Zagreb',
           body: 'Moved fraud scoring onto a real-time feature pipeline; cut false declines by 18%.',
         },
         {

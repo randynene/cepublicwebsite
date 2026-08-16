@@ -38,6 +38,12 @@ const VIDEO_POSTER_CLASS = 'fig-asset-8f1066200d444094-72cc5769'
 // of this template already treats as mobile.
 const FE2_MOBILE_MAX = 900
 
+// Width of the reserved number column in each "why this exists" stat card.
+// MUST match grid-template-columns on [data-fe2-problem-stats] > * in
+// fe2-styles.ts: this is the threshold that decides whether a number is too
+// wide for its column and needs stepping down (CE-59).
+const STAT_NUM_COL_PX = 210
+
 /**
  * `ambient` = the silent looping wallpaper treatment the testimonial tile uses:
  * plays itself, no sound, no player chrome. Browsers only allow unprompted
@@ -245,6 +251,38 @@ export function ForEngineersTemplate({
       for (const col of statsRow.children) {
         const body = col.querySelector('span:last-of-type')
         if (body) body.setAttribute('data-fe2-stat-body', '1')
+
+        /**
+         * CE-59 / CE-45 — stop a long "number" running into the copy.
+         *
+         * The number sits in a fixed 210px column so the copy starts on the
+         * same vertical line in all four cards. Three of them are short
+         * numerals and fit easily. The fourth is the phrase "$ you set it",
+         * which at the export's 52px serif italic is wider than the column,
+         * and because the number is nowrap it spilled straight over the copy
+         * with no gap.
+         *
+         * Tagged by MEASURED WIDTH, not by card index or by matching the
+         * string, so it stays correct if Jake rewrites the copy or reorders
+         * the stats. The card index would silently attach to the wrong box
+         * the first time the array changes.
+         */
+        const num = col.querySelector<HTMLElement>('span:first-of-type')
+        if (num) {
+          num.setAttribute('data-fe2-stat-num', '1')
+          /*
+           * Measure the TEXT, not the box. The frozen export pins every one of
+           * these spans to an inline width:280px, so getBoundingClientRect on
+           * the element returns 280 for all four and would tag every card as
+           * long. A range over the text nodes gives the actual ink width.
+           */
+          const range = document.createRange()
+          range.selectNodeContents(num)
+          if (range.getBoundingClientRect().width > STAT_NUM_COL_PX) {
+            num.setAttribute('data-fe2-stat-num-long', '1')
+          }
+          range.detach()
+        }
       }
     }
 

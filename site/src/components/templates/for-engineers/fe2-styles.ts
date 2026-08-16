@@ -191,9 +191,32 @@ export const FE2_UI_CSS = `
   justify-self:start!important;
   white-space:nowrap!important;
 }
+/* ---- CE-59: a long "number" must not run into the copy ----
+ * The column above reserves 210px so the copy starts on one vertical line in
+ * all four cards. Three of the four are short numerals. The fourth is the
+ * phrase "$ you set it", which at the export's 52px serif italic is wider than
+ * 210px, and since the number is nowrap it overflowed its column and printed
+ * straight over the body copy.
+ *
+ * Stepping this one number down to 36px is the fix that keeps everything else
+ * true: the column stays 210px, so the copy stays aligned across the set, and
+ * the box heights are unchanged. Widening the column instead would have pushed
+ * the copy right in all four cards and left roughly 180px for the body, and
+ * letting the phrase wrap would have broken it as "$ you set / it".
+ *
+ * 36px is sized so 12 characters clear the column with a visible gap; the tag
+ * is applied by measured text width in index.tsx, not by card position, so
+ * rewriting or reordering the stats keeps working. */
+.fe2 [data-fe2-stat-num-long]{
+  font-size:36px!important;
+  letter-spacing:-.5px!important;
+}
 .fe2 [data-fe2-stat-body]{align-self:center!important}
 @media (max-width:900px){
   .fe2 [data-fe2-problem-stats]{grid-template-columns:minmax(0,1fr)!important}
+  /* One per row below 900px: the number is on its own line, so it has the full
+   * card width and never needs stepping down. */
+  .fe2 [data-fe2-stat-num-long]{font-size:52px!important;letter-spacing:-1px!important}
 }
 
 /* ---- CE-45: hold the hero heading to its written line breaks ----

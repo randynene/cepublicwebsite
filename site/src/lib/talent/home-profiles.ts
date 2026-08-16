@@ -48,10 +48,13 @@ function heroCard(slug: string, imageFile: string): TalentCard {
   }
 }
 
+// CE-71 (Aug 2026): Petra leads. The slideshow is what a first-time visitor
+// sees above the fold, and this list is the order it plays in, so slot 0 is the
+// only thing that decides which face that is. Kyla keeps her slot, one back.
 export const HERO_SLIDESHOW_PROFILES: TalentCard[] = [
+  heroCard('petra-k', 'petra.jpg'),
   heroCard('kyla-t', 'kyla.jpg'),
   heroCard('marcelo-p', 'marcello.jpg'),
-  heroCard('petra-k', 'petra.jpg'),
   // Added 3 Aug so the rotation carries more faces. Straight crops with real
   // headroom — see build-talent-photos.mjs.
   //

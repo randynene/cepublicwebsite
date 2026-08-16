@@ -139,7 +139,8 @@
     "verify:hiring-cost": "tsx scripts/content/verify-hiring-cost-model.ts",
     "content:seed-blog-hero": "tsx scripts/content/seed-blog-hero-copy.ts",
     "content:seed-shared-faqs": "tsx scripts/content/seed-shared-service-faqs.ts",
-    "content:seed-cookie-policy": "tsx scripts/content/seed-cookie-policy.ts"
+    "content:seed-cookie-policy": "tsx scripts/content/seed-cookie-policy.ts",
+    "content:patch-footer-contact": "tsx scripts/content/patch-footer-contact-link.ts"
   },
   "keywords": [],
   "author": "",
