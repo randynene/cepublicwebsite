@@ -3,6 +3,7 @@ import { withSanityImageParams } from '@/lib/sanity/image-params'
 import { HeroTrustBar } from '@/components/social-proof/hero-trust-bar'
 import { CLIENT_LOGOS, type ClientLogo } from '@/components/social-proof/client-logo-strip'
 import { buildLocalePath, type Locale } from '@/lib/locale-path'
+import { SHOW_UNVERIFIED_CALCULATORS } from '@/lib/feature-flags'
 import { TypewriterText } from '@/components/motion/typewriter-text'
 import { MegaMenuPillLabel } from '@/components/ui/mega-menu-pill-label'
 
@@ -270,14 +271,20 @@ function Hero({ content, locale }: { content: LocationContent; locale: Locale })
             label={hero.ctaPrimary}
             className="!h-[48px] !py-0 !pr-[24px] !text-[15px]"
           />
-          <MegaMenuPillLabel
-            as="a"
-            href="#calculator"
-            variant="pill-outline-dark"
-            size="cta"
-            label={hero.ctaSecondary}
-            className="!h-[48px] !px-[26px] !text-[15px]"
-          />
+          {/* CE-67: this jumps to #calculator, so it only makes sense while
+              that section is rendered. Hidden alongside it rather than
+              repointed, because an anchor that scrolls nowhere is worse than
+              one CTA fewer. */}
+          {SHOW_UNVERIFIED_CALCULATORS ? (
+            <MegaMenuPillLabel
+              as="a"
+              href="#calculator"
+              variant="pill-outline-dark"
+              size="cta"
+              label={hero.ctaSecondary}
+              className="!h-[48px] !px-[26px] !text-[15px]"
+            />
+          ) : null}
         </div>
         {/* CE-34: these were three EQUAL grid columns, so a short fact ("Elite CS
             education") left a hole while its longer neighbours crowded the edge
@@ -1038,7 +1045,11 @@ export function LocationTemplate({
         </>
       )}
       <FunFact content={content} />
-      <Calculator content={content} locale={locale} />
+      {/* CE-67: the region multipliers behind this come from the same
+          unverified source as the homepage model, so it is off by default.
+          The hero's secondary CTA points at this section and is hidden with
+          it. See @/lib/feature-flags. */}
+      {SHOW_UNVERIFIED_CALCULATORS ? <Calculator content={content} locale={locale} /> : null}
       <Start content={content} locale={locale} />
       {/* Above the FAQ, same position as the services and technology detail
           pages. No role prefill: a location page answers WHERE, not which role,
