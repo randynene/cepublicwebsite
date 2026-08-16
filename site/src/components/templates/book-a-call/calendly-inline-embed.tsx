@@ -95,6 +95,35 @@ export function withCalendlyCeTheme(url: string, opts?: { hideEventDetails?: boo
   }
 }
 
+/**
+ * Invitee prefill from the page's own query string (CE-58 / CE-73).
+ *
+ * The quick hiring form no longer embeds Calendly inline; it saves the lead and
+ * sends the visitor here instead. They typed their name and email one screen ago,
+ * so those travel in the URL and Calendly opens already filled in.
+ *
+ * Read here rather than threaded down as a prop on purpose. This component is
+ * mounted by the shared static-page template, which renders dozens of captured
+ * pages; plumbing two optional values through it would touch far more surface than
+ * the feature is worth. Anything arriving without these params is unaffected.
+ *
+ * The values go to Calendly's own API as data, never into the DOM, so there is no
+ * injection surface. They are length-capped anyway, because a hand-edited URL
+ * should not be able to post an unbounded string to a third party.
+ */
+const PREFILL_MAX_LENGTH = 200
+
+function readInviteePrefill(): Record<string, string> | undefined {
+  if (typeof window === 'undefined') return undefined
+  const params = new URLSearchParams(window.location.search)
+  const prefill: Record<string, string> = {}
+  for (const key of ['name', 'email'] as const) {
+    const value = params.get(key)?.trim()
+    if (value) prefill[key] = value.slice(0, PREFILL_MAX_LENGTH)
+  }
+  return Object.keys(prefill).length > 0 ? prefill : undefined
+}
+
 function getCalendlyInlineApi(): CalendlyInlineApi | undefined {
   const calendly = (window as unknown as { Calendly?: CalendlyInlineApi }).Calendly
   if (calendly && typeof calendly.initInlineWidget === 'function') {
@@ -153,7 +182,12 @@ export function CalendlyInlineEmbed({
       if (cancelled) return
       const calendly = getCalendlyInlineApi()
       if (calendly) {
-        calendly.initInlineWidget({ url: themedUrl, parentElement: parent })
+        const prefill = readInviteePrefill()
+        calendly.initInlineWidget({
+          url: themedUrl,
+          parentElement: parent,
+          ...(prefill ? { prefill } : {}),
+        })
         return
       }
       attempts += 1

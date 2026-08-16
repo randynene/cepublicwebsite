@@ -2,10 +2,18 @@
 
 // The quick hiring form. One component, roughly 250 placements.
 //
-// SHAPE. Role, then stack, then length, then commitment, then details, then the
-// Calendly booking, all in place on the page. It never navigates until the booking
-// is confirmed, because sending someone to a separate funnel page is where a
-// conversion flow leaks.
+// SHAPE. Role, then stack, then length, then commitment, then details. Submitting
+// the details step saves the lead and hands the visitor to /book-a-call.
+//
+// CE-58 / CE-73. This form used to carry a sixth step with Calendly embedded in
+// place, on the reasoning that sending someone to a separate funnel page is where
+// a conversion flow leaks. Jake asked twice for the redirect instead, so the
+// inline step is gone. The leak argument is largely answered by the destination
+// rather than ignored: /book-a-call renders the SAME pooled Calendly link the
+// inline step used, and the visitor's name and email travel with them in the
+// query string so the calendar opens already filled in. What is genuinely lost is
+// one page load. What is gained is a single booking surface to maintain instead
+// of two that could drift apart.
 //
 // PREFILL IS THE POINT. On /technology/react-developers the stack is already
 // answered; on /services/ai-engineers so is the role. The page already told us why
@@ -23,24 +31,23 @@ import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { roleIcon } from '@/components/shared/role-icons'
-import { CalendlyInlineEmbed } from '@/components/templates/book-a-call/calendly-inline-embed'
 import { Checkbox } from '@/components/ui/checkbox'
 import { CtaButton } from '@/components/ui/cta-button'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { cn } from '@/components/ui/_utils/cn'
 import { Heading } from '@/components/ui/heading'
 import { Text } from '@/components/ui/text'
+import { buildLocalePath, getLocaleFromPath } from '@/lib/locale-path'
 import { searchSkills, toSelection, type SkillMatch } from '@/lib/skills/search'
 import { defaultSkills, type SkillCategory } from '@/lib/skills/taxonomy'
 
 import {
-  BOOKING_THANK_YOU_PATH,
+  BOOKING_PATH,
   COMMITMENT_OPTIONS,
   CTO_COMMITMENT_OPTIONS,
   CTO_ENGAGEMENT_OPTIONS,
   CTO_FORM_COPY,
   CTO_STEP_LABEL_ROLE,
-  DEFAULT_CALENDLY_URL,
   LEAD_FORM_COPY as C,
   LENGTH_OPTIONS,
   ROLE_OPTIONS,
@@ -50,7 +57,7 @@ import {
   type RoleOption,
 } from './content'
 
-type StepId = 'role' | 'skills' | 'length' | 'commitment' | 'details' | 'booking'
+type StepId = 'role' | 'skills' | 'length' | 'commitment' | 'details'
 
 /**
  * CE-43. `hiring` is the engineer funnel every service page uses. `cto` is the
@@ -71,7 +78,6 @@ export interface QuickHiringFormProps {
   prefillRole?: RoleId
   /** Preselects a stack pill, e.g. "React" on the React Developers page. */
   prefillSkill?: string
-  calendlyUrl?: string
   className?: string
   /**
    * CE-54. Hides the numbered step rail, keeping every question and all of the
@@ -139,7 +145,6 @@ const STEP_COPY: Record<StepId, { heading: string; sub: string }> = {
   length: C.length,
   commitment: C.commitment,
   details: C.details,
-  booking: C.booking,
 }
 
 /** As STEP_COPY, with the `cto` variant's overrides applied over the top. */
@@ -158,12 +163,12 @@ const CTO_STEP_COPY: Record<StepId, { heading: string; sub: string }> = {
 function useSteps(variant: LeadFormVariant, hasPrefilledRole: boolean): StepId[] {
   return useMemo(() => {
     if (variant === 'cto') {
-      return ['role', 'length', 'commitment', 'details', 'booking'] as StepId[]
+      return ['role', 'length', 'commitment', 'details'] as StepId[]
     }
     return (
       hasPrefilledRole
-        ? ['skills', 'length', 'commitment', 'details', 'booking']
-        : ['role', 'skills', 'length', 'commitment', 'details', 'booking']
+        ? ['skills', 'length', 'commitment', 'details']
+        : ['role', 'skills', 'length', 'commitment', 'details']
     ) as StepId[]
   }, [variant, hasPrefilledRole])
 }
@@ -173,7 +178,6 @@ export function QuickHiringForm({
   variant = 'hiring',
   prefillRole,
   prefillSkill,
-  calendlyUrl = DEFAULT_CALENDLY_URL,
   className,
   hideStepRail = false,
 }: QuickHiringFormProps) {
@@ -269,6 +273,29 @@ export function QuickHiringForm({
     return Object.keys(next).length === 0
   }
 
+  /**
+   * Where this form hands off (CE-58 / CE-73).
+   *
+   * Locale comes from the page the form is sitting on, so a visitor on
+   * /uk/services/software-engineers goes to /uk/book-a-call rather than being
+   * dropped into the US locale at the last step.
+   *
+   * Name and email ride along so Calendly opens already filled in. They were typed
+   * one screen ago; asking for them again is the site not paying attention, which
+   * is the same argument the prefill logic above already makes. Only these two are
+   * passed: they are what Calendly's invitee form actually asks for, and the role
+   * and stack answers are already on their way to HubSpot.
+   */
+  function bookingHref(): string {
+    const path = buildLocalePath(BOOKING_PATH, getLocaleFromPath(sourcePage))
+    const params = new URLSearchParams()
+    const name = [details.firstName.trim(), details.lastName.trim()].filter(Boolean).join(' ')
+    if (name) params.set('name', name)
+    if (details.email.trim()) params.set('email', details.email.trim())
+    const query = params.toString()
+    return query ? `${path}?${query}` : path
+  }
+
   async function submit(): Promise<void> {
     if (!validateDetails()) return
     setSubmitting(true)
@@ -296,25 +323,12 @@ export function QuickHiringForm({
       // Deliberately swallowed. See the failure-posture note at the top: the
       // visitor continues to booking whatever happened to the CRM write.
     } finally {
-      setSubmitting(false)
-      goNext()
+      // `submitting` is deliberately NOT cleared. A full navigation follows, and
+      // re-enabling the button in the gap between these two lines is just an
+      // opportunity to submit the same lead twice.
+      window.location.assign(bookingHref())
     }
   }
-
-  // Calendly announces a confirmed booking by postMessage. Same listener shape as
-  // the Ask Clara booking canvas, kept local so the two cannot break each other.
-  useEffect(() => {
-    if (step !== 'booking') return
-    const onMessage = (event: MessageEvent): void => {
-      if (typeof event.origin !== 'string' || !event.origin.includes('calendly.com')) return
-      const data = event.data as { event?: string } | undefined
-      if (data?.event === 'calendly.event_scheduled') {
-        window.location.assign(BOOKING_THANK_YOU_PATH)
-      }
-    }
-    window.addEventListener('message', onMessage)
-    return () => window.removeEventListener('message', onMessage)
-  }, [step])
 
   const stepNumber = stepIndex + 1
   const stepCount = steps.length
@@ -635,20 +649,15 @@ export function QuickHiringForm({
           </StepShell>
         )}
 
-        {step === 'booking' && (
-          <StepShell>
-            <CalendlyInlineEmbed url={calendlyUrl} className="mt-[8px] rounded-2xl" />
-          </StepShell>
-        )}
-
       </div>
 
       {/* Proof on the left, action on the right, on one line. In the reference
           this row is what makes the block read as a section of the page rather
           than a form: the claims carry their own weight while the button sits
           where the eye finishes. */}
-      {step !== 'booking' && (
-        <div className="mt-[28px] flex flex-col gap-[16px] sm:flex-row sm:items-center sm:justify-between">
+      {/* No longer conditional. The booking step it used to be hidden on no longer
+          exists (CE-58 / CE-73), so this row renders on every step. */}
+      <div className="mt-[28px] flex flex-col gap-[16px] sm:flex-row sm:items-center sm:justify-between">
           <ul className="flex flex-wrap items-center gap-x-[20px] gap-y-[8px]">
             {TRUST_POINTS.map((point) => (
               <li key={point} className="flex items-center gap-[8px] text-[13px] text-text-secondary">
@@ -681,16 +690,16 @@ export function QuickHiringForm({
             <CtaButton
               as="button"
               variant="solid"
-              // CE-55. The CTO funnel reads "Next" on the details step rather
-              // than "Book a call": the same click, described as one more step
-              // rather than as a commitment to a meeting.
+              // CE-58 / CE-73. Both funnels read "Submit" on the details step.
+              // CE-55 had made the CTO funnel say "Next" there, because a booking
+              // step still followed and calling it a commitment to a meeting was
+              // premature. Details is now the last step in both funnels, so
+              // "Next" would promise a screen that does not exist.
               label={
                 step === 'details'
                   ? submitting
                     ? C.actions.submitting
-                    : isCto
-                      ? C.actions.continue
-                      : C.actions.submit
+                    : C.actions.submit
                   : C.actions.continue
               }
               disabled={!canContinue() || submitting}
@@ -707,8 +716,7 @@ export function QuickHiringForm({
               )}
             />
           </div>
-        </div>
-      )}
+      </div>
     </div>
   )
 }

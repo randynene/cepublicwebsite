@@ -115,8 +115,12 @@ export const CTO_STEP_LABEL_ROLE = 'Engagement'
  * "Team size" and details and booking under "Your match". It looked tidier and it
  * lied: on the commitment screen the rail still said Team size, so the visitor
  * could not tell where they were. A rail that does not match the screen is worse
- * than no rail. Six honest steps, and the count varies with prefill because a
+ * than no rail. Five honest steps, and the count varies with prefill because a
  * prefilled step is genuinely not a step the visitor has to take.
+ *
+ * CE-58 / CE-73 removed a sixth entry, "Book a call". Booking is no longer a step
+ * inside the form; details is the last one, and submitting hands the visitor to
+ * /book-a-call. See BOOKING_PATH.
  */
 export const STEP_LABELS = {
   role: 'Role',
@@ -124,7 +128,6 @@ export const STEP_LABELS = {
   length: 'Duration',
   commitment: 'Commitment',
   details: 'Details',
-  booking: 'Book a call',
 } as const
 
 /**
@@ -200,14 +203,15 @@ export const LEAD_FORM_COPY = {
     consentLinkLabel: 'Read our privacy policy',
     consentLinkHref: '/legals/privacy-policy',
   },
-  booking: {
-    heading: 'Book your call',
-    sub: 'Pick a time and we will come to it with your requirements already in hand.',
-  },
   actions: {
     continue: 'Next',
     back: 'Back',
-    submit: 'Book a call',
+    // CE-58 / CE-73. Was "Book a call". The label now describes the click that
+    // actually happens - the requirement is saved - rather than the meeting that
+    // follows it on the next page. The trailing arrow is not written here: the
+    // solid CtaButton appends one itself, so putting it in the string would
+    // render two.
+    submit: 'Submit',
     submitting: 'Saving...',
   },
   progress: {
@@ -225,20 +229,21 @@ export const LEAD_FORM_COPY = {
 } as const
 
 /**
- * Booking link. The header CTA uses the same pooled round-robin link, which routes
- * to whichever of Seb, Molly, Steph or AJ is free. Overridable per placement so a
- * Sanity-driven page can point at a different event type.
- */
-export const DEFAULT_CALENDLY_URL =
-  'https://calendly.com/d/cwwf-6k5-2qy/intro-call-cloud-employee'
-
-/**
- * Where a CONFIRMED booking lands. `/book-a-call-confirmed` already exists and is
- * where Calendly sends people today, so this reuses it rather than adding an
- * eighth thank-you route to the seven the site already has.
+ * Where a submitted form sends the visitor (CE-58 / CE-73).
  *
- * Not `/thank-you-now-book-a-call`, despite the name: that one is the page shown
- * BEFORE booking, telling a form-filler to go and book. Landing a confirmed
- * booking there would ask them to do the thing they just did.
+ * `/book-a-call` and not one of the `/book-a-call/[slug]` pages: the slugs are the
+ * six per-person booking pages migrated from Webflow (Seb's, Molly's and so on),
+ * so picking one would route every lead on the site to a single named individual.
+ * The root is the pooled round-robin link, and it is already the agreed booking
+ * destination elsewhere in the codebase - `lib/redirects/locked-rules.ts` points
+ * /start-hiring, /start-hiring-now and /schedule-a-call at exactly this path.
+ *
+ * It also already renders a Calendly embed of its own, from
+ * `bookACallPage.calendlyUrl` in Sanity, which holds the same pooled link the form
+ * used to embed inline. So the visitor sees the same calendar either way, and Seb
+ * can repoint it in Studio without a deploy.
+ *
+ * Locale is applied by the caller via buildLocalePath, so a UK visitor lands on
+ * /uk/book-a-call rather than being dropped back into the US locale.
  */
-export const BOOKING_THANK_YOU_PATH = '/book-a-call-confirmed'
+export const BOOKING_PATH = '/book-a-call'
