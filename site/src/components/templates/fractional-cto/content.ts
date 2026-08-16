@@ -38,7 +38,19 @@ export interface FctoMatchRow {
   icon: 'trend' | 'spark' | 'idea'
   title: string
   meta: string
+  /**
+   * US price, shown on /services/fractional-ctos. Held as a formatted string,
+   * not a number, so the currency symbol and separators stay editable in Studio
+   * rather than being guessed at from a locale at render time.
+   */
   price: string
+  /**
+   * UK price, shown on /uk/services/fractional-ctos. CE-68: Seb quoted GBP
+   * monthly retainers, and Jake asked for dollars on US and pounds on UK, so
+   * both are stored side by side. Nothing here converts currency - if the rate
+   * moves, both strings get edited in Studio.
+   */
+  priceGbp: string
   per: string
 }
 /** Hero right-hand visual: a single "Your match" shortlist panel. */
@@ -131,6 +143,21 @@ export const FCTO: FctoContent = {
     ctaPrimary: 'Find your CTO',
     ctaGhost: 'How matching works',
     trust: ['Vetted network', 'Speak before you commit', 'Rolling monthly, no lock-ins'],
+    // CE-68 (Aug 2026). Seb re-quoted these as GBP MONTHLY retainers; they were
+    // USD day rates. Three things changed together, all on his figures:
+    //   - unit:  per day -> per month
+    //   - AI transformation: 3 days/week -> 2
+    //   - currency: dollars on this page, pounds on the /uk/ mirror
+    // The USD column is Jake's call, converted at roughly 1.28 and rounded to
+    // marketing numbers rather than left as an exact FX result.
+    //
+    // This is a large reduction against what the page used to claim (the AI
+    // tier was $2,800/day at 3 days/week, about $36k/mo). That was raised with
+    // Jake before the change and confirmed as intended.
+    //
+    // These values are the FALLBACK. Sanity is canonical - see the `match`
+    // projection in lib/sanity/queries/fractional-cto-page.ts. Editing here
+    // will not change the live page.
     match: {
       label: 'Your match',
       badge: 'Shortlist in 7 days',
@@ -139,22 +166,25 @@ export const FCTO: FctoContent = {
           icon: 'trend',
           title: 'Scaling CTO',
           meta: 'Series A · scaled eng team 5+ · 2 days/week',
-          price: '$2,000',
-          per: '/ day',
+          price: '$7,000',
+          priceGbp: '£5,500',
+          per: '/ mo',
         },
         {
           icon: 'spark',
           title: 'AI transformation CTO',
-          meta: 'GenAI rollout · B2B SaaS · 3 days/week',
-          price: '$2,800',
-          per: '/ day',
+          meta: 'GenAI rollout · B2B SaaS · 2 days/week',
+          price: '$9,500',
+          priceGbp: '£7,500',
+          per: '/ mo',
         },
         {
           icon: 'idea',
           title: 'Seed CTO',
           meta: 'Product roadmap · 1 day/week',
-          price: '$1,800',
-          per: '/ day',
+          price: '$4,500',
+          priceGbp: '£3,500',
+          per: '/ mo',
         },
       ],
       // CE-65: "No bench, no bodies on a list." deleted on Seb's request. Only

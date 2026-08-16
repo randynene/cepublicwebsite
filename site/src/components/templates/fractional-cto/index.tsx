@@ -130,7 +130,22 @@ const prefersReducedMotion = () =>
 // (fcto-mp-rise + a per-row --d delay) so there is no JS timer and no
 // server/client mismatch; the reduced-motion block at the foot of
 // fractional-cto.css disables all of it.
-function HeroMatchPanel({ match }: { match: FctoContent['hero']['match'] }) {
+function HeroMatchPanel({
+  match,
+  locale,
+}: {
+  match: FctoContent['hero']['match']
+  locale: Locale
+}) {
+  // CE-68: one page, two currencies. The /uk/ mirror shows Seb's GBP monthly
+  // retainers, the US page shows the USD equivalents. Both strings are
+  // authored in Sanity, so this only chooses between them - no formatting and
+  // no FX happens at render time. priceGbp falls back to price so a row Seb
+  // adds in Studio without filling the GBP field renders something rather than
+  // an empty cell.
+  const priceFor = (r: FctoContent['hero']['match']['rows'][number]) =>
+    locale === 'en-GB' ? r.priceGbp || r.price : r.price
+
   return (
     <div className="mp">
       <div className="mp-head">
@@ -146,7 +161,7 @@ function HeroMatchPanel({ match }: { match: FctoContent['hero']['match'] }) {
               <span className="mp-meta">{r.meta}</span>
             </span>
             <span className="mp-price">
-              <span className="mp-amt">{r.price}</span>
+              <span className="mp-amt">{priceFor(r)}</span>
               <span className="mp-per">{r.per}</span>
             </span>
           </li>
@@ -323,7 +338,7 @@ export function FractionalCtoTemplate({
               ))}
             </div>
           </div>
-          <HeroMatchPanel match={content.hero.match} />
+          <HeroMatchPanel match={content.hero.match} locale={locale} />
         </div>
       </section>
 

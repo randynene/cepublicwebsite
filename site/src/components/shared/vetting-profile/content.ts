@@ -172,23 +172,24 @@ export const VETTING_PROFILE: VettingProfileContent = {
     // 4x). next/image builds its srcset from these numbers, so passing the
     // file's size here would make it serve a 304px image into a 76px hole.
     /*
-     * CE-70: PHOTO STILL OUTSTANDING - needs a Croatian dev headshot from Jake.
+     * CE-70: this candidate is an illustrative example, not a real person - the
+     * name, rate and stack are marketing copy (see Tech Debt #62). Seb asked for
+     * it to be a Croatian engineer, so the name moved from Lucas to Luka, which
+     * is the standard Croatian form of the same name and keeps the existing
+     * headshot plausible against it.
      *
-     * The ticket asked for a Croatian face here. The only Croatian photos we hold
-     * are Ivana M. and Petra K. in the talent roster, and both are real people
-     * already published under their own name, role and city (Petra now leads the
-     * home hero, CE-71). Reusing either face under this illustrative name is the
-     * exact "same photo, two identities" problem the roster was built to stop, so
-     * the photo is deliberately left as-is until a new asset lands. Drop the file
-     * in /public/vetting and change the three lines below - nothing else.
+     * The photo file keeps its original name on purpose. Renaming it would break
+     * nothing visible but would churn the asset for no gain, and if a real
+     * Croatian headshot ever lands it replaces this file anyway. If you swap it,
+     * change `photo` and `photoAlt` together and leave the sizes alone.
      */
     photo: '/vetting/candidate-lucas.png',
-    photoAlt: 'Lucas M., vetted Senior AI Engineer',
+    photoAlt: 'Luka M., vetted Senior AI Engineer',
     photoWidth: 76,
     photoHeight: 76,
     verifiedGlyph: '✓',
     verifiedLabel: 'Vetting complete',
-    name: 'Lucas M.',
+    name: 'Luka M.',
     badge: 'Vetted',
     roleLine: 'Senior AI Engineer · Python · LLM systems · 6 yrs · Zagreb, Croatia (GMT+1)',
     /*
