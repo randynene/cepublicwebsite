@@ -184,6 +184,52 @@ export async function POST(request: Request): Promise<NextResponse> {
   // because the only way to discover the filter was wrong is to still have the lead.
   const hubspot = await submitToHubSpot(parsed)
 
+  // ---- Lead Agent brief -------------------------------------------------
+  // The consolidated notification a human actually reads. Kept separate from
+  // the webhook alarms below, which are failure alerts and stay as they are.
+  //
+  // This is the fix for the gap that made every earlier Slack module dead code:
+  // the routes only ever spoke to Slack when HubSpot REJECTED a submission, on
+  // the assumption a HubSpot workflow announced the happy path. For form
+  // 8f974ef4 nothing does, so a successful lead was announced to nobody.
+  //
+  // Deliberately NOT awaited into the response path beyond this point, and every
+  // failure inside is swallowed: the visitor is mid-funnel and heading for the
+  // booking step, and a Slack outage must never cost us the redirect.
+  try {
+    const [{ buildBrief, briefFallback }, { postLead }, { enrich }] = await Promise.all([
+      import('@/lib/leads/brief'),
+      import('@/lib/leads/slack'),
+      import('@/lib/leads/sales-brain'),
+    ])
+    const name = [parsed.firstName, parsed.lastName].filter(Boolean).join(' ')
+    const wanted = [...parsed.skills, ...parsed.customSkills].join(', ')
+    const lead = {
+      name,
+      email: parsed.email,
+      phone: parsed.phone ?? null,
+      inquiry: wanted
+        ? `Wants ${wanted}${parsed.commitment ? `, ${parsed.commitment.replace(/_/g, ' ')}` : ''}`
+        : 'Enquiry via the hiring form',
+      source: `Quick hiring form  ·  ${parsed.sourcePage}`,
+      // Vercel resolves this at the edge on every request. HubSpot's own
+      // ip_country was populated on 1 of the 12 most recent contacts, so this
+      // header is the more reliable source by a wide margin.
+      location: request.headers.get('x-vercel-ip-country'),
+      hubspotId: null,
+    }
+    const enrichment = junkReason
+      ? { score: null, verdict: null, summary: null, profileUrl: null }
+      : await enrich({ email: parsed.email, name, companyDomain: parsed.company ?? null })
+    await postLead(
+      buildBrief(lead, enrichment),
+      briefFallback(lead),
+      junkReason ? 'junk' : 'leads',
+    )
+  } catch (err) {
+    console.warn(`[lead] brief failed: ${err instanceof Error ? err.message : 'unknown'}`)
+  }
+
   if (junkReason) {
     await postToSlack(
       SLACK_JUNK_WEBHOOK_URL,

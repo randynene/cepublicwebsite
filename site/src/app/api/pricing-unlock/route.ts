@@ -94,6 +94,36 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   const hubspot = await submitToHubSpot(parsed)
 
+  // Lead Agent brief. See the longer note in /api/lead: the alarm below only
+  // fires when HubSpot rejects the write, so before this a successful unlock was
+  // announced to nobody at all. Swallowed on failure - the calculator has
+  // already unblurred and the visitor owes us nothing.
+  try {
+    const [{ buildBrief, briefFallback, companyFrom, domainOf }, { postLead }, { enrich }] =
+      await Promise.all([
+        import('@/lib/leads/brief'),
+        import('@/lib/leads/slack'),
+        import('@/lib/leads/sales-brain'),
+      ])
+    const lead = {
+      name: null,
+      email: parsed.email,
+      phone: null,
+      inquiry: `Unlocked the pricing calculator${parsed.currency ? ` in ${parsed.currency.toUpperCase()}` : ''}`,
+      source: `Pricing calculator  ·  ${parsed.path ?? '/pricing'}`,
+      location: request.headers.get('x-vercel-ip-country'),
+      hubspotId: null,
+    }
+    const company = companyFrom(parsed.email)
+    const enrichment = await enrich({
+      email: parsed.email,
+      companyDomain: company.url ? domainOf(parsed.email) : null,
+    })
+    await postLead(buildBrief(lead, enrichment), briefFallback(lead), 'leads')
+  } catch (err) {
+    console.warn(`[pricing-unlock] brief failed: ${err instanceof Error ? err.message : 'unknown'}`)
+  }
+
   if (!hubspot.ok) {
     console.error(`[pricing-unlock] HubSpot submission failed: ${hubspot.detail}`)
     await postToSlack(

@@ -362,8 +362,14 @@ export function QuickHiringForm({
   function bookingHref(): string {
     const path = buildLocalePath(BOOKING_PATH, getLocaleFromPath(sourcePage))
     const params = new URLSearchParams()
-    const name = [details.firstName.trim(), details.lastName.trim()].filter(Boolean).join(' ')
-    if (name) params.set('name', name)
+    // first_name / last_name, NOT a joined `name`. The Discovery Call event
+    // splits the invitee form into two required fields, and Calendly ignores
+    // `name` when it does - so the old joined value silently filled nothing and
+    // the visitor landed on a form with First name flagged as an error, having
+    // just typed it one screen earlier. Both are sent because the event marks
+    // both required. Verified against the live event 16 Aug.
+    if (details.firstName.trim()) params.set('first_name', details.firstName.trim())
+    if (details.lastName.trim()) params.set('last_name', details.lastName.trim())
     if (details.email.trim()) params.set('email', details.email.trim())
     const query = params.toString()
     return query ? `${path}?${query}` : path

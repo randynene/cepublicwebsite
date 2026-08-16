@@ -117,7 +117,10 @@ function readInviteePrefill(): Record<string, string> | undefined {
   if (typeof window === 'undefined') return undefined
   const params = new URLSearchParams(window.location.search)
   const prefill: Record<string, string> = {}
-  for (const key of ['name', 'email'] as const) {
+  // `name` stays in the list for links already in the wild (emails, bookmarks,
+  // anything issued before 16 Aug); Calendly ignores it on a split-name event
+  // but a stale link should degrade to "email filled" rather than break.
+  for (const key of ['first_name', 'last_name', 'name', 'email'] as const) {
     const value = params.get(key)?.trim()
     if (value) prefill[key] = value.slice(0, PREFILL_MAX_LENGTH)
   }
