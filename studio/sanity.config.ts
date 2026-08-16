@@ -49,6 +49,7 @@ const PAGE_LOCATIONS: Record<string, { title: string; path: string; usOnly?: boo
   // Legal
   privacyPolicyPage: { title: 'Privacy Policy', path: '/legals/privacy-policy' },
   generalTermsPage: { title: 'General Terms', path: '/legals/general-terms' },
+  cookiePolicyPage: { title: 'Cookie Policy', path: '/legals/cookie-policy' },
 
   // Calculators
   hiringCostCalculatorPage: {

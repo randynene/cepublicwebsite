@@ -32,6 +32,11 @@ import {
 } from '@/components/third-party-scripts'
 import { ToastProvider, ToastViewport } from '@/components/ui/toast'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { ConsentModeScript } from '@/components/consent/consent-mode-script'
+import { ConsentProvider } from '@/components/consent/consent-provider'
+import { CookieBanner } from '@/components/consent/cookie-banner'
+import { GatedScripts } from '@/components/consent/gated-scripts'
+import { readConsent } from '@/lib/consent/server'
 
 import './globals.css'
 
@@ -111,6 +116,11 @@ export default async function RootLayout({
   const suppressChatWidget =
     isAskPage || isForDevelopersPath(pathname) || isBookACallPath(pathname)
 
+  // Read on the server so the very first HTML already reflects the visitor's
+  // answer. Deciding this on the client instead would let a rejected pixel fire
+  // once before hydration, which is the exact thing consent is meant to prevent.
+  const consent = await readConsent()
+
   return (
     <html
       lang={lang}
@@ -119,6 +129,10 @@ export default async function RootLayout({
       <head>
         {/* Must precede every other script: the Hotjar gate reads it. */}
         <VisitorCountryScript />
+        {/* ORDER IS LOAD-BEARING. The consent default has to be in the document
+          * before GTM's snippet, or GTM evaluates its tags with no consent state
+          * and fires them. Never move this below <GtmHeadScript />. */}
+        <ConsentModeScript consent={consent} />
         <GtmHeadScript />
         {/* STATIC-3 — Material Symbols web font for discriminated icon
          * shape (`source: 'material-font'`) used by the Resources
@@ -153,6 +167,9 @@ export default async function RootLayout({
          * TooltipProvider wraps once for the entire tree; delayDuration=300
          * overrides Radix's 700ms default. ToastProvider hosts the toast
          * stack; ToastViewport renders the fixed-position container. */}
+        {/* Wraps the chrome because the footer's Cookie settings control reads
+          * this context, and the banner has to be reopenable from every page. */}
+        <ConsentProvider initialConsent={consent}>
         <ToastProvider>
           <TooltipProvider delayDuration={300}>
             {/* `lang` is the locale derived from the request path. The chrome
@@ -166,6 +183,10 @@ export default async function RootLayout({
           </TooltipProvider>
           <ToastViewport />
         </ToastProvider>
+          <CookieBanner locale={lang} />
+          {/* Renders nothing until the matching category is granted. */}
+          <GatedScripts />
+        </ConsentProvider>
         {/* SanityLive refresh helpers use next/dynamic({ ssr: false }) and emit
          * BAILOUT_TO_CLIENT_SIDE_RENDERING on published pages when left at
          * library defaults. Scope focus/reconnect to draft mode only; live

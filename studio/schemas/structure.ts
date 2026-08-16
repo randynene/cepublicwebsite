@@ -44,6 +44,7 @@ const STATIC_PAGE_NAMES = [
   'startHiringPage',
   'notFoundPage',
   'generalTermsPage',
+  'cookiePolicyPage',
   'ourWorkPage',
   'alternativesHub',
   'pricingPage',

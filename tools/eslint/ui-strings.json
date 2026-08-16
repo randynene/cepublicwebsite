@@ -4,7 +4,7 @@
     "generated_by": "scripts/design/generate-ui-strings.mjs writes site/src/lib/ui-strings.ts from this file",
     "regenerate_via": "npm run generate-ui-strings (root package.json script)",
     "provenance": {
-      "reconciled_at": "2026-08-08T07:18:37.573Z",
+      "reconciled_at": "2026-08-16T00:35:17.292Z",
       "orphan_keys": [],
       "added_from_sanity": [],
       "divergent_value_overrides": [],
@@ -255,6 +255,24 @@
     "socialProof.stars": "★★★★★",
     "socialProof.totalReviews": "{n} total reviews",
     "socialProof.count300": "300+",
-    "socialProof.glassdoorInitial": "G"
+    "socialProof.glassdoorInitial": "G",
+    "cookie.bannerAriaLabel": "Cookie choices",
+    "cookie.bannerTitle": "Cookies",
+    "cookie.bannerBody": "We use cookies to see how the site is used and to improve it. You choose what we set.",
+    "cookie.policyLink": "Cookie policy",
+    "cookie.acceptAll": "Accept all",
+    "cookie.rejectAll": "Reject all",
+    "cookie.choose": "Choose",
+    "cookie.panelTitle": "Choose your cookies",
+    "cookie.panelIntro": "Necessary cookies keep the site working. Everything else is up to you, and you can change your mind at any time.",
+    "cookie.necessaryTitle": "Necessary",
+    "cookie.necessaryBody": "Page routing, security, and remembering this choice. Always on.",
+    "cookie.analyticsTitle": "Analytics",
+    "cookie.analyticsBody": "Helps us see which pages are useful and where people get stuck.",
+    "cookie.marketingTitle": "Marketing",
+    "cookie.marketingBody": "Lets us measure our ads and show relevant ones on other sites.",
+    "cookie.save": "Save choices",
+    "cookie.settingsLink": "Cookie settings",
+    "cookie.alwaysOn": "Always on"
   }
 }

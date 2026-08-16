@@ -372,6 +372,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: '/book-a-call', changeFrequency: 'monthly', priority: 0.7 },
     { path: '/legals/privacy-policy', changeFrequency: 'yearly', priority: 0.3 },
     { path: '/legals/general-terms', changeFrequency: 'yearly', priority: 0.3 },
+    { path: '/legals/cookie-policy', changeFrequency: 'yearly', priority: 0.3 },
     // The two hire-engineers MARKET pages. Both exist in both locales, so both
     // are ordinary two-locale entries here.
     //

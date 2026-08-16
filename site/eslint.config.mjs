@@ -58,6 +58,13 @@ const eslintConfig = defineConfig([
       // chrome scope. If this file ever grows to include user-facing text,
       // revisit the exemption (Group D decision, Brief B §6.3).
       "src/components/third-party-scripts.tsx",
+      // Same exemption, same reason: this file is the consent-gated half of the
+      // vendor SDK init code that used to live entirely in third-party-scripts
+      // .tsx. It holds inline LinkedIn/Meta/Hotjar bootstrap snippets and no
+      // user-facing text. The consent BANNER (consent/cookie-banner.tsx) is
+      // deliberately NOT exempted - that one is all chrome copy and belongs
+      // under UI_STRINGS.
+      "src/components/consent/gated-scripts.tsx",
       "**/ui-strings.ts",
     ],
     rules: {

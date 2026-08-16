@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
+import { CookieSettingsLink } from '@/components/consent/cookie-settings-link'
 import { RegionSelector } from '@/components/layout/region-selector'
 import { cn } from '@/components/ui/_utils/cn'
 import type { BottomBar, FooterLink } from '@/lib/sanity/queries/footer'
@@ -72,6 +73,10 @@ export function FooterBottomBar({
           {links.map((link) => (
             <BottomBarLink key={link._key} link={link} locale={locale}/>
           ))}
+          {/* Sits with the legal links rather than in a Sanity-managed list:
+            * it is a control, not a URL, and it must never be editable to
+            * absence. Consent has to stay withdrawable from every page. */}
+          <CookieSettingsLink />
           {regionEnabled && regionOptions.length > 0 ? (
             <RegionSelector
               options={regionOptions}

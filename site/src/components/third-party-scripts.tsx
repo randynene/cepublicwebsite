@@ -11,12 +11,18 @@ import { isCanonicalSite } from '@/lib/canonical-host'
 // Calendly is loaded globally for scaffold simplicity; TEMPLATE-* may
 // optimise to load only on Book A Call pages.
 
+// CONSENT (Aug 2026): LinkedIn, Hotjar, Facebook and HubSpot moved OUT of this
+// module to src/components/consent/gated-scripts.tsx, where they render only
+// once the visitor has granted the matching category. Their IDs moved with
+// them. Do not reinstate them here - anything mounted in this file loads for
+// everyone, unconditionally, which is exactly what PECR reg 6 forbids for
+// non-essential cookies.
+//
+// GTM stays here and still loads for everyone: its tags are held by Google
+// Consent Mode v2, defaulted to denied in <ConsentModeScript /> before this
+// snippet runs. See site/src/components/consent/consent-mode-script.tsx.
 const GTM_ID = 'GTM-WL45TCTW'
-const LINKEDIN_PARTNER_ID = '4901289'
-const HOTJAR_SITE_ID = 4985481
 const CLARA_WORKSPACE_ID = '09aa62df-5af6-4cec-b565-c335e907327d'
-const FACEBOOK_PIXEL_ID = '160820827844254'
-const HUBSPOT_PORTAL_ID = '22809822'
 const MARKER_PROJECT_ID = '6a607cb9bba82be8b774fc61'
 
 // `window.VISITOR_COUNTRY` — the visitor's two-letter country code, exposed to
@@ -106,19 +112,6 @@ export async function GlobalScripts({
         </Script>
       )}
 
-      {LINKEDIN_PARTNER_ID && (
-        <Script id="linkedin-insight" strategy="afterInteractive">
-          {`_linkedin_partner_id = "${LINKEDIN_PARTNER_ID}";
-window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];
-window._linkedin_data_partner_ids.push(_linkedin_partner_id);
-(function(l) { if (!l){window.lintrk = function(a,b){window.lintrk.q.push([a,b])};
-window.lintrk.q=[]} var s = document.getElementsByTagName("script")[0];
-var b = document.createElement("script"); b.type = "text/javascript"; b.async = true;
-b.src = "https://snap.licdn.com/li.lms-analytics/insight.min.js";
-s.parentNode.insertBefore(b, s);})(window.lintrk);`}
-        </Script>
-      )}
-
       {CLARA_WORKSPACE_ID && !suppressChatWidget && (
         <Script
           id="clara-chat"
@@ -128,48 +121,9 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);`}
         />
       )}
 
-      {/* Hotjar loads for US and UK visitors ONLY, exactly as it does on live.
-        * `window.VISITOR_COUNTRY` is injected into <head> by the Cloudflare Worker
-        * `country-check`, which runs on www.cloudemployee.io/* and reads Cloudflare's
-        * CF-IPCountry header. The gate is deliberate: Hotjar bills per recorded
-        * session, and CE only wants sessions from the two markets they sell into.
-        *
-        * This depends on the Cloudflare proxy (orange cloud) staying ON for the
-        * domain - a Worker does not run on DNS-only traffic. If the proxy is ever
-        * turned off, VISITOR_COUNTRY is undefined and Hotjar simply does not load,
-        * which is the same fail-closed behaviour live has today. */}
-      {HOTJAR_SITE_ID && (
-        <Script id="hotjar" strategy="afterInteractive">
-          {`(function(){
-if (window.VISITOR_COUNTRY !== "US" && window.VISITOR_COUNTRY !== "GB") return;
-(function(h,o,t,j,a,r){h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
-h._hjSettings={hjid:${HOTJAR_SITE_ID},hjsv:6};
-a=o.getElementsByTagName('head')[0];r=o.createElement('script');r.async=1;
-r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;a.appendChild(r);
-})(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
-})();`}
-        </Script>
-      )}
-
-      {FACEBOOK_PIXEL_ID && (
-        <Script id="facebook-pixel" strategy="afterInteractive">
-          {`!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
-n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
-document,'script','https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '${FACEBOOK_PIXEL_ID}');
-fbq('track', 'PageView');`}
-        </Script>
-      )}
-
-      {HUBSPOT_PORTAL_ID && (
-        <Script
-          id="hubspot-tracking"
-          src={`https://js.hs-scripts.com/${HUBSPOT_PORTAL_ID}.js`}
-          strategy="afterInteractive"
-        />
-      )}
+      {/* Hotjar, Facebook Pixel and HubSpot tracking used to sit here. They are
+        * now in consent/gated-scripts.tsx. Hotjar's US/GB country gate moved
+        * with it and still applies on top of consent. */}
 
       <Script
         id="gsap"

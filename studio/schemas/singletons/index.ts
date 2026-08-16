@@ -34,6 +34,7 @@ import forDevelopersPage from './for-developers-page'
 import workWithShawneePage from './work-with-shawnee-page'
 import startHiringPage from './start-hiring-page'
 import notFoundPage from './not-found-page'
+import cookiePolicyPage from './cookie-policy-page'
 import generalTermsPage from './general-terms-page'
 import ourWorkPage from './our-work-page'
 import bookACallPage from './book-a-call-page'
@@ -88,6 +89,7 @@ export const singletonTypes = [
   workWithShawneePage,
   startHiringPage,
   notFoundPage,
+  cookiePolicyPage,
   generalTermsPage,
   ourWorkPage,
   bookACallPage,

@@ -33,7 +33,7 @@ export const LegalPageSchema = z.object({
 
 export type LegalPage = z.infer<typeof LegalPageSchema>
 
-export type LegalPageId = 'privacyPolicyPage' | 'generalTermsPage'
+export type LegalPageId = 'privacyPolicyPage' | 'generalTermsPage' | 'cookiePolicyPage'
 
 const LEGAL_PAGE_QUERY = /* groq */ `
 *[_id == $id][0]{

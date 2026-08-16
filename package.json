@@ -138,7 +138,8 @@
     "content:seed-calculator-rates": "tsx scripts/content/seed-calculator-rates.ts",
     "verify:hiring-cost": "tsx scripts/content/verify-hiring-cost-model.ts",
     "content:seed-blog-hero": "tsx scripts/content/seed-blog-hero-copy.ts",
-    "content:seed-shared-faqs": "tsx scripts/content/seed-shared-service-faqs.ts"
+    "content:seed-shared-faqs": "tsx scripts/content/seed-shared-service-faqs.ts",
+    "content:seed-cookie-policy": "tsx scripts/content/seed-cookie-policy.ts"
   },
   "keywords": [],
   "author": "",
