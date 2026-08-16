@@ -39,6 +39,11 @@ const PAGE_LOCATIONS: Record<string, { title: string; path: string; usOnly?: boo
   referralsPage: { title: 'Referrals', path: '/referrals' },
   fractionalCtoPage: { title: 'Fractional CTO', path: '/services/fractional-ctos' },
   hireEngineersPage: { title: 'Hire Engineers', path: '/services/software-engineers' },
+  // Market pages. Each document backs FOUR routes, because market (where the
+  // engineers are) and locale (who is reading) are separate axes. The two
+  // entries below give the US-site and UK-site view of each market.
+  hireUsEngineersPage: { title: 'Hire US Engineers', path: '/services/hire-us-engineers' },
+  hireUkEngineersPage: { title: 'Hire UK Engineers', path: '/services/hire-uk-engineers' },
   workWithShawneePage: { title: 'Work With Shawnee', path: '/work-with-shawnee' },
 
   // Legal

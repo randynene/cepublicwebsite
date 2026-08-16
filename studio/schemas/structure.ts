@@ -51,6 +51,8 @@ const STATIC_PAGE_NAMES = [
   'privacyPolicyPage',
   'fractionalCtoPage',
   'hireEngineersPage',
+  'hireUsEngineersPage',
+  'hireUkEngineersPage',
 ]
 
 const GROUPED_SINGLETON_NAMES = new Set([

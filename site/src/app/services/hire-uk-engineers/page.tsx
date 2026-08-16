@@ -4,6 +4,7 @@ import { HireEngineersMarketTemplate } from '@/components/templates/hire-enginee
 import { HireEngineersMarketJsonLd } from '@/components/templates/hire-engineers-market/json-ld'
 import { UKHE, UK_HIRE_ENGINEERS_META } from '@/components/templates/hire-engineers-market/content.uk'
 import { generateCanonical, generateHreflang } from '@/lib/locale'
+import { resolveHireEngineersMarket } from '@/lib/hire-engineers-market/content'
 import { resolvePageTitle } from '@/lib/seo/page-title'
 
 // /services/hire-uk-engineers - permanent UK engineering hires, served on the
@@ -25,9 +26,10 @@ const OG_IMAGE = '/og-default.png'
 const PATH = '/services/hire-uk-engineers'
 
 export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = await resolveHireEngineersMarket('hireUkEngineersPage', UKHE, UK_HIRE_ENGINEERS_META)
   return {
-    title: resolvePageTitle(UK_HIRE_ENGINEERS_META.title),
-    description: UK_HIRE_ENGINEERS_META.description,
+    title: resolvePageTitle(meta.title),
+    description: meta.description,
     alternates: {
       canonical: generateCanonical(PATH, 'en-US'),
       languages: generateHreflang(PATH),
@@ -42,8 +44,8 @@ export async function generateMetadata(): Promise<Metadata> {
     // Omitting it silently stripped og:image and twitter:image from all four
     // pages - the share card lost its picture the moment og:url was added.
     openGraph: {
-      title: UK_HIRE_ENGINEERS_META.title,
-      description: UK_HIRE_ENGINEERS_META.description,
+      title: meta.title,
+      description: meta.description,
       url: generateCanonical(PATH, 'en-US'),
       type: 'website',
       images: [OG_IMAGE],
@@ -51,17 +53,18 @@ export async function generateMetadata(): Promise<Metadata> {
     twitter: {
       card: 'summary_large_image',
       images: [OG_IMAGE],
-      title: UK_HIRE_ENGINEERS_META.title,
-      description: UK_HIRE_ENGINEERS_META.description,
+      title: meta.title,
+      description: meta.description,
     },
   }
 }
 
-export default function HireUkEngineersPage() {
+export default async function HireUkEngineersPage() {
+  const { content, meta } = await resolveHireEngineersMarket('hireUkEngineersPage', UKHE, UK_HIRE_ENGINEERS_META)
   return (
     <>
-      <HireEngineersMarketJsonLd content={UKHE} meta={UK_HIRE_ENGINEERS_META} locale="en-US" path={PATH} />
-      <HireEngineersMarketTemplate content={UKHE} locale="en-US" path={PATH} />
+      <HireEngineersMarketJsonLd content={content} meta={meta} locale="en-US" path={PATH} />
+      <HireEngineersMarketTemplate content={content} locale="en-US" path={PATH} />
     </>
   )
 }

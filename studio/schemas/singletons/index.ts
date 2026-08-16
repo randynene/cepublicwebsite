@@ -49,6 +49,8 @@ import referralsPage from './referrals-page'
 import privacyPolicyPage from './privacy-policy-page'
 import fractionalCtoPage from './fractional-cto-page'
 import hireEngineersPage from './hire-engineers-page'
+import hireUsEngineersPage from './hire-us-engineers-page'
+import hireUkEngineersPage from './hire-uk-engineers-page'
 
 // Tier 3 calculator pages (§5) — 2
 import hiringCostCalculatorPage from './hiring-cost-calculator-page'
@@ -101,6 +103,8 @@ export const singletonTypes = [
   privacyPolicyPage,
   fractionalCtoPage,
   hireEngineersPage,
+  hireUsEngineersPage,
+  hireUkEngineersPage,
   // Tier 3
   hiringCostCalculatorPage,
   priceComparisonCalculatorPage,
