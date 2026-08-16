@@ -128,6 +128,18 @@ const ADD_GLYPH = '+'
 const ARIA_CURRENT_STEP = 'step' as const
 
 /**
+ * CE-17. Ids for the skills combobox. The input points at the listbox with
+ * aria-controls and at one option with aria-activedescendant, so both need
+ * stable ids that are computed the same way in both places.
+ *
+ * The form is a single instance per page (one lead form per template), so a
+ * constant is safe here and matches the hand-written ids the rest of this
+ * component already uses ("quick-hiring-skill-search", "qh-email").
+ */
+const SUGGESTION_LIST_ID = 'quick-hiring-skill-suggestions'
+const suggestionOptionId = (index: number): string => `${SUGGESTION_LIST_ID}-${index}`
+
+/**
  * Validation messages are red, not lime.
  *
  * The first build used the accent, which meant "please use a valid work email"
@@ -207,6 +219,12 @@ export function QuickHiringForm({
     return seed ? [seed] : []
   })
   const [query, setQuery] = useState('')
+  // CE-17. -1 means "nothing highlighted", which is a real state and not just an
+  // empty list: it is what lets Enter submit the visitor's own words verbatim.
+  const [activeSuggestion, setActiveSuggestion] = useState(-1)
+  // Escape closes the list while the query stays in the box. Reset on the next
+  // keystroke, so dismissing is a one-off rather than a mode to get stuck in.
+  const [suggestionsDismissed, setSuggestionsDismissed] = useState(false)
   const [length, setLength] = useState('')
   const [commitment, setCommitment] = useState('')
   const [details, setDetails] = useState<Details>(EMPTY_DETAILS)
@@ -238,11 +256,55 @@ export function QuickHiringForm({
       current.some((s) => s.id === match.id) || current.length >= 20 ? current : [...current, match],
     )
     setQuery('')
+    // CE-17. Clearing the query already empties the list; these put the combobox
+    // back to cold so the next term starts from nothing highlighted.
+    setActiveSuggestion(-1)
+    setSuggestionsDismissed(false)
   }, [])
 
   const removeSkill = useCallback((id: string) => {
     setSkills((current) => current.filter((s) => s.id !== id))
   }, [])
+
+  /**
+   * CE-17. Keyboard for the skills combobox.
+   *
+   * `optionCount` treats the no-match case as one option, because that is what
+   * is on screen: the "+ Add <what you typed>" pill. Without it, arrowing down
+   * on a query that matches nothing highlights nothing and Enter feels dead.
+   */
+  const optionCount = suggestions.length > 0 ? suggestions.length : query.trim() ? 1 : 0
+  const suggestionsOpen = optionCount > 0 && !suggestionsDismissed
+
+  function onSearchKeyDown(event: React.KeyboardEvent<HTMLInputElement>): void {
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      if (optionCount === 0) return
+      event.preventDefault()
+      const delta = event.key === 'ArrowDown' ? 1 : -1
+      // Cycle over optionCount + 1 slots, where the extra one is "nothing
+      // active" (-1). Shifting by 1 turns that into a plain modulo over
+      // 0..optionCount and back again. Two consequences worth having:
+      // ArrowUp from cold lands on the LAST option, and arrowing off the end
+      // returns to the raw query rather than trapping focus in the list.
+      const slots = optionCount + 1
+      setActiveSuggestion((current) => (((current + 1 + delta) % slots) + slots) % slots - 1)
+      return
+    }
+    if (event.key === 'Escape') {
+      // Closes the list without discarding what was typed. Clearing the input
+      // here would throw away the visitor's words to dismiss a suggestion.
+      event.preventDefault()
+      setActiveSuggestion(-1)
+      setSuggestionsDismissed(true)
+      return
+    }
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      const picked = activeSuggestion >= 0 ? suggestions[activeSuggestion] : undefined
+      addSkill(picked?.label ?? query)
+      setActiveSuggestion(-1)
+    }
+  }
 
   const canContinue = (): boolean => {
     if (step === 'role') return Boolean(role)
@@ -476,40 +538,79 @@ export function QuickHiringForm({
             <label htmlFor="quick-hiring-skill-search" className="sr-only">
               {C.skills.searchLabel}
             </label>
+            {/* CE-17. A real combobox, not a text box with a list under it.
+                The search and the pills were already here; what was missing was
+                the ability to REACH a suggestion. Enter took suggestions[0] and
+                nothing moved the choice off it, so typing "R" and wanting Redux
+                meant giving up and using the mouse. Arrow keys now walk the
+                list, which is the interaction the ticket describes ("a load of
+                potential words come up and they just click it").
+                Free text is still accepted on Enter with nothing active, so the
+                picker never tells the visitor their answer is wrong - see the
+                note at the top of lib/skills/search.ts. */}
             <input
               id="quick-hiring-skill-search"
               type="text"
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                  addSkill(suggestions[0]?.label ?? query)
-                }
+              onChange={(e) => {
+                setQuery(e.target.value)
+                // The old highlight would otherwise survive into a list it no
+                // longer indexes, so Enter could add a skill nobody could see.
+                setActiveSuggestion(-1)
+                setSuggestionsDismissed(false)
               }}
+              onKeyDown={onSearchKeyDown}
               placeholder={C.skills.searchPlaceholder}
               autoComplete="off"
+              role="combobox"
+              aria-expanded={suggestionsOpen}
+              aria-controls={SUGGESTION_LIST_ID}
+              aria-autocomplete="list"
+              aria-activedescendant={
+                activeSuggestion >= 0 ? suggestionOptionId(activeSuggestion) : undefined
+              }
               className="w-full max-w-[420px] rounded-full border border-border-default bg-surface-tertiary px-[18px] py-[10px] text-[14px] text-text-primary placeholder:text-text-tertiary focus:border-accent-primary focus:outline-none focus:ring-2 focus:ring-ring"
             />
 
-            {query.trim().length > 0 && (
-              <ul className="mt-[12px] flex flex-wrap gap-[8px]">
-                {suggestions.map((s) => (
-                  <li key={s.id}>
-                    <SkillPill
-                      label={s.label}
-                      onClick={() => addSkill(s.label)}
-                      selected={selectedIds.has(s.id)}
-                    />
-                  </li>
-                ))}
-                {suggestions.length === 0 && (
-                  <li>
-                    <SkillPill label={query.trim()} onClick={() => addSkill(query)} addLabel />
-                  </li>
-                )}
-              </ul>
-            )}
+            {/* Rendered even when empty, and referenced by aria-controls either
+                way: a listbox that only exists once it has options is one a
+                screen reader cannot be pointed at. */}
+            <div
+              id={SUGGESTION_LIST_ID}
+              role="listbox"
+              aria-label={C.skills.searchLabel}
+              className={cn('mt-[12px] flex flex-wrap gap-[8px]', !suggestionsOpen && 'hidden')}
+            >
+              {suggestions.map((s, index) => (
+                <SkillPill
+                  key={s.id}
+                  id={suggestionOptionId(index)}
+                  role="option"
+                  label={s.label}
+                  onClick={() => addSkill(s.label)}
+                  selected={selectedIds.has(s.id)}
+                  active={index === activeSuggestion}
+                />
+              ))}
+              {/* Nothing matched, so the option IS the visitor's own words. */}
+              {suggestions.length === 0 && query.trim().length > 0 && (
+                <SkillPill
+                  id={suggestionOptionId(0)}
+                  role="option"
+                  label={query.trim()}
+                  onClick={() => addSkill(query)}
+                  addLabel
+                  active={activeSuggestion === 0}
+                />
+              )}
+            </div>
+
+            {/* Screen readers get no event when a list silently repopulates, so
+                the count is announced instead. Polite: it must not interrupt the
+                characters still being typed. */}
+            <div aria-live="polite" role="status" className="sr-only">
+              {suggestionsOpen ? C.skills.resultsCount(suggestions.length) : ''}
+            </div>
 
             {skills.length > 0 && (
               <div className="mt-[24px]">
@@ -745,11 +846,19 @@ function SkillPill({
   onClick,
   selected,
   addLabel,
+  id,
+  role,
+  active,
 }: {
   label: string
   onClick: () => void
   selected?: boolean
   addLabel?: boolean
+  /** CE-17. Set when this pill is an option the input can point at. */
+  id?: string
+  role?: 'option'
+  /** CE-17. Keyboard highlight. Distinct from `selected`, which means already added. */
+  active?: boolean
 }) {
   // Built outside JSX so the lint rule sees a value, not a literal, and so the
   // spacing is decided once rather than by a scattering of {' '} expressions.
@@ -757,6 +866,15 @@ function SkillPill({
   return (
     <button
       type="button"
+      id={id}
+      role={role}
+      // Only meaningful inside the listbox. As an option, "selected" is ARIA's
+      // word for already-in-the-list, which is what `selected` means here too.
+      aria-selected={role === 'option' ? Boolean(selected) : undefined}
+      // Focus stays in the input the whole time; the highlight is moved with
+      // aria-activedescendant instead. A tab stop per suggestion would put the
+      // visitor several tabs from the Continue button.
+      tabIndex={role === 'option' ? -1 : undefined}
       onClick={onClick}
       disabled={selected}
       className={cn(
@@ -764,6 +882,9 @@ function SkillPill({
         selected
           ? 'border-accent-primary/40 text-text-tertiary'
           : 'border-border-default text-text-secondary hover:border-accent-primary hover:text-text-primary',
+        // Keyboard highlight. A border alone was not enough to find at a glance
+        // against the unhighlighted pills, so it carries a fill as well.
+        active && !selected && 'border-accent-primary bg-accent-primary/[0.12] text-text-primary',
       )}
     >
       <span aria-hidden="true" className="mr-1">

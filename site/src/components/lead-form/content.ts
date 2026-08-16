@@ -176,6 +176,16 @@ export const LEAD_FORM_COPY = {
     selectedLabel: 'Selected',
     removeLabel: 'Remove',
     empty: 'No match. Press enter to add it anyway.',
+    /**
+     * CE-17. Announced to screen readers when the suggestion list changes.
+     * Sighted users watch the pills appear; without this, nobody else is told
+     * anything happened at all. A function rather than a string because the
+     * count IS the message, and the singular has to read correctly.
+     */
+    resultsCount: (count: number): string =>
+      count === 1
+        ? '1 suggestion. Use the arrow keys to review.'
+        : `${count} suggestions. Use the arrow keys to review.`,
   },
   length: {
     heading: 'How long do you need help for?',
