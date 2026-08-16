@@ -2,10 +2,18 @@
 
 // The quick hiring form. One component, roughly 250 placements.
 //
-// SHAPE. Role, then stack, then length, then commitment, then details, then the
-// Calendly booking, all in place on the page. It never navigates until the booking
-// is confirmed, because sending someone to a separate funnel page is where a
-// conversion flow leaks.
+// SHAPE. Role, then stack, then length, then commitment, then details. Submitting
+// the details step saves the lead and hands the visitor to /book-a-call.
+//
+// CE-58 / CE-73. This form used to carry a sixth step with Calendly embedded in
+// place, on the reasoning that sending someone to a separate funnel page is where
+// a conversion flow leaks. Jake asked twice for the redirect instead, so the
+// inline step is gone. The leak argument is largely answered by the destination
+// rather than ignored: /book-a-call renders the SAME pooled Calendly link the
+// inline step used, and the visitor's name and email travel with them in the
+// query string so the calendar opens already filled in. What is genuinely lost is
+// one page load. What is gained is a single booking surface to maintain instead
+// of two that could drift apart.
 //
 // PREFILL IS THE POINT. On /technology/react-developers the stack is already
 // answered; on /services/ai-engineers so is the role. The page already told us why
@@ -23,24 +31,23 @@ import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { roleIcon } from '@/components/shared/role-icons'
-import { CalendlyInlineEmbed } from '@/components/templates/book-a-call/calendly-inline-embed'
 import { Checkbox } from '@/components/ui/checkbox'
 import { CtaButton } from '@/components/ui/cta-button'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { cn } from '@/components/ui/_utils/cn'
 import { Heading } from '@/components/ui/heading'
 import { Text } from '@/components/ui/text'
+import { buildLocalePath, getLocaleFromPath } from '@/lib/locale-path'
 import { searchSkills, toSelection, type SkillMatch } from '@/lib/skills/search'
 import { defaultSkills, type SkillCategory } from '@/lib/skills/taxonomy'
 
 import {
-  BOOKING_THANK_YOU_PATH,
+  BOOKING_PATH,
   COMMITMENT_OPTIONS,
   CTO_COMMITMENT_OPTIONS,
   CTO_ENGAGEMENT_OPTIONS,
   CTO_FORM_COPY,
   CTO_STEP_LABEL_ROLE,
-  DEFAULT_CALENDLY_URL,
   LEAD_FORM_COPY as C,
   LENGTH_OPTIONS,
   ROLE_OPTIONS,
@@ -50,7 +57,7 @@ import {
   type RoleOption,
 } from './content'
 
-type StepId = 'role' | 'skills' | 'length' | 'commitment' | 'details' | 'booking'
+type StepId = 'role' | 'skills' | 'length' | 'commitment' | 'details'
 
 /**
  * CE-43. `hiring` is the engineer funnel every service page uses. `cto` is the
@@ -71,12 +78,22 @@ export interface QuickHiringFormProps {
   prefillRole?: RoleId
   /** Preselects a stack pill, e.g. "React" on the React Developers page. */
   prefillSkill?: string
-  calendlyUrl?: string
   className?: string
   /**
    * CE-54. Hides the numbered step rail, keeping every question and all of the
-   * behaviour. Opt-in per host rather than removed outright: the rail still
-   * earns its place on the pages that introduce the form cold.
+   * behaviour.
+   *
+   * CE-66 / CE-61. This DEFAULTS TO TRUE, which is the inversion of how CE-54
+   * left it. Seb filed the same complaint from two different pages - "the form
+   * has to match the homepage", "same across all the other pages same form" -
+   * and the homepage was the one page passing `hideStepRail`. So the rail is now
+   * the exception rather than the rule, and matching the homepage is what a host
+   * gets for doing nothing.
+   *
+   * The default is inverted here rather than by adding the prop to all eight
+   * call sites, because the failure mode being fixed is drift: a ninth page
+   * added next month inherits the standard shape instead of silently diverging
+   * again. Pass `hideStepRail={false}` to opt a page back into the rail.
    */
   hideStepRail?: boolean
 }
@@ -111,6 +128,18 @@ const ADD_GLYPH = '+'
 const ARIA_CURRENT_STEP = 'step' as const
 
 /**
+ * CE-17. Ids for the skills combobox. The input points at the listbox with
+ * aria-controls and at one option with aria-activedescendant, so both need
+ * stable ids that are computed the same way in both places.
+ *
+ * The form is a single instance per page (one lead form per template), so a
+ * constant is safe here and matches the hand-written ids the rest of this
+ * component already uses ("quick-hiring-skill-search", "qh-email").
+ */
+const SUGGESTION_LIST_ID = 'quick-hiring-skill-suggestions'
+const suggestionOptionId = (index: number): string => `${SUGGESTION_LIST_ID}-${index}`
+
+/**
  * Validation messages are red, not lime.
  *
  * The first build used the accent, which meant "please use a valid work email"
@@ -139,7 +168,6 @@ const STEP_COPY: Record<StepId, { heading: string; sub: string }> = {
   length: C.length,
   commitment: C.commitment,
   details: C.details,
-  booking: C.booking,
 }
 
 /** As STEP_COPY, with the `cto` variant's overrides applied over the top. */
@@ -158,12 +186,12 @@ const CTO_STEP_COPY: Record<StepId, { heading: string; sub: string }> = {
 function useSteps(variant: LeadFormVariant, hasPrefilledRole: boolean): StepId[] {
   return useMemo(() => {
     if (variant === 'cto') {
-      return ['role', 'length', 'commitment', 'details', 'booking'] as StepId[]
+      return ['role', 'length', 'commitment', 'details'] as StepId[]
     }
     return (
       hasPrefilledRole
-        ? ['skills', 'length', 'commitment', 'details', 'booking']
-        : ['role', 'skills', 'length', 'commitment', 'details', 'booking']
+        ? ['skills', 'length', 'commitment', 'details']
+        : ['role', 'skills', 'length', 'commitment', 'details']
     ) as StepId[]
   }, [variant, hasPrefilledRole])
 }
@@ -173,9 +201,8 @@ export function QuickHiringForm({
   variant = 'hiring',
   prefillRole,
   prefillSkill,
-  calendlyUrl = DEFAULT_CALENDLY_URL,
   className,
-  hideStepRail = false,
+  hideStepRail = true,
 }: QuickHiringFormProps) {
   const isCto = variant === 'cto'
   // Prefill is an engineer-page concept; ignored on the CTO funnel.
@@ -192,6 +219,12 @@ export function QuickHiringForm({
     return seed ? [seed] : []
   })
   const [query, setQuery] = useState('')
+  // CE-17. -1 means "nothing highlighted", which is a real state and not just an
+  // empty list: it is what lets Enter submit the visitor's own words verbatim.
+  const [activeSuggestion, setActiveSuggestion] = useState(-1)
+  // Escape closes the list while the query stays in the box. Reset on the next
+  // keystroke, so dismissing is a one-off rather than a mode to get stuck in.
+  const [suggestionsDismissed, setSuggestionsDismissed] = useState(false)
   const [length, setLength] = useState('')
   const [commitment, setCommitment] = useState('')
   const [details, setDetails] = useState<Details>(EMPTY_DETAILS)
@@ -223,11 +256,55 @@ export function QuickHiringForm({
       current.some((s) => s.id === match.id) || current.length >= 20 ? current : [...current, match],
     )
     setQuery('')
+    // CE-17. Clearing the query already empties the list; these put the combobox
+    // back to cold so the next term starts from nothing highlighted.
+    setActiveSuggestion(-1)
+    setSuggestionsDismissed(false)
   }, [])
 
   const removeSkill = useCallback((id: string) => {
     setSkills((current) => current.filter((s) => s.id !== id))
   }, [])
+
+  /**
+   * CE-17. Keyboard for the skills combobox.
+   *
+   * `optionCount` treats the no-match case as one option, because that is what
+   * is on screen: the "+ Add <what you typed>" pill. Without it, arrowing down
+   * on a query that matches nothing highlights nothing and Enter feels dead.
+   */
+  const optionCount = suggestions.length > 0 ? suggestions.length : query.trim() ? 1 : 0
+  const suggestionsOpen = optionCount > 0 && !suggestionsDismissed
+
+  function onSearchKeyDown(event: React.KeyboardEvent<HTMLInputElement>): void {
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      if (optionCount === 0) return
+      event.preventDefault()
+      const delta = event.key === 'ArrowDown' ? 1 : -1
+      // Cycle over optionCount + 1 slots, where the extra one is "nothing
+      // active" (-1). Shifting by 1 turns that into a plain modulo over
+      // 0..optionCount and back again. Two consequences worth having:
+      // ArrowUp from cold lands on the LAST option, and arrowing off the end
+      // returns to the raw query rather than trapping focus in the list.
+      const slots = optionCount + 1
+      setActiveSuggestion((current) => (((current + 1 + delta) % slots) + slots) % slots - 1)
+      return
+    }
+    if (event.key === 'Escape') {
+      // Closes the list without discarding what was typed. Clearing the input
+      // here would throw away the visitor's words to dismiss a suggestion.
+      event.preventDefault()
+      setActiveSuggestion(-1)
+      setSuggestionsDismissed(true)
+      return
+    }
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      const picked = activeSuggestion >= 0 ? suggestions[activeSuggestion] : undefined
+      addSkill(picked?.label ?? query)
+      setActiveSuggestion(-1)
+    }
+  }
 
   const canContinue = (): boolean => {
     if (step === 'role') return Boolean(role)
@@ -269,6 +346,29 @@ export function QuickHiringForm({
     return Object.keys(next).length === 0
   }
 
+  /**
+   * Where this form hands off (CE-58 / CE-73).
+   *
+   * Locale comes from the page the form is sitting on, so a visitor on
+   * /uk/services/software-engineers goes to /uk/book-a-call rather than being
+   * dropped into the US locale at the last step.
+   *
+   * Name and email ride along so Calendly opens already filled in. They were typed
+   * one screen ago; asking for them again is the site not paying attention, which
+   * is the same argument the prefill logic above already makes. Only these two are
+   * passed: they are what Calendly's invitee form actually asks for, and the role
+   * and stack answers are already on their way to HubSpot.
+   */
+  function bookingHref(): string {
+    const path = buildLocalePath(BOOKING_PATH, getLocaleFromPath(sourcePage))
+    const params = new URLSearchParams()
+    const name = [details.firstName.trim(), details.lastName.trim()].filter(Boolean).join(' ')
+    if (name) params.set('name', name)
+    if (details.email.trim()) params.set('email', details.email.trim())
+    const query = params.toString()
+    return query ? `${path}?${query}` : path
+  }
+
   async function submit(): Promise<void> {
     if (!validateDetails()) return
     setSubmitting(true)
@@ -296,25 +396,12 @@ export function QuickHiringForm({
       // Deliberately swallowed. See the failure-posture note at the top: the
       // visitor continues to booking whatever happened to the CRM write.
     } finally {
-      setSubmitting(false)
-      goNext()
+      // `submitting` is deliberately NOT cleared. A full navigation follows, and
+      // re-enabling the button in the gap between these two lines is just an
+      // opportunity to submit the same lead twice.
+      window.location.assign(bookingHref())
     }
   }
-
-  // Calendly announces a confirmed booking by postMessage. Same listener shape as
-  // the Ask Clara booking canvas, kept local so the two cannot break each other.
-  useEffect(() => {
-    if (step !== 'booking') return
-    const onMessage = (event: MessageEvent): void => {
-      if (typeof event.origin !== 'string' || !event.origin.includes('calendly.com')) return
-      const data = event.data as { event?: string } | undefined
-      if (data?.event === 'calendly.event_scheduled') {
-        window.location.assign(BOOKING_THANK_YOU_PATH)
-      }
-    }
-    window.addEventListener('message', onMessage)
-    return () => window.removeEventListener('message', onMessage)
-  }, [step])
 
   const stepNumber = stepIndex + 1
   const stepCount = steps.length
@@ -451,40 +538,79 @@ export function QuickHiringForm({
             <label htmlFor="quick-hiring-skill-search" className="sr-only">
               {C.skills.searchLabel}
             </label>
+            {/* CE-17. A real combobox, not a text box with a list under it.
+                The search and the pills were already here; what was missing was
+                the ability to REACH a suggestion. Enter took suggestions[0] and
+                nothing moved the choice off it, so typing "R" and wanting Redux
+                meant giving up and using the mouse. Arrow keys now walk the
+                list, which is the interaction the ticket describes ("a load of
+                potential words come up and they just click it").
+                Free text is still accepted on Enter with nothing active, so the
+                picker never tells the visitor their answer is wrong - see the
+                note at the top of lib/skills/search.ts. */}
             <input
               id="quick-hiring-skill-search"
               type="text"
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                  addSkill(suggestions[0]?.label ?? query)
-                }
+              onChange={(e) => {
+                setQuery(e.target.value)
+                // The old highlight would otherwise survive into a list it no
+                // longer indexes, so Enter could add a skill nobody could see.
+                setActiveSuggestion(-1)
+                setSuggestionsDismissed(false)
               }}
+              onKeyDown={onSearchKeyDown}
               placeholder={C.skills.searchPlaceholder}
               autoComplete="off"
+              role="combobox"
+              aria-expanded={suggestionsOpen}
+              aria-controls={SUGGESTION_LIST_ID}
+              aria-autocomplete="list"
+              aria-activedescendant={
+                activeSuggestion >= 0 ? suggestionOptionId(activeSuggestion) : undefined
+              }
               className="w-full max-w-[420px] rounded-full border border-border-default bg-surface-tertiary px-[18px] py-[10px] text-[14px] text-text-primary placeholder:text-text-tertiary focus:border-accent-primary focus:outline-none focus:ring-2 focus:ring-ring"
             />
 
-            {query.trim().length > 0 && (
-              <ul className="mt-[12px] flex flex-wrap gap-[8px]">
-                {suggestions.map((s) => (
-                  <li key={s.id}>
-                    <SkillPill
-                      label={s.label}
-                      onClick={() => addSkill(s.label)}
-                      selected={selectedIds.has(s.id)}
-                    />
-                  </li>
-                ))}
-                {suggestions.length === 0 && (
-                  <li>
-                    <SkillPill label={query.trim()} onClick={() => addSkill(query)} addLabel />
-                  </li>
-                )}
-              </ul>
-            )}
+            {/* Rendered even when empty, and referenced by aria-controls either
+                way: a listbox that only exists once it has options is one a
+                screen reader cannot be pointed at. */}
+            <div
+              id={SUGGESTION_LIST_ID}
+              role="listbox"
+              aria-label={C.skills.searchLabel}
+              className={cn('mt-[12px] flex flex-wrap gap-[8px]', !suggestionsOpen && 'hidden')}
+            >
+              {suggestions.map((s, index) => (
+                <SkillPill
+                  key={s.id}
+                  id={suggestionOptionId(index)}
+                  role="option"
+                  label={s.label}
+                  onClick={() => addSkill(s.label)}
+                  selected={selectedIds.has(s.id)}
+                  active={index === activeSuggestion}
+                />
+              ))}
+              {/* Nothing matched, so the option IS the visitor's own words. */}
+              {suggestions.length === 0 && query.trim().length > 0 && (
+                <SkillPill
+                  id={suggestionOptionId(0)}
+                  role="option"
+                  label={query.trim()}
+                  onClick={() => addSkill(query)}
+                  addLabel
+                  active={activeSuggestion === 0}
+                />
+              )}
+            </div>
+
+            {/* Screen readers get no event when a list silently repopulates, so
+                the count is announced instead. Polite: it must not interrupt the
+                characters still being typed. */}
+            <div aria-live="polite" role="status" className="sr-only">
+              {suggestionsOpen ? C.skills.resultsCount(suggestions.length) : ''}
+            </div>
 
             {skills.length > 0 && (
               <div className="mt-[24px]">
@@ -635,20 +761,15 @@ export function QuickHiringForm({
           </StepShell>
         )}
 
-        {step === 'booking' && (
-          <StepShell>
-            <CalendlyInlineEmbed url={calendlyUrl} className="mt-[8px] rounded-2xl" />
-          </StepShell>
-        )}
-
       </div>
 
       {/* Proof on the left, action on the right, on one line. In the reference
           this row is what makes the block read as a section of the page rather
           than a form: the claims carry their own weight while the button sits
           where the eye finishes. */}
-      {step !== 'booking' && (
-        <div className="mt-[28px] flex flex-col gap-[16px] sm:flex-row sm:items-center sm:justify-between">
+      {/* No longer conditional. The booking step it used to be hidden on no longer
+          exists (CE-58 / CE-73), so this row renders on every step. */}
+      <div className="mt-[28px] flex flex-col gap-[16px] sm:flex-row sm:items-center sm:justify-between">
           <ul className="flex flex-wrap items-center gap-x-[20px] gap-y-[8px]">
             {TRUST_POINTS.map((point) => (
               <li key={point} className="flex items-center gap-[8px] text-[13px] text-text-secondary">
@@ -681,16 +802,16 @@ export function QuickHiringForm({
             <CtaButton
               as="button"
               variant="solid"
-              // CE-55. The CTO funnel reads "Next" on the details step rather
-              // than "Book a call": the same click, described as one more step
-              // rather than as a commitment to a meeting.
+              // CE-58 / CE-73. Both funnels read "Submit" on the details step.
+              // CE-55 had made the CTO funnel say "Next" there, because a booking
+              // step still followed and calling it a commitment to a meeting was
+              // premature. Details is now the last step in both funnels, so
+              // "Next" would promise a screen that does not exist.
               label={
                 step === 'details'
                   ? submitting
                     ? C.actions.submitting
-                    : isCto
-                      ? C.actions.continue
-                      : C.actions.submit
+                    : C.actions.submit
                   : C.actions.continue
               }
               disabled={!canContinue() || submitting}
@@ -707,8 +828,7 @@ export function QuickHiringForm({
               )}
             />
           </div>
-        </div>
-      )}
+      </div>
     </div>
   )
 }
@@ -726,11 +846,19 @@ function SkillPill({
   onClick,
   selected,
   addLabel,
+  id,
+  role,
+  active,
 }: {
   label: string
   onClick: () => void
   selected?: boolean
   addLabel?: boolean
+  /** CE-17. Set when this pill is an option the input can point at. */
+  id?: string
+  role?: 'option'
+  /** CE-17. Keyboard highlight. Distinct from `selected`, which means already added. */
+  active?: boolean
 }) {
   // Built outside JSX so the lint rule sees a value, not a literal, and so the
   // spacing is decided once rather than by a scattering of {' '} expressions.
@@ -738,6 +866,15 @@ function SkillPill({
   return (
     <button
       type="button"
+      id={id}
+      role={role}
+      // Only meaningful inside the listbox. As an option, "selected" is ARIA's
+      // word for already-in-the-list, which is what `selected` means here too.
+      aria-selected={role === 'option' ? Boolean(selected) : undefined}
+      // Focus stays in the input the whole time; the highlight is moved with
+      // aria-activedescendant instead. A tab stop per suggestion would put the
+      // visitor several tabs from the Continue button.
+      tabIndex={role === 'option' ? -1 : undefined}
       onClick={onClick}
       disabled={selected}
       className={cn(
@@ -745,6 +882,9 @@ function SkillPill({
         selected
           ? 'border-accent-primary/40 text-text-tertiary'
           : 'border-border-default text-text-secondary hover:border-accent-primary hover:text-text-primary',
+        // Keyboard highlight. A border alone was not enough to find at a glance
+        // against the unhighlighted pills, so it carries a fill as well.
+        active && !selected && 'border-accent-primary bg-accent-primary/[0.12] text-text-primary',
       )}
     >
       <span aria-hidden="true" className="mr-1">

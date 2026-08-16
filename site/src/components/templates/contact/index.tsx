@@ -73,6 +73,56 @@ const CONTACT_FORM_FRAME_CSS = `
   .hs-error-msgs label {
     color: #ff6b6b !important;
   }
+
+  /* CE-64 - attach a file. INERT UNTIL SOMEONE ENABLES IT IN HUBSPOT.
+     ------------------------------------------------------------------
+     There is no file field on this form today, and we cannot add one from
+     here. This form is 'formType: hubspot', which means HubSpot renders the
+     fields itself inside <iframe class="hs-form-iframe"> from its own form
+     definition. We contribute no markup, so there is no field for us to add
+     and no upload for us to handle: a control we rendered outside the iframe
+     could not ride along with a HubSpot submission at all, it would just look
+     like it worked.
+
+     Enabling it is two portal-side steps, both in HubSpot, neither in this
+     repo: add a "file" property to the contact object, then drag a File
+     upload field onto form 4b883c7d-72c1-4f9c-8196-de68fce303d6. The portal
+     already does this elsewhere, so the tier supports it - the Career form
+     (52c97427-de33-4597-b7e3-f4c882d00690) carries a "file_upload" field.
+
+     What these rules do is make that a one-step job instead of two. The
+     moment the field appears, it lands on a dark panel already styled to
+     match. Without them it inherits the .hs-input rule above and renders as a
+     999px-radius pill around a native file picker, with the OS-default black
+     'No file chosen' text invisible on #101B30.
+
+     Deliberately NOT done: writing the field via the Forms API. This form
+     takes real leads and has three enabled workflows on it. */
+  .hs-fieldtype-file input[type="file"],
+  input[type="file"].hs-input {
+    background-color: #1B2A45 !important;
+    color: #ffffff !important;
+    border: 1px dashed #32435F !important;
+    /* Not the 999px pill: a file input is a control plus a filename, and a
+       pill crops the name on the curve. */
+    border-radius: 16px !important;
+    padding: 14px !important;
+    width: 100% !important;
+    cursor: pointer !important;
+  }
+  /* The picker button itself is a shadow-DOM pseudo-element, so it needs its
+     own rule; the parent colour does not reach it. */
+  .hs-fieldtype-file input[type="file"]::file-selector-button,
+  input[type="file"].hs-input::file-selector-button {
+    background-color: #D4FF3C !important;
+    color: #060F1E !important;
+    border: none !important;
+    border-radius: 999px !important;
+    font-weight: 700 !important;
+    padding: 8px 16px !important;
+    margin-right: 12px !important;
+    cursor: pointer !important;
+  }
 `
 
 // D5 — icons are chrome, chosen by link kind rather than editable in Studio.
