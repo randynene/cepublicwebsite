@@ -157,7 +157,9 @@ export const FCTO: FctoContent = {
           per: '/ day',
         },
       ],
-      footnote: 'Sourced and vetted against your brief. No bench, no bodies on a list.',
+      // CE-65: "No bench, no bodies on a list." deleted on Seb's request. Only
+      // that sentence goes; the first one is the substantive claim and stays.
+      footnote: 'Sourced and vetted against your brief.',
     },
     cards: [
       {
