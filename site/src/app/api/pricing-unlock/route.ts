@@ -21,14 +21,13 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 
 import { env } from '@/lib/env'
+import { notifySlack } from '@/lib/leads/notify'
 
 export const runtime = 'nodejs'
 
 /** Reuses the quick-hiring form. The gateway field is what segments this. */
 const QUICK_HIRING_FORM_GUID =
   process.env.HUBSPOT_QUICK_HIRING_FORM_GUID ?? '8f974ef4-a3dd-4bba-ad3a-086054ac235b'
-
-const SLACK_LEADS_WEBHOOK_URL = process.env.SLACK_LEADS_WEBHOOK_URL
 
 const schema = z.object({
   email: z.string().email().max(160),
@@ -68,18 +67,7 @@ async function submitToHubSpot(unlock: Unlock): Promise<{ ok: boolean; detail: s
   }
 }
 
-async function postToSlack(text: string): Promise<void> {
-  if (!SLACK_LEADS_WEBHOOK_URL) return
-  try {
-    await fetch(SLACK_LEADS_WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text }),
-    })
-  } catch {
-    // A Slack outage must never fail a lead. It is the backup, not the record.
-  }
-}
+// Transport lives in @/lib/leads/notify, shared with /api/lead.
 
 export async function POST(request: Request): Promise<NextResponse> {
   let parsed: Unlock
@@ -94,18 +82,26 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   const hubspot = await submitToHubSpot(parsed)
 
-  if (!hubspot.ok) {
-    console.error(`[pricing-unlock] HubSpot submission failed: ${hubspot.detail}`)
-    await postToSlack(
-      [
-        `:rotating_light: *Pricing calculator unlock did NOT reach HubSpot* (${hubspot.detail})`,
-        '',
-        `*Email* ${parsed.email}`,
-        `*Currency* ${parsed.currency ?? 'unset'}`,
-        '',
-        `_pricing_unlock from ${parsed.path ?? '/pricing'}_`,
-      ].join('\n'),
-    )
+  if (!hubspot.ok) console.error(`[pricing-unlock] HubSpot submission failed: ${hubspot.detail}`)
+
+  // Announced whether or not HubSpot took it. This form submits to 8f974ef4,
+  // which no HubSpot workflow watches, so a successful unlock previously told
+  // nobody. Somebody handing over a work email to see prices is a buying
+  // signal, and it was going straight into a contact record unseen.
+  const outcome = await notifySlack(
+    [
+      hubspot.ok
+        ? ':unlock: *Pricing calculator unlocked*'
+        : `:rotating_light: *Pricing calculator unlock - DID NOT REACH HUBSPOT* (${hubspot.detail})`,
+      '',
+      `*Email* ${parsed.email}`,
+      `*Currency* ${parsed.currency ?? 'unset'}`,
+      '',
+      `_pricing_unlock from ${parsed.path ?? '/pricing'}_`,
+    ].join('\n'),
+  )
+  if (outcome !== 'sent') {
+    console.error(`[pricing-unlock] Slack notification ${outcome} for ${parsed.email}`)
   }
 
   // Which currency a visitor picks is which market is actually pricing us. That
