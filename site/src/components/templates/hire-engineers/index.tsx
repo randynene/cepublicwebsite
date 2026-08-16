@@ -13,6 +13,7 @@ import { LeadFormSection } from '@/components/lead-form/section'
 import { roleIcon } from '@/components/shared/role-icons'
 import { CHAT_HREF } from '@/lib/chat'
 import { buildLocalePath, type Locale } from '@/lib/locale-path'
+import { SHOW_UNVERIFIED_CALCULATORS } from '@/lib/feature-flags'
 import { CALC, HE, type HireEngineersContent } from './content'
 import './hire-engineers.css'
 
@@ -477,18 +478,25 @@ export function HireEngineersTemplate({
         </div>
       </Spotlight>
 
-      {/* PRICING */}
-      <section className="price">
-        <div className="wrap">
-          <span className="eyebrow">{content.price.eyebrow}</span>
-          <h2 className="st">
-            {content.price.h2Lead}{' '}
-            <em>{content.price.h2Em}</em>
-          </h2>
-          <Calculator price={content.price} />
-          {content.price.note ? <p className="proof-note">{content.price.note}</p> : null}
-        </div>
-      </section>
+      {/* PRICING
+          CE-67: this runs the same unverified next-hire model as the homepage,
+          so it goes with it. The heading and the footnote go too, deliberately:
+          "What would your next engineer cost?" exists only to introduce the
+          widget, and leaving it standing over an empty space reads as a broken
+          page rather than a removed one. Every other section stays. */}
+      {SHOW_UNVERIFIED_CALCULATORS ? (
+        <section className="price">
+          <div className="wrap">
+            <span className="eyebrow">{content.price.eyebrow}</span>
+            <h2 className="st">
+              {content.price.h2Lead}{' '}
+              <em>{content.price.h2Em}</em>
+            </h2>
+            <Calculator price={content.price} />
+            {content.price.note ? <p className="proof-note">{content.price.note}</p> : null}
+          </div>
+        </section>
+      ) : null}
 
       {/* FIND YOUR ENGINEER */}
       <section className="findform" id="find">

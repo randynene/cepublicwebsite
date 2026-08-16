@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 import { withSanityImageParams } from '@/lib/sanity/image-params'
+import { SHOW_UNVERIFIED_CALCULATORS } from '@/lib/feature-flags'
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { CtaButton } from '@/components/ui/cta-button'
@@ -889,7 +890,10 @@ export function HomeTemplate({
       <Process content={content} />
       <Testimonials content={content} />
       <Included content={content} />
-      <Calculator content={content} />
+      {/* CE-67: Seb reported these figures as wrong, and the model behind them
+          was never verified against what CE charges. Off by default; every
+          other section keeps its position. See @/lib/feature-flags. */}
+      {SHOW_UNVERIFIED_CALCULATORS ? <Calculator content={content} /> : null}
       <RealEngineers content={content} />
       <ReadyToFind content={content} locale={locale} />
       <WhereWeWork content={content.whereWeWork} />
