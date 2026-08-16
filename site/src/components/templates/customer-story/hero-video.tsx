@@ -34,19 +34,30 @@ import { UI_STRINGS } from '@/lib/ui-strings'
 const VIMEO_ALLOW =
   'autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media'
 
-function ambientSrc(id: string): string {
-  return `https://player.vimeo.com/video/${id}?background=1&autoplay=1&loop=1&muted=1&autopause=0`
+// CE-69: an unlisted video needs its privacy hash on EVERY embed src or Vimeo
+// answers 401 and the frame looks empty. The hash is whatever the Sanity URL
+// carried, never a hardcoded value, so a future unlisted upload needs no code
+// change. A public video passes null here and the param is simply absent.
+function vimeoSrc(id: string, hash: string | null, params: string): string {
+  const privacy = hash ? `&h=${encodeURIComponent(hash)}` : ''
+  return `https://player.vimeo.com/video/${id}?${params}${privacy}`
 }
 
-function playSrc(id: string): string {
-  return `https://player.vimeo.com/video/${id}?autoplay=1&autopause=0&badge=0&byline=0&portrait=0&title=0`
+function ambientSrc(id: string, hash: string | null): string {
+  return vimeoSrc(id, hash, 'background=1&autoplay=1&loop=1&muted=1&autopause=0')
+}
+
+function playSrc(id: string, hash: string | null): string {
+  return vimeoSrc(id, hash, 'autoplay=1&autopause=0&badge=0&byline=0&portrait=0&title=0')
 }
 
 export function CustomerStoryHeroVideo({
   vimeoId,
+  vimeoHash,
   title,
 }: {
   vimeoId: string
+  vimeoHash: string | null
   title: string
 }) {
   const [playing, setPlaying] = useState(false)
@@ -98,7 +109,7 @@ export function CustomerStoryHeroVideo({
     <>
       {!playing ? (
         <iframe
-          src={ambientSrc(vimeoId)}
+          src={ambientSrc(vimeoId, vimeoHash)}
           title={title}
           allow={VIMEO_ALLOW}
           aria-hidden="true"
@@ -143,7 +154,7 @@ export function CustomerStoryHeroVideo({
       {playing ? (
         <iframe
           ref={playerRef}
-          src={playSrc(vimeoId)}
+          src={playSrc(vimeoId, vimeoHash)}
           title={title}
           allow={VIMEO_ALLOW}
           allowFullScreen
