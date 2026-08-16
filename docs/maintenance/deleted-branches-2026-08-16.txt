@@ -1,0 +1,37 @@
+# Remote branches deleted 16 Aug 2026 (merged-into-main cleanup).
+# Restore any one with:  git push origin <sha>:refs/heads/<branch>
+#
+1fec00511a93a94f4af481c8d366de5506489b43  chore/home-hubs-fe2-book-a-call  # ancestor of main
+1232bf85d3677ebb200e2658b55f61d38dec51ba  claude/seo-s2-internal-link-equity-oqprx0  # ancestor of main
+16c9ca2a2815751192f917a98cb8d80925f03015  claude/seo-s8-backlink-decisions-eo6ayz  # ancestor of main
+0e8bfd8124041a8222f46f52f3c3798dea6a3f3e  cursor/ask-clara-design-brief-3404  # ancestor of main
+22cb0d98bfb1cdf557ad3610174fd952590b6281  cursor/ask-clara-execution-plan-3404  # ancestor of main
+f7bdd4cb4428a1449375d491f5b6c4c11c421579  cursor/ask-clara-p1-3404  # ancestor of main
+cd3a40d12b3af451dec8c147f1c81aa098a9a990  cursor/ask-clara-p2-d036  # ancestor of main
+b1a9307e777f5a74dfa13c1765b7eb4467cb6289  cursor/fix-for-developers-mobile-hero-b57b  # ancestor of main
+79b999dd68542eb18ab11f909c2ebc9a9607eef2  cursor/hubspot-forms-verify-3404  # ancestor of main
+5123ba7237b3404a782d90d433fe2a169a57e6af  cursor/hubspot-gateway-lock-c05e  # ancestor of main
+5bdaf54083de8be52af34cd9ca4b8e4041d6bf8c  cursor/roadmap-hubspot-seo-speed-9eba  # ancestor of main
+fc33b4b2aad67a26f401ec78aa66fa8d9bc6fdd2  cursor/sanity-wiring-audit-report-0954  # ancestor of main
+6acd1ef1e5aead0c8f7b74da142159b362bd0f70  cursor/seb-call-edit-consolidation-2b4c  # ancestor of main
+630be7d86285bb92312b14b93b6f3069f96e4ac4  cursor/standardize-marketing-heroes-8ad6  # ancestor of main
+a64c5b97c286cf8a2f3ac8328ae3cddcc18830e2  docs/seo-analysis-tracked  # ancestor of main
+bc51d608bb19acb4cb2425e58cb31cd41e350511  feat/content-1b  # ancestor of main
+719e2e2c8787f71a94921a02a5ad1c5cbdcadbe5  feat/content-1c  # ancestor of main
+882ee7223e940a39bd7a688db177eb7693b696be  feat/scaffold-1  # ancestor of main
+4885a2082aaa5fb1b71d888187dba7284a5ee268  feat/us-hire-engineers  # ancestor of main
+edd1fa560a73ff7f9c99e58bfdf862bfafedbe68  fix/marker-ce-batch-jul30  # ancestor of main
+22f23a6886679d407f236f24ffd672c703fb8588  fix/marker-ce47-ce43-aug06  # ancestor of main
+0318a36bb6c6a1239e426cc6a37f55b572dd337f  fix/nav-hide-build-with-us-hiw-hero  # ancestor of main
+0bb0a8a03e28b7a0983eaae11383149d7a48d050  seo/ahrefs-deep-pull  # ancestor of main
+fc7e6c020b01fa6194460038a8907d8500a80018  seo/gsc-deep-pull  # ancestor of main
+f5af0806e2725a89eb090a7ca565e32fcf0f60b7  seo/hubspot-lead-value  # ancestor of main
+75aedef9f7221a6be026f075d34a6624263c97f6  seo/joined-table  # ancestor of main
+35830bc72c9ef86610a7d83e4a3ef854f9e76831  seo/replay-all-urls  # ancestor of main
+b8ef1349353a1d045f1abac232d479bae7d795ac  seo/s1-crawl-redirect-hygiene  # ancestor of main
+db4dd1d197ac25a17e50cd5a1305eaaffb4613d8  seo/s3-template-fixes  # ancestor of main
+f31939dcd53850d70dad07c5c9f6dfa530484713  seo/s4-measurement-wiring  # ancestor of main
+119976b27c6d6abe09d493d1d305a14a6d56b93c  seo/s5-geo-server-side  # ancestor of main
+e1523c0c6f68106cc8aa4d0adb154fa109478d95  seo/speed-insights-setup  # ancestor of main
+a8f02c5fb3489240f0f4d96ae91f0a2e36d52496  cursor/sanity-editability-wp01-home-0954  # patch-id identical to main
+f7290c4729eaad4febd06b1514e6a454eca392d7  cursor/seb-presentation-visual-editing-0954  # patch-id identical to main
