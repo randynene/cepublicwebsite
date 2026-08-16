@@ -12,24 +12,45 @@ import { useConsent } from './consent-provider'
 
 const COOKIE_POLICY_PATH = '/legals/cookie-policy'
 
-// Shared shell for both surfaces. Bottom-left on desktop so it never collides
-// with the Clara chat launcher in the bottom-right; a bottom sheet under 640px,
-// where a floating corner card would cover most of the viewport anyway.
+// Shared shell for both surfaces: a small card tucked into the bottom-left
+// corner, and the same card inset from the edges under 640px.
+//
+// Clara's launcher is a CENTRED pill roughly 394px wide, 28px off the bottom
+// (measured, not assumed - it renders inside a shadow root, so it is invisible
+// to a normal DOM query).
+//
+// Because that pill is centred and wide, the two only clear each other on a
+// wide viewport: this card's right edge sits at 324px, and the pill's left edge
+// is (viewport - 394) / 2, which only exceeds 324 above about 1042px. So the
+// 28px shared baseline is an xl-and-up treatment, and below that the card lifts
+// to 88px, just above the pill's 76px top edge. Getting this wrong stacks the
+// consent notice directly on top of the chat launcher on every phone.
 //
 // Deliberately NOT a modal: no overlay, no focus trap, no scroll lock. The page
 // stays fully usable behind it. A consent notice that holds the page hostage is
 // the pattern this was built to avoid, and blocking access until an answer is
 // given also undermines the argument that the consent was freely given.
+//
+// EVERY size here is an explicit pixel value on purpose. This project's Tailwind
+// spacing scale is DOUBLED against stock (p-5 resolves to 40px, w-96 to 768px),
+// so scale utilities silently render at twice the intended size. The first cut
+// of this banner used them and came out 768px wide. Do not swap these back for
+// scale classes.
+//
+// Bottom offset is 28px to sit on the same baseline as the Clara launcher pill,
+// measured from the running site. Left offset matches, so the card tucks into
+// the corner rather than floating.
 const SHELL = cn(
-  'fixed z-[60] flex flex-col gap-3',
+  'fixed z-[60] flex flex-col gap-[7px]',
   'border border-border-subtle bg-section-bg-card text-text-primary',
-  'shadow-[0_18px_48px_-14px_rgba(0,0,0,0.75)]',
-  'inset-x-0 bottom-0 rounded-t-[20px] border-b-0 p-5',
-  'sm:inset-x-auto sm:bottom-6 sm:left-6 sm:rounded-[20px] sm:border-b sm:p-5',
+  'shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)]',
+  'inset-x-[12px] bottom-[88px] rounded-[14px] p-[14px]',
+  'sm:inset-x-auto sm:left-[24px] sm:w-[300px] sm:p-[15px]',
+  'xl:bottom-[28px]',
 )
 
 const BTN_BASE = cn(
-  'rounded-pill px-5 py-2.5 text-[13.5px] font-semibold leading-none',
+  'rounded-pill px-[13px] py-[7px] text-[12px] font-semibold leading-none',
   'transition duration-reveal ease-reveal motion-reduce:transition-none',
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
   'focus-visible:ring-offset-section-bg-card',
@@ -40,8 +61,8 @@ const BTN_SECONDARY = cn(
   'border border-[#32435F] text-text-primary hover:border-brand-primary hover:text-brand-primary',
 )
 const BTN_QUIET = cn(
-  'rounded-pill px-2 py-2.5 text-[13.5px] font-semibold leading-none underline underline-offset-[3px]',
-  'text-text-secondary transition duration-reveal ease-reveal hover:text-brand-primary',
+  'rounded-pill px-[5px] py-[7px] text-[12px] font-medium leading-none underline underline-offset-[3px]',
+  'text-text-tertiary transition duration-reveal ease-reveal hover:text-brand-primary',
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
   'focus-visible:ring-offset-section-bg-card motion-reduce:transition-none',
 )
@@ -66,7 +87,7 @@ function Toggle({
       disabled={disabled}
       onClick={() => onChange?.(!checked)}
       className={cn(
-        'relative mt-0.5 h-[22px] w-[38px] shrink-0 rounded-pill',
+        'relative mt-[1px] h-[18px] w-[32px] shrink-0 rounded-pill',
         'transition duration-reveal ease-reveal motion-reduce:transition-none',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
         'focus-visible:ring-offset-section-bg-card',
@@ -79,7 +100,7 @@ function Toggle({
       <span
         aria-hidden="true"
         className={cn(
-          'absolute top-[3px] h-4 w-4 rounded-full transition-all duration-reveal ease-reveal motion-reduce:transition-none',
+          'absolute top-[3px] h-[12px] w-[12px] rounded-full transition-all duration-reveal ease-reveal motion-reduce:transition-none',
           disabled
             ? 'right-[3px] bg-text-tertiary'
             : checked
@@ -105,10 +126,10 @@ function Row({
   onChange?: (next: boolean) => void
 }) {
   return (
-    <div className="flex items-start gap-3.5 border-t border-border-subtle py-3.5">
+    <div className="flex items-start gap-[10px] border-t border-border-subtle py-[9px]">
       <div className="flex-1">
-        <h3 className="mb-1 text-[13.5px] font-semibold text-text-primary">{title}</h3>
-        <p className="text-[12.5px] leading-[1.5] text-text-tertiary">{body}</p>
+        <h3 className="mb-[2px] text-[12px] font-semibold text-text-primary">{title}</h3>
+        <p className="text-[11px] leading-[1.45] text-text-tertiary">{body}</p>
       </div>
       <Toggle checked={checked} disabled={disabled} onChange={onChange} label={title} />
     </div>
@@ -153,13 +174,13 @@ function PreferencesPanel({
         tabIndex={-1}
         role="dialog"
         aria-label={UI_STRINGS['cookie.panelTitle']}
-        className={cn(SHELL, 'sm:w-[420px]', enter)}
+        className={cn(SHELL, 'sm:w-[330px]', enter)}
       >
         <div>
-          <h2 className="text-[15px] font-semibold text-text-primary">
+          <h2 className="text-[13px] font-semibold text-text-primary">
             {UI_STRINGS['cookie.panelTitle']}
           </h2>
-          <p className="mt-1 text-[13px] leading-[1.55] text-text-secondary">
+          <p className="mt-[3px] text-[11.5px] leading-[1.5] text-text-secondary">
             {UI_STRINGS['cookie.panelIntro']}
           </p>
         </div>
@@ -188,7 +209,7 @@ function PreferencesPanel({
         {/* Reject all stays reachable from this layer too, so opening the
           * detail view is never a one-way trip into a screen where the only
           * way out is to agree to something. */}
-        <div className="flex flex-wrap items-center gap-2 border-t border-border-subtle pt-4">
+        <div className="flex flex-wrap items-center gap-[6px] border-t border-border-subtle pt-[11px]">
           <button
             type="button"
             className={BTN_PRIMARY}
@@ -243,12 +264,12 @@ export function CookieBanner({ locale }: { locale: Locale }) {
     <div
       role="region"
       aria-label={UI_STRINGS['cookie.bannerAriaLabel']}
-      className={cn(SHELL, 'sm:w-96', enter)}
+      className={cn(SHELL, enter)}
     >
-      <p className="text-[15px] font-semibold text-text-primary">
+      <p className="text-[13px] font-semibold text-text-primary">
         {UI_STRINGS['cookie.bannerTitle']}
       </p>
-      <p className="text-[13.5px] leading-[1.55] text-text-secondary">
+      <p className="text-[11.5px] leading-[1.5] text-text-secondary">
         {UI_STRINGS['cookie.bannerBody']}{' '}
         <Link
           href={buildLocalePath(COOKIE_POLICY_PATH, locale)}
@@ -261,7 +282,7 @@ export function CookieBanner({ locale }: { locale: Locale }) {
         * that rejecting is as easy as accepting; anything that shrinks, hides
         * or demotes Reject fails it. Accept carries the lime because it is the
         * primary action, which is allowed - unequal prominence is not. */}
-      <div className="mt-0.5 flex flex-wrap items-center gap-2">
+      <div className="mt-[1px] flex flex-wrap items-center gap-[6px]">
         <button type="button" className={cn(BTN_PRIMARY, 'flex-1 sm:flex-none')} onClick={acceptAll}>
           {UI_STRINGS['cookie.acceptAll']}
         </button>
