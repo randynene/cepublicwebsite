@@ -15,6 +15,7 @@ import {
   fetchCalculatorPage,
   type CalculatorPageId,
 } from '@/lib/sanity/queries/calculator-page'
+import { resolvePageTitle } from '@/lib/seo/page-title'
 import { serializeJsonLd } from '@/lib/seo/serialize-json-ld'
 import { UI_STRINGS } from '@/lib/ui-strings'
 import type { FaqItem } from '@/types/sanity/shared'
@@ -33,7 +34,15 @@ export async function buildCalculatorMetadata(
   const page = await fetchCalculatorPage(id)
   if (!page) return {}
 
-  const title = page.metaTitle ?? page.title
+  // A stored meta title is the WHOLE title, exactly as on every other template.
+  // Passing it raw let Next's `%s | Cloud Employee` layout template append the
+  // brand a second time, so a stored "… | Cloud Employee" rendered doubled in
+  // the SERP. resolvePageTitle marks it absolute and collapses the repeat.
+  const rawTitle = page.metaTitle ?? page.title
+  const title = resolvePageTitle(rawTitle)
+  // og:title and twitter:title take a plain string, not Next's title object,
+  // so they reuse the same collapsed text rather than the raw stored value.
+  const socialTitle = typeof title === 'object' && 'absolute' in title ? title.absolute : rawTitle
   const description = page.metaDescription ?? undefined
   const canonical = generateCanonical(usPath, locale)
 
@@ -50,14 +59,14 @@ export async function buildCalculatorMetadata(
     ...(noindex ? { robots: { index: false, follow: true } } : {}),
     alternates: { canonical, languages: generateHreflang(usPath) },
     openGraph: {
-      title,
+      title: socialTitle,
       ...(description ? { description } : {}),
       url: canonical,
       type: 'website',
     },
     twitter: {
       card: 'summary_large_image',
-      title,
+      title: socialTitle,
       ...(description ? { description } : {}),
     },
   }

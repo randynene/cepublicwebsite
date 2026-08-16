@@ -128,6 +128,7 @@
     "static:seed-about-us-page": "tsx scripts/static/seed-about-us-page.ts",
     "static:seed-contact-page": "tsx scripts/static/seed-contact-page.ts",
     "static:seed-hire-engineers-market": "tsx scripts/static/seed-hire-engineers-market-pages.ts",
+    "static:patch-meta-dashes": "tsx scripts/static/patch-meta-dashes-and-gaps.ts",
     "static:patch-nav-restore-about-us": "tsx scripts/static/patch-nav-restore-about-us.ts",
     "static:patch-nav-remove-about-us": "tsx scripts/static/patch-nav-remove-about-us.ts",
     "static:verify-fe2-parity": "tsx scripts/static/verify-fe2-parity.ts",
