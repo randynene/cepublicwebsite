@@ -122,6 +122,58 @@ body {
     }
   }
 
+  /* Pricing hero "See pricing" cue — a soft lime glow that breathes, plus the
+     chevron drifting down a few px, so the affordance reads as "there is more
+     below" without being a button. Both are opacity/transform/filter only, so
+     nothing here can shift layout. Hover pauses it: once the pointer is on the
+     link the invitation has landed and the movement is just noise. */
+  html.motion-ready .see-pricing-cue {
+    animation: see-pricing-glow 3s ease-in-out infinite;
+  }
+  html.motion-ready .see-pricing-cue svg {
+    animation: see-pricing-nudge 3s ease-in-out infinite;
+  }
+  html.motion-ready .see-pricing-cue:hover,
+  html.motion-ready .see-pricing-cue:hover svg {
+    animation-play-state: paused;
+  }
+  @keyframes see-pricing-glow {
+    0%,
+    100% {
+      filter: drop-shadow(0 0 6px rgba(212, 255, 60, 0.28));
+    }
+    50% {
+      filter: drop-shadow(0 0 16px rgba(212, 255, 60, 0.6));
+    }
+  }
+  @keyframes see-pricing-nudge {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(4px);
+    }
+  }
+
+  /* Pricing calculator email gate — the card rises into place over the blurred
+     calculator. Entrance only (fill-mode backwards), so nothing is left pinned
+     once it lands. Whole block is inside prefers-reduced-motion: no-preference,
+     so the card simply appears for anyone who has asked for less motion. */
+  html.motion-ready .pricing-gate-card {
+    animation: pricing-gate-rise 280ms cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  }
+  @keyframes pricing-gate-rise {
+    from {
+      opacity: 0;
+      transform: translateY(12px) scale(0.99);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
   /* Process video card play button — slow continuous pulse, paused on hover
      (the existing group-hover:scale-105 utility takes over instead) and
      paused entirely under reduced motion (whole block doesn't match). */
@@ -320,8 +372,17 @@ body {
     order: 2;
     flex: 1 1 100%;
   }
+  /* The AI pill is hidden, not reordered, below 760px (Jake, Aug 2026).
+     The floating Clara bar ("Ask about our services...") is pinned to the
+     bottom of the viewport on every page that renders this pill, so on a phone
+     the visitor was being offered the same assistant twice within one screen -
+     and the floating one is the better target, being always in reach.
+     SAFE SITEWIDE: the three pages where Clara is suppressed (/ask,
+     /book-a-call, /for-developers) either do not render this bar at all or
+     already pass showAi={false} (for-engineers), so this never removes the
+     only route to the assistant. Desktop is untouched. */
   .hero-trust-bar .htb-ai {
-    order: 3;
+    display: none;
   }
 }
 

@@ -57,11 +57,13 @@ export interface PricingHero {
   titleAccent: string
   paragraph: string
   pills: TrustPill[]
+  /** Text of the scroll cue under the trust bar. Not a CTA - see SeePricingCue. */
+  seePricingLabel: string
   /** @deprecated Single rotated photo card. Superseded by `cards` (the
    *  three-card stack). Kept so an existing Sanity hero object still validates. */
   candidate: Candidate
-  /** Three overlapping talent-profile cards, back to front. Code-owned layout
-   *  shared with the home + location heroes (HeroCards). */
+  /** @deprecated The hero went to a centred single column (Aug 2026) and no
+   *  longer renders a card stack. Kept so an existing Sanity hero validates. */
   cards: Candidate[]
 }
 
@@ -114,6 +116,33 @@ export interface CalcModel {
   hoursPerMonth: number
 }
 
+/**
+ * Copy for the email gate that sits over the calculator on first visit.
+ *
+ * The calculator itself is unchanged behind it: it renders blurred and inert
+ * until the visitor picks a currency and gives a work email, at which point the
+ * unlock is remembered in localStorage and the chosen currency is pushed into
+ * the calculator's own dropdown. Every string lives here rather than in the JSX
+ * so Sanity can override it later, same contract as the rest of this section.
+ */
+export interface PricingCalculatorGate {
+  /** Mono micro-label beside the pulsing dot. */
+  statusLabel: string
+  heading: string
+  body: string
+  currencyLabel: string
+  emailPlaceholder: string
+  emailError: string
+  submitLabel: string
+  /** Shown on the button while the lead POST is in flight. */
+  submittingLabel: string
+  reassurance: string
+  /** Post-unlock strip. `{email}` is substituted with the address given. */
+  unlockedTemplate: string
+  unlockedCta: string
+  unlockedCtaHref: string
+}
+
 export interface PricingCalculator {
   eyebrow: string
   titleLead: string
@@ -147,6 +176,7 @@ export interface PricingCalculator {
   breakdownSavedTemplate: string
   breakdownCta: string
   breakdownCtaHref: string
+  gate: PricingCalculatorGate
   model: CalcModel
 }
 
@@ -253,6 +283,7 @@ export const PRICING_CONTENT: PricingContent = {
     titleAccent: 'fair price',
     paragraph:
       'Take your budget further with Cloud Employee engineers. One fixed monthly fee, in your currency. No hourly rates. No variable invoices. No surprises.',
+    seePricingLabel: 'See pricing',
     pills: [
       { value: '300+', label: 'Teams built' },
       { value: '97%', label: 'Stay 2+ years' },
@@ -335,6 +366,20 @@ export const PRICING_CONTENT: PricingContent = {
     breakdownSavedTemplate: 'vs. hiring in the US: {amount}/yr saved',
     breakdownCta: 'Get matched at this rate',
     breakdownCtaHref: '/book-a-call',
+    gate: {
+      statusLabel: 'Live calculator - locked',
+      heading: 'See your monthly cost by role and region',
+      body: 'Pick a currency, add your work email, and the live numbers open instantly - plus a copy in your inbox you can forward.',
+      currencyLabel: 'Your currency',
+      emailPlaceholder: 'Work email',
+      emailError: 'Enter a valid work email so we can send your numbers.',
+      submitLabel: 'Unlock the calculator',
+      submittingLabel: 'Unlocking...',
+      reassurance: "No spam. We'll email your numbers so you can share them internally.",
+      unlockedTemplate: "Unlocked for {email} - we've emailed this breakdown to you.",
+      unlockedCta: 'Get matched at this rate',
+      unlockedCtaHref: '/book-a-call',
+    },
     model: {
       // Default cell (Eastern Europe / United Kingdom / GBP) reproduces the
       // design: CE GBP 3,770-6,786 vs UK GBP 8,099-14,356.

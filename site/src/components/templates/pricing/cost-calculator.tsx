@@ -14,9 +14,8 @@ import type { PricingCalculator } from './content'
 // figures exactly; other selections recompute by ratio off the same table.
 //
 // Layout (fidelity pass): three equal-height columns - [input stack | CE card |
-// comparison card] - inside one elevated container; then, as separate blocks on
-// the page background, a centered toggle and a standalone breakdown card that
-// expands/collapses with a reduced-motion-safe animation.
+// comparison card] - and nothing below them. The all-in-rate panel that used to
+// sit underneath was removed in Aug 2026; see the note at the foot of the JSX.
 //
 // NOTE (flag for Seb / pre-launch): the non-default benchmark cells in
 // CALC_MODEL are design-illustrative and should be reconciled against the live
@@ -94,7 +93,14 @@ function Field({
   )
 }
 
-export function CostCalculator({ content }: { content: PricingCalculator }) {
+export function CostCalculator({
+  content,
+  initialCurrencyId,
+}: {
+  content: PricingCalculator
+  /** Currency chosen at the email gate, so the unlocked view opens on it. */
+  initialCurrencyId?: string
+}) {
   const { model } = content
   // Default to the UK cell so the opening view reproduces the design's figures,
   // regardless of the dropdown's option order.
@@ -103,7 +109,21 @@ export function CostCalculator({ content }: { content: PricingCalculator }) {
   const [devs, setDevs] = useState(1)
   const [countryId, setCountryId] = useState(defaultCountry)
   const [regionId, setRegionId] = useState(model.regions[0]?.id ?? '')
-  const [currencyId, setCurrencyId] = useState(model.currencies[0]?.id ?? '')
+  const [currencyId, setCurrencyId] = useState(initialCurrencyId ?? model.currencies[0]?.id ?? '')
+
+  // The gate mounts locked, so its currency choice arrives after this component
+  // has already mounted on the default. Adopt it when it lands (and if it ever
+  // changes), but never fight a later choice made in the dropdown itself.
+  //
+  // Adjusted during render rather than in an effect: that is React's documented
+  // way to derive state from a changed prop, and it re-renders before the
+  // browser paints, so the old currency is never briefly shown.
+  // https://react.dev/reference/react/useState#storing-information-from-previous-renders
+  const [seenInitial, setSeenInitial] = useState(initialCurrencyId)
+  if (initialCurrencyId && initialCurrencyId !== seenInitial) {
+    setSeenInitial(initialCurrencyId)
+    setCurrencyId(initialCurrencyId)
+  }
 
   const view = useMemo(() => {
     const region = model.regions.find((r) => r.id === regionId) ?? model.regions[0]
@@ -121,11 +141,6 @@ export function CostCalculator({ content }: { content: PricingCalculator }) {
     const savingsGbp = locAnnualMid - ceAnnualMid
     const pctHigher = Math.round(((locAnnualMid - ceAnnualMid) / locAnnualMid) * 100)
 
-    const breakdownTotal = model.breakdownTotalAmount
-    const usCountry = model.countries.find((c) => c.id === 'united-states') ?? country
-    const usAnnualMid = ((usCountry.localMonthly[0] + usCountry.localMonthly[1]) / 2) * 12
-    const breakdownSavedGbp = usAnnualMid - breakdownTotal * 12
-
     return {
       symbol,
       rate,
@@ -142,11 +157,6 @@ export function CostCalculator({ content }: { content: PricingCalculator }) {
         pctHigher: `${pctHigher}% ${content.higherCostSuffix}`,
       },
       savings: `${content.saveAvgPrefix} ${fmtMoney(savingsGbp, symbol, rate)}${content.saveAvgYearSuffix}`,
-      breakdown: {
-        total: fmtMoney(breakdownTotal, symbol, rate),
-        intro: `${content.breakdownIntroPrefix} ${fmtMoney(breakdownTotal, symbol, rate)}/mo, ${content.breakdownIntroSuffix}`,
-        saved: content.breakdownSavedTemplate.replace('{amount}', fmtMoney(breakdownSavedGbp, symbol, rate)),
-      },
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [devs, countryId, regionId, currencyId, model])
@@ -264,43 +274,22 @@ export function CostCalculator({ content }: { content: PricingCalculator }) {
         </div>
       </div>
 
-      {/* The show/hide toggle came out on Jake's instruction (Aug 2026).
+      {/* The all-in rate panel came out on Jake's instruction (Aug 2026).
        *
-       * It existed to collapse a long itemised table. CE-29 removed those line
-       * items, so the panel is now a single all-in figure - and a button that
-       * collapses one number is furniture, not a control. The panel is always
-       * open; `breakdownShowLabel` / `breakdownHideLabel` are consequently
-       * unread (left in the schema rather than removed mid-flight, same as the
-       * orphaned fields in Tech Debt #62/#63). */}
-      <div>
-        <div>
-          <div className="mx-auto max-w-[900px] rounded-[20px] bg-[#101B30] p-6 shadow-[inset_0_0_0_1px_#22314D,0_30px_50px_rgba(0,0,0,.35)] lg:p-8">
-            <p className="text-[12px] font-semibold uppercase tracking-[1.6px] text-brand-primary">
-              {content.breakdownEyebrow}
-            </p>
-            <p className="mt-2 text-[15px] text-text-default/70">{view.breakdown.intro}</p>
-
-            <div className="mt-6 flex items-center justify-between gap-4 rounded-[14px] bg-[#1B2A45] px-6 py-5">
-              <span className="text-[13px] font-semibold uppercase tracking-[1.2px] text-text-default/70">
-                {content.breakdownTotalLabel}
-              </span>
-              <span className="text-[44px] font-extrabold leading-none tabular-nums text-brand-primary lg:text-[52px]">
-                {view.breakdown.total}
-              </span>
-            </div>
-
-            <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
-              <p className="text-[14px] text-text-default/60">{view.breakdown.saved}</p>
-              <a
-                href={content.breakdownCtaHref}
-                className="sf sf-p inline-flex items-center rounded-pill px-5 py-2.5 text-[14px] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-[#070D18]"
-              >
-                <span className="c">{content.breakdownCta}</span>
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
+       * History: it was an itemised table, CE-29 collapsed it to a single all-in
+       * figure, and the show/hide toggle went with it. This removes the panel
+       * outright. Two reasons it had stopped earning its place: with the email
+       * gate in front of the calculator it was the second "Get matched at this
+       * rate" CTA within ~200px of the first (the unlock strip now carries the
+       * only one), and it published a hard headline rate on an indexable page
+       * for one reference role, which is the same exposure CE-29 was narrowing.
+       *
+       * Its content fields (`breakdownEyebrow`, `breakdownIntroPrefix` /
+       * `Suffix`, `breakdownTotalLabel`, `breakdownSavedTemplate`,
+       * `breakdownCta` / `Href`, `breakdownShowLabel` / `HideLabel`, and the
+       * model's `breakdownTotalAmount` / `breakdownRole`) are now unread. Left
+       * in the schema rather than removed mid-flight, same posture as the
+       * orphaned fields in Tech Debt #62/#63 - see the note there. */}
     </div>
   )
 }
