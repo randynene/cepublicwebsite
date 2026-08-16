@@ -21,6 +21,7 @@ const FRACTIONAL_CTO_QUERY = /* groq */ `
   metaDescription,
   hero{
     eyebrow, h1Lead, h1Em, sub, ctaPrimary, ctaGhost, trust,
+    match{ label, badge, footnote, rows[]{ icon, title, meta, price, priceGbp, per } },
     cards[]{ role, days, name, cred, tags, left, top, rot, "image": image.asset->url },
     statusPills[]{ label, icon, left, top }
   },
@@ -229,9 +230,16 @@ export function toFctoContent(data: FractionalCtoPageData): FctoContent {
   const hero: FctoContent['hero'] = c.hero
     ? {
         ...c.hero,
-        // The hero visual is the code-owned "Your match" panel; Sanity does not
-        // carry it yet, so it always comes from the static content.
-        match: FCTO.hero.match,
+        // CE-68: the "Your match" panel is Sanity-owned now. It used to be
+        // spliced from FCTO unconditionally, which meant the prices could not
+        // be edited in Studio at all - changing three numbers needed a deploy.
+        //
+        // The fallback still matters. It covers a dataset seeded before this
+        // field existed, and an editor who empties the tier list. Falling back
+        // per-field rather than wholesale would let a half-filled panel render
+        // with a heading and no prices, so the whole panel is taken from one
+        // source or the other.
+        match: c.hero.match?.rows?.length ? c.hero.match : FCTO.hero.match,
         cards: (c.hero.cards ?? []).map((card, i) => ({
           ...card,
           left: FCTO.hero.cards[i]?.left ?? card.left,

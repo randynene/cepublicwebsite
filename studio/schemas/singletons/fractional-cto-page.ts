@@ -84,6 +84,82 @@ const pairMember = (name: string, aTitle: string, bTitle: string, aKey: string, 
 
 // ── Section objects ─────────────────────────────────────────────────────
 
+// CE-68 (Aug 2026): the priced "Your match" panel in the hero. It used to be
+// hardcoded in the template, which is why changing three numbers became a
+// support ticket - Seb could see the panel on the page but had no field to edit.
+// Every string in it is editable here now.
+//
+// Two prices per row, deliberately. One page serves both locales: the US route
+// reads `price` and /uk/ reads `priceGbp`. The template picks between them and
+// never converts, so an FX move means editing both fields.
+const matchRowMember = defineArrayMember({
+  type: 'object',
+  name: 'fctoMatchRow',
+  title: 'Priced tier',
+  fields: [
+    defineField({
+      name: 'icon',
+      title: 'Icon',
+      type: 'string',
+      options: {
+        list: [
+          { title: 'Trend (scaling)', value: 'trend' },
+          { title: 'Spark (AI)', value: 'spark' },
+          { title: 'Idea (seed)', value: 'idea' },
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'trend',
+    }),
+    defineField({ name: 'title', title: 'Tier name', type: 'string' }),
+    defineField({
+      name: 'meta',
+      title: 'Detail line',
+      type: 'string',
+      description: 'Sits under the tier name, e.g. "Series A - scaled eng team 5+ - 2 days/week".',
+    }),
+    defineField({
+      name: 'price',
+      title: 'Price (US page)',
+      type: 'string',
+      description: 'Shown on /services/fractional-ctos. Include the symbol, e.g. "$7,000".',
+    }),
+    defineField({
+      name: 'priceGbp',
+      title: 'Price (UK page)',
+      type: 'string',
+      description: 'Shown on /uk/services/fractional-ctos. Include the symbol, e.g. "£5,500".',
+    }),
+    defineField({
+      name: 'per',
+      title: 'Unit',
+      type: 'string',
+      description: 'Follows the price, e.g. "/ mo".',
+      initialValue: '/ mo',
+    }),
+  ],
+  preview: {
+    select: { title: 'title', price: 'price', priceGbp: 'priceGbp', per: 'per' },
+    prepare: ({ title, price, priceGbp, per }) => ({
+      title: title || 'Untitled tier',
+      subtitle: `${[price, priceGbp].filter(Boolean).join('  /  ')}${per ? ` ${per}` : ''}`,
+    }),
+  },
+})
+
+const heroMatchField = defineField({
+  name: 'match',
+  title: 'Your match panel',
+  type: 'object',
+  options: { collapsible: true, collapsed: false },
+  fields: [
+    defineField({ name: 'label', title: 'Panel label', type: 'string' }),
+    defineField({ name: 'badge', title: 'Badge', type: 'string' }),
+    defineField({ name: 'rows', title: 'Priced tiers', type: 'array', of: [matchRowMember] }),
+    defineField({ name: 'footnote', title: 'Footnote', type: 'string' }),
+  ],
+})
+
 const heroSection = defineField({
   name: 'hero',
   title: 'Hero',
@@ -97,6 +173,7 @@ const heroSection = defineField({
     defineField({ name: 'ctaPrimary', title: 'Primary CTA', type: 'string' }),
     defineField({ name: 'ctaGhost', title: 'Secondary CTA', type: 'string' }),
     defineField({ name: 'trust', title: 'Trust chips', type: 'array', of: [{ type: 'string' }] }),
+    heroMatchField,
     defineField({ name: 'cards', title: 'Hero cards', type: 'array', of: [heroCardMember] }),
     defineField({ name: 'statusPills', title: 'Status pills', type: 'array', of: [statusPillMember] }),
   ],
