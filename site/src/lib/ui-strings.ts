@@ -144,6 +144,7 @@ export const UI_STRINGS = {
   "customerStory.actTwo": "Act two",
   "customerStory.actThree": "Act three",
   "customerStory.ctaHeading": "Scale with confidence",
+  "customerStory.playVideo": "Play video",
   "downloadThankYou.eyebrow": "Download ready",
   "downloadThankYou.heading": "Your download is on its way",
   "downloadThankYou.message": "We've emailed you a copy for safekeeping. Grab it right now with the button below.",

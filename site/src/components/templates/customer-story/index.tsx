@@ -13,6 +13,8 @@ import type {
   StorySection,
 } from '@/types/sanity/documents/customer-story'
 
+import { CustomerStoryHeroVideo } from './hero-video'
+
 export interface CustomerStoryTemplateProps {
   story: CustomerStory
   locale: Locale
@@ -125,13 +127,28 @@ function QuoteMark() {
   )
 }
 
-// Parse a Vimeo numeric id for a background (autoplay/muted/loop) hero video.
+// Parse a Vimeo hero video reference into the parts an embed src needs.
 // Local parse (not the E2 primitive) because E2's lite/eager modes are poster
 // embeds, not the background=1 ambient loop the design uses. Composing a native
 // iframe here is NOT forking a primitive.
-function parseVimeoId(url: string): string | null {
-  const match = url.match(/(?:player\.)?vimeo\.com\/(?:video\/)?(\d+)/)
-  return match ? match[1] : null
+//
+// CE-69: the id alone is not always enough. An UNLISTED video carries a privacy
+// hash, and Vimeo returns 401 for an embed that omits it. Only the SQR story is
+// unlisted today, which is why only that page looked like it had no video at
+// all, but the hash is read off the URL rather than special-cased so the next
+// unlisted upload works without a code change. Vimeo writes the hash two ways
+// and both are accepted here: as an `h` query param, and as a second path
+// segment (vimeo.com/<id>/<hash>).
+export interface VimeoEmbedRef {
+  id: string
+  hash: string | null
+}
+
+function parseVimeoRef(url: string): VimeoEmbedRef | null {
+  const match = url.match(/(?:player\.)?vimeo\.com\/(?:video\/)?(\d+)(?:\/([A-Za-z0-9]+))?/)
+  if (!match) return null
+  const queryHash = url.match(/[?&]h=([A-Za-z0-9]+)/)
+  return { id: match[1], hash: queryHash?.[1] ?? match[2] ?? null }
 }
 
 function CompanyLogoSlot({
@@ -235,7 +252,7 @@ function StoryFold({
 export default function CustomerStoryTemplate({
   story,
 }: CustomerStoryTemplateProps) {
-  const vimeoId = story.videoUrl ? parseVimeoId(story.videoUrl) : null
+  const vimeo = story.videoUrl ? parseVimeoRef(story.videoUrl) : null
   const heroImage = story.companyProductImage?.asset
     ? story.companyProductImage
     : story.companyPeopleImage?.asset
@@ -285,17 +302,26 @@ export default function CustomerStoryTemplate({
             </div>
           </header>
 
-          {/* Hero media — background Vimeo loop when present, else product/
+          {/* Hero media - background Vimeo loop when present, else product/
               people image. No fabricated placeholder when both are absent. */}
-          {(vimeoId || heroImage) && (
+          {(vimeo || heroImage) && (
             <div className={cn(BAND_PX_CLASS, 'pt-[40px]')}>
-              <div className="relative aspect-[1152/600] w-full overflow-hidden rounded-[24px] border border-[#22314D] bg-[#070D18]">
-                {vimeoId ? (
-                  <iframe
-                    src={`https://player.vimeo.com/video/${vimeoId}?background=1&autoplay=1&loop=1&muted=1`}
+              {/* CE-62: a video frame is 16:9 so the picture fills it (the old
+                  1152/600 frame pillarboxed every 16:9 clip, which is where the
+                  white bars came from). The image frame keeps its designed
+                  1152/600 shape - stills are cropped to it, so it has nothing
+                  to letterbox. */}
+              <div
+                className={cn(
+                  'relative w-full overflow-hidden rounded-[24px] border border-[#22314D] bg-[#070D18]',
+                  vimeo ? 'aspect-video' : 'aspect-[1152/600]',
+                )}
+              >
+                {vimeo ? (
+                  <CustomerStoryHeroVideo
+                    vimeoId={vimeo.id}
+                    vimeoHash={vimeo.hash}
                     title={story.customerStoryTitle}
-                    allow="autoplay; fullscreen; picture-in-picture"
-                    className="absolute inset-0 h-full w-full border-0"
                   />
                 ) : (
                   heroImage && (
