@@ -6,25 +6,12 @@
 // times means three places to get the spam rules wrong and three places to forget
 // a field. So the doors differ, the pipe does not.
 //
-// THIS *IS* THE NOTIFICATION FOR THIS FORM, as of 16 Aug 2026.
-//
-// It used to be only a safety net, on the reasoning that HubSpot's 14 enabled
-// workflows already announce leads and posting again would put everything in the
-// channel twice. The forms audit disproved the premise: the workflow that
-// creates deals and announces leads watches two form ids, 05bfad44 and 4b883c7d
-// (/contact), and the quick hiring form submits to 8f974ef4. It matched
-// nothing. A successful submission created a contact, produced no deal, and
-// announced itself to nobody - on the primary conversion path across nine
-// pages.
-//
-// So a successful lead is now posted too, not just a failed one. That is
-// additive rather than duplicative: the double-posting concern still applies to
-// /contact and to bookings, and this endpoint does not serve those.
-//
-// It is also the only way the team hears about a lead promptly. HubSpot's
-// workflows carry deliberate built-in waits (15 minutes on the MQL workflow),
-// which is why notifications lagged. Those live in HubSpot and no code here
-// changes them.
+// WHAT THIS IS NOT. It is NOT the primary Slack notification. HubSpot already has
+// 14 enabled workflows posting into Slack, including the ones that announce
+// bookings and MQLs (see docs/hubspot-slack-notifications.md). Duplicating those
+// would put every lead in the channel twice, and a channel that repeats itself is
+// one people stop reading. The Slack post here is the SAFETY NET: if HubSpot
+// rejects a submission, HubSpot cannot tell you it rejected it, and this can.
 //
 // THE ORDER OF FAILURE MATTERS. If HubSpot is down or rejects the payload, the
 // visitor still continues to the booking step. Losing the CRM record is bad;
@@ -41,13 +28,16 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 
 import { env } from '@/lib/env'
-import { notifyJunk, notifySlack } from '@/lib/leads/notify'
 
 export const runtime = 'nodejs'
 
 /** Created by scripts/hubspot/create-quick-hiring-form.ts. */
 const QUICK_HIRING_FORM_GUID =
   process.env.HUBSPOT_QUICK_HIRING_FORM_GUID ?? '8f974ef4-a3dd-4bba-ad3a-086054ac235b'
+
+const SLACK_LEADS_WEBHOOK_URL = process.env.SLACK_LEADS_WEBHOOK_URL
+/** Optional. Without it, suspected junk is recorded in HubSpot and not announced. */
+const SLACK_JUNK_WEBHOOK_URL = process.env.SLACK_JUNK_WEBHOOK_URL
 
 /**
  * Phrases seen in real junk on this portal, plus the standard outreach openers.
@@ -162,9 +152,20 @@ function slackText(lead: Lead, note: string): string {
   return lines.join('\n')
 }
 
-// Posting moved to @/lib/leads/notify so this endpoint and /api/pricing-unlock
-// share one transport. Both had their own copy, and both were dead: they only
-// spoke webhook, and SLACK_LEADS_WEBHOOK_URL was never set anywhere.
+async function postToSlack(url: string | undefined, text: string): Promise<boolean> {
+  if (!url) return false
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+    })
+    return res.ok
+  } catch {
+    // A Slack outage must never fail a lead. It is the backup, not the record.
+    return false
+  }
+}
 
 export async function POST(request: Request): Promise<NextResponse> {
   let parsed: Lead
@@ -184,20 +185,17 @@ export async function POST(request: Request): Promise<NextResponse> {
   const hubspot = await submitToHubSpot(parsed)
 
   if (junkReason) {
-    await notifyJunk(slackText(parsed, `:wastebasket: Filtered as junk (matched \`${junkReason}\`)`))
-  } else {
-    // Every real lead, whether or not HubSpot took it. No HubSpot workflow
-    // watches this form, so if we stay quiet nobody hears about it at all.
-    const note = hubspot.ok
-      ? ':inbox_tray: *New lead* from the hiring form'
-      : `:rotating_light: *New lead - DID NOT REACH HUBSPOT* (${hubspot.detail})`
-    const outcome = await notifySlack(slackText(parsed, note))
-    if (outcome !== 'sent') {
-      // Loud on purpose. A silent notifier is what caused this: the previous
-      // version returned early on a missing webhook and looked healthy while
-      // announcing nothing.
-      console.error(`[lead] Slack notification ${outcome} for ${parsed.email}`)
-    }
+    await postToSlack(
+      SLACK_JUNK_WEBHOOK_URL,
+      slackText(parsed, `:wastebasket: Filtered as junk (matched \`${junkReason}\`)`),
+    )
+  } else if (!hubspot.ok) {
+    // The one case the safety net exists for: HubSpot did not take it, so HubSpot's
+    // own workflows will never announce it, and without this nobody would know.
+    await postToSlack(
+      SLACK_LEADS_WEBHOOK_URL,
+      slackText(parsed, `:rotating_light: *Lead did NOT reach HubSpot* (${hubspot.detail})`),
+    )
   }
 
   if (parsed.customSkills.length > 0) {
