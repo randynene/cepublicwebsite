@@ -80,7 +80,20 @@ async function hs(path: string, init?: RequestInit): Promise<unknown | null> {
   }
 }
 
-/** Contacts created in this run's slice. */
+/**
+ * Contacts TOUCHED in this run's slice.
+ *
+ * Deliberately `lastmodifieddate` rather than `createdate`. Watching creations
+ * only announces people HubSpot has never seen, which silently drops the single
+ * most valuable case: somebody who spoke to Clara last month, thought about it,
+ * and has come back to unlock pricing. They are not a new contact, so a
+ * creation-based watcher says nothing about them - and they are further down the
+ * funnel than anyone arriving for the first time.
+ *
+ * The cost is noise: a rep editing a contact by hand also bumps the modified
+ * date. That is filtered downstream by requiring a real website interaction - a
+ * form submission or a meeting inside the window - before anything is announced.
+ */
 async function contactsInSlice(): Promise<HsContact[]> {
   const now = Date.now()
   const to = new Date(now - WINDOW_MINUTES * 60_000).toISOString()
@@ -90,8 +103,8 @@ async function contactsInSlice(): Promise<HsContact[]> {
     filterGroups: [
       {
         filters: [
-          { propertyName: 'createdate', operator: 'GTE', value: from },
-          { propertyName: 'createdate', operator: 'LT', value: to },
+          { propertyName: 'lastmodifieddate', operator: 'GTE', value: from },
+          { propertyName: 'lastmodifieddate', operator: 'LT', value: to },
         ],
       },
     ],
@@ -100,7 +113,7 @@ async function contactsInSlice(): Promise<HsContact[]> {
       'mql_tier', 'lifecyclestage', 'createdate', 'ip_country',
       'hs_analytics_source', 'hs_analytics_first_url', 'message',
     ],
-    sorts: [{ propertyName: 'createdate', direction: 'ASCENDING' }],
+    sorts: [{ propertyName: 'lastmodifieddate', direction: 'ASCENDING' }],
     limit: 50,
   }
   const json = (await hs('/crm/v3/objects/contacts/search', {
@@ -111,12 +124,16 @@ async function contactsInSlice(): Promise<HsContact[]> {
 }
 
 /**
- * Which form did they come through?
+ * Recent submissions across every live form, as one email -> form map.
  *
- * Read from the submissions API rather than inferred from contact properties,
- * because the properties do not record it and guessing would be wrong often
- * enough to matter - a pricing unlock and a hiring enquiry look identical on the
- * contact record. Each live form is checked for a submission from this email.
+ * Built once per run rather than per contact. The naive version asked "did this
+ * email submit this form?" for each contact and each form, which is 3 calls per
+ * contact; this is 3 calls total regardless of how many leads are in the slice.
+ *
+ * It does double duty. It says WHICH form they used - a pricing unlock and a
+ * hiring enquiry are indistinguishable on the contact record - and it proves a
+ * website interaction actually happened, which is what separates a real lead
+ * from a rep editing a contact by hand.
  */
 const LIVE_FORMS: Array<{ id: string; label: string; intent: string }> = [
   { id: '8f974ef4-a3dd-4bba-ad3a-086054ac235b', label: 'Quick hiring form', intent: 'Wants to hire engineers' },
@@ -124,25 +141,54 @@ const LIVE_FORMS: Array<{ id: string; label: string; intent: string }> = [
   { id: '4b883c7d-72c1-4f9c-8196-de68fce303d6', label: 'Contact form', intent: 'Sent a message via the contact form' },
 ]
 
-async function formUsed(email: string): Promise<{ label: string; intent: string } | null> {
-  for (const f of LIVE_FORMS) {
-    const json = (await hs(`/form-integrations/v1/submissions/forms/${f.id}?limit=20`)) as
-      | { results?: Array<{ values?: Array<{ name: string; value: string }> }> }
-      | null
-    const hit = (json?.results ?? []).some((s) =>
-      (s.values ?? []).some((v) => v.name === 'email' && v.value?.toLowerCase() === email.toLowerCase()),
-    )
-    if (hit) return { label: f.label, intent: f.intent }
-  }
-  return null
+interface Submission {
+  label: string
+  intent: string
+  at: number
 }
 
-/** Did they book a meeting in the window? That is the escalation worth reporting. */
-async function bookedMeeting(contactId: string): Promise<boolean> {
-  const json = (await hs(`/crm/v4/objects/contacts/${contactId}/associations/meetings`)) as
-    | { results?: unknown[] }
+async function recentSubmissions(since: number): Promise<Map<string, Submission>> {
+  const map = new Map<string, Submission>()
+  for (const f of LIVE_FORMS) {
+    const json = (await hs(`/form-integrations/v1/submissions/forms/${f.id}?limit=50`)) as
+      | { results?: Array<{ submittedAt: number; values?: Array<{ name: string; value: string }> }> }
+      | null
+    for (const sub of json?.results ?? []) {
+      if (sub.submittedAt < since) continue
+      const email = (sub.values ?? []).find((v) => v.name === 'email')?.value?.toLowerCase()
+      if (!email) continue
+      // Keep the most recent submission per person: if they used two forms in
+      // the window, the latest one is the one that describes where they got to.
+      const prev = map.get(email)
+      if (!prev || sub.submittedAt > prev.at) {
+        map.set(email, { label: f.label, intent: f.intent, at: sub.submittedAt })
+      }
+    }
+  }
+  return map
+}
+
+/**
+ * Did they book a meeting RECENTLY?
+ *
+ * Recency matters: a contact who booked a call in June is not escalating today,
+ * and reporting it as though they were would put "then booked a call" on a brief
+ * about somebody who has done no such thing this week.
+ */
+async function bookedRecently(contactId: string, since: number): Promise<boolean> {
+  const assoc = (await hs(`/crm/v4/objects/contacts/${contactId}/associations/meetings`)) as
+    | { results?: Array<{ toObjectId?: string | number }> }
     | null
-  return (json?.results?.length ?? 0) > 0
+  const ids = (assoc?.results ?? []).map((r) => String(r.toObjectId)).filter(Boolean).slice(0, 10)
+  if (ids.length === 0) return false
+  const batch = (await hs('/crm/v3/objects/meetings/batch/read', {
+    method: 'POST',
+    body: JSON.stringify({ properties: ['hs_createdate'], inputs: ids.map((id) => ({ id })) }),
+  })) as { results?: Array<{ properties?: Record<string, string> }> } | null
+  return (batch?.results ?? []).some((m) => {
+    const created = m.properties?.hs_createdate
+    return created ? Date.parse(created) >= since : false
+  })
 }
 
 function isVendorPitch(c: HsContact): boolean {
@@ -159,7 +205,7 @@ function isVendorPitch(c: HsContact): boolean {
 function inquiryOf(
   c: HsContact,
   booked: boolean,
-  form: { label: string; intent: string } | null,
+  form: Submission | null,
 ): string {
   const p = c.properties
   const parts: string[] = []
@@ -181,17 +227,35 @@ export async function GET(request: Request): Promise<NextResponse> {
     return NextResponse.json({ ok: false }, { status: 401 })
   }
 
-  const contacts = await contactsInSlice()
+  const now = Date.now()
+  // How far back an interaction still counts as "this visit". Slightly wider
+  // than the window so a form filled a moment before the slice still qualifies.
+  const interactionSince = now - (WINDOW_MINUTES + SLICE_MINUTES + 3) * 60_000
+
+  const [contacts, submissions] = await Promise.all([
+    contactsInSlice(),
+    recentSubmissions(interactionSince),
+  ])
   if (contacts.length === 0) return NextResponse.json({ ok: true, announced: 0 })
 
   let announced = 0
+  let skipped = 0
   for (const c of contacts) {
     const p = c.properties
     const email = p.email
     if (!email) continue
 
-    const booked = await bookedMeeting(c.id)
-    const form = await formUsed(email)
+    const form = submissions.get(email.toLowerCase()) ?? null
+    const booked = await bookedRecently(c.id, interactionSince)
+
+    // THE GATE. A modified contact is not automatically a lead: reps edit
+    // records, integrations write properties, imports run. Something the person
+    // actually did on the website has to be visible, or nothing is announced.
+    if (!form && !booked) {
+      skipped += 1
+      continue
+    }
+
     const junk = isVendorPitch(c)
     const company = companyFrom(email)
 
@@ -224,6 +288,8 @@ export async function GET(request: Request): Promise<NextResponse> {
     if (posted.ok) announced += 1
   }
 
-  console.log(`[lead-briefs] slice announced ${announced}/${contacts.length} (portal ${PORTAL_ID})`)
-  return NextResponse.json({ ok: true, announced, seen: contacts.length })
+  console.log(
+    `[lead-briefs] seen ${contacts.length}, announced ${announced}, skipped ${skipped} with no website interaction (portal ${PORTAL_ID})`,
+  )
+  return NextResponse.json({ ok: true, announced, skipped, seen: contacts.length })
 }
