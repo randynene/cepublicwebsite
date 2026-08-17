@@ -122,7 +122,9 @@ async function contactsInSlice(): Promise<HsContact[]> {
       // PostgreSQL migration" beats anything that can be inferred from a form.
       // Note the name: it is clara_chat_summary, NOT clara_chatbot_summary,
       // which is a different property that nothing has ever written to.
-      'clara_chat_summary', 'clara_icp_score', 'clara_icp_reason', 'clara_session_url',
+      // clara_icp_score / clara_icp_reason are NOT read: confirmed 17 Aug that no
+      // code in the Clara repo ever writes them, so they are permanently empty.
+      'clara_chat_summary', 'clara_session_url',
     ],
     sorts: [{ propertyName: 'lastmodifieddate', direction: 'ASCENDING' }],
     limit: 50,
@@ -329,6 +331,7 @@ export async function GET(request: Request): Promise<NextResponse> {
           .filter(Boolean)
           .join('  ·  ') || 'Website',
       location: p.ip_country,
+      claraSessionUrl: p.clara_session_url,
       hubspotId: c.id,
     }
 

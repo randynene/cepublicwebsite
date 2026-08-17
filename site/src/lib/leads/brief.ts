@@ -58,6 +58,8 @@ export interface Lead {
   source: string
   /** Country, best effort. See the note in the cron route on where this comes from. */
   location: string | null
+  /** Clara's session permalink, when the lead came through the chat widget. */
+  claraSessionUrl?: string | null
   hubspotId: string | null
 }
 
@@ -81,6 +83,23 @@ export function companyFrom(email: string): { label: string; url: string | null 
   if (DISPOSABLE_MAIL.has(d)) return { label: 'Unknown (disposable address)', url: null }
   if (CONSUMER_MAIL.has(d)) return { label: 'Unknown (personal email)', url: null }
   return { label: d, url: `https://${d}` }
+}
+
+/**
+ * Clara's session permalink, repaired.
+ *
+ * Clara wrote /dashboard/sessions/{id} for a long time and that route does not
+ * exist, so every such link already in HubSpot is dead. The working form is
+ * ?session={id}. Clara has fixed it going forward, but the broken ones stay
+ * broken on old contacts, and a salesperson clicking a dead link concludes the
+ * tool is broken rather than the link.
+ *
+ * Rewriting it here is two lines and makes historical leads clickable too.
+ */
+export function repairClaraSessionUrl(url: string | null | undefined): string | null {
+  if (!url) return null
+  const m = url.match(/^(https?:\/\/[^/]+)\/dashboard\/sessions\/([0-9a-f-]+)/i)
+  return m ? `${m[1]}/dashboard?session=${m[2]}` : url
 }
 
 type Block = Record<string, unknown>
@@ -123,6 +142,17 @@ export function buildBrief(lead: Lead, enrichment: Enrichment): Block[] {
       type: 'button',
       text: { type: 'plain_text', text: 'HubSpot' },
       url: `https://app.hubspot.com/contacts/22809822/record/0-1/${lead.hubspotId}`,
+    })
+  }
+  // The single most useful button on a chat lead: it is the conversation they
+  // actually had, in their words. Worth more than any summary while Clara's
+  // summary write is still landing empty on most sessions.
+  const session = repairClaraSessionUrl(lead.claraSessionUrl)
+  if (session) {
+    buttons.push({
+      type: 'button',
+      text: { type: 'plain_text', text: 'Read the conversation' },
+      url: session,
     })
   }
   if (enrichment.profileUrl) {
