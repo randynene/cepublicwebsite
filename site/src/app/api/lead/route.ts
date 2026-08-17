@@ -107,9 +107,23 @@ async function submitToHubSpot(lead: Lead): Promise<{ ok: boolean; detail: strin
     ['lastname', lead.lastName],
     ['phone', lead.phone],
     ['company', lead.company],
-    ['ce_skills_requested', [...lead.skills, ...lead.customSkills].join(', ') || undefined],
-    ['ce_engagement_length', lead.engagementLength],
-    ['ce_commitment', lead.commitment],
+    // These three are REQUIRED on the HubSpot form, and omitting one rejects the
+    // whole submission with a 400. That is not theoretical: the bespoke intake
+    // on /services/hire-{us,uk}-engineers collects a free-text brief rather than
+    // a skills picker, so it posts empty arrays - and every lead from those two
+    // pages was lost, including one on 16 Aug with a job description attached.
+    //
+    // Fixed here rather than in that form so any future caller is covered by
+    // construction. The placeholder is deliberately readable: a salesperson
+    // seeing "Not specified - see message" knows to read the brief, where an
+    // empty field just looks like a broken record.
+    [
+      'ce_skills_requested',
+      [...lead.skills, ...lead.customSkills].join(', ') ||
+        (lead.message ? 'Not specified - see message' : 'Not specified'),
+    ],
+    ['ce_engagement_length', lead.engagementLength ?? 'not_specified'],
+    ['ce_commitment', lead.commitment ?? 'not_specified'],
   ]
   for (const [name, value] of optional) {
     if (value && value.length > 0) fields.push({ name, value })

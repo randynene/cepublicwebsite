@@ -112,6 +112,10 @@ async function contactsInSlice(): Promise<HsContact[]> {
       'email', 'firstname', 'lastname', 'phone', 'company', 'jobtitle',
       'mql_tier', 'lifecyclestage', 'createdate', 'ip_country',
       'hs_analytics_source', 'hs_analytics_first_url', 'message',
+      // Clara leaves no form submission and often no meeting, so without a
+      // source signal its leads fail the interaction gate and are never
+      // announced. These are the properties that betray a chatbot origin.
+      'hs_object_source_label', 'hs_latest_source', 'recent_conversion_event_name',
     ],
     sorts: [{ propertyName: 'lastmodifieddate', direction: 'ASCENDING' }],
     limit: 50,
@@ -191,6 +195,26 @@ async function bookedRecently(contactId: string, since: number): Promise<boolean
   })
 }
 
+/**
+ * Did this contact come from the Clara chat widget?
+ *
+ * Clara talks to HubSpot directly and produces neither a form submission nor
+ * necessarily a meeting, so it fails the form-or-meeting gate and would be
+ * silently dropped - despite being a lead who actively started a conversation.
+ *
+ * Matched on source labels rather than a form id because there is no form. This
+ * is a best-effort heuristic and is the first thing to check if Clara leads stop
+ * appearing: the labels are HubSpot's, and HubSpot renames things.
+ */
+function isChatbotLead(c: HsContact): boolean {
+  const p = c.properties
+  const haystack = [p.hs_object_source_label, p.hs_latest_source, p.recent_conversion_event_name]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase()
+  return /clara|chat|chatbot|conversation/.test(haystack)
+}
+
 function isVendorPitch(c: HsContact): boolean {
   const text = [c.properties.message, c.properties.company, c.properties.jobtitle]
     .filter(Boolean)
@@ -206,6 +230,7 @@ function inquiryOf(
   c: HsContact,
   booked: boolean,
   form: Submission | null,
+  chatbot: boolean,
 ): string {
   const p = c.properties
   const parts: string[] = []
@@ -213,6 +238,7 @@ function inquiryOf(
   // not a replacement - what someone typed always beats what we inferred.
   if (p.message) parts.push(p.message.replace(/\s+/g, ' ').slice(0, 160))
   else if (form) parts.push(form.intent)
+  else if (chatbot) parts.push('Started a conversation with Clara')
   // The escalation IS the headline: filling a form and then booking within the
   // window is the strongest buying signal the site produces.
   if (booked) parts.push(parts.length ? 'then booked a call' : 'Booked a call')
@@ -248,10 +274,12 @@ export async function GET(request: Request): Promise<NextResponse> {
     const form = submissions.get(email.toLowerCase()) ?? null
     const booked = await bookedRecently(c.id, interactionSince)
 
+    const chatbot = isChatbotLead(c)
+
     // THE GATE. A modified contact is not automatically a lead: reps edit
     // records, integrations write properties, imports run. Something the person
     // actually did on the website has to be visible, or nothing is announced.
-    if (!form && !booked) {
+    if (!form && !booked && !chatbot) {
       skipped += 1
       continue
     }
@@ -274,8 +302,11 @@ export async function GET(request: Request): Promise<NextResponse> {
       name: [p.firstname, p.lastname].filter(Boolean).join(' ') || null,
       email,
       phone: p.phone,
-      inquiry: inquiryOf(c, booked, form),
-      source: [form?.label, p.hs_analytics_source].filter(Boolean).join('  ·  ') || 'Website',
+      inquiry: inquiryOf(c, booked, form, chatbot),
+      source:
+        [form?.label ?? (chatbot ? 'Clara chat' : null), p.hs_analytics_source]
+          .filter(Boolean)
+          .join('  ·  ') || 'Website',
       location: p.ip_country,
       hubspotId: c.id,
     }
