@@ -15,10 +15,37 @@
 
 import type { Enrichment } from './sales-brain'
 
-/** Free-mail domains: no company can be inferred, which is itself a signal. */
-const FREE_MAIL = new Set([
-  'gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'icloud.com',
-  'live.com', 'aol.com', 'proton.me', 'protonmail.com', 'me.com', 'msn.com',
+/**
+ * Domains that are NOT a company.
+ *
+ * Two kinds, and the distinction matters to whoever reads the brief.
+ *
+ * Consumer mailboxes: someone using a personal address is not hiding anything,
+ * they just have not given you a company. Founders and CTOs at small companies
+ * do this constantly, so it is a missing field rather than a bad signal.
+ *
+ * Disposable and throwaway: these ARE a signal, and a negative one. Nobody
+ * spends a real budget from a ten-minute mailbox. HubSpot rejects several of
+ * these outright with BLOCKED_EMAIL, so a lead arriving from one may not even
+ * have a CRM record.
+ *
+ * Both render as "Unknown", because the alternative - printing "gmail.com" or
+ * "mailinator.com" in a field headed Company - is actively misleading to a
+ * salesperson skimming the channel.
+ */
+const CONSUMER_MAIL = new Set([
+  'gmail.com', 'googlemail.com', 'yahoo.com', 'yahoo.co.uk', 'ymail.com',
+  'hotmail.com', 'hotmail.co.uk', 'outlook.com', 'live.com', 'live.co.uk',
+  'msn.com', 'icloud.com', 'me.com', 'mac.com', 'aol.com', 'gmx.com', 'gmx.de',
+  'proton.me', 'protonmail.com', 'pm.me', 'zoho.com', 'yandex.com',
+  'mail.com', 'inbox.com', 'fastmail.com', 'hey.com', 'qq.com', '163.com',
+])
+
+const DISPOSABLE_MAIL = new Set([
+  'mailinator.com', 'guerrillamail.com', 'tempmail.com', 'temp-mail.org',
+  '10minutemail.com', 'throwawaymail.com', 'yopmail.com', 'trashmail.com',
+  'sharklasers.com', 'getnada.com', 'maildrop.cc', 'dispostable.com',
+  'mailnesia.com', 'fakeinbox.com', 'spamgourmet.com', 'mintemail.com',
 ])
 
 export interface Lead {
@@ -50,7 +77,9 @@ export function domainOf(email: string): string {
  */
 export function companyFrom(email: string): { label: string; url: string | null } {
   const d = domainOf(email)
-  if (!d || FREE_MAIL.has(d)) return { label: 'Unknown (personal email)', url: null }
+  if (!d) return { label: 'Unknown', url: null }
+  if (DISPOSABLE_MAIL.has(d)) return { label: 'Unknown (disposable address)', url: null }
+  if (CONSUMER_MAIL.has(d)) return { label: 'Unknown (personal email)', url: null }
   return { label: d, url: `https://${d}` }
 }
 
