@@ -150,6 +150,18 @@ export async function enrich(lead: {
     ? ((JSON.parse(queued) as { results?: Array<{ person_id?: string }> }).results?.[0]?.person_id ?? null)
     : null
 
+  // THE RE-FETCH, and it is the whole point of the sequence.
+  //
+  // `tell_me_about` above was asked BEFORE the person existed, so for a cold
+  // inbound lead - which is most of them - it correctly returned person: null
+  // and no prose. Creating them via icp_qualify and then never asking again is
+  // how every brief for a genuinely new lead ended up with an empty agent read,
+  // which is the one thing the enrichment exists to produce.
+  //
+  // The sales brain's own audit spells out this ladder: ask by email, and if the
+  // person is not there, create them and ask again by person_id.
+  let summary: string | null = known?.brief ?? null
+
   if (personId) {
     const header = await callTool('sales_agent_person_header', { person_id: personId })
     if (header) {
@@ -160,12 +172,17 @@ export async function enrich(lead: {
         score = p.icp_score
       }
     }
+    if (!summary) {
+      const again = await callTool('sales_agent_tell_me_about', { person_id: personId })
+      if (again) {
+        try {
+          summary = (JSON.parse(again) as { brief?: string | null }).brief ?? null
+        } catch {
+          summary = null
+        }
+      }
+    }
   }
 
-  return {
-    score,
-    verdict: null,
-    summary: known?.brief ?? null,
-    profileUrl: null,
-  }
+  return { score, verdict: null, summary, profileUrl: null }
 }

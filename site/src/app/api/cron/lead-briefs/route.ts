@@ -196,23 +196,34 @@ async function bookedRecently(contactId: string, since: number): Promise<boolean
 }
 
 /**
- * Did this contact come from the Clara chat widget?
+ * Did this person arrive through something other than a form?
  *
- * Clara talks to HubSpot directly and produces neither a form submission nor
- * necessarily a meeting, so it fails the form-or-meeting gate and would be
- * silently dropped - despite being a lead who actively started a conversation.
+ * MEASURED 17 Aug, and the finding is awkward: a Clara chat lead lands in
+ * HubSpot as `hs_object_source_label = INTEGRATION`, `hs_latest_source =
+ * OFFLINE`, with no conversion event and no form. A Calendly booking lands as
+ * EXACTLY the same pair. There is no property anywhere on the contact that says
+ * "this came from the chatbot", so no regex over source labels can tell them
+ * apart - the information genuinely is not in HubSpot.
  *
- * Matched on source labels rather than a form id because there is no form. This
- * is a best-effort heuristic and is the first thing to check if Clara leads stop
- * appearing: the labels are HubSpot's, and HubSpot renames things.
+ * So this is a shape test rather than a source test: a NEWLY CREATED contact
+ * arriving via an integration, with no form submission, is almost certainly
+ * Clara, because the other integration that creates people this way is Calendly
+ * and that is detected separately by its meeting.
+ *
+ * It is a stopgap and should be deleted the day Clara posts its conversations
+ * somewhere we can read. Until then the alternative is announcing nothing at
+ * all for the one surface where people actually explain what they want.
+ *
+ * The `created recently` clause is what keeps this from flooding the channel:
+ * without it, every historical contact an integration touches would qualify.
  */
-function isChatbotLead(c: HsContact): boolean {
+function isLikelyChatbot(c: HsContact, interactionSince: number): boolean {
   const p = c.properties
-  const haystack = [p.hs_object_source_label, p.hs_latest_source, p.recent_conversion_event_name]
-    .filter(Boolean)
-    .join(' ')
-    .toLowerCase()
-  return /clara|chat|chatbot|conversation/.test(haystack)
+  if (p.recent_conversion_event_name) return false
+  const label = (p.hs_object_source_label ?? '').toUpperCase()
+  if (label !== 'INTEGRATION') return false
+  const created = p.createdate ? Date.parse(p.createdate) : 0
+  return created >= interactionSince
 }
 
 function isVendorPitch(c: HsContact): boolean {
@@ -238,7 +249,7 @@ function inquiryOf(
   // not a replacement - what someone typed always beats what we inferred.
   if (p.message) parts.push(p.message.replace(/\s+/g, ' ').slice(0, 160))
   else if (form) parts.push(form.intent)
-  else if (chatbot) parts.push('Started a conversation with Clara')
+  else if (chatbot) parts.push('Arrived via Clara or another integration')
   // The escalation IS the headline: filling a form and then booking within the
   // window is the strongest buying signal the site produces.
   if (booked) parts.push(parts.length ? 'then booked a call' : 'Booked a call')
@@ -274,7 +285,7 @@ export async function GET(request: Request): Promise<NextResponse> {
     const form = submissions.get(email.toLowerCase()) ?? null
     const booked = await bookedRecently(c.id, interactionSince)
 
-    const chatbot = isChatbotLead(c)
+    const chatbot = isLikelyChatbot(c, interactionSince)
 
     // THE GATE. A modified contact is not automatically a lead: reps edit
     // records, integrations write properties, imports run. Something the person
@@ -304,7 +315,7 @@ export async function GET(request: Request): Promise<NextResponse> {
       phone: p.phone,
       inquiry: inquiryOf(c, booked, form, chatbot),
       source:
-        [form?.label ?? (chatbot ? 'Clara chat' : null), p.hs_analytics_source]
+        [form?.label ?? (chatbot ? 'Clara chat (probable)' : null), p.hs_analytics_source]
           .filter(Boolean)
           .join('  ·  ') || 'Website',
       location: p.ip_country,
