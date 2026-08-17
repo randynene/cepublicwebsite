@@ -116,6 +116,13 @@ async function contactsInSlice(): Promise<HsContact[]> {
       // source signal its leads fail the interaction gate and are never
       // announced. These are the properties that betray a chatbot origin.
       'hs_object_source_label', 'hs_latest_source', 'recent_conversion_event_name',
+      // Clara writes these directly onto the contact. clara_chat_summary is the
+      // visitor's intent in their own words, which is the single most useful
+      // thing on a brief - "needs 2 senior PHP developers for a SQL Server to
+      // PostgreSQL migration" beats anything that can be inferred from a form.
+      // Note the name: it is clara_chat_summary, NOT clara_chatbot_summary,
+      // which is a different property that nothing has ever written to.
+      'clara_chat_summary', 'clara_icp_score', 'clara_icp_reason', 'clara_session_url',
     ],
     sorts: [{ propertyName: 'lastmodifieddate', direction: 'ASCENDING' }],
     limit: 50,
@@ -196,34 +203,29 @@ async function bookedRecently(contactId: string, since: number): Promise<boolean
 }
 
 /**
- * Did this person arrive through something other than a form?
+ * Did this person come from Clara?
  *
- * MEASURED 17 Aug, and the finding is awkward: a Clara chat lead lands in
- * HubSpot as `hs_object_source_label = INTEGRATION`, `hs_latest_source =
- * OFFLINE`, with no conversion event and no form. A Calendly booking lands as
- * EXACTLY the same pair. There is no property anywhere on the contact that says
- * "this came from the chatbot", so no regex over source labels can tell them
- * apart - the information genuinely is not in HubSpot.
+ * Two tests, in order of confidence.
  *
- * So this is a shape test rather than a source test: a NEWLY CREATED contact
- * arriving via an integration, with no form submission, is almost certainly
- * Clara, because the other integration that creates people this way is Calendly
- * and that is detected separately by its meeting.
+ * DEFINITE: Clara writes clara_chat_summary or clara_session_url straight onto
+ * the contact. If either is set, this is a chat lead and there is no guessing
+ * involved.
  *
- * It is a stopgap and should be deleted the day Clara posts its conversations
- * somewhere we can read. Until then the alternative is announcing nothing at
- * all for the one surface where people actually explain what they want.
+ * PROBABLE: a newly created contact arriving via an integration with no form.
+ * Clara only writes a summary for conversations that produced one - roughly a
+ * fifth of them - so the rest arrive looking like any other integration.
+ * Calendly looks identical, but is caught separately by its meeting.
  *
- * The `created recently` clause is what keeps this from flooding the channel:
- * without it, every historical contact an integration touches would qualify.
+ * The brief says which of the two it was, because "we know" and "we think"
+ * should not read the same to a salesperson.
  */
-function isLikelyChatbot(c: HsContact, interactionSince: number): boolean {
+function claraSignal(c: HsContact, interactionSince: number): 'definite' | 'probable' | null {
   const p = c.properties
-  if (p.recent_conversion_event_name) return false
-  const label = (p.hs_object_source_label ?? '').toUpperCase()
-  if (label !== 'INTEGRATION') return false
+  if (p.clara_chat_summary || p.clara_session_url) return 'definite'
+  if (p.recent_conversion_event_name) return null
+  if ((p.hs_object_source_label ?? '').toUpperCase() !== 'INTEGRATION') return null
   const created = p.createdate ? Date.parse(p.createdate) : 0
-  return created >= interactionSince
+  return created >= interactionSince ? 'probable' : null
 }
 
 function isVendorPitch(c: HsContact): boolean {
@@ -247,7 +249,10 @@ function inquiryOf(
   const parts: string[] = []
   // Their own words first, when there are any. The form intent is a fallback,
   // not a replacement - what someone typed always beats what we inferred.
-  if (p.message) parts.push(p.message.replace(/\s+/g, ' ').slice(0, 160))
+  // Clara's summary outranks everything: it is the visitor explaining what they
+  // want, unprompted, which no form field comes close to.
+  if (p.clara_chat_summary) parts.push(p.clara_chat_summary.replace(/\s+/g, ' ').slice(0, 220))
+  else if (p.message) parts.push(p.message.replace(/\s+/g, ' ').slice(0, 160))
   else if (form) parts.push(form.intent)
   else if (chatbot) parts.push('Arrived via Clara or another integration')
   // The escalation IS the headline: filling a form and then booking within the
@@ -285,7 +290,8 @@ export async function GET(request: Request): Promise<NextResponse> {
     const form = submissions.get(email.toLowerCase()) ?? null
     const booked = await bookedRecently(c.id, interactionSince)
 
-    const chatbot = isLikelyChatbot(c, interactionSince)
+    const clara = claraSignal(c, interactionSince)
+    const chatbot = clara !== null
 
     // THE GATE. A modified contact is not automatically a lead: reps edit
     // records, integrations write properties, imports run. Something the person
@@ -315,7 +321,11 @@ export async function GET(request: Request): Promise<NextResponse> {
       phone: p.phone,
       inquiry: inquiryOf(c, booked, form, chatbot),
       source:
-        [form?.label ?? (chatbot ? 'Clara chat (probable)' : null), p.hs_analytics_source]
+        [
+          form?.label ??
+            (clara === 'definite' ? 'Clara chat' : clara === 'probable' ? 'Clara chat (probable)' : null),
+          p.hs_analytics_source,
+        ]
           .filter(Boolean)
           .join('  ·  ') || 'Website',
       location: p.ip_country,
