@@ -341,7 +341,7 @@ export function QuickHiringForm({
     if (!EMAIL_RE.test(details.email)) next.email = C.error.email
     // CE-55. The CTO funnel asks for a name and an email and nothing else, so it
     // has no consent box to validate. The hiring funnel is unchanged.
-    if (!isCto && !details.consent) next.consent = C.error.consent
+    // No consent gate any more: the box is gone, so there is nothing to validate.
     setErrors(next)
     return Object.keys(next).length === 0
   }
@@ -740,29 +740,25 @@ export function QuickHiringForm({
               )}
             </div>
 
+            {/* The consent CHECKBOX was removed on Jake's instruction (17 Aug) to
+                cut a step out of the funnel. The notice stays as a statement
+                rather than a tick, which is standard practice and keeps the
+                privacy policy one click away.
+
+                Worth knowing what changed: a ticked box is an auditable record
+                that a specific person agreed. A statement is not. For UK and EU
+                leads that shifts the lawful basis from consent to legitimate
+                interest, which is defensible for B2B outreach to someone who
+                just asked you to contact them, but it is a different argument.
+                Flagged at the time; the call was made deliberately. */}
             {!isCto && (
-              <>
-                <label className="mt-[22px] flex items-start gap-[10px] text-text-secondary">
-                  <Checkbox
-                    checked={details.consent}
-                    onCheckedChange={(checked) => updateDetail('consent', checked === true)}
-                    aria-invalid={Boolean(errors.consent)}
-                    className="mt-[2px] size-[17px] shrink-0 rounded-[5px]"
-                  />
-                  <span className="text-sm">
-                    {C.details.consent}
-                    {' '}
-                    <Link href={C.details.consentLinkHref} className="underline">
-                      {C.details.consentLinkLabel}
-                    </Link>
-                  </span>
-                </label>
-                {errors.consent && (
-                  <Text size="small" className={cn('mt-2', ERROR_TEXT_CLASS)}>
-                    {errors.consent}
-                  </Text>
-                )}
-              </>
+              <p className="mt-[22px] text-sm text-text-secondary">
+                {C.details.consent}
+                {' '}
+                <Link href={C.details.consentLinkHref} className="underline">
+                  {C.details.consentLinkLabel}
+                </Link>
+              </p>
             )}
           </StepShell>
         )}
