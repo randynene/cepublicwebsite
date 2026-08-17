@@ -196,38 +196,52 @@ export async function POST(request: Request): Promise<NextResponse> {
   // Deliberately NOT awaited into the response path beyond this point, and every
   // failure inside is swallowed: the visitor is mid-funnel and heading for the
   // booking step, and a Slack outage must never cost us the redirect.
-  try {
-    const [{ buildBrief, briefFallback }, { postLead }, { enrich }] = await Promise.all([
-      import('@/lib/leads/brief'),
-      import('@/lib/leads/slack'),
-      import('@/lib/leads/sales-brain'),
-    ])
-    const name = [parsed.firstName, parsed.lastName].filter(Boolean).join(' ')
-    const wanted = [...parsed.skills, ...parsed.customSkills].join(', ')
-    const lead = {
-      name,
-      email: parsed.email,
-      phone: parsed.phone ?? null,
-      inquiry: wanted
-        ? `Wants ${wanted}${parsed.commitment ? `, ${parsed.commitment.replace(/_/g, ' ')}` : ''}`
-        : 'Enquiry via the hiring form',
-      source: `Quick hiring form  ·  ${parsed.sourcePage}`,
-      // Vercel resolves this at the edge on every request. HubSpot's own
-      // ip_country was populated on 1 of the 12 most recent contacts, so this
-      // header is the more reliable source by a wide margin.
-      location: request.headers.get('x-vercel-ip-country'),
-      hubspotId: null,
+  // Route-level briefs are OFF by default, and this flag is the whole reason.
+  //
+  // Two things can announce a lead: this route, instantly, and the watcher cron
+  // seven minutes later. Running both means every lead is announced twice AND
+  // the instant one fires before the journey has finished, so it says "empty
+  // record" about somebody who is at that moment typing their way into a
+  // booking. The seven-minute wait is the entire point of the design; announcing
+  // at zero minutes defeats it.
+  //
+  // Kept rather than deleted because instant notification is genuinely better IF
+  // the watcher ever proves too slow for hot leads - at which point this becomes
+  // the fast path and the watcher needs a dedup guard. Until then: off.
+  if (process.env.LEAD_BRIEF_FROM_ROUTES === '1') {
+    try {
+      const [{ buildBrief, briefFallback }, { postLead }, { enrich }] = await Promise.all([
+        import('@/lib/leads/brief'),
+        import('@/lib/leads/slack'),
+        import('@/lib/leads/sales-brain'),
+      ])
+      const name = [parsed.firstName, parsed.lastName].filter(Boolean).join(' ')
+      const wanted = [...parsed.skills, ...parsed.customSkills].join(', ')
+      const lead = {
+        name,
+        email: parsed.email,
+        phone: parsed.phone ?? null,
+        inquiry: wanted
+          ? `Wants ${wanted}${parsed.commitment ? `, ${parsed.commitment.replace(/_/g, ' ')}` : ''}`
+          : 'Enquiry via the hiring form',
+        source: `Quick hiring form  ·  ${parsed.sourcePage}`,
+        // Vercel resolves this at the edge on every request. HubSpot's own
+        // ip_country was populated on 1 of the 12 most recent contacts, so this
+        // header is the more reliable source by a wide margin.
+        location: request.headers.get('x-vercel-ip-country'),
+        hubspotId: null,
+      }
+      const enrichment = junkReason
+        ? { score: null, verdict: null, summary: null, profileUrl: null }
+        : await enrich({ email: parsed.email, name, companyDomain: parsed.company ?? null })
+      await postLead(
+        buildBrief(lead, enrichment),
+        briefFallback(lead),
+        junkReason ? 'junk' : 'leads',
+      )
+    } catch (err) {
+      console.warn(`[lead] brief failed: ${err instanceof Error ? err.message : 'unknown'}`)
     }
-    const enrichment = junkReason
-      ? { score: null, verdict: null, summary: null, profileUrl: null }
-      : await enrich({ email: parsed.email, name, companyDomain: parsed.company ?? null })
-    await postLead(
-      buildBrief(lead, enrichment),
-      briefFallback(lead),
-      junkReason ? 'junk' : 'leads',
-    )
-  } catch (err) {
-    console.warn(`[lead] brief failed: ${err instanceof Error ? err.message : 'unknown'}`)
   }
 
   if (junkReason) {

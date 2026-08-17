@@ -104,30 +104,44 @@ export async function POST(request: Request): Promise<NextResponse> {
   // fires when HubSpot rejects the write, so before this a successful unlock was
   // announced to nobody at all. Swallowed on failure - the calculator has
   // already unblurred and the visitor owes us nothing.
-  try {
-    const [{ buildBrief, briefFallback, companyFrom, domainOf }, { postLead }, { enrich }] =
-      await Promise.all([
-        import('@/lib/leads/brief'),
-        import('@/lib/leads/slack'),
-        import('@/lib/leads/sales-brain'),
-      ])
-    const lead = {
-      name: null,
-      email: parsed.email,
-      phone: null,
-      inquiry: `Unlocked the pricing calculator${parsed.currency ? ` in ${parsed.currency.toUpperCase()}` : ''}`,
-      source: `Pricing calculator  ·  ${parsed.path ?? '/pricing'}`,
-      location: request.headers.get('x-vercel-ip-country'),
-      hubspotId: null,
+  // Route-level briefs are OFF by default, and this flag is the whole reason.
+  //
+  // Two things can announce a lead: this route, instantly, and the watcher cron
+  // seven minutes later. Running both means every lead is announced twice AND
+  // the instant one fires before the journey has finished, so it says "empty
+  // record" about somebody who is at that moment typing their way into a
+  // booking. The seven-minute wait is the entire point of the design; announcing
+  // at zero minutes defeats it.
+  //
+  // Kept rather than deleted because instant notification is genuinely better IF
+  // the watcher ever proves too slow for hot leads - at which point this becomes
+  // the fast path and the watcher needs a dedup guard. Until then: off.
+  if (process.env.LEAD_BRIEF_FROM_ROUTES === '1') {
+    try {
+      const [{ buildBrief, briefFallback, companyFrom, domainOf }, { postLead }, { enrich }] =
+        await Promise.all([
+          import('@/lib/leads/brief'),
+          import('@/lib/leads/slack'),
+          import('@/lib/leads/sales-brain'),
+        ])
+      const lead = {
+        name: null,
+        email: parsed.email,
+        phone: null,
+        inquiry: `Unlocked the pricing calculator${parsed.currency ? ` in ${parsed.currency.toUpperCase()}` : ''}`,
+        source: `Pricing calculator  ·  ${parsed.path ?? '/pricing'}`,
+        location: request.headers.get('x-vercel-ip-country'),
+        hubspotId: null,
+      }
+      const company = companyFrom(parsed.email)
+      const enrichment = await enrich({
+        email: parsed.email,
+        companyDomain: company.url ? domainOf(parsed.email) : null,
+      })
+      await postLead(buildBrief(lead, enrichment), briefFallback(lead), 'leads')
+    } catch (err) {
+      console.warn(`[pricing-unlock] brief failed: ${err instanceof Error ? err.message : 'unknown'}`)
     }
-    const company = companyFrom(parsed.email)
-    const enrichment = await enrich({
-      email: parsed.email,
-      companyDomain: company.url ? domainOf(parsed.email) : null,
-    })
-    await postLead(buildBrief(lead, enrichment), briefFallback(lead), 'leads')
-  } catch (err) {
-    console.warn(`[pricing-unlock] brief failed: ${err instanceof Error ? err.message : 'unknown'}`)
   }
 
   if (!hubspot.ok) {
