@@ -26,7 +26,13 @@ export const runtime = 'nodejs'
 
 /** Reuses the quick-hiring form. The gateway field is what segments this. */
 const QUICK_HIRING_FORM_GUID =
-  process.env.HUBSPOT_QUICK_HIRING_FORM_GUID ?? '8f974ef4-a3dd-4bba-ad3a-086054ac235b'
+  // The DEDICATED pricing form, not the quick hiring form this used to borrow.
+  // Sharing 8f974ef4 with /api/lead meant HubSpot could not tell a pricing
+  // enquiry from a hiring enquiry: any autoresponder on it would have emailed
+  // the pricing breakdown to every hiring lead on the site, and no workflow
+  // could route the two differently. This form already existed and was wired to
+  // nothing - 75 submissions, dormant since Oct 2025.
+  process.env.HUBSPOT_PRICING_UNLOCK_FORM_GUID ?? 'a7a5be39-7014-4ed7-a4b2-75ee5adebd37'
 
 const SLACK_LEADS_WEBHOOK_URL = process.env.SLACK_LEADS_WEBHOOK_URL
 
