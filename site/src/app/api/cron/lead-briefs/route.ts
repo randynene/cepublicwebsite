@@ -206,23 +206,34 @@ async function recentSubmissions(since: number): Promise<Map<string, Submission>
 }
 
 /**
- * The Calendly events that mean "a buyer booked a sales call".
+ * Which meetings mean "somebody booked a call with us from outside".
  *
- * MEASURED 19 Aug, after the channel filled with candidates. The recruitment
- * team books interviews in the same HubSpot, so "this contact has a recent
- * meeting" proves nothing at all. These were all real meetings on real
- * contacts, every one announced to the sales channel as a lead:
+ * MEASURED against 60 days of real data, 19 Aug: 461 meetings in the CRM. The
+ * shape is unambiguous once you look:
  *
- *   "Alina Cosmas | Element Human - Interview"
- *   "Gustavo - Rimsys First Stage Interview"
- *   "Zsolt - Bezos Final Interview"
+ *   INBOUND, always prefixed by HubSpot's Calendly integration:
+ *     "Calendly: Discovery Call - Cloud Employee"
+ *     "Calendly: Discovery Call - Cloud Employee (Clara)"
+ *     "Calendly: Cloud Employee: Meet w/ Molly"
  *
- * Candidates and the people interviewing them. None had ever touched the
- * website: no conversion event, source OFFLINE. Only two event titles are
- * booked from the site - "Intro Call" from /book-a-call and the lead form,
- * "Discovery Call" from Clara.
+ *   NOT inbound, never prefixed:
+ *     "Company All-hands"                        (26 of them)
+ *     "Alina - Element Human Final Interview"    (candidate)
+ *     "Tech 1:1 | Eugene Pankratov and Bobby Reyes"
+ *     "Gustavo Weinschutz and AJ Develos"
+ *
+ * A first attempt matched the two event NAMES instead, "Intro Call" and
+ * "Discovery Call". That was nearly a serious mistake: "Intro Call" does not
+ * appear once in 60 days, and it would have silently dropped every lead who
+ * booked through a rep's own Calendly link - which is how several real
+ * enquiries arrived. Matching the integration prefix catches all of them and
+ * still excludes every interview and internal meeting.
+ *
+ * The failure modes are not symmetrical, and that is what decides this. A
+ * candidate wrongly announced is noise somebody laughs at. A buyer silently
+ * dropped is revenue nobody ever hears about. When in doubt, announce.
  */
-const SALES_MEETING_TITLES = /\b(intro call|discovery call)\b/i
+const INBOUND_MEETING = /^calendly:/i
 
 /**
  * Did they book a SALES call recently?
@@ -247,7 +258,7 @@ async function bookedRecently(contactId: string, since: number): Promise<boolean
   return (batch?.results ?? []).some((m) => {
     const created = m.properties?.hs_createdate
     if (!created || Date.parse(created) < since) return false
-    return SALES_MEETING_TITLES.test(m.properties?.hs_meeting_title ?? '')
+    return INBOUND_MEETING.test((m.properties?.hs_meeting_title ?? '').trim())
   })
 }
 
