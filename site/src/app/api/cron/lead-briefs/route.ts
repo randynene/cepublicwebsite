@@ -182,11 +182,30 @@ async function recentSubmissions(since: number): Promise<Map<string, Submission>
 }
 
 /**
- * Did they book a meeting RECENTLY?
+ * The Calendly events that mean "a buyer booked a sales call".
  *
- * Recency matters: a contact who booked a call in June is not escalating today,
- * and reporting it as though they were would put "then booked a call" on a brief
- * about somebody who has done no such thing this week.
+ * MEASURED 19 Aug, after the channel filled with candidates. The recruitment
+ * team books interviews in the same HubSpot, so "this contact has a recent
+ * meeting" proves nothing at all. These were all real meetings on real
+ * contacts, every one announced to the sales channel as a lead:
+ *
+ *   "Alina Cosmas | Element Human - Interview"
+ *   "Gustavo - Rimsys First Stage Interview"
+ *   "Zsolt - Bezos Final Interview"
+ *
+ * Candidates and the people interviewing them. None had ever touched the
+ * website: no conversion event, source OFFLINE. Only two event titles are
+ * booked from the site - "Intro Call" from /book-a-call and the lead form,
+ * "Discovery Call" from Clara.
+ */
+const SALES_MEETING_TITLES = /\b(intro call|discovery call)\b/i
+
+/**
+ * Did they book a SALES call recently?
+ *
+ * Both halves matter. Recency, because a call booked in June is not somebody
+ * escalating today. The title, because otherwise every candidate interview the
+ * recruitment team books lands in the sales channel.
  */
 async function bookedRecently(contactId: string, since: number): Promise<boolean> {
   const assoc = (await hs(`/crm/v4/objects/contacts/${contactId}/associations/meetings`)) as
@@ -196,38 +215,34 @@ async function bookedRecently(contactId: string, since: number): Promise<boolean
   if (ids.length === 0) return false
   const batch = (await hs('/crm/v3/objects/meetings/batch/read', {
     method: 'POST',
-    body: JSON.stringify({ properties: ['hs_createdate'], inputs: ids.map((id) => ({ id })) }),
+    body: JSON.stringify({
+      properties: ['hs_createdate', 'hs_meeting_title'],
+      inputs: ids.map((id) => ({ id })),
+    }),
   })) as { results?: Array<{ properties?: Record<string, string> }> } | null
   return (batch?.results ?? []).some((m) => {
     const created = m.properties?.hs_createdate
-    return created ? Date.parse(created) >= since : false
+    if (!created || Date.parse(created) < since) return false
+    return SALES_MEETING_TITLES.test(m.properties?.hs_meeting_title ?? '')
   })
 }
 
 /**
  * Did this person come from Clara?
  *
- * Two tests, in order of confidence.
+ * Only the definite test survives: Clara writes clara_chat_summary or
+ * clara_session_url onto the contact, and without either we do not know a chat
+ * happened.
  *
- * DEFINITE: Clara writes clara_chat_summary or clara_session_url straight onto
- * the contact. If either is set, this is a chat lead and there is no guessing
- * involved.
- *
- * PROBABLE: a newly created contact arriving via an integration with no form.
- * Clara only writes a summary for conversations that produced one - roughly a
- * fifth of them - so the rest arrive looking like any other integration.
- * Calendly looks identical, but is caught separately by its meeting.
- *
- * The brief says which of the two it was, because "we know" and "we think"
- * should not read the same to a salesperson.
+ * The old "probable" heuristic - a new contact arriving via an integration -
+ * was deleted on 19 Aug. It matched every candidate the recruitment team added
+ * and every offline import, and those people were announced to the sales
+ * channel as leads. A guess that fires on the wrong person, in a channel the
+ * CCO reads, is worse than no guess.
  */
-function claraSignal(c: HsContact, interactionSince: number): 'definite' | 'probable' | null {
+function claraSignal(c: HsContact): 'definite' | null {
   const p = c.properties
-  if (p.clara_chat_summary || p.clara_session_url) return 'definite'
-  if (p.recent_conversion_event_name) return null
-  if ((p.hs_object_source_label ?? '').toUpperCase() !== 'INTEGRATION') return null
-  const created = p.createdate ? Date.parse(p.createdate) : 0
-  return created >= interactionSince ? 'probable' : null
+  return p.clara_chat_summary || p.clara_session_url ? 'definite' : null
 }
 
 function isVendorPitch(c: HsContact): boolean {
@@ -256,7 +271,7 @@ function inquiryOf(
   if (p.clara_chat_summary) parts.push(p.clara_chat_summary.replace(/\s+/g, ' ').slice(0, 220))
   else if (p.message) parts.push(p.message.replace(/\s+/g, ' ').slice(0, 160))
   else if (form) parts.push(form.intent)
-  else if (chatbot) parts.push('Arrived via Clara or another integration')
+  else if (chatbot) parts.push('Started a conversation with Clara')
   // The escalation IS the headline: filling a form and then booking within the
   // window is the strongest buying signal the site produces.
   if (booked) parts.push(parts.length ? 'then booked a call' : 'Booked a call')
@@ -292,7 +307,7 @@ export async function GET(request: Request): Promise<NextResponse> {
     const form = submissions.get(email.toLowerCase()) ?? null
     const booked = await bookedRecently(c.id, interactionSince)
 
-    const clara = claraSignal(c, interactionSince)
+    const clara = claraSignal(c)
     const chatbot = clara !== null
 
     // THE GATE. A modified contact is not automatically a lead: reps edit
@@ -325,7 +340,7 @@ export async function GET(request: Request): Promise<NextResponse> {
       source:
         [
           form?.label ??
-            (clara === 'definite' ? 'Clara chat' : clara === 'probable' ? 'Clara chat (probable)' : null),
+            (clara ? 'Clara chat' : null),
           p.hs_analytics_source,
         ]
           .filter(Boolean)

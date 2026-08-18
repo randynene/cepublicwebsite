@@ -130,11 +130,25 @@ export function buildBrief(lead: Lead, enrichment: Enrichment): Block[] {
     },
   ]
 
-  // Only rendered when the sales brain actually said something. An empty
-  // "Agent read" block reads as a broken feature; omitting it reads as a lead
-  // we simply do not know much about yet, which is the truth.
+  // THE AGENT READ IS OFF (Jake, 19 Aug), and this is the reasoning.
+  //
+  // It was a model writing prose about a real person into a channel the CCO
+  // reads. When the underlying record was thin it produced three sentences of
+  // confident-sounding nothing - "no title, no company, no LinkedIn, no signals,
+  // treat as unqualified" - which is both long and, on a real buyer who simply
+  // used a personal email, wrong in tone if not in fact.
+  //
+  // The judgement was usually sound. The risk was not worth it: a salesperson
+  // repeating an invented detail to a prospect costs more than the block ever
+  // added, and nobody can tell by looking which sentence came from data and
+  // which from inference.
+  //
+  // Facts only now. The score stays, because it is a number the sales brain
+  // computed rather than prose a model wrote. Re-enable by flipping this flag
+  // once the sales brain holds enough per person to be worth summarising.
+  const SHOW_AGENT_READ = false
   const read = enrichment.summary ?? enrichment.verdict
-  if (read) blocks.push(md(`:robot_face: ${read}`))
+  if (SHOW_AGENT_READ && read) blocks.push(md(`:robot_face: ${read}`))
 
   const buttons: Block[] = []
   if (lead.hubspotId) {
