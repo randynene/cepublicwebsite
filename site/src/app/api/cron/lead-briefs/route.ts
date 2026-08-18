@@ -77,6 +77,37 @@ const PORTAL_ID = process.env.NEXT_PUBLIC_HUBSPOT_PORTAL_ID ?? '22809822'
 const VENDOR_PATTERNS =
   /\b(we help (businesses|companies|teams|brands)|we built|we handle|we provide|we offer|partnership proposal|i see (that )?your company|i see [A-Z][a-z]+ is a|are you still (focused|looking)|verified (visitors?|attendee) list|we'?ve (successfully )?compiled|our upcoming (issue|edition|feature|magazine)|founder of [A-Z]|we special[is]?[sz]e|link ?building|guest post|backlink|seo (services|agency|audit)|call cent(re|er) outsourcing|redesign your website|looking for new opportunities|my (cv|resume))\b/i
 
+/**
+ * HubSpot's analytics source, in words a salesperson can act on.
+ *
+ * The raw values are HubSpot's internal enum and they leak badly: a brief that
+ * reads "Clara chat  ·  OFFLINE" tells a reader that something is broken. It is
+ * not - OFFLINE simply means HubSpot never saw a web session for this contact,
+ * which is normal and expected for a chat lead or a Calendly booking, because
+ * neither goes through a tracked page view.
+ *
+ * Unknown values fall through unchanged rather than being hidden, so a new
+ * HubSpot enum shows up as itself instead of silently disappearing.
+ */
+const SOURCE_LABELS: Record<string, string> = {
+  ORGANIC_SEARCH: 'Found us on Google',
+  PAID_SEARCH: 'Paid search',
+  PAID_SOCIAL: 'Paid social',
+  SOCIAL_MEDIA: 'Social media',
+  DIRECT_TRAFFIC: 'Came direct',
+  REFERRALS: 'Referred from another site',
+  EMAIL_MARKETING: 'From an email campaign',
+  OTHER_CAMPAIGNS: 'Campaign',
+  // Not a failure. It means no web session was attributed, which is the normal
+  // state for a chat lead or a booking made straight from a Calendly link.
+  OFFLINE: 'No web session tracked',
+}
+
+function sourceLabel(raw: string | null | undefined): string | null {
+  if (!raw) return null
+  return SOURCE_LABELS[raw.toUpperCase()] ?? raw
+}
+
 interface HsContact {
   id: string
   properties: Record<string, string | null>
@@ -149,6 +180,13 @@ async function contactsInSlice(): Promise<HsContact[]> {
       // clara_icp_score / clara_icp_reason are NOT read: confirmed 17 Aug that no
       // code in the Clara repo ever writes them, so they are permanently empty.
       'clara_chat_summary', 'clara_session_url',
+      // What they actually told the multi-step form. Without these the brief
+      // says "wants to hire engineers" while HubSpot holds "React and Node,
+      // full time, 2-5 people, 10k-50k a month, needed immediately" - which is
+      // the entire content of the enquiry and the reason a rep opens it.
+      'ce_skills_requested', 'ce_engagement_length', 'ce_commitment',
+      'how_many_needed_', 'how_long_needed_', 'monthly_budget',
+      'when_talent_is_needed', 'technology_expertise_needed',
     ],
     sorts: [{ propertyName: 'lastmodifieddate', direction: 'ASCENDING' }],
     limit: 50,
@@ -288,6 +326,29 @@ function isVendorPitch(c: HsContact): boolean {
 }
 
 /**
+ * The multi-step form answers, in the order a rep wants to read them.
+ *
+ * Only questions the visitor actually answered are included: an empty row reads
+ * as a broken integration, where an absent row reads as a question they skipped.
+ */
+function answersOf(c: HsContact): Array<{ label: string; value: string }> {
+  const p = c.properties
+  const pretty = (v: string) => v.replace(/_/g, ' ').replace(/^\w/, (m) => m.toUpperCase())
+  const rows: Array<[string, string | null | undefined]> = [
+    ['Skills', p.ce_skills_requested],
+    ['Tech needed', p.technology_expertise_needed],
+    ['How many', p.how_many_needed_],
+    ['How long', p.ce_engagement_length ?? p.how_long_needed_],
+    ['Commitment', p.ce_commitment],
+    ['Budget', p.monthly_budget],
+    ['Needed', p.when_talent_is_needed],
+  ]
+  return rows
+    .filter(([, v]) => v && v.trim() && !/^not[_ ]specified$/i.test(v))
+    .map(([label, v]) => ({ label, value: pretty(String(v).trim()).slice(0, 120) }))
+}
+
+/**
  * What they asked for, in as close to their own words as HubSpot holds.
  * Never invented: if there is nothing to say, say that rather than guess.
  */
@@ -376,12 +437,13 @@ export async function GET(request: Request): Promise<NextResponse> {
         [
           form?.label ??
             (clara ? 'Clara chat' : null),
-          p.hs_analytics_source,
+          sourceLabel(p.hs_analytics_source),
         ]
           .filter(Boolean)
           .join('  ·  ') || 'Website',
       location: p.ip_country,
       claraSessionUrl: p.clara_session_url,
+      answers: answersOf(c),
       hubspotId: c.id,
     }
 

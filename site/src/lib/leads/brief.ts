@@ -60,6 +60,14 @@ export interface Lead {
   location: string | null
   /** Clara's session permalink, when the lead came through the chat widget. */
   claraSessionUrl?: string | null
+  /**
+   * What they typed into the multi-step form, label -> value, already filtered
+   * to the questions they actually answered. This is the substance of an
+   * enquiry: skills, headcount, budget, timeline. A brief without it makes a
+   * rep open HubSpot to find out what the person asked for, which defeats the
+   * point of a brief.
+   */
+  answers?: Array<{ label: string; value: string }>
   hubspotId: string | null
 }
 
@@ -129,6 +137,14 @@ export function buildBrief(lead: Lead, enrichment: Enrichment): Block[] {
       ],
     },
   ]
+
+  // Their own answers, verbatim, before anything inferred. Rendered as a quote
+  // block so it reads as "the visitor said this" rather than as our summary.
+  if (lead.answers?.length) {
+    blocks.push(
+      md(lead.answers.map((a) => `>*${a.label}*  ${a.value}`).join('\n')),
+    )
+  }
 
   // THE AGENT READ IS OFF (Jake, 19 Aug), and this is the reasoning.
   //
