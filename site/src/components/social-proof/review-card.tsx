@@ -40,13 +40,29 @@ export function ReviewCard({
 
   return (
     <article className="group relative flex h-full flex-col rounded-[20px] border border-[#22314D] bg-[#101B30] p-6">
-      {/* Company: real logo if we have it, else the name as a chip. */}
-      <div className="mb-4 flex h-[28px] items-center">
+      {/* Company: real logo if we have it, else the name as a chip.
+       *
+       * SIZED BY HEIGHT, CAPPED BY WIDTH (Aug 2026). The band was 28px tall,
+       * which is fine for a square-ish mark but leaves the wordmark-with-strapline
+       * logos unreadable: Salmon Software (2.9:1), Cleanlink (2.1:1) and
+       * Healthpointe (2.5:1) rendered their second line at two or three pixels.
+       * The band is now 44px, so those three gain about 57%.
+       *
+       * The width cap is what stops that helping one logo at another's expense:
+       * Aspire Creative is 13:1, and at 44px tall it would have run 580px and
+       * swamped the card. It lands on the cap instead.
+       *
+       * The CDN request asks for 3x the rendered height for retina. It was 2x
+       * the OLD height, so on a retina screen these marks were being upscaled -
+       * which is the blur, and it is fixed by asking for more pixels rather than
+       * by replacing any asset. Every source here is an SVG or is at least 249px
+       * wide, so there is real detail to serve. */}
+      <div className="mb-4 flex h-[44px] items-center">
         {logo ? (
           <img
-            src={urlFor(logo as Record<string, unknown>).height(56).fit('max').url()}
+            src={urlFor(logo as Record<string, unknown>).height(132).fit('max').url()}
             alt=""
-            className="h-full w-auto object-contain opacity-90 [filter:brightness(0)_invert(1)]"
+            className="max-h-full w-auto max-w-[220px] object-contain opacity-90 [filter:brightness(0)_invert(1)]"
             loading="lazy"
           />
         ) : null}

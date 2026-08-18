@@ -451,7 +451,7 @@ export const HOME_CONTENT = {
         number: '02',
         question: 'How do time zones really work?',
         answer:
-          "Your engineer works your hours — full overlap with your team, not a 2-hour window at the end of the day. LATAM engineers align with US East/West; European hubs align with UK and CET; Manila aligns with APAC and UK. You pick the region that fits your standup time.",
+          "Your engineer works your hours, with full overlap with your team, not a 2-hour window at the end of the day. LATAM engineers align with US East/West; European hubs align with UK and CET; Manila aligns with APAC and UK. You pick the region that fits your standup time.",
       },
       {
         number: '03',
@@ -463,19 +463,19 @@ export const HOME_CONTENT = {
         number: '04',
         question: 'How are you different from Toptal, Deel, or Upwork?',
         answer:
-          "Toptal, Deel, and Upwork are marketplaces — you search, vet, and manage HR yourself. We are a managed service: we source, vet with live senior-engineer coding sessions, employ the engineer locally, and handle all payroll, compliance, and retention. You direct the work; we handle everything else.",
+          "Toptal, Deel, and Upwork are marketplaces: you search, vet, and manage HR yourself. We are a managed service: we source, vet with live senior-engineer coding sessions, employ the engineer locally, and handle all payroll, compliance, and retention. You direct the work; we handle everything else.",
       },
       {
         number: '05',
         question: 'What does it cost?',
         answer:
-          'One flat monthly fee covers the engineer, local employment, payroll, benefits, and your account manager. There are no placement fees, no setup costs, and no long-term lock-in. Rates vary by role, seniority, and region — use the calculator above for a live estimate.',
+          'One flat monthly fee covers the engineer, local employment, payroll, benefits, and your account manager. There are no placement fees, no setup costs, and no long-term lock-in. Rates vary by role, seniority, and region; use the calculator above for a live estimate.',
       },
       {
         number: '06',
         question: 'How do you stop candidates faking interviews or using AI?',
         answer:
-          'Every candidate goes through a live pair-programming session run by one of our senior engineers — on your actual stack, not a toy problem. We also run KYC, background checks, and psychometric assessments. There is no way to fake a 60-minute live coding interview with someone who knows the codebase.',
+          'Every candidate goes through a live pair-programming session run by one of our senior engineers, on your actual stack, not a toy problem. We also run KYC, background checks, and psychometric assessments. There is no way to fake a 60-minute live coding interview with someone who knows the codebase.',
       },
       {
         number: '07',
@@ -487,7 +487,7 @@ export const HOME_CONTENT = {
         number: '08',
         question: 'Can I hire the engineer directly later?',
         answer:
-          'Yes. A direct-hire conversion path is available in every contract. After 12 months of embedding, you can bring them on as a permanent employee for a pre-agreed conversion fee — far lower than a traditional agency placement. Many teams exercise this option.',
+          'Yes. A direct-hire conversion path is available in every contract. After 12 months of embedding, you can bring them on as a permanent employee for a pre-agreed conversion fee, far lower than a traditional agency placement. Many teams exercise this option.',
       },
     ] as HomeFaqItem[],
   },

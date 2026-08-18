@@ -157,6 +157,13 @@ export interface CalendlyInlineEmbedProps {
   className?: string
   /** Hide Calendly's own event-details panel; we render our own. */
   hideEventDetails?: boolean
+  /**
+   * Plate colour behind the Calendly panel. Defaults to the page ground, which
+   * is right when the embed sits directly on the page. Pass the card colour
+   * when it sits INSIDE a card, or the embed draws a second, darker box inside
+   * the first and the panel reads as a box within a box within a box.
+   */
+  backgroundColor?: string
 }
 
 /** Inline Calendly scheduler — self-loads Calendly's script + stylesheet. */
@@ -164,6 +171,7 @@ export function CalendlyInlineEmbed({
   url,
   className,
   hideEventDetails = false,
+  backgroundColor = '#070D18',
 }: CalendlyInlineEmbedProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const themedUrl = withCalendlyCeTheme(url, { hideEventDetails })
@@ -217,7 +225,7 @@ export function CalendlyInlineEmbed({
         minWidth: 320,
         width: '100%',
         height: 900,
-        backgroundColor: '#070D18',
+        backgroundColor,
         colorScheme: 'light',
       }}
     />
