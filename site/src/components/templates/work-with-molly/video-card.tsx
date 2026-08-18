@@ -48,9 +48,9 @@ import {
 //   - the play button does not respond to hover, because it is part of the
 //     image. The whole cover is still one button, so the hit target and the
 //     keyboard focus ring are unchanged.
-//   - the cover is a 559px-wide screenshot and renders around 620px, so it is
-//     being upscaled. content.ts carries the full-resolution alternative and
-//     explains the trade.
+//   - the cover is rendered from his SVG at 3x rather than from the 559px
+//     screenshot he first sent, so it is sharp at retina sizes. content.ts
+//     carries the exact rasterisation recipe.
 //
 // Re-record note: `MOLLY_VIDEO_URL` in content.ts records where the video came
 // from.
@@ -76,7 +76,7 @@ export function MollyVideoCard({ className }: { className?: string }) {
       {/* 529:326 is the cover's own aspect, so it fills the frame exactly and
           object-cover never has to re-crop artwork that was already cropped
           deliberately - at the wrong ratio it was shaving the red badge off
-          the left edge. */}
+          the left edge. The cover is 1280x789, the same 1.623. */}
       <div className="relative aspect-[529/326] w-full bg-black">
         <video
           ref={videoRef}

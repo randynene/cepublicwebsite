@@ -31,19 +31,25 @@ export const MOLLY_VIDEO_URL =
  */
 export const MOLLY_VIDEO_SRC = '/design/landing/molly-intro.mp4'
 /**
- * The card cover, as supplied by Jake (docs/design/molly_Container3.jpg).
+ * The card cover, rendered from Jake's own artwork
+ * (docs/design/mollyContainer4.svg).
  *
- * This is HIS asset, cropped only to lift the video area out of the card frame
- * (`extract({left: 12, top: 12, width: 529, height: 326})`) so the card's own
- * border and rounded corners are not drawn twice. The red badge and the play
- * button are BAKED INTO THESE PIXELS, which is why the card no longer draws its
- * own - see video-card.tsx.
+ * The SVG is the same card he supplied as a JPEG, but it embeds a 1720x1096
+ * PNG and draws the badge, the play button and the label as vectors - so there
+ * is real detail to render, which the 559px screenshot it replaces did not
+ * have. It is rasterised at 3x and cropped to lift the video area out of the
+ * card frame, so the card's own border and rounded corners are not drawn twice:
  *
- * KNOWN COST, and the reason the generated poster is kept beside it: the source
- * is a 559px-wide screenshot, so at the ~620px the card renders it is being
- * upscaled and will look soft on a high-density screen. There is no more detail
- * to recover from a screenshot. `molly-poster.jpg` is the same framing rendered
- * from the 1920x1080 master and is the swap if sharpness wins over exactness.
+ *   sharp(svg, { density: 216 })            // 3x -> 1677x1260
+ *     .extract({ left: 36, top: 36, width: 1587, height: 978 })
+ *     .resize({ width: 1280 })
+ *     .jpeg({ quality: 90, chromaSubsampling: '4:4:4' })
+ *
+ * 1280px against a card that renders around 611px, so it stays sharp on a
+ * high-density screen. Re-run those numbers if the artwork is re-exported.
+ *
+ * THE BADGE AND THE PLAY BUTTON ARE IN THESE PIXELS. That is why the card does
+ * not draw its own - see video-card.tsx.
  */
 export const MOLLY_VIDEO_COVER = '/design/landing/molly-cover.jpg'
 /** Same frame at full resolution, without the baked-in badge and play button. */
