@@ -279,8 +279,21 @@ export function proxy(request: NextRequest) {
 // One negative lookahead rather than a second matcher entry, so there is a
 // single place to read what this file does and does not see. `api(?:/|$)` so a
 // future page route beginning with the letters "api" is not silently excluded.
+//
+// VIDEO EXTENSIONS ADDED Aug 2026, and the bug they fix is worth recording.
+// The image extensions have always been here, so no static image was ever
+// geo-routed. /work-with-molly is the first page to ship a video out of
+// public/, and mp4 was not on the list - so the file itself answered 307 to
+// /for-developers for every visitor outside the 11-country allow list.
+//
+// It bites precisely the people CE-48 already redirects once and then lets
+// through on the `ce_geo_routed` cookie: they reach the page, press play, and
+// the video 307s to a different page instead of loading. That includes CE's own
+// Philippines team, which is the same audience the launch-night firewall rule
+// locked out (Tech Debt #63). A media file has no country and should never have
+// been in scope.
 export const config = {
   matcher: [
-    '/((?!api(?:/|$)|_next/static|_next/image|favicon\\.ico|robots\\.txt|sitemap\\.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    '/((?!api(?:/|$)|_next/static|_next/image|favicon\\.ico|robots\\.txt|sitemap\\.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|mp4|webm|mov|m4v)$).*)',
   ],
 }
