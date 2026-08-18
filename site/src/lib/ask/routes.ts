@@ -11,6 +11,7 @@ export const ASK_PATH = '/ask'
 export const FOR_DEVELOPERS_PATH = '/for-developers'
 export const BOOK_A_CALL_PATH = '/book-a-call'
 export const BOOK_A_CALL_THANK_YOU_PATH = '/book-a-call-thank-you'
+export const WORK_WITH_MOLLY_PATH = '/work-with-molly'
 
 /** True for /ask and every locale mirror of it (/uk/ask). */
 export function isAskPath(pathname: string): boolean {
@@ -24,6 +25,23 @@ export function isForDevelopersPath(pathname: string): boolean {
   return (
     withoutLocale === FOR_DEVELOPERS_PATH ||
     withoutLocale === `${FOR_DEVELOPERS_PATH}/`
+  )
+}
+
+/**
+ * True for /work-with-molly.
+ *
+ * That page ends on its own lime "Let's find your next engineer" band, which is
+ * the same ask as the footer's "Ready to hire your next engineer?" block. Two
+ * hiring CTAs stacked on top of each other read as a mistake, so the footer's
+ * one comes off and the page's own sits directly on the footer. Same reasoning
+ * (and same mechanism) as the book-a-call suppression below.
+ */
+export function isWorkWithMollyPath(pathname: string): boolean {
+  const withoutLocale = stripLocalePrefix(pathname.split('?')[0])
+  return (
+    withoutLocale === WORK_WITH_MOLLY_PATH ||
+    withoutLocale === `${WORK_WITH_MOLLY_PATH}/`
   )
 }
 

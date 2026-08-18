@@ -6,6 +6,7 @@ import {
   isBookACallPath,
   isBookACallThankYouPath,
   isForDevelopersPath,
+  isWorkWithMollyPath,
 } from '@/lib/ask/routes'
 import { UI_STRINGS } from '@/lib/ui-strings'
 import { fetchFooter } from '@/lib/sanity/queries/footer'
@@ -31,13 +32,15 @@ import type { Locale } from '@/lib/locale-path'
 export default async function Footer({ locale }: { locale: Locale }) {
   const data = await fetchFooter()
   // Book-a-call is already the booking surface; for-developers is a talent page
-  // that ends on "View Live jobs". The "Ready to hire…" band is a hiring CTA, so
-  // it stays off both.
+  // that ends on "View Live jobs"; work-with-molly closes on its own lime
+  // hiring band. The "Ready to hire..." block is a hiring CTA, so it stays off
+  // all three.
   const pathname = (await headers()).get('x-pathname') ?? '/'
   const showTopCta =
     !isBookACallPath(pathname) &&
     !isBookACallThankYouPath(pathname) &&
-    !isForDevelopersPath(pathname)
+    !isForDevelopersPath(pathname) &&
+    !isWorkWithMollyPath(pathname)
 
   if (!data) {
     return (
