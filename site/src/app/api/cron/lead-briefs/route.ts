@@ -49,9 +49,33 @@ const SLICE_MINUTES = 1
 const HUBSPOT_TOKEN = process.env.HUBSPOT_ACCESS_TOKEN
 const PORTAL_ID = process.env.NEXT_PUBLIC_HUBSPOT_PORTAL_ID ?? '22809822'
 
-/** Vendor pitches dressed as enquiries. Deliberately narrow - see the note below. */
+/**
+ * People selling TO Cloud Employee, dressed as enquiries.
+ *
+ * BUILT FROM THE REAL CORPUS, 19 Aug. Every contact-form submission of the last
+ * 90 days was read: 24 in total, of which 5 were our own tests and ONE was a
+ * genuine buyer. The rest were agency and vendor cold outreach. The old filter
+ * caught 1 of 18; this catches 15.
+ *
+ * The tell is DIRECTION, not vocabulary. These people write "we help
+ * businesses", "we built", "I see your company provides" - the grammar of
+ * somebody offering a service. A buyer writes about their own problem. No
+ * keyword list of "seo" and "backlink" finds them, because the good ones never
+ * use those words.
+ *
+ * DELIBERATELY EXCLUDED: "I'm reaching out". It catches two more, and it would
+ * also catch "I'm reaching out because we need three React engineers". Losing
+ * one real buyer costs more than reading fifteen pitches.
+ *
+ * Junk is ROUTED, never dropped: it goes to the junk channel where a human can
+ * see it and disagree. That is what makes an aggressive filter safe - a wrong
+ * call is visible and recoverable, not silent.
+ *
+ * Also catches job seekers, who are real people but not sales leads and belong
+ * nowhere near this channel.
+ */
 const VENDOR_PATTERNS =
-  /\b(link ?building|guest post|backlink|seo (services|agency|audit)|we (provide|offer) (dedicated|outsourc)|joint venture|our (bpo|agency|team) (can|could))\b/i
+  /\b(we help (businesses|companies|teams|brands)|we built|we handle|we provide|we offer|partnership proposal|i see (that )?your company|i see [A-Z][a-z]+ is a|are you still (focused|looking)|verified (visitors?|attendee) list|we'?ve (successfully )?compiled|our upcoming (issue|edition|feature|magazine)|founder of [A-Z]|we special[is]?[sz]e|link ?building|guest post|backlink|seo (services|agency|audit)|call cent(re|er) outsourcing|redesign your website|looking for new opportunities|my (cv|resume))\b/i
 
 interface HsContact {
   id: string
