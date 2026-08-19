@@ -56,13 +56,26 @@ export const MOLLY_VIDEO_COVER = '/design/landing/molly-cover.jpg'
 export const MOLLY_VIDEO_POSTER = '/design/landing/molly-poster.jpg'
 
 /**
- * The booking link behind every CTA on this page.
+ * Which `bookACall` document owns the booking link on this page.
  *
- * This is CE's GENERIC intro-call event, the same one /book-a-call and
- * /contact use. If Molly has her own Calendly event the URL should be swapped
- * here and nowhere else - every CTA and the inline panel read this constant.
+ * Molly's real Calendly is not hardcoded here. It lives on the Sanity document
+ * that already powers /book-a-call/molly, and this page reads it from there at
+ * request time (see the route). So there is exactly ONE place her link is
+ * recorded, Seb can change it in Studio, and the two pages cannot drift apart
+ * into a landing page that books someone else's diary.
  */
-export const MOLLY_CALENDLY_URL =
+export const MOLLY_BOOKING_SLUG = 'molly'
+
+/**
+ * Fallback only, for the case where that document is missing, retired, or has
+ * no scheduling URL on it.
+ *
+ * This is CE's GENERIC intro-call event, which is what /book-a-call and
+ * /contact use. It exists so a Studio mistake degrades to "books the team"
+ * rather than to a dead panel on a live landing page. It is deliberately not
+ * the normal path - if this is what renders, something upstream is wrong.
+ */
+export const FALLBACK_CALENDLY_URL =
   'https://calendly.com/d/cwwf-6k5-2qy/intro-call-cloud-employee'
 
 export const WORK_WITH_MOLLY_META = {
@@ -99,11 +112,14 @@ export const WORK_WITH_MOLLY_CONTENT = {
   booking: {
     id: 'book',
     title: 'Pick a time to talk',
-    // Matches the REAL event behind MOLLY_CALENDLY_URL (Discovery Call,
-    // 30 min, Seb / Molly / Steph / AJ). The export says "Free - 20 min - with
-    // Molly Miller"; writing that here would have been a promise the booking
-    // panel does not keep. Change both together if Molly gets her own event.
-    subtitle: 'Free - 30 min - with the Cloud Employee team',
+    // Two subtitles, because the panel must describe whatever diary it is
+    // actually showing. `subtitle` is the normal case: Molly's own 30-minute
+    // event, read from her bookACall document. `subtitleFallback` is what the
+    // page says if that lookup fails and the generic team event renders
+    // instead - saying "with Molly Miller" over the team's diary would be a
+    // promise the panel does not keep.
+    subtitle: 'Free - 30 min - with Molly Miller',
+    subtitleFallback: 'Free - 30 min - with the Cloud Employee team',
   },
   testimonials: {
     eyebrow: 'Testimonials',

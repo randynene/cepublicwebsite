@@ -1,10 +1,10 @@
 import { Container } from '@/components/ui/container'
 import { Heading } from '@/components/ui/heading'
 import { cn } from '@/components/ui/_utils/cn'
+import { extractSchedulingUrl } from '@/lib/booking/scheduling-url'
 import type { Locale } from '@/lib/locale'
 import { UI_STRINGS } from '@/lib/ui-strings'
 import type { BookACall } from '@/types/sanity/documents/book-a-call'
-import type { PortableText as PortableTextValue } from '@/types/sanity/shared'
 
 import { CalendlyInlineEmbed } from './calendly-inline-embed'
 import { HubSpotMeetingsEmbed } from './hubspot-meetings-embed'
@@ -16,19 +16,6 @@ export interface BookACallTemplateProps {
 
 const BAND_CLASS = 'mx-auto max-w-[1280px]'
 const BAND_PX_CLASS = 'px-[22px] sm:px-[32px] lg:px-[64px]'
-
-function extractSchedulingUrl(
-  blocks: PortableTextValue | null | undefined,
-): string | null {
-  if (!blocks) return null
-  for (const block of blocks) {
-    if (block._type === 'videoEmbed') {
-      const url = (block as { url?: string }).url
-      if (url?.trim()) return url.trim()
-    }
-  }
-  return null
-}
 
 function SchedulingEmbed({ url }: { url: string }) {
   if (/meetings\.hubspot\.com/i.test(url)) {

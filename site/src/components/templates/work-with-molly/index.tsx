@@ -12,10 +12,7 @@ import { CHAT_HREF } from '@/lib/chat'
 import type { Locale } from '@/lib/locale-path'
 import type { ReviewCard as ReviewCardData } from '@/lib/sanity/queries/social-proof'
 
-import {
-  MOLLY_CALENDLY_URL,
-  WORK_WITH_MOLLY_CONTENT as C,
-} from './content'
+import { WORK_WITH_MOLLY_CONTENT as C } from './content'
 import { MollyVideoCard } from './video-card'
 
 // /work-with-molly
@@ -160,7 +157,7 @@ function TrustedBy({ locale }: { locale: Locale }) {
   )
 }
 
-function Booking() {
+function Booking({ booking }: { booking: BookingPanel }) {
   return (
     // scroll-mt clears the fixed header when a CTA jumps here.
     <section id={C.booking.id} className="scroll-mt-[110px] bg-[#070D18] py-[56px]">
@@ -173,13 +170,16 @@ function Booking() {
             <p className="text-[22px] font-semibold text-white lg:text-[26px]">
               {C.booking.title}
             </p>
-            <p className="mt-[6px] text-[14px] text-[#7F8CA0]">{C.booking.subtitle}</p>
+            <p className="mt-[6px] text-[14px] text-[#7F8CA0]">
+              {booking.isMollys ? C.booking.subtitle : C.booking.subtitleFallback}
+            </p>
           </div>
-          {/* The export draws a bespoke month grid. That is a picture of a
+            {/* The export draws a bespoke month grid. That is a picture of a
               scheduler, not one - it cannot know Molly's availability or write
               a booking. The real Calendly panel goes here instead, using the
-              same self-loading embed as /book-a-call and /contact. */}
-          <CalendlyInlineEmbed url={MOLLY_CALENDLY_URL} backgroundColor="#101B30" />
+              same self-loading embed as /book-a-call and /contact, pointed at
+              whichever URL the route resolved. */}
+          <CalendlyInlineEmbed url={booking.url} backgroundColor="#101B30" />
         </div>
       </div>
     </section>
@@ -372,11 +372,20 @@ function ClosingBand() {
   )
 }
 
+/** Which diary the panel is showing, resolved by the route from Sanity. */
+export interface BookingPanel {
+  url: string
+  /** False when the lookup fell back to CE's generic team event. */
+  isMollys: boolean
+}
+
 export function WorkWithMollyTemplate({
   reviews,
+  booking,
   locale = 'en-US',
 }: {
   reviews: ReviewCardData[]
+  booking: BookingPanel
   locale?: Locale
 }) {
   return (
@@ -388,7 +397,7 @@ export function WorkWithMollyTemplate({
         <Hero />
         <TrustedBy locale={locale} />
       </div>
-      <Booking />
+      <Booking booking={booking} />
       <Testimonials reviews={reviews} locale={locale} />
       <Process locale={locale} />
       <Calculator />
