@@ -477,6 +477,7 @@ export async function GET(request: Request): Promise<NextResponse> {
       buildBrief(lead, enrichment),
       briefFallback(lead),
       isTest ? 'test' : junk ? 'junk' : 'leads',
+      email,
     )
     if (posted.ok) announced += 1
   }

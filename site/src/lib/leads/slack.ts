@@ -45,16 +45,56 @@ async function call(method: string, body: Record<string, unknown>): Promise<Reco
   }
 }
 
+/**
+ * Has this person already been announced?
+ *
+ * The last safety net, and it exists because the gate cannot be perfect. A
+ * contact is pulled in by lastmodifieddate, and HubSpot edits contacts for its
+ * own reasons - a workflow setting mql_tier a minute after a form submission is
+ * a SECOND modification, landing in a later slice, with the original form still
+ * inside the interaction window. Both slices then announce the same person.
+ *
+ * Rather than reason harder about windows, this asks the channel. Slack is the
+ * record of what was announced, so it is the honest place to check. Needs the
+ * history scope, added 18 Aug.
+ *
+ * Fails OPEN: if the lookup fails for any reason, the lead is announced. A
+ * duplicate is a minor annoyance; a lead silently suppressed because a
+ * permissions call failed is the thing this whole system exists to prevent.
+ */
+async function alreadyAnnounced(channel: string, email: string): Promise<boolean> {
+  if (!TOKEN || !email) return false
+  const oldest = Math.floor((Date.now() - 6 * 60 * 60 * 1000) / 1000)
+  try {
+    const res = await fetch(
+      `https://slack.com/api/conversations.history?channel=${channel}&oldest=${oldest}&limit=100`,
+      { headers: { Authorization: `Bearer ${TOKEN}` } },
+    )
+    const json = (await res.json()) as { ok?: boolean; messages?: unknown[] }
+    if (!json.ok) return false
+    const needle = email.toLowerCase()
+    return (json.messages ?? []).some((m) => JSON.stringify(m).toLowerCase().includes(needle))
+  } catch {
+    return false
+  }
+}
+
 export async function postLead(
   blocks: Block[],
   fallback: string,
   target: 'leads' | 'junk' | 'test' = 'leads',
+  /** Usually the email. Suppresses a repeat announcement within 6 hours. */
+  dedupeKey?: string,
 ): Promise<PostResult> {
   const channel =
     target === 'junk' ? CHANNEL_JUNK : target === 'test' ? CHANNEL_TEST : CHANNEL_LEADS
   if (!channel) {
     console.warn(`[slack] no channel id configured for "${target}"`)
     return { ok: false, ts: null }
+  }
+  if (dedupeKey && (await alreadyAnnounced(channel, dedupeKey))) {
+    console.log(`[slack] ${dedupeKey} already announced in the last 6h, skipping`)
+    return { ok: true, ts: null }
   }
   const json = await call('chat.postMessage', {
     channel,
