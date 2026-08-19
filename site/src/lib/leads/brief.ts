@@ -71,6 +71,32 @@ export interface Lead {
   hubspotId: string | null
 }
 
+/**
+ * Is this a deliberate test submission?
+ *
+ * A PATTERN rather than one fixed address, and the difference matters.
+ *
+ * The obvious design is a single test email that the agent recognises. It does
+ * not work, and we proved why on 16 Aug: a reused address is never a NEW
+ * contact again. HubSpot sets mql_tier to Tier 1 on the first run, and every
+ * run after that sets it to Tier 1 again - no change, so the notification that
+ * fires on the change does not fire, and the test reports a failure that is not
+ * real. An hour was lost to exactly that. The record also accumulates
+ * submissions, meetings and a lifecycle stage until it behaves like nothing
+ * that happens in production.
+ *
+ * `+test-` keeps the marker and drops the reuse: jake+test-0819a, +test-0819b,
+ * each a genuinely fresh contact that still announces itself as a test.
+ *
+ * The one thing this cannot solve: HubSpot's tracking cookie beats the address
+ * typed into the form, so a submission from a browser that has been used before
+ * attaches to THAT contact whatever you type. Always test in a fresh incognito
+ * window.
+ */
+export function isTestLead(email: string): boolean {
+  return /\+test-/i.test(email)
+}
+
 export function domainOf(email: string): string {
   return (email.split('@')[1] ?? '').toLowerCase()
 }
@@ -124,8 +150,19 @@ export function buildBrief(lead: Lead, enrichment: Enrichment): Block[] {
     ? `:fire: *${name}*`
     : `:fire: *${name}*   ·   ICP ${enrichment.score}`
 
-  const blocks: Block[] = [
-    md(`${headline}\n*${lead.inquiry}*`),
+  const blocks: Block[] = []
+
+  // Labelled at the top, not the bottom. Somebody skimming the channel decides
+  // whether to care in the first line, and a test that looks like a lead for
+  // even a moment is worse than no test at all.
+  if (isTestLead(lead.email)) {
+    blocks.push({
+      type: 'context',
+      elements: [{ type: 'mrkdwn', text: ':test_tube: *TEST SUBMISSION* - not a real lead' }],
+    })
+  }
+
+  blocks.push(md(`${headline}\n*${lead.inquiry}*`),
     {
       type: 'section',
       fields: [
@@ -136,7 +173,7 @@ export function buildBrief(lead: Lead, enrichment: Enrichment): Block[] {
         { type: 'mrkdwn', text: `*Lead source*\n${lead.source}` },
       ],
     },
-  ]
+  )
 
   // Their own answers, verbatim, before anything inferred. Rendered as a quote
   // block so it reads as "the visitor said this" rather than as our summary.

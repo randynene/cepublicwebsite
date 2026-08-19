@@ -14,6 +14,8 @@
 const TOKEN = process.env.SLACK_LEAD_AGENT_TOKEN
 const CHANNEL_LEADS = process.env.SLACK_LEADS_CHANNEL_ID
 const CHANNEL_JUNK = process.env.SLACK_JUNK_CHANNEL_ID
+/** Where test submissions go. Falls back to the junk channel, never to leads. */
+const CHANNEL_TEST = process.env.SLACK_TEST_CHANNEL_ID ?? CHANNEL_JUNK
 
 type Block = Record<string, unknown>
 
@@ -46,9 +48,10 @@ async function call(method: string, body: Record<string, unknown>): Promise<Reco
 export async function postLead(
   blocks: Block[],
   fallback: string,
-  target: 'leads' | 'junk' = 'leads',
+  target: 'leads' | 'junk' | 'test' = 'leads',
 ): Promise<PostResult> {
-  const channel = target === 'junk' ? CHANNEL_JUNK : CHANNEL_LEADS
+  const channel =
+    target === 'junk' ? CHANNEL_JUNK : target === 'test' ? CHANNEL_TEST : CHANNEL_LEADS
   if (!channel) {
     console.warn(`[slack] no channel id configured for "${target}"`)
     return { ok: false, ts: null }

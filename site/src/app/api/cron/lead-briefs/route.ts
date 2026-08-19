@@ -1,6 +1,13 @@
 import { NextResponse } from 'next/server'
 
-import { buildBrief, briefFallback, companyFrom, domainOf, type Lead } from '@/lib/leads/brief'
+import {
+  buildBrief,
+  briefFallback,
+  companyFrom,
+  domainOf,
+  isTestLead,
+  type Lead,
+} from '@/lib/leads/brief'
 import { enrich } from '@/lib/leads/sales-brain'
 import { postLead } from '@/lib/leads/slack'
 
@@ -414,12 +421,18 @@ export async function GET(request: Request): Promise<NextResponse> {
       continue
     }
 
-    const junk = isVendorPitch(c)
+    // A deliberate test never reaches the leads channel, whatever else it looks
+    // like. Checked before the junk rules so a test is never silently filed as
+    // spam and hunted for in the wrong place.
+    const isTest = isTestLead(email)
+    const junk = !isTest && isVendorPitch(c)
     const company = companyFrom(email)
 
     // Enrichment is skipped for junk: no reason to spend a sales-brain call, or
     // your API credits, on somebody trying to sell you something.
-    const enrichment = junk
+    // No enrichment for tests either: no reason to spend sales-brain credits, or
+    // to create a person record in the CRM, for a submission we made ourselves.
+    const enrichment = junk || isTest
       ? { score: null, verdict: null, summary: null, profileUrl: null }
       : await enrich({
           email,
@@ -450,7 +463,7 @@ export async function GET(request: Request): Promise<NextResponse> {
     const posted = await postLead(
       buildBrief(lead, enrichment),
       briefFallback(lead),
-      junk ? 'junk' : 'leads',
+      isTest ? 'test' : junk ? 'junk' : 'leads',
     )
     if (posted.ok) announced += 1
   }
