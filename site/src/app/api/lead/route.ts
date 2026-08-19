@@ -194,6 +194,32 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   const junkReason = looksLikeJunk(parsed)
 
+  // RAW CAPTURE, before anything can go wrong downstream. First-hand evidence
+  // that the website received this, independent of HubSpot - which matters
+  // because every other check we have reads HubSpot and therefore goes blind at
+  // the same moment it does. The two market pages 400'd on every submission for
+  // weeks and nothing said so.
+  void fetch(new URL('/api/lead-raw', request.url), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      surface: `Lead form (${parsed.gateway})`,
+      page: parsed.sourcePage,
+      fields: {
+        name: [parsed.firstName, parsed.lastName].filter(Boolean).join(' '),
+        email: parsed.email,
+        ...(parsed.phone ? { phone: parsed.phone } : {}),
+        ...(parsed.company ? { company: parsed.company } : {}),
+        ...([...parsed.skills, ...parsed.customSkills].length
+          ? { skills: [...parsed.skills, ...parsed.customSkills].join(', ') }
+          : {}),
+        ...(parsed.engagementLength ? { engagement: parsed.engagementLength } : {}),
+        ...(parsed.commitment ? { commitment: parsed.commitment } : {}),
+        ...(parsed.message ? { message: parsed.message.slice(0, 400) } : {}),
+      },
+    }),
+  }).catch(() => {})
+
   // HubSpot gets it either way. A misjudged spam call must not destroy the record,
   // because the only way to discover the filter was wrong is to still have the lead.
   const hubspot = await submitToHubSpot(parsed)

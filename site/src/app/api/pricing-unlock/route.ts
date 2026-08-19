@@ -98,6 +98,17 @@ export async function POST(request: Request): Promise<NextResponse> {
     )
   }
 
+  // Raw capture first. See the note in /api/lead.
+  void fetch(new URL('/api/lead-raw', request.url), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      surface: 'Pricing calculator unlock',
+      page: parsed.path ?? '/pricing',
+      fields: { email: parsed.email, ...(parsed.currency ? { currency: parsed.currency } : {}) },
+    }),
+  }).catch(() => {})
+
   const hubspot = await submitToHubSpot(parsed)
 
   // Lead Agent brief. See the longer note in /api/lead: the alarm below only

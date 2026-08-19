@@ -209,6 +209,38 @@ export function HubSpotFormEmbed({
               form_id: formId,
               form_portal: portalId,
             })
+            // RAW CAPTURE. HubSpot renders this form in its own iframe, so the
+            // submission never touches our server - which is why the contact
+            // form has always been a black box to us, and why we could not tell
+            // whether one had arrived without asking HubSpot. HubSpot's own
+            // callback hands us the form element, so we can read the values and
+            // record them first-hand.
+            //
+            // Fire-and-forget on purpose: the visitor is mid-submit and must
+            // never wait on our logging, and a failure here must never affect
+            // the submission itself. keepalive so it survives the redirect to
+            // the thank-you page, which happens immediately after this.
+            try {
+              const fields: Record<string, string> = {}
+              for (const el of Array.from($form.elements)) {
+                const input = el as HTMLInputElement
+                if (!input.name || input.type === 'hidden') continue
+                if (input.type === 'checkbox' && !input.checked) continue
+                if (input.value) fields[input.name] = String(input.value).slice(0, 500)
+              }
+              void fetch('/api/lead-raw', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                keepalive: true,
+                body: JSON.stringify({
+                  surface: `HubSpot form ${formId}`,
+                  page: window.location.pathname,
+                  fields,
+                }),
+              }).catch(() => {})
+            } catch {
+              // Never let logging break a submission.
+            }
           }
           onSubmit?.($form)
         },
