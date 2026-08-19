@@ -308,21 +308,34 @@ async function bookedRecently(contactId: string, since: number): Promise<boolean
 }
 
 /**
- * Did this person come from Clara?
+ * Did this person come from Clara, RECENTLY?
  *
- * Only the definite test survives: Clara writes clara_chat_summary or
- * clara_session_url onto the contact, and without either we do not know a chat
- * happened.
+ * The recency half is the whole point, and leaving it out caused a real
+ * embarrassment on 19 Aug. clara_session_url and clara_chat_summary are
+ * permanent properties: once written they stay on the contact forever. So a
+ * check for "is this property set" says "this person chatted at some point",
+ * never "this person chatted today".
  *
- * The old "probable" heuristic - a new contact arriving via an integration -
- * was deleted on 19 Aug. It matched every candidate the recruitment team added
- * and every offline import, and those people were announced to the sales
- * channel as leads. A guess that fires on the wrong person, in a channel the
- * CCO reads, is worse than no guess.
+ * What that produced: Kirk Davis, a contact created 7 May, was announced as a
+ * new lead 103 days later - because a rep moved his deal to closed lost, which
+ * bumped lastmodifieddate, which pulled him into the slice, where the permanent
+ * Clara property waved him straight through the gate. He had done nothing. The
+ * rep who had just edited him asked in the channel whether he had visited the
+ * site, which is exactly the confusion a false positive causes: it makes people
+ * distrust the record in front of them.
+ *
+ * Clara does not stamp a date we can read, so the contact's own age is the
+ * proxy: a genuine new chat lead is a contact created within the window. An
+ * existing contact being edited is not news, whatever properties it carries.
+ *
+ * Same lesson as the meetings filter, learned twice: a permanent property is
+ * evidence that something HAPPENED, never evidence that it happened NOW.
  */
-function claraSignal(c: HsContact): 'definite' | null {
+function claraSignal(c: HsContact, interactionSince: number): 'definite' | null {
   const p = c.properties
-  return p.clara_chat_summary || p.clara_session_url ? 'definite' : null
+  if (!p.clara_chat_summary && !p.clara_session_url) return null
+  const created = p.createdate ? Date.parse(p.createdate) : 0
+  return created >= interactionSince ? 'definite' : null
 }
 
 function isVendorPitch(c: HsContact): boolean {
@@ -410,7 +423,7 @@ export async function GET(request: Request): Promise<NextResponse> {
     const form = submissions.get(email.toLowerCase()) ?? null
     const booked = await bookedRecently(c.id, interactionSince)
 
-    const clara = claraSignal(c)
+    const clara = claraSignal(c, interactionSince)
     const chatbot = clara !== null
 
     // THE GATE. A modified contact is not automatically a lead: reps edit

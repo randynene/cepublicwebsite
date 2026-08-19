@@ -146,7 +146,14 @@ export function buildBrief(lead: Lead, enrichment: Enrichment): Block[] {
   const company = companyFrom(lead.email)
   const name = lead.name?.trim() || lead.email.split('@')[0]
 
-  const headline = enrichment.score === null
+  // The ICP number is hidden (Jake, 19 Aug). It was appearing as a bare figure
+  // next to a person's name with nothing to interpret it by - "ICP 8" next to a
+  // real buyer reads as a verdict, and readers had no way to know the scale, or
+  // that a low score usually means a missing job title rather than a bad lead.
+  // The score is still fetched and still available; it just is not shown until
+  // it means something a reader can act on.
+  const SHOW_ICP = false
+  const headline = !SHOW_ICP || enrichment.score === null
     ? `:fire: *${name}*`
     : `:fire: *${name}*   ·   ICP ${enrichment.score}`
 
