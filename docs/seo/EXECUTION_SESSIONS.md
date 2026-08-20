@@ -31,8 +31,8 @@ If you change a status, cite the commit or PR.
 | S2 | Internal link equity | 1 | ~1 day | none | **PART DONE.** Items 1+2 shipped and merged (PR #95): all 27 compare cards on /alternatives page 1, related-comparisons module. Items 3+4 authored and merged as code (`a1a47c0` scripted Sanity link rewrite + content lint) but **NOT YET RUN** against production Sanity. Needs a local run with the write token. |
 | S3 | Template fixes (schema, images, anchors) | 1 | ~1 day | none | **DONE (PR #96 merged).** W1-07, W1-08, W2-06 shipped. W1-02 (VideoObject uploadDate) remains blocked on a content date backfill, documented at `c606729`. |
 | S4 | Measurement wiring (Brand Radar weekly) | 1 | ~0.5 day | none | **SCRIPT DONE (PR #94 merged, `746d15c`). FIRST PULL STILL NOT RUN** - no brand-radar output exists in audit-output. Ahrefs collects weekly; pick it up around 14 Aug. |
-| S5 | Performance package part A: geo server-side + delete body-hide | 2 | ~2 days | DFH-1 + GeoTargetly rules export | **DONE (PR #106).** GeoTargetly integration and its body-hide deleted (`313bd8b`); CE-48 geo routing reimplemented server-side in `site/src/proxy.ts` (`45b4e91`); rule kept off API and metadata routes, bot bypass widened (`119976b`). The only surviving `opacity:0` in the codebase is a comment explaining the removal. **This was the single biggest item on the roadmap. NOT YET RE-MEASURED - see NEXT below.** |
-| S6 | Performance package part B: HubSpot defer + HTML caching | 2 | ~2 days | S5 merged | **NOT STARTED. GATE NOW CLEAR.** Carries PERF-03: every HTML response is served `no-store` with `x-vercel-cache MISS`, so nothing caches at the edge. |
+| S5 | Performance package part A: geo server-side + delete body-hide | 2 | ~2 days | DFH-1 + GeoTargetly rules export | **DONE (PR #106).** GeoTargetly integration and its body-hide deleted (`313bd8b`); CE-48 geo routing reimplemented server-side in `site/src/proxy.ts` (`45b4e91`); rule kept off API and metadata routes, bot bypass widened (`119976b`). The only surviving `opacity:0` in the codebase is a comment explaining the removal. **This was the single biggest item on the roadmap. RE-MEASURED 20 Aug (S5-M): IT WORKED.** Render delay fell from 5,007ms to 31-70ms on image-LCP pages; FCP 1.8-2.1s sitewide (was ~5s under the gate); LCP 3.0-4.2s on 4 of 6 sampled pages, breaking the "Poor on 100%" baseline. Two 15s outliers (home, /pricing) are lazy-loaded LCP images, S19 scope, not gate residue. Evidence: `audit-output/seo-intel/2026-08-20-s5-measure/`. See the S5-M note below the S5 brief. |
+| S6 | Performance package part B: HubSpot defer + HTML caching | 2 | ~2 days | S5 merged | **NOT STARTED. GATE NOW CLEAR.** Carries PERF-03: every HTML response is served `no-store` with `x-vercel-cache MISS`, so nothing caches at the edge. **Before-numbers captured 20 Aug (S5-M):** `private, no-cache, no-store, max-age=0, must-revalidate` + MISS + `age: 0` on every HTML fetch, both repeats, all 6 sampled pages. Cost: HTML median ~610ms TTFB from SE Asia vs ~170ms for a cache-HIT static asset (~440ms edge-cacheable penalty); PSI US lab TTFB 370-419ms. Still no CrUX record at page or origin level, so the field window is still winnable. |
 | S7 | Metadata batch (titles + descriptions) | 2 | ~1.5 days | none | NOT STARTED |
 | S8 | Backlink rescue part A: build the 301 decision list | 2 | ~0.5 day | none | **DONE (`16c9ca2`).** List at `docs/seo/S8_BACKLINK_DECISION_LIST.md`, top 25 dead URLs. |
 | S9 | Backlink rescue part B: ship the 301s | 2 | ~0.5 day | Jake approves S8's list | **DONE (`18c52ce`).** 4 approved reclaims shipped. The remaining S8 candidates are still awaiting a decision. |
@@ -42,7 +42,7 @@ If you change a status, cite the commit or PR.
 | S13 | UK Phase A1: metadata-localise all 326 | 3 | ~2 days + Seb review | S12 merged | NOT STARTED |
 | S14+ | Hire-fleet upgrades (15 pages, batches of 3-5) | 3 | ~40h total | S3 merged (Service JSON-LD) | **NOT STARTED. GATE NOW CLEAR** (S3 merged). |
 | S18 | Two new pages (javascript + outsourcing pillar) | 3 | ~2 days each | none (cited.io) | NOT STARTED |
-| S19 | Per-template performance pass | 3 | ~1-2 weeks | S5+S6 merged AND re-measured | NOT STARTED. S5 merged; still needs S6 and a re-measure. |
+| S19 | Per-template performance pass | 3 | ~1-2 weeks | S5+S6 merged AND re-measured | NOT STARTED. S5 merged and re-measured (S5-M, 20 Aug); still needs S6. **First two targets identified by S5-M:** home hero slideshow LCP image is `loading="lazy"` and candidate churn pushes LCP to 14.9s; /pricing LCP is a lazy-loaded Vimeo poster (15.3s). Also 0.7-2.4s font/hydration render delay on text-LCP pages. |
 | S20 | 31 Aug review session (watch list) | - | ~0.5 day | date | SCHEDULED 31 AUG |
 
 ## Reprioritisation - 20 Aug 2026 (supersedes the NEXT list below)
@@ -54,10 +54,14 @@ process (listicles, guest posting, AEO exposure), Seb's podcast as a content
 source, and an OCD-clean base first: site fast, CWV good, no duplicate content.
 
 **Wave 0 - this week, parallel:**
-- **S5-M: re-measure the speed fix** (new session). S5 shipped 10 Aug and was never
-  verified. Baseline to beat: LCP Poor on 100% of pages, 242 Poor / 410 NI / 0 Good.
-  Sources: Vercel Speed Insights (real-user data since 10 Aug), Ahrefs Site Audit
-  (re-crawls Saturdays). One session, read-only, no gate.
+- **S5-M: re-measure the speed fix. DONE 20 Aug - S5 worked.** Render delay
+  5,007ms down to 31-70ms where the LCP element is present at load; FCP 1.8-2.1s
+  sitewide; 4 of 6 sampled pages now hold 3.0-4.2s LCP. Full verdict in the S5-M
+  note below the S5 brief; evidence in `audit-output/seo-intel/2026-08-20-s5-measure/`.
+  Two Jake-only reads remain: Vercel Speed Insights (real-user data since 10 Aug)
+  and the Ahrefs Site Audit 15 Aug crawl (Site Audit is UI-only; the API covers
+  Site Explorer only). Original baseline to beat: LCP Poor on 100% of pages,
+  242 Poor / 410 NI / 0 Good.
 - **UK decision: TAKEN.** Jake decided 20 Aug: KEEP the UK tree and differentiate it -
   page-by-page rewording so content is not duplicate, metadata localised, and where
   it helps, per-page design divergence (design system to be pulled in from Claude
@@ -308,6 +312,52 @@ against production once this merges, not a local number invented now.
 
 **Jake, once this is verified in production the GeoTargetly subscription is
 cancellable.** The account now performs no function at all.
+
+### S5-M - Measurement note, 20 Aug 2026 [branch seo/s5-measure, read-only]
+
+**Verdict: S5 worked. No regression found. GeoTargetly is now verifiably absent
+from production, so the subscription is cancellable.**
+
+Method: production HTML greps (curl with `?r=0` and a Googlebot UA), PageSpeed
+Insights API v5 mobile (Lighthouse 13.4.1) on 6 pages, and header/TTFB timing
+runs, all 20 Aug 05:49-06:05 UTC. Raw evidence:
+`audit-output/seo-intel/2026-08-20-s5-measure/` (gitignored; this note is the
+committed record).
+
+1. **The gate is gone.** Zero matches for `georedirect` / `g10498469755` /
+   `geotargetly` / `body{opacity` in the served HTML of home,
+   /services/software-engineers, a blog article, /blog, /uk and /pricing. The
+   surviving `opacity:0` are element-level animation styles (slideshow
+   crossfade, decorative glows). The geo rule was observed live: a curl from a
+   non-allow-list country got 307 to /for-developers with `ce_geo_routed=1`
+   before any HTML byte; Googlebot fetched full 200 HTML with no redirect;
+   `?r=0` works.
+2. **Render delay collapsed.** Baseline 8 Aug: 5,007ms, predicted 1,496ms with
+   the gates removed. Measured elementRenderDelay: 31ms (home), 70ms
+   (/pricing), 666ms (/blog), 786ms (full-stack), 1,117ms (blog article),
+   2,422ms (software-engineers). The larger text-LCP numbers are webfont +
+   hydration, not a document hide. FCP is 1,827-2,131ms on every page; under
+   the gate nothing painted before ~5s.
+3. **LCP against the "Poor on 100%" baseline:** 3,001 / 3,526 / 3,751 /
+   4,201ms on 4 of 6 pages (mobile-throttled lab). Performance scores 46-87
+   (blog hub 87, hire pages 80-81, article 75, home 66, pricing 46).
+4. **The two ~15s outliers are NOT S5 residue.** Home's LCP element is the
+   hero slideshow `<img alt="Seb Hall" loading="lazy">` (load delay 2,374ms
+   plus late candidate swaps); /pricing's is a lazy-loaded Vimeo poster from
+   i.vimeocdn.com (load delay 3,286ms). Both are S19 items: eager-load and
+   preload the first hero slide and the pricing poster.
+5. **S6 before-numbers (unchanged by S5, as expected):** every HTML response
+   is `cache-control: private, no-cache, no-store, max-age=0, must-revalidate`
+   with `x-vercel-cache: MISS` and `age: 0`, on repeat fetches, all 6 pages.
+   Cost: HTML TTFB median ~610ms from SE Asia vs ~170ms for a cache-HIT static
+   asset (~440ms edge-cacheable penalty per HTML request); PSI US-probe server
+   response 370-419ms (blog article 199ms). Baseline field TTFB on record: 1.37s.
+6. **Still no CrUX record** at page or origin level (originLoadingExperience
+   null), so the first field window is still filling and still winnable - the
+   S6 clock is real and running.
+7. **Not measurable from here:** Vercel Speed Insights (dashboard-only) and the
+   Ahrefs Site Audit Lighthouse distribution (UI-only; the 15 Aug Saturday
+   crawl is the first post-S5 one). Jake reads both and appends the numbers.
 
 ### S6 - Performance part B: main thread + caching [GATE: S5 merged]
 Roadmap: W2-01 second half.
