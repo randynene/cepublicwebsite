@@ -17,10 +17,17 @@ const schema = z.object({
     (val) => process.env.NODE_ENV === 'development' || val !== undefined,
     { message: 'NEXT_PUBLIC_SANITY_STUDIO_URL is required in production and preview (set on Vercel env vars; see Brief B §8.0b + §8.0c)' },
   ),
-  // CMA F-6 v1.3 / D14: empty token causes validatePreviewUrl 401 with unclear
-  // error path. .min(1) fails fast at startup if the var is empty/unset.
-  // §8.2 retasks this as defineLive's serverToken per D5.
-  SANITY_API_READ_TOKEN: z.string().min(1),
+  // Temporarily optional (was CMA F-6 v1.3 / D14: z.string().min(1), which
+  // fails the build fast at startup if unset). This token only backs
+  // defineLive's serverToken/browserToken (site/src/lib/sanity/live.ts) for
+  // the Presentation/draft-mode live-preview feature — ordinary content
+  // reads go through the token-free published-perspective client
+  // (site/src/lib/sanity/client.ts) and are unaffected. Deployments without
+  // a real token lose draft-mode preview only; published content still
+  // renders normally. Restore `.min(1)` once a real token is available in
+  // every environment that needs draft-mode (see Tech Debt: Sanity token
+  // deferred, Aug 2026).
+  SANITY_API_READ_TOKEN: z.string().optional().default(''),
   // DEV-23 (Step 2.11 / HALT 6 — C6 HubSpotFormEmbed). Optional with empty
   // default so the rest of the design system builds without HubSpot config.
   // C6 component runtime-checks at mount time and renders the error

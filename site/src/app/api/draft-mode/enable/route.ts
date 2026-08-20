@@ -16,28 +16,20 @@ import { env } from '@/lib/env'
 // Sanity utility that transitively imports enable/route.ts, the circular dependency would
 // cause `env` to be `undefined` at construction time, createClient would receive
 // `token: undefined`, and validatePreviewUrl would silently return 401 on every request
-// with NO diagnostic pointing at the circular import. The explicit check below converts
-// the silent 401 into an explicit crash with a clear diagnostic message. The check uses
-// the env-validated `env.SANITY_API_READ_TOKEN` rather than process.env directly, so
-// D14's z.string().min(1) refinement still applies — this is a belt-and-braces against
-// circular-import edge cases, not a substitute for schema validation.
+// with NO diagnostic pointing at the circular import. The check below converts that
+// silent failure into an explicit crash with a clear diagnostic message.
 //
-// CMA M7 v2.2 (gemini-3-pro_production + gpt-5.4_security, 2-model consensus): optional
-// chaining is REQUIRED here. Without `?.`, if `env` itself is `undefined` (the exact
-// circular-import case this guard defends against), `env.SANITY_API_READ_TOKEN` throws
-// a native `TypeError: Cannot read properties of undefined (reading
-// 'SANITY_API_READ_TOKEN')` BEFORE the `if` condition evaluates. The TypeError masks the
-// carefully-authored diagnostic Error below and the operator sees a generic native crash
-// instead of "possible circular import with env.ts". The `?.` operator short-circuits to
-// `undefined` when `env` is undefined, which is then caught by the `!` falsy check,
-// allowing the authored diagnostic to fire. This is Pattern 13 (sharpened at v2.2 lock):
-// a defensive guard added in response to a prior finding (F12) needed its own
-// reachability + side-effect analysis to land correctly.
-if (!env?.SANITY_API_READ_TOKEN) {
+// SANITY_API_READ_TOKEN went from required (`z.string().min(1)`) to optional (`z.string()
+// .optional().default('')`) while a real token is pending for this deployment — see
+// env.ts. An empty token is now an expected, supported state (draft-mode preview is
+// unavailable; ordinary published-content reads are unaffected, per client.ts's
+// token-free published-perspective client), so this guard checks only for `env` itself
+// being `undefined` — the actual circular-import anomaly — not for the token being
+// empty. Restore the token-emptiness check here once `.min(1)` is restored in env.ts.
+if (!env) {
   throw new Error(
-    'SANITY_API_READ_TOKEN is empty at module load in enable/route.ts — ' +
-    'possible circular import with env.ts (env undefined at evaluation time) or ' +
-    'missing env var that escaped D14 schema validation. ' +
+    'env is undefined at module load in enable/route.ts — ' +
+    'possible circular import with env.ts (env undefined at evaluation time). ' +
     'See docs/briefs/active/MYGRATR-DESIGN-1-BRIEF-B_v2.2.md §8.3.3 + F12 v2.1 + M7 v2.2.'
   )
 }
