@@ -31,7 +31,7 @@ If you change a status, cite the commit or PR.
 | S2 | Internal link equity | 1 | ~1 day | none | **PART DONE.** Items 1+2 shipped and merged (PR #95): all 27 compare cards on /alternatives page 1, related-comparisons module. Items 3+4 authored and merged as code (`a1a47c0` scripted Sanity link rewrite + content lint) but **NOT YET RUN** against production Sanity. Needs a local run with the write token. |
 | S3 | Template fixes (schema, images, anchors) | 1 | ~1 day | none | **DONE (PR #96 merged).** W1-07, W1-08, W2-06 shipped. W1-02 (VideoObject uploadDate) remains blocked on a content date backfill, documented at `c606729`. |
 | S4 | Measurement wiring (Brand Radar weekly) | 1 | ~0.5 day | none | **SCRIPT DONE (PR #94 merged, `746d15c`). FIRST PULL STILL NOT RUN** - no brand-radar output exists in audit-output. Ahrefs collects weekly; pick it up around 14 Aug. |
-| S5 | Performance package part A: geo server-side + delete body-hide | 2 | ~2 days | DFH-1 + GeoTargetly rules export | **DONE (PR #106).** GeoTargetly integration and its body-hide deleted (`313bd8b`); CE-48 geo routing reimplemented server-side in `site/src/proxy.ts` (`45b4e91`); rule kept off API and metadata routes, bot bypass widened (`119976b`). The only surviving `opacity:0` in the codebase is a comment explaining the removal. **This was the single biggest item on the roadmap. RE-MEASURED 20 Aug (S5-M): IT WORKED.** Render delay fell from 5,007ms to 31-70ms on image-LCP pages; FCP 1.8-2.1s sitewide (was ~5s under the gate); LCP 3.0-4.2s on 4 of 6 sampled pages, breaking the "Poor on 100%" baseline. Two 15s outliers (home, /pricing) are lazy-loaded LCP images, S19 scope, not gate residue. Evidence: `audit-output/seo-intel/2026-08-20-s5-measure/`. See the S5-M note below the S5 brief. |
+| S5 | Performance package part A: geo server-side + delete body-hide | 2 | ~2 days | DFH-1 + GeoTargetly rules export | **DONE (PR #106).** GeoTargetly integration and its body-hide deleted (`313bd8b`); CE-48 geo routing reimplemented server-side in `site/src/proxy.ts` (`45b4e91`); rule kept off API and metadata routes, bot bypass widened (`119976b`). The only surviving `opacity:0` in the codebase is a comment explaining the removal. **This was the single biggest item on the roadmap. RE-MEASURED 20 Aug (S5-M): IT WORKED, lab AND field.** Render delay fell from 5,007ms to 31-70ms on image-LCP pages; FCP 1.8-2.1s sitewide (was ~5s under the gate); LCP 3.0-4.2s on 4 of 6 sampled pages, breaking the "Poor on 100%" baseline. Field confirms: Speed Insights mobile RES 95, LCP 1.89s P75, step-change visible 9-10 Aug; Ahrefs 15 Aug crawl Poor 242 to 196. Two 15s outliers (home, /pricing) are lazy-loaded LCP images, S19 scope, not gate residue. Evidence: `audit-output/seo-intel/2026-08-20-s5-measure/`. See the S5-M note below the S5 brief. |
 | S6 | Performance package part B: HubSpot defer + HTML caching | 2 | ~2 days | S5 merged | **NOT STARTED. GATE NOW CLEAR.** Carries PERF-03: every HTML response is served `no-store` with `x-vercel-cache MISS`, so nothing caches at the edge. **Before-numbers captured 20 Aug (S5-M):** `private, no-cache, no-store, max-age=0, must-revalidate` + MISS + `age: 0` on every HTML fetch, both repeats, all 6 sampled pages. Cost: HTML median ~610ms TTFB from SE Asia vs ~170ms for a cache-HIT static asset (~440ms edge-cacheable penalty); PSI US lab TTFB 370-419ms. Still no CrUX record at page or origin level, so the field window is still winnable. |
 | S7 | Metadata batch (titles + descriptions) | 2 | ~1.5 days | none | NOT STARTED |
 | S8 | Backlink rescue part A: build the 301 decision list | 2 | ~0.5 day | none | **DONE (`16c9ca2`).** List at `docs/seo/S8_BACKLINK_DECISION_LIST.md`, top 25 dead URLs. |
@@ -58,10 +58,10 @@ source, and an OCD-clean base first: site fast, CWV good, no duplicate content.
   5,007ms down to 31-70ms where the LCP element is present at load; FCP 1.8-2.1s
   sitewide; 4 of 6 sampled pages now hold 3.0-4.2s LCP. Full verdict in the S5-M
   note below the S5 brief; evidence in `audit-output/seo-intel/2026-08-20-s5-measure/`.
-  Two Jake-only reads remain: Vercel Speed Insights (real-user data since 10 Aug)
-  and the Ahrefs Site Audit 15 Aug crawl (Site Audit is UI-only; the API covers
-  Site Explorer only). Original baseline to beat: LCP Poor on 100% of pages,
-  242 Poor / 410 NI / 0 Good.
+  Field confirmed same day by Jake: Speed Insights mobile RES 95 (Great), LCP
+  1.89s P75, step-change 9-10 Aug; Ahrefs 15 Aug crawl Poor Lighthouse 242 to
+  196. Original baseline to beat: LCP Poor on 100% of pages, 242 Poor / 410 NI
+  / 0 Good.
 - **UK decision: TAKEN.** Jake decided 20 Aug: KEEP the UK tree and differentiate it -
   page-by-page rewording so content is not duplicate, metadata localised, and where
   it helps, per-page design divergence (design system to be pulled in from Claude
@@ -355,9 +355,20 @@ committed record).
 6. **Still no CrUX record** at page or origin level (originLoadingExperience
    null), so the first field window is still filling and still winnable - the
    S6 clock is real and running.
-7. **Not measurable from here:** Vercel Speed Insights (dashboard-only) and the
-   Ahrefs Site Audit Lighthouse distribution (UI-only; the 15 Aug Saturday
-   crawl is the first post-S5 one). Jake reads both and appends the numbers.
+7. **Field data, read by Jake 20 Aug (Vercel Speed Insights, mobile, last 30
+   days, 980 data points):** Real Experience Score 95 (Great), LCP 1.89s P75,
+   FCP 2.58s, TTFB 0.53s, INP 104ms, CLS 0. A clear step-change is visible
+   9-10 Aug when S5 deployed. Real mobile users, the population the 8 Aug
+   analysis said suffered most, now measure LCP Good. Remaining ambers, both
+   S6 scope: FCP 2.58s sitewide and UK FCP 3.95s Poor (231 samples). Outliers
+   for S6: /services/web-based-apps and /events showed 20s TTFB on isolated
+   samples.
+8. **Ahrefs Site Audit, 15 Aug crawl vs 8 Aug baseline (read by Jake 20 Aug):**
+   Poor Lighthouse 242 down to 196 (minus 46), Needs Improvement 421, CLS all
+   Good, Performance issues: none. Remaining lab drag maps cleanly to the open
+   lanes: TBT ~40% Poor (third-party scripts, S6) and lab LCP ~80% Poor
+   (lazy-loaded images + fonts, S19). Pages with CrUX metrics still 0,
+   matching point 6.
 
 ### S6 - Performance part B: main thread + caching [GATE: S5 merged]
 Roadmap: W2-01 second half.
