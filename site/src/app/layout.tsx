@@ -206,7 +206,10 @@ export default async function RootLayout({
          * Mounted last so the beacon never sits in front of page content. */}
         <SpeedInsights />
         <GlobalScripts suppressChatWidget={suppressChatWidget} />
-      </body>
+      {/* impeccable-live-start */}
+<script src="http://localhost:8400/live.js?token=268e787a-66e1-4028-a72b-c75ed3536981"></script>
+{/* impeccable-live-end */}
+</body>
     </html>
   )
 }
