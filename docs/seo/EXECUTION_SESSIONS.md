@@ -45,6 +45,54 @@ If you change a status, cite the commit or PR.
 | S19 | Per-template performance pass | 3 | ~1-2 weeks | S5+S6 merged AND re-measured | NOT STARTED. S5 merged; still needs S6 and a re-measure. |
 | S20 | 31 Aug review session (watch list) | - | ~0.5 day | date | SCHEDULED 31 AUG |
 
+## Reprioritisation - 20 Aug 2026 (supersedes the NEXT list below)
+
+Agreed with Jake in session, after a two-week stall while marker triage and the
+lead-agent track took the checkout. The strategy is unchanged; this is sequencing.
+Jake's stated goals: consistent content production sitewide, an off-page/outreach
+process (listicles, guest posting, AEO exposure), Seb's podcast as a content
+source, and an OCD-clean base first: site fast, CWV good, no duplicate content.
+
+**Wave 0 - this week, parallel:**
+- **S5-M: re-measure the speed fix** (new session). S5 shipped 10 Aug and was never
+  verified. Baseline to beat: LCP Poor on 100% of pages, 242 Poor / 410 NI / 0 Good.
+  Sources: Vercel Speed Insights (real-user data since 10 Aug), Ahrefs Site Audit
+  (re-crawls Saturdays). One session, read-only, no gate.
+- **UK decision: TAKEN.** Jake decided 20 Aug: KEEP the UK tree and differentiate it -
+  page-by-page rewording so content is not duplicate, metadata localised, and where
+  it helps, per-page design divergence (design system to be pulled in from Claude
+  Design). This answers the S12 gate; S12 (locale-override schema wiring) is now
+  unblocked and is the prerequisite for any UK copy to have somewhere to live -
+  today zero locale=uk documents exist and every /uk route renders the US document.
+- **Measurement repair.** Two halves: (a) conversion tracking broken since Jun 2025 -
+  GTM config fix, not code (Tech Debt #67 in the GA4 pull); (b) lead capture
+  misrouted in HubSpot - owned by the lead-agent track (feat/lead-agent, active).
+  Content production does not start until attribution works.
+
+**Wave 1 - the deadline wave:**
+- **S6 (HTML caching + HubSpot defer).** The only item with a clock: CrUX's
+  first-ever field window on this site is filling from THIS month's traffic.
+  Sitewide no-store / x-vercel-cache MISS must be fixed before that record sets.
+- **S12 (UK schema wiring)** - minimal wiring so no new page is born duplicated.
+
+**Wave 2 - the engine (this is "when content starts"):**
+- **S14-S17 hire-fleet upgrades first** (already rank 10-30, already hold links,
+  fastest return), then S10/S11 pillars, then S18 net-new.
+- **Off-page opens in the same wave, in parallel:** the 131 mapped outreach targets,
+  reclaiming the 154 soft-404 referring domains (S8 remainder needs Jake's
+  decisions), .co.uk auto-renew (45.8% of the link profile), listicle/guest-post
+  process, AEO exposure tracking (Brand Radar, S4 pickup).
+- **S13 (UK metadata + rewording all 326)** runs through this wave; design
+  divergence rides along where Jake supplies it.
+- **Podcast (Seb)** folds in as content source + link magnet per episode.
+
+**Wave 3 - ongoing:** S19 per-template perf pass (after S5-M + S6 measured),
+full UK localisation completion, S20 review on 31 Aug (11 days out).
+
+**Parallelism rule stands:** one worktree per session (HANDBACKS.md / Tech Debt #73).
+
+---
+
 ## NEXT, and why
 
 1. **Re-measure performance.** S5 deleted the body-hide, which the analysis
